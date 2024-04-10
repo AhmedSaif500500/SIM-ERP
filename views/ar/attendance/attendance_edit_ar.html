@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header">
+      <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
+        <i class="fa-solid fa-bars"></i>
+      </a>
+      <div class="header_dark_lang_control">
+        <a id="dark_toggle_btn" class="">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+        </a>
+        <a href="" id="lang_btn" class=""> en </a>
+      </div>
+
+      <div class="header_menue">
+        <a href="">
+          <i class="fa-solid fa-question"></i>
+          <p>مساعده</p>
+        </a>
+
+        <!-- <a href="">
+          <i class="fa-solid fa-info"></i>
+          <p>Home</p>
+        </a> -->
+      </div>
+
+      <div class="header_user_div">
+        <button id="header_user_name"></button>
+      </div>
+    </div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar">
+        <div id="closeMenueIcon" class="closeMenueIcon">
+          <i class="fa-solid fa-square-xmark"></i>
+        </div>
+
+        <a href="home_ar" target="_self" class="sidebar-active">
+          <i class="fa-solid fa-display"></i>
+          الملخص
+        </a>
+
+        <a href="employees_ar" target="_self" class="">
+          <i class="fa-solid fa-user-tie"></i>
+          الموظفين
+        </a>
+
+        <a href="attendance_ar" target="_self" class="">
+          <i class="fa-solid fa-person-circle-exclamation"></i>
+          المؤثرات
+        </a>
+
+        <a href="attendance_report_ar" target="_self" class="">
+          <i class="fa-regular fa-rectangle-list"></i>
+          <p>تقارير</p>
+        </a>
+
+        <!-- <a href="index2.html" target="_self"> -->
+        <a href="users_ar" target="_self" class="">
+          <i class="fa-solid fa-user"></i>
+          المستخدمين
+        </a>
+
+        <a id="Custmize_sidebar" href="#">
+          <i class="fa-solid fa-gear"></i>
+          <p>تخصيص</p>
+        </a>
+      </div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space">
+
+
+          <h2 class="h2">
+              <i class="fa-solid fa-arrow-right back_icon" onclick="back()"></i>
+              <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
+            المؤثرات / جديد
+          </h2>
+
+
+          
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+
+
+          <!-- date -->
+          <label for="date_input" class="lbl_sm">التاريخ</label>
+          <div class="input_with_icon_div">
+            <input type="search" id="date_input" class="hover input_date datepicker"
+              placeholder="التاريخ..." readonly autocomplete="off">
+            <i class="fa-regular fa-calendar left_icon"></i>
+          </div>
+
+          <!-- employee name -->
+          <label for="employee_name_input" class="lbl_sm">اسم الموظف</label>
+          <!-- dropdown -->
+          <div class="dropdown_container" id="dropdown_container">
+            <div class="dropdown_select" id="dropdown_select">
+              <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة" class="dropdown_select_input hover" readonly autocomplete="off">
+              <i class="fa-solid fa-caret-down left_icon"></i>
+              <input type="hidden" id="id_hidden_input" readonly>
+            </div>
+            <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
+              <div class="dropdown_search">
+                <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
+                  oninput="performSearch()" autocomplete="off">
+              </div>
+              <div class="dropdown_menue-items" id="dropdownItems">
+                <!-- قائمة الخيارات تظهر هنا -->
+              </div>
+            </div>
+          </div>
+
+
+
+          <label for="employee_job_input" class="lbl_sm">القيم</label>
+
+          <div style="display: flex; flex-direction: row; margin: 0; padding: 0; width: 100%; height: auto; flex-wrap: wrap; justify-content: start; align-items: center; " class="">
+            <div class="input_number_cointainer">
+              <input type="number" id="days_input" value="0" step="0.25">
+              <span>يوم</span>
+            </div>
+
+            <div class="input_number_cointainer">
+              <input type="number" id="hours_inpu" value='0' step="0.5">
+              <span>ساعه</span>
+            </div>
+
+            <div class="input_number_cointainer">
+              <input type="number" id="values_input" value="0" step="10">
+              <span>جنيه</span>
+            </div>
+          </div>
+
+
+          <label for="note_inpute" class="lbl_sm">البيان</label>
+          <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off">
+
+
+          <div class="btn_container_top_border">
+            <button class="btn_edit" id="btn_edit">تعديل</button>
+            <button class="btn_cancel" id="btn_delete">حذف</button>
+          </div>
+
+
+          <!-- search in table -->
+          <!-- <div id="search-div" style="display: flex;">
+                    <div class="search_div">
+                        <input type="text" name="searchInput" id="searchInput" placeholder="search" class="hover">
+                        <div class="clearArrow" id="clearArrow1" title="clear search">✗</div>
+                        <i class="fa-solid fa-magnifying-glass left_icon"></i>
+                    </div>
+                    <button id="searchBtn" name="searchBtn" class="searchBtn">search</button>
+                </div> -->
+
+          <!-- table container filled by js -->
+          <!-- <div id="table-container"></div> -->
+
+
+
+
+
+
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/attendance/attendance_edit_ar.js"></script>
+
+
+
+</body>
+
+</html>
