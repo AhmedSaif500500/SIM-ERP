@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+</head>
+
+<body class="body scroll" style="height: 100vh;">
+
+  <div class="header">
+    <!-- <div id="MenueIcon" class="MenueIcon ta7ded1">
+      <i class="fas fa-bars header__menu"></i>
+    </div> -->
+    <a href="" id="MenueIcon" class="MenueIcon">
+      <i class="fa-solid fa-bars"></i>
+    </a>
+    <div class="header_dark_lang_control">
+      <a style="cursor: pointer" id="dark_toggle_btn">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      </a>
+      <a href="" id="lang_btn">
+        <p>ar</p>
+      </a>
+    </div>
+
+    <div class="header_menue">
+      <a href="">
+        <i class="fas fa-home icon_md"></i>
+        <p>Home</p>
+      </a>
+
+      <a href="">
+        <i class="fas fa-home"></i>
+        <p>Home</p>
+      </a>
+    </div>
+  </div>
+
+
+  <div class="sub_container">
+
+      <div class="sidebar">
+        <div id="closeMenueIcon" class="closeMenueIcon">
+          <i class="fa-solid fa-square-xmark"></i>
+        </div>
+
+
+        <a href="ar/employees.html" target="localspace" class="sidebar-active">
+          <i class="fas fa-home"></i>
+         الموظفين
+        </a>
+
+
+        <a href="#" onclick="openPage('employees')">
+          <i class="fas fa-home"></i>
+          تقرير عن موظف
+        </a>
+
+        <!-- <a href="index2.html" target="localspace"> -->
+        <a href="#" onclick="openPage('attendance')">
+          <i class="fas fa-home"></i>
+          تقرير عن موظف
+        </a>
+
+
+        <a href="#" onclick="openPage('test')">
+          <i class="fas fa-home"></i>
+          test
+        </a>
+
+        <a href="">
+          <i class="fas fa-home"></i>
+          <p>تقرير عن الموظفين ككل</p>
+        </a>
+
+        <a href="">
+          <i class="fas fa-home"></i>
+          <p>Home</p>
+        </a>
+
+        <a href="transaction.html" target="localspace">
+          <i class="fas fa-home"></i>
+          <p>القيود اليومية</p>
+        </a>
+        <!-- <a href="index2.html" target="localspace"> -->
+        <a href="#" onclick="document.getElementById('localspace').src='/index2'; return false;">
+          <i class="fas fa-home"></i>
+          Test ( index2 )
+        </a>
+        <a id="Custmize_sidebar" href="#">
+          <p>تخصيص</p>
+        </a>
+      </div>
+
+    <div id="white_backcolor" class="white_backcolor">
+      <!-- content -->
+      <div id="content_space">
+        <h2 class="h2">
+          <a href="/home_ar" title="الرئيسية">
+              <i class="fa-solid fa-arrow-right" id="back_icon" style="color: royalblue;"></i></a>
+          <span>/</span>
+          الموظفين
+      </h2>
+          
+
+          <div class="btn_container">
+            <a href="/new_employee_ar" class="btn_new" id="newBtn">جديد</a>
+          </div>
+
+        
+        <!-- search in table -->
+        
+        <div id="search-div" class="search_container">
+          <div class="search_div">
+            <input type="text" name="searchInput" id="searchInput" placeholder="search" class="hover">
+            <div class="clearArrow" id="clearArrow1" title="clear search">✗</div>
+            <i class="fa-solid fa-magnifying-glass left_icon"></i>
+          </div>
+          <!-- <button id="searchBtn" name="searchBtn" class="searchBtn">search</button> -->
+          <a href="" id="searchBtn" class="btn_search">search</a>
+        </div>
+
+        <!-- table container filled by js -->
+        <div id="table-container"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/public/scripts/main.js"></script>
+  <script src="/public/scripts/employees.js"></script>
+
+
+</body>
+
+</html>
