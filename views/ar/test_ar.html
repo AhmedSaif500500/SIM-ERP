@@ -1,55 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Table Row Click Example</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    /* تنسيق العناصر في الـ navbar */
+.navbar {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.header_user_div {
+  float: right;
+  overflow: hidden;
+}
+
+#header_user_name {
+  padding: 14px 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  background-color: inherit;
+  color: white;
+}
+
+/* تنسيق قائمة السقوط */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: right;
+}
+
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+.header_user_div:hover .dropdown-content {
+  display: block;
+}
+
+/* تنسيق صورة زر الخروج */
+.logout-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+}
+
+  </style>
 </head>
 <body>
-
-<table border="1">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Employee Name</th>
-    </tr>
-  </thead>
-  <tbody id="table-body">
-    <tr id="row1">
-      <td>1</td>
-      <td>John Doe</td>
-    </tr>
-    <tr id="row2">
-      <td>2</td>
-      <td>Jane Smith</td>
-    </tr>
-    <!-- Add more rows here if needed -->
-  </tbody>
-</table>
-
-<input type="text" id="idinput" placeholder="ID">
-<input type="text" id="employee_name_input" placeholder="Employee Name">
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  // Get the table body
-  var tbody = document.getElementById('table-body');
+  <div class="navbar">
+    <div class="header_user_div">
+      <button id="header_user_name">اسم المستخدم</button>
+      <div class="dropdown-content">
+        <a href="#">الاعدادات</a>
+        <a href="#">الخروج <img src="logout_icon.png" alt="logout" class="logout-icon"></a>
+      </div>
+    </div>
+  </div>
   
-  // Add click event listener to the table body
-  tbody.addEventListener('click', function(event) {
-    // Check if the clicked element is a table row
-    if (event.target.tagName === 'TD') {
-      // Get the row ID and employee name
-      var rowId = event.target.parentNode.id;
-      var employeeName = event.target.parentNode.cells[1].innerText; // Assuming the employee name is in the second cell (index 1)
-      
-      // Update the input fields with row ID and employee name
-      document.getElementById('idinput').value = rowId;
-      document.getElementById('employee_name_input').value = employeeName;
-    }
-  });
-});
-</script>
-
 </body>
 </html>

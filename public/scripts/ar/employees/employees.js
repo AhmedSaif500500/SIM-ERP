@@ -99,7 +99,7 @@ document.getElementById("tfooter1").textContent = slice_Array1.length; //  عد�
 if (array1.length > 0 && array1.length <= 50) {
     document.querySelector('#table_fotter_buttons_row').style.display = "none";
 } else if (array1.length < 1) {
-    document.querySelector('#table_fotter_buttons_row').innerHTML = "<td colspan='3'>لا نتائج</td>";
+    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='3' class="td_no_result">لا نتائج</td>`;
 };
 
 

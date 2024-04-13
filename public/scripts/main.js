@@ -2,11 +2,49 @@
 //#region fixed information
 const user_name_session = sessionStorage.getItem('username');
 const header_user_name = document.querySelector('#header_user_name');
+const user_setting_btn = document.querySelector('#user_setting_btn');
 if (header_user_name){
   header_user_name.textContent = user_name_session
 }else{
   header_user_name.value = 'user name'
 };
+
+
+user_setting_btn.addEventListener('click',function(){
+  try {
+    hide_User_options();
+    const id = sessionStorage.getItem('current_id');
+    sessionStorage.setItem("user_id", id);
+    window.location.href = "/users_edit_ar";
+  } catch (error) {
+    catch_error('user_setting_btn EROR',error.message)
+  }
+});
+
+
+header_user_name.addEventListener('click',function(){
+  user_options_display()
+});
+function user_options_display() {
+  const user_options = document.querySelector('#user_options');
+  if (user_options.style.display === 'flex'){
+    hide_User_options()
+  }else{
+    show_User_options()
+  }
+}
+user_options.addEventListener('blur', function(event) {
+  hide_User_options();
+});
+function show_User_options(){
+  user_options.style.display = 'flex'
+  user_options.focus();
+}
+
+function hide_User_options(){
+  user_options.style.display = 'none'
+}
+
 
 //#endregion END - fixed information
 
@@ -248,15 +286,17 @@ function show_redirection_Reason() {
   const sidebar = document.querySelector('#sidebar');
   const MenueIcon = document.querySelector('#MenueIcon');
   const closeMenueIcon = document.querySelector('#closeMenueIcon');
+  const body = document.querySelector('body');
 
   // اظهار واخفاء القائمة   عند الضغط على زرار القائمة
   MenueIcon.addEventListener('click', function (event) {
     event.preventDefault(); // stop a deafult herf 
+    hide_User_options(); // el ta2ked 3ala en el user_options_div is hidden
     const sidebar_status = sidebar.classList.contains("sidebar_Media_Show"); // check if sidbar have this class or no
-    if (sidebar_status) {
-      sidebar.classList.remove("sidebar_Media_Show");
+    if (!sidebar_status) {
+      showMenue();
     } else {
-      sidebar.classList.add("sidebar_Media_Show");
+      hideMenue();
     }
   })
 
@@ -264,13 +304,25 @@ function show_redirection_Reason() {
   window.addEventListener('resize', function () {
     if (window.innerWidth > 750) {
       // إزالة الفئة المحددة إذا كان عنصر الشاشة أصغر من 750 بكسل
-      sidebar.classList.remove("sidebar_Media_Show");
+      // sidebar.classList.remove("sidebar_Media_Show");
+      hideMenue();
     }
   });
   // اخفاء القائمة عند الضغط على زر الاغلاق الموجود فى اعلى القائمة
   closeMenueIcon.addEventListener('click', function () {
-    sidebar.classList.remove("sidebar_Media_Show");
+    // sidebar.classList.remove("sidebar_Media_Show");
+    hideMenue();
   })
+
+  function showMenue(){
+    sidebar.classList.add("sidebar_Media_Show");
+    body.classList.add('no_scroll');
+  };
+
+  function hideMenue(){
+    sidebar.classList.remove("sidebar_Media_Show");
+    body.classList.remove('no_scroll');
+  }
 
 
 }//#endregion Open Menue
@@ -345,6 +397,46 @@ function showRedirectionReason() {
   }
 //#endregion END - redirection
 
+//#region logout
+// افتراض أن لدينا زر تسجيل الخروج بالاسم logoutButton في الـ HTML
+async function logout(){
+    try {
 
+      if (!confirm(`هل تريد الخروج من التطبيق؟`)) {
+        return;
+      };
+
+      hide_User_options(); // hide user_option div
+
+      const response = await fetch('/Logout', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        redirection('login','info','تم تسجيل الخروج بنجاح : سيتم تجويلك الى الصفحه الرئيسيه')
+      } else {
+        showAlert('fail',data.message);
+      }
+    } catch (error) {
+      catch_error('logout Error',error.message);
+    }
+};
+
+// تسجيل خروج فى حاله اغلاق المتسفح او الصفحه بدون تسجيل خروج
+// window.addEventListener('beforeunload', function () {
+//   logout()
+// })
+
+window.addEventListener('beforeunload', function() {
+  const url = '/Logout';
+  navigator.sendBeacon(url);
+});
+
+//#endregion End -- Logout
 
 

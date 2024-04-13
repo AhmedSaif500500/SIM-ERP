@@ -55,6 +55,13 @@
 
   --table_row_hover_color: ;
 
+  /** scroll*/
+  --scroll_track_color : rgb(255,255,255);
+  --scroll_track_thumb : rgb(204,204,204);
+  --scroll_track_thumb_hover : rgb(180,180,180);
+
+
+
   /*todo main rows*/
   --table_row_main_background_color: rgb(255, 255, 255);
   --table_row_main_color: rgb(51, 51, 51);
@@ -78,9 +85,8 @@
 
   /** others*/
   --input_height: 3rem;
-  --transition: background-color 0.5s ease 0s, color 0.5s ease 0s,
-    box-shadow 0.5s ease 0s, border 0.5s ease 0s, opacity 0.5s ease,
-    transform 0.5s ease;
+  --transition: background-color 0.5s ease 0s, color 0.5s ease 0s, box-shadow 0.5s ease 0s, border 0.5s ease 0s, opacity 0.5s ease, transform 0.5s ease;
+  --header_element_height : 6rem;
 }
 
 .dark {
@@ -140,6 +146,10 @@
 
   --table_row_hover_color: ;
   /* de general hover fadya 3ashan ana 3amel hover le main row and alternative row kol wa7ed lewa7do */
+  /*! scroll*/
+  --scroll_track_color : rgb(41,41,41);
+  --scroll_track_thumb : rgb(92,92,92);
+  --scroll_track_thumb_hover : rgb(116,116,116);
 
   /*todo main rows*/
   --table_row_main_background_color: rgb(41, 41, 41);
@@ -251,19 +261,19 @@ background-color: var(--bg_white_backcolor);
 
 .scroll::-webkit-scrollbar-track {
   /* control scrollbar track  */
-  background: var(--bg_white_backcolor);
+  background: var(--scroll_track_bg);
   /* border-radius: 2.5rem; */
 }
 
 .scroll::-webkit-scrollbar-thumb {
   /* control scrollbar itself */
-  background: var(--bg_sidebar);
+  background: var(--scroll_track_thumb);
   border-radius: 2.5rem;
 }
 
 
 .scroll::-webkit-scrollbar-thumb:hover {
-  background-color: var(--btn_edit_backcolor);
+  background-color: var(--scroll_track_thumb_hover);
 }
 
 /* end# scrol--------------------------------------*/
@@ -1059,7 +1069,7 @@ width: 100%;
   padding-inline-start: 1rem;
   padding-block-end: 0;
   padding-inline-end: 1rem;
-  height: fit-content;
+  height: fit-content; /* da lazem yb2a auto 3ahan low rl 3naser keter we el wrap esh8al yb2a el height tamam */
   width: 100%;
   /* background-image: linear-gradient(rgb(255,255,255),rgb(245,245,245)); */
   background-color: var(--bg_navbar);
@@ -1081,7 +1091,9 @@ width: 100%;
   justify-content: center;
   background-color: var(--hover_btn_color);
   transition: var(--transition);
+  margin-inline-start: 1rem;
   margin-inline-end: 1rem;
+  height: var(--header_element_height); /* all header elements must take this value */
 }
 
 .header_dark_lang_control a {
@@ -1107,20 +1119,49 @@ width: 100%;
 }
 
 .header_user_div {
-  display: flex; flex-direction: row;
-  justify-content: end; align-items: center;
+  position: relative;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: end;
   width: auto;
   flex-wrap: nowrap;
   transition: var(--transition);
+  height: var(--header_element_height); /* all header elements must take this value */
 }
 #header_user_name{
-  height: fit-content;
+  position: relative;
   font-weight: bold;
   cursor: pointer;
   background-color: inherit;
   color: var(--Font_Color);
-
+  transition: var(--transition);
 }
+
+.user_options{
+  position: absolute;
+  inset-block-start: 4.5rem;
+  inset-inline-end: 0;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: end;
+  text-wrap: nowrap; flex-wrap: nowrap;
+  gap: 1rem;
+  background-color: var(--bg_white_backcolor);
+  border: var(--border_normal);
+  border-radius: 1rem;
+  padding: 0.7rem;
+  transition: var(--transition);
+}
+/* .user_options button{
+background-color: inherit;
+transition: var(--transition);
+cursor: pointer;
+} */
+
+/* .user_options button:hover{
+  opacity: 0.8;
+} */
+
+
+
 
 .header_menue a {
   box-sizing: border-box;
@@ -1128,7 +1169,7 @@ width: 100%;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  height: 6rem;
+  height: var(--header_element_height); /* all header elements must take this value */
   padding-block-start: 0;
   padding-inline-start: 1rem;
   padding-block-end: 0;
@@ -1180,6 +1221,7 @@ width: 100%;
   width: 100%;
   height: auto;
   min-height: 100%;
+  /* overflow: auto; */
   /* مهم جدا لضمان ان يكون الاسكرول بار فقط فى ال بودى */
 }
 
@@ -1191,7 +1233,7 @@ width: 100%;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  flex-grow: 1;
+  width: 20rem;
   background-color: var(--bg_sidebar);
   padding: 1rem;
   transition: var(--transition);
@@ -1210,16 +1252,17 @@ width: 100%;
   position: absolute;
   display: flex;
   flex-direction: column;
-  height: auto;
+  height: calc(100vh - var(--header_element_height));
   width: 100%;
   inset-inline-start: 0;
   overflow: auto; /* هذه الخاصية هي التي تمكن التمرير فقط */
-  z-index: 999;
+  z-index: 10;
   transition: var(--transition);
+  min-height: auto; /*important to remove min-height in sidebar*/
 }
 
 .no_scroll {
-  overflow: hidden;
+  overflow:hidden;
 }
 
 .closeMenueIcon {
@@ -1319,6 +1362,9 @@ gap: 1.3rem;
   cursor: pointer;
   transition: var(--transition);
 }
+.MenueIcon i{
+font-size: 2rem;
+}
 
 .MenueIcon:hover {
   background-color: var(--hover_btn_color);
@@ -1334,17 +1380,25 @@ gap: 1.3rem;
 
 /* start white_backcolor =========================== */
 .white_backcolor {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  flex-grow: 15;
+  width: 100%;
   background-color: var(--bg_white_backcolor);
   border-radius: 0.1rem;
   padding: 2rem;
   transition: var(--transition);
+  /* overflow: auto; */
   /* height: auto;
   min-height: 100%; */
   /* مهم جدا لضمان ان يكون الاسكرول بار فقط فى ال بودى */
+}
+
+@media screen and (max-width: 750px) {
+  .white_backcolor{
+    padding: 0;
+  }
 }
 
 /* start localspace ====================== */
@@ -1363,7 +1417,7 @@ gap: 1.3rem;
   border: none;
   background-color: var(--bg_content_space);
   padding: 1.5rem;
-  overflow: auto;
+  /* overflow: auto; */
   transition: var(--transition);
 }
 
@@ -1744,12 +1798,30 @@ gap: 1.3rem;
 
 /* ----------------------------------------------- */
 
+
+
+
+
 /* tables */
+
+/* table containesr */
+.table-container{
+  position: relative;
+  display: flex; flex-direction: row; flex-wrap: nowrap;  flex-grow: 1;
+  overflow: auto;
+
+}
 .review_table {
   border-collapse: collapse;
   border-radius: 0.3rem;
   width: 100%;
   margin: 0 auto;
+  overflow: auto;
+}
+
+.review_table thead{
+  position: sticky;
+  inset-block-start: 5.9rem; /* da nafs hight beta3 el header 3ashan  yb2a el thead ta7t el header lama ykon sticky */
 }
 
 .review_table th {
@@ -1794,6 +1866,10 @@ gap: 1.3rem;
 .review_table tbody tr:nth-child(even):hover {
   background-color: var(--table_row_alternative_background_color_while_hover);
   color: var(--table_row_alternative_color_while_hover);
+}
+
+.td_no_result{
+  color: var(--Font_Color);
 }
 
 /*________________________________*/

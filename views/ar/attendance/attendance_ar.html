@@ -22,6 +22,7 @@
       <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
         <i class="fa-solid fa-bars"></i>
       </a>
+
       <div class="header_dark_lang_control">
         <a id="dark_toggle_btn" class="">
           <i class="fa-solid fa-circle-half-stroke"></i>
@@ -39,15 +40,26 @@
           <i class="fa-solid fa-info"></i>
           <p>Home</p>
         </a> -->
+
+
       </div>
 
       <div class="header_user_div">
         <button id="header_user_name"></button>
+        <div id="user_options" class="user_options" style="display: none;">
+          <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
+          <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
+        </div>
       </div>
+
+
+      
     </div>
+    
+
 
     <div class="sub_container">
-      <div id="sidebar" class="sidebar">
+      <div id="sidebar" class="sidebar scroll">
         <div id="closeMenueIcon" class="closeMenueIcon">
           <i class="fa-solid fa-square-xmark"></i>
         </div>
@@ -82,6 +94,8 @@
           <i class="fa-solid fa-gear"></i>
           <p>تخصيص</p>
         </a>
+
+
       </div>
 
       <div id="white_backcolor" class="white_backcolor">
@@ -117,7 +131,7 @@
 
 
           <!-- table container filled by js -->
-          <div id="table-container"></div>
+          <div id="table-container" class="table_container"></div>
 
         </div>
       </div>

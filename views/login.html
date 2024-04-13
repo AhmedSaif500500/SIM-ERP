@@ -22,42 +22,34 @@
 
     <!-- darkmode // this element add to avoid errors from main.js file -->
     <div id="hidden_items_to-avoid_errors_in_main_js" style="display: none;">
-    <div class="header_dark_lang_control" style="display: none;">
-      <a id="dark_toggle_btn" class="">
-        <i class="fa-solid fa-circle-half-stroke"></i>
+      <div class="header_dark_lang_control" style="display: none;">
+        <a id="dark_toggle_btn" class="">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+        </a>
+        <a href="" id="lang_btn" class="">
+          en
+        </a>
+      </div>
+
+      <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
+        <i class="fa-solid fa-bars"></i>
       </a>
-      <a href="" id="lang_btn" class="">
-        en
-      </a>
-    </div>
 
-    <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
-      <i class="fa-solid fa-bars"></i>
-    </a>
+      <div class="header_user_div">
+        <button id="header_user_name"></button>
+        <div id="user_options" class="user_options" style="display: none;">
+          <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
+          <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
+        </div>
+      </div>
 
-    <div class="header_user_div" style="display: none;">
-      <button id="header_user_name"></button>
-    </div>
 
-    <div id="sidebar" class="sidebar">
-      <div id="closeMenueIcon" class="closeMenueIcon">
-        <i class="fa-solid fa-square-xmark"></i>
+      <div id="sidebar" class="sidebar">
+        <div id="closeMenueIcon" class="closeMenueIcon">
+          <i class="fa-solid fa-square-xmark"></i>
+        </div>
       </div>
     </div>
-  </div>
-
-
-    <!-- menueIcon // this element add to avoid errors from main.js file -->
-    <!-- <a href="" id="MenueIcon" class="MenueIcon" title="Open Menue" style="display: none;">
-  <i class="fa-solid fa-bars"></i>
-</a> -->
-
-    <!-- closeMenueIcon // this element add to avoid errors from main.js file -->
-    <!-- <div id="closeMenueIcon" class="closeMenueIcon">
-  <i class="fa-solid fa-square-xmark"></i>
-</div> -->
-
-
 
 
     <!-- login  start---------------------------------------------------------------------------------------------------------------------------- -->
@@ -65,17 +57,18 @@
     <div id="login_div" class="login_div">
       <label for="username" class="login_word">Login</label>
       <input type="text" id="username" name="username" class="login_textbox hover" placeholder="UserName"
-        autocomplete="on" />
+        autocomplete="on" tabindex="1" />
       <input type="password" id="password" name="password" class="login_textbox hover" placeholder="pasword"
-        autocomplete="new-password" />
+        autocomplete="new-password" tabindex="2" />
       <div style="display: flex; flex-direction: row; margin: 0; padding: 0;">
         <div class="btn_container">
-          <button id="loginBtn" class="btn_save" style="margin: 0 10px 0 0;">Login</button>
-          <button id="exit_btn" class="btn_cancel">Login</button>
+          <button id="loginBtn" class="btn_save" style="margin: 0 10px 0 0;" tabindex="3">Login</button>
+          <button id="exit_btn" class="btn_cancel" tabindex="4" onclick="logout()">Logout</button>
         </div>
       </div>
-      <p id="loginInformation" class="label_small">Please inset UserName and Password</p>
+      <p id="loginInformation" class="label_small" tabindex="-1">Please inset UserName and Password</p>
     </div>
+
 
   </div>
   <!-- ________________________________________________________________ -->

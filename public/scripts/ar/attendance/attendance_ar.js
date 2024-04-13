@@ -1,6 +1,12 @@
 
-//check permissions
-// pagePermission('attendance_permission','view');
+//#region showReason of redirection
+//! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
+
+document.addEventListener('DOMContentLoaded', function () {
+    showRedirectionReason();
+});
+
+//#endregion End - showReason of redirection
 
 //#region table
 
@@ -55,10 +61,7 @@
                                 <th style="display: none;">id</th>
                                 <th style="display: none;">employee_id</th>
                                 <th>التاريخ</th>
-                                <th>اسم الموظف</th>
-                                <th style="text-align: center;">ايام</th>
-                                <th style="text-align: center;">ساعات</th>
-                                <th style="text-align: center;">قيمه</th>
+                                <th>الموظف</th>
                                 <th>البيان</th>
                             </tr>
                             </thead>
@@ -73,9 +76,6 @@
                             <td style="display: none;">${row.employee_id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
                             <td style="width: auto; white-space: nowrap;">${row.employee_name}</td>
-                            <td style="width: auto; white-space: nowrap;text-align: center;">${row.days}</td>
-                            <td style="width: auto; white-space: nowrap; text-align: center;">${row.hours}</td>
-                            <td style="width: auto; white-space: nowrap; text-align: center;">${row.value}</td>
                             <td style="width: 100%; white-space: wrap;">${row.note}</td>
                           </tr>`;
         });
@@ -89,13 +89,10 @@
                 <td id="tfooter4"></td>
                 <td id="tfooter5"></td>
                 <td id="tfooter6"></td>
-                <td id="tfooter7"></td>
-                <td id="tfooter8"></td>
-                <td id="tfooter9"></td>
             </tr>
 
             <tr id="table_fotter_buttons_row">
-                <td colspan="9">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                <td colspan="6">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                     <div class='flex_H'>
                         <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                         <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -118,7 +115,7 @@
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector('#table_fotter_buttons_row').style.display = "none";
         } else if (array1.length < 1) {
-            document.querySelector('#table_fotter_buttons_row').innerHTML = "<td colspan='9'>لا نتائج</td>";
+            document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='6' class="td_no_result">لا نتائج</td>`;
         };
 
 
@@ -130,8 +127,9 @@
     // الحصول على الجدول
     
     let tableBody = document.getElementById("employees_table").getElementsByTagName("tbody")[0];
-    
+    document.getElementById("tfooter1").textContent = tableBody.rows.length; // عدد الصفوف
     // البدء بعملية جمع الأعمدة
+      /*
     for (let i = 0; i < tableBody.rows.length; i++) {
         let row = tableBody.rows[i];
         
@@ -154,7 +152,7 @@
         };
     
     
-    
+      
         if (!isNaN(hours_value)) {
             // total_hours += hours_value;
             if(hours_value < 0 ){
@@ -165,9 +163,10 @@
         }else{
             hours_cell.innerHTML = ""
         };
+       
     
     
-    
+  
         if (!isNaN(values_value)) {
             // total_values += values_value;
             if(values_value < 0 ){
@@ -179,11 +178,7 @@
             values_cell.innerHTML = ""
         };
     }
-    
-            document.getElementById("tfooter1").textContent = tableBody.rows.length; // عدد الصفوف
-//             document.getElementById("tfooter4").textContent = total_days;
-// document.getElementById("tfooter5").textContent = total_hours;
-// document.getElementById("tfooter6").textContent = total_values;
+    */
     
     //#endregion End - loops table for totals and colores
 
@@ -201,11 +196,8 @@
             
             const nameMatch = row.employee_name && row.employee_name.toString().toLowerCase().includes(searchValue);
             const dateMatch = row.datex && row.datex.toString().toLowerCase().includes(searchValue);
-            const daysMatch = row.days && row.days.toString().toLowerCase().includes(searchValue);
-            const hoursMatch = row.hours && row.hours.toString().toLowerCase().includes(searchValue);
-            const valueMatch = row.value && row.value.toString().toLowerCase().includes(searchValue);
             const noteMatch = row.note && row.note.toString().toLowerCase().includes(searchValue);
-            return dateMatch || nameMatch || daysMatch ||  hoursMatch || valueMatch || noteMatch ;
+            return dateMatch || nameMatch || noteMatch ;
         });
 
         slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
@@ -261,11 +253,3 @@
 
 
 
-//#region showReason of redirection
-//! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
-
-document.addEventListener('DOMContentLoaded', function () {
-    showRedirectionReason();
-});
-
-//#endregion End - showReason of redirection

@@ -15,7 +15,9 @@
 
       //2: validation
       if (!username_Input || !password_Input) {
+        showAlert('fail','Username or Password is empty');
         loginInformation.innerText = 'رجاء التأكد من ادخال اسم المستخدم  وكلمه المرو';
+        login_div.style.pointerEvents = 'auto';
         return;
     }
  
@@ -46,6 +48,7 @@
             // انتظار ثلاث ثوانى بعد ظهر الرساله
            setTimeout(() => {
               sessionStorage.setItem("username", data.username); // save username in seesionStorage to use it in index.html
+              sessionStorage.setItem("current_id", data.user_id); // save username in seesionStorage to use it in index.html
               sessionStorage.setItem("general_permission", data.general_permission); // save username in seesionStorage to use it in index.html
               sessionStorage.setItem("employees_permission", data.employees_permission); // save username in seesionStorage to use it in index.html
               sessionStorage.setItem("attendance_permission", data.attendance_permission); // save username in seesionStorage to use it in index.html

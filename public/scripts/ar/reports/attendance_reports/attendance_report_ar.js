@@ -200,7 +200,7 @@ async function fillAttendancetable() {
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector('#table_fotter_buttons_row').style.display = "none";
         } else if (array1.length < 1) {
-            document.querySelector('#table_fotter_buttons_row').innerHTML = "<td colspan='7'>لا نتائج</td>";
+            document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='7' class="td_no_result">لا نتائج</td>`;
         };
 
 
@@ -352,7 +352,7 @@ document.getElementById("tfooter6").textContent = total_values;
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector('#table_fotter_buttons_row1').style.display = "none";
         } else if (array1.length < 1) {
-            document.querySelector('#table_fotter_buttons_row1').innerHTML = "<td colspan='9'>لا نتائج</td>";
+            document.querySelector('#table_fotter_buttons_row1').innerHTML = `<td colspan='9' class="td_no_result">لا نتائج</td>`;
         };
 
         //  عمليات صف الاجمالى 
@@ -613,7 +613,7 @@ async function fillAttendancetable1() {
     if (array2.length > 0 && array2.length <= 50) {
         document.querySelector('#table_fotter_buttons_row').style.display = "none";
     } else if (array2.length < 1) {
-        document.querySelector('#table_fotter_buttons_row').innerHTML = "<td colspan='2'>لا نتائج</td>";
+        document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='2' class="td_no_result">لا نتائج</td>`;
     };
 
 

@@ -1,3 +1,4 @@
+const { log } = require('console');
 const express = require('express');
 const router = express.Router();
 const path = require('path');
@@ -14,8 +15,8 @@ router.get('/login', (req, res) => {
 });
 
 
-router.get('/home_ar', (req, res) => {
-    if (req.session.isLoggedIn) {
+router.get('/home_ar', async (req, res) => {
+    if (req.session.isLoggedIn) {  
         res.sendFile(path.join(__dirname, '..', 'views','ar' , 'home_ar.html'));
     } else {
         res.redirect('/login');
