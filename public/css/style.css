@@ -1115,7 +1115,10 @@ width: 100%;
 .header_menue {
   display: flex; flex-direction:row; flex-grow: 1; flex-wrap: nowrap;
   transition: var(--transition);
-  
+}
+
+.header_menue a{
+  transition: var(--transition);
 }
 
 .header_user_div {

@@ -32,7 +32,7 @@ TODO #region Start-Database
 /*
 open Terminal vscode 
  npm init -y
- npm install express pg-promise body-parser dotenv express-session node-cron
+ npm install express pg-promise body-parser dotenv express-session node-cron ws
  use this command always to resolve the problems : 
  create a file named (.env) in root put in it any variables to secure it like pass  for example put this in .env file ( pass="123" ) then call it here like ( password : env.pass)
  this page is name server.js put it in root file
@@ -50,6 +50,7 @@ const path = require("path"); // استدعاء مكتبة path
 const bodyParser = require("body-parser");
 const app = express();
 const cron = require('node-cron');
+const WebSocket = require('ws');
 const port = 3000;
 const bcrypt = require("bcryptjs"); // مكتبه تشفير الباسورد المرسل الى قاعده البيانات
 app.use(bodyParser.json());
@@ -168,6 +169,8 @@ async function check_last_activity_fn() {
   }
 }
 
+
+
 //#endregion End Cron Functions
 
 //#region cron schedule
@@ -250,7 +253,7 @@ app.post("/Login", async (req, res) => {
         res.json({
           // الرد على ال فرونت انت اند
           success: true, // معناه ان العمليه نجحت لو فشلت هتبقا فالس
-          message: "Login successful", // دى الرساله الى هتروح للعميل
+          message: `Welcome back, ${req.session.username}!`, // دى الرساله الى هتروح للعميل
           user_id: rows[0].id,
           username: rows[0].user_name,
 

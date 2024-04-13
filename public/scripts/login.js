@@ -44,6 +44,8 @@
     const data = await response.json();
         if (data.success) {
            showAlert('success',data.message);
+           showAlert('warning',`Don't forget to sign out when you're done to ensure the security of your account`);
+
 
             // انتظار ثلاث ثوانى بعد ظهر الرساله
            setTimeout(() => {
