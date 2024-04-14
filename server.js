@@ -145,6 +145,15 @@ app.use("/", routes);
 
 /****************************************** */
 
+//#region started server functions
+
+//! 1: put all is_active to false for all users
+async function make_all_users_is_active_to_false(){ // we use this function in the begining of server start
+  await db.none(`UPDATE users SET is_active = false`)
+}
+//#endregion End - sstarted server functions
+
+
 //#region cron to make schedule to check user sessions  if is not active  will go to database and make is_active = flase in users table
 
 
@@ -403,7 +412,7 @@ async function newId_fn(tableName) {
   const query = await db.any(`SELECT MAX(id) AS id FROM ${tableName}`);
 
   if (query) {
-    result = query[0].id;
+    result = parseInt(query[0].id);
     return result + 1
   } else {
     result = 1
@@ -1646,7 +1655,7 @@ app.listen(port, () => {
   console.log(`server is runing on http://localhost:${port}`);
 
   //! اوامر تنفذ مبشره بعد تشغيل السيرفر 
-    check_last_activity_fn();
+    make_all_users_is_active_to_false();
 });
 
 
