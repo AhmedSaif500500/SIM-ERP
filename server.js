@@ -403,7 +403,7 @@ async function newId_fn(tableName) {
   const query = await db.any(`SELECT MAX(id) AS id FROM ${tableName}`);
 
   if (query) {
-    result = query[0].id;
+    result = parseInt(query[0].id);
     return result + 1
   } else {
     result = 1
