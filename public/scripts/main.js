@@ -57,48 +57,54 @@ function hide_User_options(){
 
 function showAlert(type, message) {
   try {
-    const alertContainer = document.getElementById('alert-container');
-    const alertDiv = document.createElement('div');
-    const alertClass = 'alert-' + type;
-    alertDiv.classList.add('alert', alertClass);
-    alertDiv.innerHTML = message;
-    alertContainer.appendChild(alertDiv);
+      const alertContainer = document.getElementById('alert-container');
+      const alertDiv = document.createElement('div');
+      const alertClass = 'alert-' + type;
+      alertDiv.classList.add('alert', alertClass);
+      alertDiv.innerHTML = message;
+      alertContainer.appendChild(alertDiv);
 
-    // إنشاء عنصر الصوت المناسب
-    const audioElement = document.createElement('audio');
-    audioElement.setAttribute('id', type);
-    const sourceElement = document.createElement('source');
-    sourceElement.src = '/public/sounds/' + type + '.mp3';
-    sourceElement.type = 'audio/mpeg';
-    audioElement.appendChild(sourceElement);
-    document.body.appendChild(audioElement);
+      // إنشاء عنصر الصوت المناسب
+      const audioElement = document.createElement('audio');
+      audioElement.setAttribute('id', type);
+      const sourceElement = document.createElement('source');
+      sourceElement.src = '/public/sounds/' + type + '.mp3';
+      sourceElement.type = 'audio/mpeg';
+      audioElement.appendChild(sourceElement);
+      document.body.appendChild(audioElement);
 
-    // عندما يكتمل تحميل الملف الصوتي، قم بتشغيله
-    audioElement.addEventListener("canplay", function () {
-      audioElement.play();
-    });
+      // عندما يكتمل تحميل الملف الصوتي، قم بتشغيله
+      audioElement.addEventListener("canplay", function () {
+          audioElement.play();
+      });
 
-    setTimeout(function () {
-      alertDiv.classList.add('show');
-    }, 100);
-
-    alertDiv.addEventListener('click', function () {
-      alertDiv.style.opacity = '0';
+      // إضافة فئة .show لعرض التنبيه مع الرسوم المتحركة
       setTimeout(function () {
-        alertDiv.remove();
-      }, 500);
-    });
+          alertDiv.classList.add('show');
+      }, 100);
 
-    setTimeout(function () {
-      alertDiv.style.opacity = '0';
+      // عند النقر، ابدأ في إخفاء التنبيه باستخدام الرسوم المتحركة
+      alertDiv.addEventListener('click', function () {
+          alertDiv.classList.add('hide');
+          // إزالة التنبيه بعد اكتمال الرسوم المتحركة
+          setTimeout(function () {
+              alertDiv.remove();
+          }, 500);
+      });
+
+      // بعد فترة زمنية معينة، ابدأ في إخفاء التنبيه
       setTimeout(function () {
-        alertDiv.remove();
-      }, 500);
-    }, 10000);
+          alertDiv.classList.add('hide');
+          // إزالة التنبيه بعد اكتمال الرسوم المتحركة
+          setTimeout(function () {
+              alertDiv.remove();
+          }, 500);
+      }, 10000);
   } catch (error) {
-    console.error('error show alert', error.message)
-  };
-};
+      console.error('Error showing alert:', error.message);
+  }
+}
+
 
 
 //#endregion End -- Alerts
