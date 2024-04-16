@@ -1232,6 +1232,47 @@ cursor: pointer;
 
 /*! start sidebar============================ */
 
+/* تحديد المتغيرات بناءً على اتجاه الصفحة */
+:root {
+  /* افتراضياً يتم التحرك من اليسار إلى اليمين */
+  --sidebar-translate-in: translateX(-100%);
+  --sidebar-translate-out: translateX(0);
+}
+
+html[dir="rtl"] {
+  /* في حالة الاتجاه من اليمين إلى اليسار، يتم التحرك من اليمين إلى اليسار */
+  --sidebar-translate-in: translateX(100%);
+  --sidebar-translate-out: translateX(0);
+}
+
+
+/* الرسوم المتحركة */
+/* الرسوم المتحركة للشريط الجانبي */
+@keyframes sidebarFadeIn {
+  from {
+      opacity: 0;
+      /* استخدام المتغيرات المحددة */
+      transform: var(--sidebar-translate-in);
+  }
+  to {
+      opacity: 1;
+      transform: var(--sidebar-translate-out);
+  }
+}
+
+@keyframes sidebarFadeOut {
+  from {
+      opacity: 1;
+      transform: var(--sidebar-translate-out);
+  }
+  to {
+      opacity: 0;
+      /* استخدام المتغيرات المحددة */
+      transform: var(--sidebar-translate-in);
+  }
+}
+
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -1251,6 +1292,7 @@ cursor: pointer;
   }
 }
 
+/* تطبيق الرسوم المتحركة على الشريط الجانبي عند ظهوره واختفائه */
 .sidebar_Media_Show {
   position: absolute;
   display: flex;
@@ -1258,10 +1300,24 @@ cursor: pointer;
   height: calc(100vh - var(--header_element_height));
   width: 100%;
   inset-inline-start: 0;
-  overflow: auto; /* هذه الخاصية هي التي تمكن التمرير فقط */
+  overflow: auto;
   z-index: 10;
   transition: var(--transition);
-  min-height: auto; /*important to remove min-height in sidebar*/
+  min-height: auto; /* مهم لإزالة الحد الأدنى من الارتفاع في الشريط الجانبي */
+  
+  /* تطبيق الرسوم المتحركة */
+  animation-duration: 0.3s; /* يمكنك تغيير مدة الرسوم المتحركة حسب الحاجة */
+  animation-fill-mode: forwards; /* يحافظ على الحالة النهائية للرسوم المتحركة */
+}
+
+/* تطبيق الرسوم المتحركة عند ظهور الشريط الجانبي */
+.sidebar_Media_Show.show {
+  animation-name: sidebarFadeIn;
+}
+
+/* تطبيق الرسوم المتحركة عند اختفاء الشريط الجانبي */
+.sidebar_Media_Show.hide {
+  animation-name: sidebarFadeOut;
 }
 
 .no_scroll {
