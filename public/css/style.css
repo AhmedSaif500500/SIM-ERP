@@ -1992,6 +1992,27 @@ font-size: 2rem;
     } */
 }
 
+/* التأثيرات الانتقالية */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(-50px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* إخفاء النافذة */
+@keyframes fadeOut {
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
 /*! alerts */
 /* @@@@@@@@@ اوعى تحذف اى تعليق @@@@@@@ */
 .alert-container {
@@ -2022,24 +2043,30 @@ font-size: 2rem;
   padding: 2rem;
   border-radius: 0.2rem;
   position: relative;
-  transition: opacity 0.5s ease-in-out;
   opacity: 0;
-  transform: translateY(100%);
-  /* الانزياح الرأسي للتنبيهات بنسبة 100% من ارتفاعها */
   cursor: pointer;
   max-width: 100%;
-  /* الحد الأقصى لعرض التنبيهات */
   overflow-wrap: break-word;
-  /* تجاوز السطر في حال كان النص طويلاً */
   word-wrap: break-word;
   word-break: break-word;
   text-align: start;
-  /* محاذاة النص إلى اتجاه الصفحه */
-
   box-shadow: 0px 0px 2rem rgba(0, 0, 0, 0.5);
-  /* تأثير الضوء */
   transition: box-shadow 0.3s ease;
+  /* أزل تأثير transition الخاص بـ opacity والتحويل */
 }
+
+/* تطبيق الرسوم المتحركة عند الظهور */
+.alert.show {
+  animation: fadeIn 0.5s forwards;
+  /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
+}
+
+/* تطبيق الرسوم المتحركة عند الاختفاء */
+.alert.hide {
+  animation: fadeOut 0.5s forwards;
+  /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
+}
+
 
 .alert:hover {
   /* box-shadow: 0px 0px 4rem rgba(0, 0, 0, 0.7); */
