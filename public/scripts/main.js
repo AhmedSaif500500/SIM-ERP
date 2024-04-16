@@ -289,7 +289,7 @@ function show_redirection_Reason() {
 
 
 {//!#region Open Menue -- sidbar
-  const sidebar = document.querySelector('#sidebar');
+const sidebar = document.querySelector('#sidebar');
   const MenueIcon = document.querySelector('#MenueIcon');
   const closeMenueIcon = document.querySelector('#closeMenueIcon');
   const body = document.querySelector('body');
@@ -320,16 +320,21 @@ function show_redirection_Reason() {
     hideMenue();
   })
 
-  function showMenue(){
+  function showMenue() {
     sidebar.classList.add("sidebar_Media_Show");
+    sidebar.classList.add("show");
     body.classList.add('no_scroll');
-  };
+};
 
-  function hideMenue(){
-    sidebar.classList.remove("sidebar_Media_Show");
+function hideMenue() {
+    sidebar.classList.remove("show");
+    sidebar.classList.add("hide");
+    setTimeout(() => {
+        sidebar.classList.remove("sidebar_Media_Show");
+        sidebar.classList.remove("hide");
+    }, 300); /* تأكد من إزالة الفئات بعد انتهاء الرسوم المتحركة */
     body.classList.remove('no_scroll');
-  }
-
+}
 
 }//#endregion Open Menue
 
