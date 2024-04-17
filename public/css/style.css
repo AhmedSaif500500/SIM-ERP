@@ -2236,6 +2236,19 @@ font-size: 2rem;
   /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
 }
 
+/* تطبيق الرسوم المتحركة عند الظهور */
+.alert.show {
+  animation: fadeIn 0.5s forwards;
+  /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
+}
+
+/* تطبيق الرسوم المتحركة عند الاختفاء */
+.alert.hide {
+  animation: fadeOut 0.5s forwards;
+  /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
+}
+
+
 .alert:hover {
   /* box-shadow: 0px 0px 4rem rgba(0, 0, 0, 0.7); */
   box-shadow: 0px 0px 3rem #66afe9;
