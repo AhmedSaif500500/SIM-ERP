@@ -75,7 +75,10 @@ document.querySelector('#employee_leave_date_input').value = array1.emp_end_date
 async function update_employee_data() {
   try {
     // event.preventDefault(); // if <a>
-
+    if (inputErrors) {
+      showAlert('fail','رجاء اصلح  حقول الادخال التى تحتوى على اخطاء')
+      return;
+  }
     // تحضير البيانات
     const employee_name_input = document.querySelector('#employee_name_input').value.trim();
     const employee_job_input = document.querySelector('#employee_job_input').value.trim();
@@ -95,10 +98,7 @@ async function update_employee_data() {
       return; // يجب إعادة التنفيذ بمجرد إظهار الخطأ أو إتخاذ إجراء آخر
     };
 
-    // تأكيد المستخدم
-    if (!confirm(`Please Confirm.. Do you want to update data ?`)) {
-      return;
-    }
+
 
     // تجهيز البيانات للإرسال إلى الخادم
     const posted_elements = {
@@ -114,6 +114,11 @@ async function update_employee_data() {
       employee_id
     };
 
+    await showDialog('','هل تريد تعديل البيانات ؟','');
+    if (!dialogAnswer){
+      return
+    }
+
     // إرسال البيانات إلى الخادم
     const response = await fetch('/edit_employee', {
       method: 'POST',
@@ -125,12 +130,12 @@ async function update_employee_data() {
     // استلام الرد من الخادم
     const data = await response.json();
       if (data.success) {
+        closeDialog();
         showAlert('success', data.message);
         clear();
-        setTimeout(() => {
-          window.location.href = '/employees_ar';
-      }, 3000);
+        redirection('employees_ar','warning','سيتم توجيهك الى صفحه الموظفين الرئيسيه')
       } else {
+        closeDialog();
         showAlert('fail', data.message);
       };
   } catch (error) {
@@ -149,15 +154,21 @@ async function delete_employee_fn() {
     return;
    };
 
-   if (!confirm(`Please Confirm.. Do you want to delete data ?`)) {
-    return;
-  }
+   if (inputErrors) {
+     showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
+     return;
+   }
+
 
     // تحضير البيانات التى سيتم ارسالها للخادم
     const posted_elements = {
       employee_id
     };
-  
+    
+    await showDialog('','هل تريد حذف البيانات ؟','');
+    if (!dialogAnswer){
+      return
+    }
         // إرسال البيانات إلى الخادم
         const response = await fetch('/delete_employee', {
           method: 'POST',
@@ -169,12 +180,12 @@ async function delete_employee_fn() {
         // استلام الرد من الخادم
         const data = await response.json();
           if (data.success) {
+            closeDialog();
             showAlert('success', data.message);
             clear();
-            setTimeout(() => {
-              window.location.href = '/employees_ar';
-          }, 3000);
+            redirection('employees_ar','warning','سيتم توجيهك الى صفحه الموظفين الرئيسيه')
           } else {
+            closeDialog();
             showAlert('fail', data.message);
           };
   } catch (error) {

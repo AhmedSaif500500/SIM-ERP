@@ -57,51 +57,174 @@ function hide_User_options(){
 
 function showAlert(type, message) {
   try {
-    const alertContainer = document.getElementById('alert-container');
-    const alertDiv = document.createElement('div');
-    const alertClass = 'alert-' + type;
-    alertDiv.classList.add('alert', alertClass);
-    alertDiv.innerHTML = message;
-    alertContainer.appendChild(alertDiv);
+      const alertContainer = document.getElementById('alert-container');
+      const alertDiv = document.createElement('div');
+      const alertClass = 'alert-' + type;
+      alertDiv.classList.add('alert', alertClass);
+      alertDiv.innerHTML = message;
+      alertContainer.appendChild(alertDiv);
 
-    // إنشاء عنصر الصوت المناسب
-    const audioElement = document.createElement('audio');
-    audioElement.setAttribute('id', type);
-    const sourceElement = document.createElement('source');
-    sourceElement.src = '/public/sounds/' + type + '.mp3';
-    sourceElement.type = 'audio/mpeg';
-    audioElement.appendChild(sourceElement);
-    document.body.appendChild(audioElement);
+      // إنشاء عنصر الصوت المناسب
+      const audioElement = document.createElement('audio');
+      audioElement.setAttribute('id', type);
+      const sourceElement = document.createElement('source');
+      sourceElement.src = '/public/sounds/' + type + '.mp3';
+      sourceElement.type = 'audio/mpeg';
+      audioElement.appendChild(sourceElement);
+      document.body.appendChild(audioElement);
 
-    // عندما يكتمل تحميل الملف الصوتي، قم بتشغيله
-    audioElement.addEventListener("canplay", function () {
-      audioElement.play();
-    });
+      // عندما يكتمل تحميل الملف الصوتي، قم بتشغيله
+      audioElement.addEventListener("canplay", function () {
+          audioElement.play();
+      });
 
-    setTimeout(function () {
-      alertDiv.classList.add('show');
-    }, 100);
-
-    alertDiv.addEventListener('click', function () {
-      alertDiv.style.opacity = '0';
+      // إضافة فئة .show لعرض التنبيه مع الرسوم المتحركة
       setTimeout(function () {
-        alertDiv.remove();
-      }, 500);
-    });
+          alertDiv.classList.add('show');
+      }, 100);
 
-    setTimeout(function () {
-      alertDiv.style.opacity = '0';
+      // عند النقر، ابدأ في إخفاء التنبيه باستخدام الرسوم المتحركة
+      alertDiv.addEventListener('click', function () {
+          alertDiv.classList.add('hide');
+          // إزالة التنبيه بعد اكتمال الرسوم المتحركة
+          setTimeout(function () {
+              alertDiv.remove();
+          }, 500);
+      });
+
+      // بعد فترة زمنية معينة، ابدأ في إخفاء التنبيه
       setTimeout(function () {
-        alertDiv.remove();
-      }, 500);
-    }, 10000);
+          alertDiv.classList.add('hide');
+          // إزالة التنبيه بعد اكتمال الرسوم المتحركة
+          setTimeout(function () {
+              alertDiv.remove();
+          }, 500);
+      }, 10000);
   } catch (error) {
-    console.error('error show alert', error.message)
-  };
-};
+      console.error('Error showing alert:', error.message);
+  }
+}
+
 
 
 //#endregion End -- Alerts
+
+//#region dialog confirm
+let dialogAnswer = false  // global variable
+function showDialog(title, message, icon) {
+  return new Promise((resolve) => {
+
+    dialogAnswer = false;
+
+      // إنشاء عنصر الـ HTML إذا لم يكن موجودًا بالفعل
+      let overlay = document.getElementById('dialogOverlay');
+      if (!overlay) {
+          // إنشاء التراكب (overlay)
+          overlay = document.createElement('div');
+          overlay.id = 'dialogOverlay';
+          overlay.style.display = 'none'; // يجب أن يكون مخفيًا في البداية
+          document.body.appendChild(overlay);
+          
+          // إنشاء نافذة الحوار (dialog)
+          const dialog = document.createElement('div');
+          dialog.id = 'dialog';
+          dialog.className = 'dialog'; // سيتم تطبيق أنماط CSS الخاصة به
+          
+          // إنشاء الرأس (header)
+          const header = document.createElement('div');
+          header.className = 'dialog_header';
+          const h3 = document.createElement('h3');
+          h3.id = 'dialogTitle';
+          h3.className = '';
+          header.appendChild(h3);
+          dialog.appendChild(header);
+          
+          // إنشاء الجسم (body)
+          const body = document.createElement('div');
+          body.className = 'dialog_body';
+          const p = document.createElement('p');
+          p.id = 'dialogMessage';
+          body.appendChild(p);
+          const i = document.createElement('i');
+          i.id = 'dialogIcon';
+          body.appendChild(i);
+          dialog.appendChild(body);
+          
+          // إنشاء القدم (footer)
+          const footer = document.createElement('div');
+          footer.className = 'dialog_footer';
+          const yesButton = document.createElement('button');
+          yesButton.id = 'yesButton';
+          yesButton.textContent = 'نعم';
+          yesButton.className = 'btn_save';
+          const noButton = document.createElement('button');
+          noButton.id = 'noButton';
+          noButton.textContent = 'لا';
+          noButton.className = 'btn_cancel';
+          footer.appendChild(yesButton);
+          footer.appendChild(noButton);
+          dialog.appendChild(footer);
+          
+          // إضافة نافذة الحوار إلى التراكب
+          overlay.appendChild(dialog);
+      }
+
+      // إعداد الرأس والجسم
+      document.getElementById('dialogTitle').textContent = title;
+      document.getElementById('dialogMessage').textContent = message;
+
+      // ضبط الأيقونة
+      const dialogIcon = document.getElementById('dialogIcon');
+      dialogIcon.className = icon;
+
+      // عرض النافذة
+      overlay.style.display = 'flex';
+
+      // التحكم في زر "نعم"
+      document.getElementById('yesButton').onclick = function() {
+        showLoadingIcon(this)
+        dialog.style.pointerEvents = 'none'
+          // closeDialog();
+          dialogAnswer = true;
+          resolve(true); // إرجاع true عند النقر على زر "نعم"
+      };
+
+      // التحكم في زر "لا"
+      document.getElementById('noButton').onclick = function() {
+          dialogAnswer = false;
+          closeDialog();
+          resolve(false); // إرجاع false عند النقر على زر "لا"
+      };
+  });
+}
+
+function closeDialog() {
+  const overlay = document.getElementById('dialogOverlay');
+  
+  // إضافة التحريك للإغلاق
+  overlay.style.animation = 'fadeOut 0.3s forwards';
+  
+  setTimeout(() => {
+      // إخفاء التراكب بعد انتهاء التحريك
+      overlay.style.display = 'none';
+      overlay.style.animation = ''; // إعادة ضبط الأنماط بعد الإخفاء
+      
+      // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
+      // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
+      const dialog = document.getElementById('dialog');
+      const yesButton = document.getElementById('yesButton');
+      hideLoadingIcon(yesButton);
+      dialog.style.pointerEvents = 'auto';
+  }, 300);
+}
+
+
+// * HOW TO USE 
+
+//const userChoice = await showDialog('Test message', 'Do you want to save?', 'icon-question');
+//console.log(userChoice); // true إذا كان "نعم" وfalse إذا كان "لا"
+
+//#endregion  dialog confirm
 
 //#region error handling
 //todo el fekra hena enak hatzher el message beta3 el error fakt eza kont fat7 el bernameg 3ala el windwos beta3k local ama ezaraf3to 3ala  host msh hayzhar
@@ -219,6 +342,39 @@ flatpickr(".datepicker", {
 //! END_______________________
 //#endregion End -- flatpicker
 
+//#region day_name
+function day_name(dateStr) {
+  // صيغة التاريخ: dd-mm-yyyy
+
+// const dateStr = "05-02-2024";
+
+// نقوم بتقسيم التاريخ إلى يوم، شهر، وسنة
+const [year, month, day] = dateStr.split('-');
+
+// نقوم بإنشاء كائن Date باستخدام السنة، الشهر واليوم
+const date = new Date(`${year}-${month}-${day}`);
+
+const options = { weekday: 'short' }; // تحديد نوع الترجمة
+const currentLang = localStorage.getItem('currentLang')
+if (currentLang === 'ar'){
+  const dayName = date.toLocaleDateString('ar-EG', options); // هنا "ar-EG" يشير إلى اللغة العربية
+  return dayName
+}else{
+  const dayName = date.toLocaleDateString('en-US', options); // هنا "ar-EG" يشير إلى اللغة العربية
+  return dayName
+}
+
+}
+
+//* HOW TO USE
+/*
+const date = '2024-04-16'
+const day =  day_name(date);
+console.log(day);
+*/
+
+//#endregion end day_name
+
 //#region showReason of redirection
 //! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
 function show_redirection_Reason() {
@@ -283,7 +439,7 @@ function show_redirection_Reason() {
 
 
 {//!#region Open Menue -- sidbar
-  const sidebar = document.querySelector('#sidebar');
+const sidebar = document.querySelector('#sidebar');
   const MenueIcon = document.querySelector('#MenueIcon');
   const closeMenueIcon = document.querySelector('#closeMenueIcon');
   const body = document.querySelector('body');
@@ -314,16 +470,21 @@ function show_redirection_Reason() {
     hideMenue();
   })
 
-  function showMenue(){
+  function showMenue() {
     sidebar.classList.add("sidebar_Media_Show");
+    sidebar.classList.add("show");
     body.classList.add('no_scroll');
-  };
+};
 
-  function hideMenue(){
-    sidebar.classList.remove("sidebar_Media_Show");
+function hideMenue() {
+    sidebar.classList.remove("show");
+    sidebar.classList.add("hide");
+    setTimeout(() => {
+        sidebar.classList.remove("sidebar_Media_Show");
+        sidebar.classList.remove("hide");
+    }, 300); /* تأكد من إزالة الفئات بعد انتهاء الرسوم المتحركة */
     body.classList.remove('no_scroll');
-  }
-
+}
 
 }//#endregion Open Menue
 
@@ -450,7 +611,6 @@ if (general_permission && general_permission === 6){
 
 //#endregion
 
-
 //#region password input show and hidden in input 
 
    //#region how its work work ? 
@@ -486,3 +646,60 @@ if (general_permission && general_permission === 6){
 
 //#endregion END-pasword input
 
+//#region check input type
+let inputErrors = false; // المتغير العالمي لتتبع وجود الأخطاء في الإدخال
+function check_parse(inputid, type) {
+  const value = inputid.value; // احصل على قيمة حقل الإدخال
+  const specialCharRegex = /['";$%&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة
+
+  // إذا كان حقل الإدخال فارغًا، أعد null
+  if (!value || value.trim() === '') {
+      inputid.classList.remove('hover_error', 'input_error');
+      inputErrors = false; // توجد أخطاء في الإدخال
+      return null;
+      
+  }
+
+  // تحقق من نوع القيمة بناءً على نوع البيانات المطلوب
+  if (type === 'string') {
+      // تحقق من وجود أي من الرموز الخاصة في القيمة
+      if (isNaN(value) && !specialCharRegex.test(value)) {
+          inputid.classList.remove('hover_error', 'input_error');
+          inputErrors = false; // توجد أخطاء في الإدخال
+      } else {
+          inputid.classList.add('hover_error', 'input_error');
+          inputErrors = true; // توجد أخطاء في الإدخال
+      }
+  }
+
+  if (type === 'number') {
+    // تحقق من وجود أي من الرموز الخاصة في القيمة
+    if (isNaN(value) && !specialCharRegex.test(value)) {
+      inputid.classList.add('hover_error', 'input_error');
+      inputErrors = true; // توجد أخطاء في الإدخال
+
+    } else {
+      inputid.classList.remove('hover_error', 'input_error');
+      inputErrors = false; // توجد أخطاء في الإدخال
+    }
+}
+}
+
+//#endregion end - check input type
+
+//#region  loading
+function showLoadingIcon(element) {
+  element.classList.add('loading_icon');
+  // element.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
+  element.disabled = true; // تعطيل العنصر
+  element.title = 'رجاء الانتظار قليلا...' // اضافه تلميح
+}
+
+function hideLoadingIcon(element) {
+  element.classList.remove('loading_icon');
+  element.disabled = false; // تشغيل العنصر
+  element.title = ''  // تعطيل ال التلميح
+}
+
+
+//#endregion end- loading

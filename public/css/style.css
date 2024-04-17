@@ -44,6 +44,10 @@
   --box_shadow_border: inset 0 0.1rem 0.1rem rgb(0 0 0 / 8%),
     0 0 0.8rem hsla(207, 75%, 66%, 0.6);
 
+  --input_error_border:0.1rem solid red !important;
+  --box_shadow_border_hover: inset 0 0.1rem 0.1rem rgb(0 0 0 / 8%),
+  0 0 0.8rem red !important;
+
   /** hover*/
   --hover_btn_color: rgb(230, 230, 230);
 
@@ -122,6 +126,10 @@
   /*! input Text*/
   --input_text_background_color: rgb(41, 41, 41);
   /* nafs lon el white_backcolor */
+
+  --input_error_border:0.1rem solid red !important;
+  --box_shadow_border_hover: inset 0 0.1rem 0.1rem rgb(0 0 0 / 8%),
+  0 0 0.8rem red !important;
 
   /*! h2 */
   --h2_color: rgb(145, 247, 247);
@@ -278,6 +286,27 @@ background-color: var(--bg_white_backcolor);
 
 /* end# scrol--------------------------------------*/
 
+/** loading*/
+
+/* عندما يكون الزر في حالة التحميل */
+.loading_icon::after {
+  content: '\f110'; /* رمز دوران Font Awesome */
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  margin-inline-start: 0.8rem; /* المسافة بين الأيقونة والعنصر */
+  animation: spin 1s linear infinite;
+  color: var(--btn_color); /* لون الأيقونة - يمكنك تغييره إلى أي لون تريده */
+
+}
+
+/* الرسوم المتحركة لدوران الأيقونة */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/** end - loading ------------------------------------------------*/
+
 
 .back_icon {
   position: relative;
@@ -346,6 +375,19 @@ input[type="checkbox"]:hover {
   outline: 0;
   box-shadow: var(--box_shadow_border);
 }
+
+.hover_error:hover{
+  border: var(--input_error_border);
+  outline: 0;
+}
+
+.hover_error:focus {
+  border: var(--input_error_border);
+  outline: 0;
+  box-shadow: var(--box_shadow_border_hover);
+}
+
+
 
 /*todo Flex*/
 .row{
@@ -433,149 +475,153 @@ input[type="checkbox"]:hover {
 
 /** background*/
 .inherit{
-  background-color: inherit;
+  background-color: inherit !important;
 }
 
 /** width*/
 .w_full{
-width: 100%;
+width: 100% !important;
 }
 
 
 /** hight*/
 .h_full{
-  height: 100%;
+  height: 100% !important;
   }
 
   .h_fit{
-    height: fit-content;
+    height: fit-content !important;
     }
 /* !end - width */
 
 /** Margin*/
+.m_0{
+  margin: 0 !important;
+}
+
 .m_05{
-  margin: 0.5rem;
+  margin: 0.5rem !important;
 }
 .m_1{
-  margin: 1rem;
+  margin: 1rem !important;
 }
 .m_15{
-  margin: 1.5rem;
+  margin: 1.5rem !important;
 }
 .m_20{
-  margin: 2rem;
+  margin: 2rem !important;
 }
 .ms_05{
-  margin-inline-start: 0.5rem;
+  margin-inline-start: 0.5rem !important;
 }
 .ms_10{
-  margin-inline-start: 1rem;
+  margin-inline-start: 1rem !important;
 }
 .ms_15{
-  margin-inline-start: 1.5rem;
+  margin-inline-start: 1.5rem !important;
 }
 .ms_20{
-  margin-inline-start: 2rem;
+  margin-inline-start: 2rem !important;
 }
 .me_05{
-  margin-inline-end: 0.5rem;
+  margin-inline-end: 0.5rem !important;
 }
 .me_10{
-  margin-inline-end: 1rem;
+  margin-inline-end: 1rem !important;
 }
 .me_15{
-  margin-inline-end: 1.5rem;
+  margin-inline-end: 1.5rem !important;
 }
 .me_20{
-  margin-inline-end: 2rem;
+  margin-inline-end: 2rem !important;
 }
 .mt_05{
-  margin-block-start: 0.5rem;
+  margin-block-start: 0.5rem !important;
 }
 .mt_10{
-  margin-block-start: 1rem;
+  margin-block-start: 1rem !important;
 }
 .mt_15{
-  margin-block-start: 1.5rem;
+  margin-block-start: 1.5rem !important;
 }
 .mt_20{
-  margin-block-start: 2rem;
+  margin-block-start: 2rem !important;
 }
 .mb_05{
-  margin-block-end: 0.5rem;
+  margin-block-end: 0.5rem !important;
 }
 .mb_10{
-  margin-block-end: 1rem;
+  margin-block-end: 1rem !important;
 }
 .mb_15{
-  margin-block-end: 1.5rem;
+  margin-block-end: 1.5rem !important;
 }
 .mb_20{
-  margin-block-end: 2rem;
+  margin-block-end: 2rem !important;
 }
 
 /*! end margin*/
 
 /** padding*/
 .p_05{
-  padding: 0.5rem;
+  padding: 0.5rem !important;
 }
 .p_1{
-  padding: 1rem;
+  padding: 1rem !important;
 }
 .p_15{
-  padding: 1.5rem;
+  padding: 1.5rem !important;
 }
 .p_20{
-  padding: 2rem;
+  padding: 2rem !important;
 }
 .ps_05{
-  padding-inline-start: 0.5rem;
+  padding-inline-start: 0.5rem !important;
 }
 .ps_10{
-  padding-inline-start: 1rem;
+  padding-inline-start: 1rem !important;
 }
 .ps_15{
-  padding-inline-start: 1.5rem;
+  padding-inline-start: 1.5rem !important;
 }
 .ps_20{
-  padding-inline-start: 2rem;
+  padding-inline-start: 2rem !important;
 }
 .pe_05{
-  padding-inline-end: 0.5rem;
+  padding-inline-end: 0.5rem !important;
 }
 .pe_10{
-  padding-inline-end: 1rem;
+  padding-inline-end: 1rem !important;
 }
 .pe_15{
-  padding-inline-end: 1.5rem;
+  padding-inline-end: 1.5rem !important;
 }
 .pe_20{
-  padding-inline-end: 2rem;
+  padding-inline-end: 2rem !important;
 }
 .pt_05{
-  padding-block-start: 0.5rem;
+  padding-block-start: 0.5rem !important;
 }
 .pt_10{
-  padding-block-start: 1rem;
+  padding-block-start: 1rem !important;
 }
 .pt_15{
-  padding-block-start: 1.5rem;
+  padding-block-start: 1.5rem !important;
 }
 .pt_20{
-  padding-block-start: 2rem;
+  padding-block-start: 2rem !important;
 }
 .pb_05{
-  padding-block-end: 0.5rem;
+  padding-block-end: 0.5rem !important;
 }
 .pb_10{
-  padding-block-end: 1rem;
+  padding-block-end: 1rem !important;
 }
 .pb_15{
-  padding-block-end: 1.5rem;
+  padding-block-end: 1.5rem !important;
 }
 .pb_20{
-  padding-block-end: 2rem;
+  padding-block-end: 2rem !important;
 }
 
 /*! end margin*/
@@ -583,19 +629,29 @@ width: 100%;
 
 /* ? start - H */
 .h2 {
+  margin-block-end: 1.5rem;
+  line-height: 3.2rem;
+  border-block-end: var(--h2_border_bottom);
+}
+
+.h3 {
+  margin-block-end: 1.5rem;
+  line-height: 2.5rem;
+  /* border-block-end: var(--h2_border_bottom); */
+}
+
+.h2, .h3{
   position: relative;
   display: flex; flex-direction: row; justify-content: start; align-items: center;
-  border-block-end: var(--h2_border_bottom);
   background-color: var(--h2_background_color);
   padding-block-end: 1rem;
   /* padding-bottom */
   width: 100%;
-  margin-block-end: 1.5rem;
-  line-height: 3.2rem;
   color: var(--h2_color);
   box-shadow: var(--h2_box_shadow);
   transition: var(--transition);
 }
+
 
 /* ? end - H */
 
@@ -795,6 +851,12 @@ width: 100%;
   }
 }
 
+.input_error{
+  border: var(--input_error_border)  ;
+}
+
+
+
 
 
 
@@ -851,7 +913,7 @@ width: 100%;
 .btn_edit,
 .btn_cancel {
   position: relative;
-  display: flex; flex-direction: column;
+  display: flex; flex-direction: row;
   justify-content: center;
   align-items: center;
   color: var(--btn_color);
@@ -894,7 +956,7 @@ width: 100%;
   font-weight: bold;
   width: fit-content;
   margin-inline-start: 0.5rem;
-  margin-block-end: 1rem;
+  margin-block-end: 0.8rem;
   margin-block-start: 0.5rem;
   color: var(--Font_Color);
   transition: var(--transition);
@@ -1232,6 +1294,47 @@ cursor: pointer;
 
 /*! start sidebar============================ */
 
+/* تحديد المتغيرات بناءً على اتجاه الصفحة */
+:root {
+  /* افتراضياً يتم التحرك من اليسار إلى اليمين */
+  --sidebar-translate-in: translateX(-100%);
+  --sidebar-translate-out: translateX(0);
+}
+
+html[dir="rtl"] {
+  /* في حالة الاتجاه من اليمين إلى اليسار، يتم التحرك من اليمين إلى اليسار */
+  --sidebar-translate-in: translateX(100%);
+  --sidebar-translate-out: translateX(0);
+}
+
+
+/* الرسوم المتحركة */
+/* الرسوم المتحركة للشريط الجانبي */
+@keyframes sidebarFadeIn {
+  from {
+      opacity: 0;
+      /* استخدام المتغيرات المحددة */
+      transform: var(--sidebar-translate-in);
+  }
+  to {
+      opacity: 1;
+      transform: var(--sidebar-translate-out);
+  }
+}
+
+@keyframes sidebarFadeOut {
+  from {
+      opacity: 1;
+      transform: var(--sidebar-translate-out);
+  }
+  to {
+      opacity: 0;
+      /* استخدام المتغيرات المحددة */
+      transform: var(--sidebar-translate-in);
+  }
+}
+
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -1251,6 +1354,7 @@ cursor: pointer;
   }
 }
 
+/* تطبيق الرسوم المتحركة على الشريط الجانبي عند ظهوره واختفائه */
 .sidebar_Media_Show {
   position: absolute;
   display: flex;
@@ -1258,12 +1362,25 @@ cursor: pointer;
   height: calc(100vh - var(--header_element_height));
   width: 100%;
   inset-inline-start: 0;
-  overflow: auto; /* هذه الخاصية هي التي تمكن التمرير فقط */
+  overflow: auto;
   z-index: 10;
   transition: var(--transition);
-  min-height: auto; /*important to remove min-height in sidebar*/
+  min-height: auto; /* مهم لإزالة الحد الأدنى من الارتفاع في الشريط الجانبي */
+  
+  /* تطبيق الرسوم المتحركة */
+  animation-duration: 0.3s; /* يمكنك تغيير مدة الرسوم المتحركة حسب الحاجة */
+  animation-fill-mode: forwards; /* يحافظ على الحالة النهائية للرسوم المتحركة */
 }
 
+/* تطبيق الرسوم المتحركة عند ظهور الشريط الجانبي */
+.sidebar_Media_Show.show {
+  animation-name: sidebarFadeIn;
+}
+
+/* تطبيق الرسوم المتحركة عند اختفاء الشريط الجانبي */
+.sidebar_Media_Show.hide {
+  animation-name: sidebarFadeOut;
+}
 .no_scroll {
   overflow:hidden;
 }
@@ -1568,6 +1685,23 @@ font-size: 2rem;
   border: var(--border_normal);
 }
 
+.span{
+  position: relative;
+  display: flex;
+  /* text-align: center; */
+  align-items: center;
+  width: fit-content;
+  text-wrap: nowrap;
+  padding: 0.7rem;
+  background-color: var(--btn_search_backcolor);
+  color: var(--Font_Color);
+  border-radius: 0.3rem;
+  border: var(--border_normal);
+  border-inline-start: none;
+  height: var(--input_height);
+  transition: var(--transition);
+}
+
 .reference_checkbox {
   height: 3rem;
 }
@@ -1801,9 +1935,39 @@ font-size: 2rem;
 
 /* ----------------------------------------------- */
 
+.tree_2div_container{
+  display: flex; flex-direction: row; flex-wrap: wrap; flex-grow: 1;
+  gap: 2rem; /*  المسافه الداخلية بين العناصر */
+}
 
 
 
+.tree{
+  display: flex; flex-direction: column; justify-content: start; align-items: start; flex-grow: 1;
+  overflow-y: auto; /* بدون دا العرض فى الموبايل هيبوظ */
+}
+
+.tree_info{
+  display: flex; flex-direction: column; justify-content: start; align-items: start; flex-grow: 1;
+  overflow-y: auto; /* بدون دا العرض فى الموبايل هيبوظ */
+}
+
+
+.lbl_group_name{
+  position: relative;
+  display: inline-block;
+  word-wrap: none;
+  /* التفاف النص  */
+  display: block;
+  font-weight: bold;
+  width: fit-content;
+  margin-inline-start: 0.5rem;
+  /* margin-block-end: 0.8rem; */
+  /* margin-block-start: 0.5rem; */
+  color: var(--Font_Color);
+  transition: var(--transition);
+  
+}
 
 /* tables */
 
@@ -1992,7 +2156,33 @@ font-size: 2rem;
     } */
 }
 
+
+
+
 /*! alerts */
+
+/* التأثيرات الانتقالية */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(-50px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* إخفاء النافذة */
+@keyframes fadeOut {
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
+
 /* @@@@@@@@@ اوعى تحذف اى تعليق @@@@@@@ */
 .alert-container {
   position: fixed;
@@ -2022,23 +2212,28 @@ font-size: 2rem;
   padding: 2rem;
   border-radius: 0.2rem;
   position: relative;
-  transition: opacity 0.5s ease-in-out;
   opacity: 0;
-  transform: translateY(100%);
-  /* الانزياح الرأسي للتنبيهات بنسبة 100% من ارتفاعها */
   cursor: pointer;
   max-width: 100%;
-  /* الحد الأقصى لعرض التنبيهات */
   overflow-wrap: break-word;
-  /* تجاوز السطر في حال كان النص طويلاً */
   word-wrap: break-word;
   word-break: break-word;
   text-align: start;
-  /* محاذاة النص إلى اتجاه الصفحه */
-
   box-shadow: 0px 0px 2rem rgba(0, 0, 0, 0.5);
-  /* تأثير الضوء */
   transition: box-shadow 0.3s ease;
+  /* أزل تأثير transition الخاص بـ opacity والتحويل */
+}
+
+/* تطبيق الرسوم المتحركة عند الظهور */
+.alert.show {
+  animation: fadeIn 0.5s forwards;
+  /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
+}
+
+/* تطبيق الرسوم المتحركة عند الاختفاء */
+.alert.hide {
+  animation: fadeOut 0.5s forwards;
+  /* يمكنك تعديل مدة الرسوم المتحركة حسب الحاجة */
 }
 
 .alert:hover {
@@ -2092,3 +2287,91 @@ font-size: 2rem;
   transform: translateY(0);
   /* تحريك التنبيه إلى الأعلى عند الظهور */
 }
+
+
+/** Dialog*/
+    /* تغليف النافذة */
+    #dialogOverlay {
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+  }
+  
+  /* النافذة */
+  .dialog {
+      background-color: var(--bg_white_backcolor);
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.3s;
+      /* margin-block-start: 50%; */
+  }
+
+  .dialog_header{
+    position: relative;
+    display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: start;
+    margin-block-end: 1rem;
+  }
+
+/* 
+  .dialog_header h3 {
+    position: relative;
+    display: flex; flex-direction: row; justify-content: start; align-items: center;
+    border-block-end: var(--h2_border_bottom);
+    background-color: var(--h2_background_color);
+    padding-block-end: 1rem;
+    width: 100%;
+    color: var(--h2_color);
+    box-shadow: var(--h2_box_shadow);
+    transition: var(--transition);
+    margin-block-end: 1.5rem;
+    line-height: 2.5rem;
+  } */
+  
+  .dialog_body{
+    position: relative;
+    display: flex; flex-direction: column; justify-content: center; align-items: start;
+
+  }
+
+  .dialog_body p{
+    position: relative;
+    background-color: var(--h2_background_color);
+    width: 100%;
+    font-size: 1.7rem;
+    font-weight: bold;
+    color: var(--h2_color);
+    box-shadow: var(--h2_box_shadow);
+    transition: var(--transition);
+    line-height: 2.5rem;
+  }
+  
+  .dialog_footer{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    line-height: 3.2rem;
+    padding-block-start: 1.5rem;
+    width: 100%;
+    margin-block-start: 1rem;
+    margin-block-end: 1rem;
+    border-block-start: var(--h2_border_bottom);
+    gap: 1rem;
+  }
+  /* الأزرار
+  .dialog-footer button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+  } */
+  

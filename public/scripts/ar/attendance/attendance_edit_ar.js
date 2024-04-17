@@ -332,6 +332,12 @@ function measureDistanceToBottom() {
 //#region  edit function
 document.querySelector('#btn_edit').addEventListener('click', async function () {
     try {
+
+      if (inputErrors) {
+        showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
+        return;
+      }
+
       // event.preventDefault(); // if <a>
   
       // استعداد البيانات
@@ -364,9 +370,7 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
   
       // return;
       // تأكيد المستخدم
-      if (!confirm(`Please Confirm.. Do you want to update data ?`)) {
-        return;
-      }
+
   
       // تجهيز البيانات للإرسال إلى الخادم
       const posted_elements = {
@@ -379,7 +383,11 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
         note_inpute,
         today,
       };
-  
+      
+      await showDialog('','هل تريد تعديل البيانات ؟','');
+      if (!dialogAnswer){
+        return
+      }
       // إرسال البيانات إلى الخادم
       const response = await fetch('/attendance_edit', {
         method: 'POST',
@@ -391,11 +399,11 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
       // استلام الرد من الخادم
       const data = await response.json();
       if (data.success) {
+        closeDialog();
         showAlert('success', data.message);
-        setTimeout(() => {
-            window.location.href = '/attendance_ar';
-        }, 3000);
+        redirection('attendance_ar','warning','سيتم توجيهك الى صفحه المؤثرات الرئيسيه');
       } else {
+        closeDialog();
         showAlert('fail', data.message);
       };
     } catch (error) {
@@ -426,6 +434,12 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
   //#region  delete function
   document.querySelector('#btn_delete').addEventListener('click', async function () {
     try {
+
+      if (inputErrors) {
+        showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
+        return;
+      }
+      
         const permission = await btn_permission('attendance_permission','delete');
      
         if(!permission) {
@@ -433,15 +447,17 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
         };
      
               // تأكيد المستخدم
-      if (!confirm(`Please Confirm.. Do you want to delete data ?`)) {
-        return;
-      }
+
   
          // تحضير البيانات التى سيتم ارسالها للخادم
          const posted_elements = {
            attendance_id
          };
-       
+         
+         await showDialog('','هل تريد حذف البيانات ؟','');
+         if (!dialogAnswer){
+           return
+         }
              // إرسال البيانات إلى الخادم
              const response = await fetch('/attendance_delete', {
                method: 'POST',
@@ -453,11 +469,11 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
              // استلام الرد من الخادم
              const data = await response.json();
                if (data.success) {
+                closeDialog();
                  showAlert('success', data.message);
-                 setTimeout(() => {
-                    window.location.href = '/attendance_ar';
-                }, 3000);
+                 redirection('attendance_ar','warning','سيتم توجيهك الى صفحه المؤثرات الرئيسيه')
                } else {
+                closeDialog();
                  showAlert('fail', data.message);
                };
        } catch (error) {

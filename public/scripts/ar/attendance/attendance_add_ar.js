@@ -251,6 +251,11 @@ document.querySelector('#btn_save').addEventListener('click', async function () 
   try {
     // event.preventDefault(); // if <a>
 
+    if (inputErrors) {
+      showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
+      return;
+    }
+    
     // استعداد البيانات
     const date_input = document.querySelector('#date_input').value;
     const id_hidden_input = document.querySelector('#id_hidden_input').value;
@@ -279,9 +284,7 @@ document.querySelector('#btn_save').addEventListener('click', async function () 
 
     // return;
     // تأكيد المستخدم
-    if (!confirm(`Please Confirm.. Do you want to save data ?`)) {
-      return;
-    }
+
 
     // تجهيز البيانات للإرسال إلى الخادم
     const posted_elements = {
@@ -294,6 +297,10 @@ document.querySelector('#btn_save').addEventListener('click', async function () 
       today,
     };
 
+    await showDialog('','هل تريد حفظ البيانات ؟','');
+    if (!dialogAnswer){
+      return
+    }
     // إرسال البيانات إلى الخادم
     const response = await fetch('/attendance_add', {
       method: 'POST',
@@ -305,9 +312,11 @@ document.querySelector('#btn_save').addEventListener('click', async function () 
     // استلام الرد من الخادم
     const data = await response.json();
     if (data.success) {
+      closeDialog()
       showAlert('success', data.message);
       clear();
     } else {
+      closeDialog();
       showAlert('fail', data.message);
     };
   } catch (error) {

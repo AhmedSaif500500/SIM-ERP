@@ -57,6 +57,7 @@ if (!user_id) {
       document.querySelector('#table_permission_users').value = array1.users_permission;
       document.querySelector('#table_permission_employee').value = array1.employees_permission;
       document.querySelector('#table_permission_attendance').value = array1.attendance_permission;
+      document.querySelector('#table_permission_production').value = array1.production_permission;
     } catch (error) {
       catch_error('error in show_data', error.message);
     };
@@ -178,6 +179,7 @@ if (!user_id) {
       let table_permission_users = parseInt(document.querySelector("#table_permission_users").value); // 5aleha let msh const
       let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value);
       let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value);
+      let table_permission_production = parseInt(document.querySelector("#table_permission_production").value);
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
       const changePassword_div = document.querySelector('#changePassword_div');
 
@@ -217,6 +219,7 @@ if (!user_id) {
         table_permission_users = 0;
         table_permission_employee = 0;
         table_permission_attendance = 0;
+        table_permission_production = 0;
         // add here all tables select permission id
       };
 
@@ -232,6 +235,7 @@ if (!user_id) {
         table_permission_users,
         table_permission_employee,
         table_permission_attendance,
+        table_permission_production,
         today,
       };
 
@@ -263,17 +267,25 @@ if (!user_id) {
   document.querySelector("#btn_delete").addEventListener("click", async function () {
     try {
 
+      
+      if (inputErrors) {
+        showAlert('fail','رجاء اصلح  حقول الادخال التى تحتوى على اخطاء')
+        return;
+    }
+
       // event.preventDefault(); // if <a>
       // تأكيد المستخدم
-      if (!confirm(`هل تريد حذف المستخدم ؟ ?`)) {
-        return;
-      };
+
 
       // تجهيز البيانات للإرسال إلى الخادم
       const posted_elements = {
         user_id,
       };
 
+      await showDialog('','هل تريد حذف المستخدم ؟','');
+      if (!dialogAnswer){
+        return
+      }
       // إرسال البيانات إلى الخادم
       const response = await fetch("/delete_User_from_user_edit_ar", {
         method: "POST",
@@ -285,8 +297,10 @@ if (!user_id) {
       // استلام الرد من الخادم
       const data = await response.json();
       if (data.success) {
+        closeDialog();
         redirection('users_ar','success',data.message);
       } else {
+        closeDialog();
         showAlert("fail", data.message);
       };
 

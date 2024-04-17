@@ -1,6 +1,11 @@
 //#region  save function
 document.querySelector("#btn_save").addEventListener("click", async function () {
     try {
+
+      if (inputErrors) {
+        showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
+        return;
+      }
       // event.preventDefault(); // if <a>
 
       // استعداد البيانات
@@ -11,6 +16,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
       let table_permission_users = parseInt(document.querySelector("#table_permission_users").value); // 5aleha let msh const
       let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value); // 5aleha let msh const
       let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value); // 5aleha let msh const
+      let table_permission_production = parseInt(document.querySelector("#table_permission_production").value); // 5aleha let msh const
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
 
       // التحقق من صحة البيانات هنا
@@ -25,20 +31,20 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         return;
       };
 
-      // تأكيد المستخدم
-      if (!confirm(`Please Confirm.. Do you want to save data ?`)) {
-        return;
-      };
        
       // ضبط قيم الصلاحيات
       if (general_permission_select !== 1 || general_permission_select === 0) {
         table_permission_users = 0;
         table_permission_employee = 0;
         table_permission_attendance = 0;
+        table_permission_production = 0;
         // add here all tables select permission id
       };
 
-
+      await showDialog('','هل تريد حفظ البيانات ؟','');
+      if (!dialogAnswer){
+        return
+      }
       // تجهيز البيانات للإرسال إلى الخادم
       const posted_elements = {
         user_name_input,
@@ -47,6 +53,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         table_permission_users,
         table_permission_employee,
         table_permission_attendance,
+        table_permission_production,
         today,
       };
 
@@ -61,9 +68,11 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         // استلام الرد من الخادم
         const data = await response.json();
           if (data.success) {
+            closeDialog();
             showAlert("success", data.message);
             clear();
           } else {
+            closeDialog();
             showAlert("fail", data.message);
           };
     } catch (error) {

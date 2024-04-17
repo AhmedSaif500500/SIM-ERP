@@ -1,6 +1,12 @@
     //#region  save function
     document.querySelector('#btn_save').addEventListener('click',async function () {
         try {
+
+          if (inputErrors) {
+            showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
+            return;
+          }
+
           // event.preventDefault(); // if <a>
       
           // استعداد البيانات
@@ -22,9 +28,10 @@
           };
       
           // تأكيد المستخدم
-          if (!confirm(`Please Confirm.. Do you want to save data ?`)) {
-            return;
-          }
+    await showDialog('','هل تريد حفظ البيانات ؟','');
+    if (!dialogAnswer){
+      return
+    }
       
           // تجهيز البيانات للإرسال إلى الخادم
           const posted_elements = {
@@ -50,9 +57,11 @@
           // استلام الرد من الخادم
           const data = await response.json();
             if (data.success) {
+              closeDialog();
               showAlert('success', data.message);
               clear();
             } else {
+              closeDialog();
               showAlert('fail', data.message);
             };
         } catch (error) {

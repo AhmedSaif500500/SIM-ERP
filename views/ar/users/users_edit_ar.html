@@ -228,13 +228,31 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
 
-              <!-- الحضور والانصراف -->
+              <!--  المؤثرات -->
               <tr>
                 <td style="width: auto;">3</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">المؤثرات</td>
                 <td style="width: auto;">
                   <select class="permission_table_select" id="table_permission_attendance"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+               <!--  production -->
+              <tr>
+                <td style="width: auto;">3</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الانتاج</td>
+                <td style="width: auto;">
+                  <select class="permission_table_select" id="table_permission_production"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
