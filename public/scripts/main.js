@@ -563,9 +563,11 @@ function showRedirectionReason() {
 async function logout(){
     try {
 
-      if (!confirm(`هل تريد الخروج من التطبيق؟`)) {
-        return;
-      };
+    await showDialog('','هل تريد الخروج من التطبيق ؟ ؟','');
+    if (!dialogAnswer){
+      return
+    }
+
 
       hide_User_options(); // hide user_option div
 
@@ -579,11 +581,13 @@ async function logout(){
       const data = await response.json();
   
       if (data.success) {
+        closeDialog();
         redirection('login','info','تم تسجيل الخروج بنجاح : سيتم تجويلك الى الصفحه الرئيسيه')
       } else {
         showAlert('fail',data.message);
       }
     } catch (error) {
+      closeDialog();
       catch_error('logout Error',error.message);
     }
 };
