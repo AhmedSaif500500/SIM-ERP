@@ -17,6 +17,22 @@ const dropdown_select_input = document.querySelector('#dropdown_select_input');
 const select_month = document.querySelector('#select_month');
 const select_year = document.querySelector('#select_year');
 
+
+// اختيار الشهر الحالى والسنه الحالية 
+const date = new Date();
+const currentMonth = date.getMonth() + 1; // يضيف 1 لأن يناير هو 0 |
+const currentYear = date.getFullYear();
+
+changeSelect('select_month',currentMonth);
+changeSelect('select_year',currentYear);
+
+console.log("الشهر الحالي هو:", currentMonth);
+console.log("العام الحالي هو:", currentYear);
+
+
+
+
+
 // for start_custom_search_btn
 let current_month;
 let current_year;
@@ -301,7 +317,7 @@ document.getElementById("tfooter6").textContent = total_values;
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-            <td> <button class="tabble_edite_btn" onclick="tabble_edite_btn_fn(this)">تحرير</button> </td>
+            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
             <td style="display: none;">${row.id}</td>
             <td style="display: none;">${row.employee_id}</td>
             <td style="display: none;">${row.employee_name}</td>
@@ -503,18 +519,18 @@ changeSelect('select_year',current_year);
 }
 
 
-async function tabble_edite_btn_fn(editeButton) {
-    const permission = await btn_permission('attendance_permission','edit');
+async function tabble_update_btn_fn(updateButton) {
+    const permission = await btn_permission('attendance_permission','update');
 
     if (!permission){ // if false
         return;
     };
 
         // عثر على الموظف باستخدام معرف الموظف
-        const selectedrow = editeButton.closest("tr").cells[1].textContent;
+        const selectedrow = updateButton.closest("tr").cells[1].textContent;
         if (selectedrow) {
             sessionStorage.setItem('attendance_id', selectedrow);
-            window.location.href = '/attendance_edit_ar';
+            window.location.href = '/attendance_update_ar';
         } else {
             return;
         };

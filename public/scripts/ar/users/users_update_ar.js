@@ -27,7 +27,7 @@ if (!user_id) {
       };
 
       // إرسال البيانات إلى الخادم وانتظار استجابة الخادم
-      const response = await fetch('/editUser', {
+      const response = await fetch('/updateUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -162,12 +162,14 @@ if (!user_id) {
 
 
 
-  //#region edite function
+  //#region update function
 
 
 
-  document.querySelector("#btn_edit").addEventListener("click", async function () {
+  document.querySelector("#btn_update").addEventListener("click", async function () {
     try {
+      const controller = new AbortController();
+      const signal = controller.signal;
 
       // event.preventDefault(); // if <a>
 
@@ -203,9 +205,10 @@ if (!user_id) {
       };
 
       // تأكيد المستخدم
-      if (!confirm(`Please Confirm.. Do you want to save data ?`)) {
-        return;
-      };
+await showDialog('','هل تريد تعديل بيانات المستخدم','');
+if(!dialogAnswer){
+  return
+}
 
       // التحقق اذا المستخدم يريد ادخال  كلمة مرور جديده ام لا 
       let newPassword_Condition = false;
@@ -239,24 +242,41 @@ if (!user_id) {
         today,
       };
 
+                // تعيين حد زمني للطلب
+                const timeout = setTimeout(() => {
+                  controller.abort(); // إلغاء الطلب
+              }, ResponseTimeBySecends_Time_secends*1000); // 10 ثواني
+              
       // إرسال البيانات إلى الخادم
-      const response = await fetch("/edit_User_from_user_edit_ar", {
+      const response = await fetch("/update_User_from_user_update_ar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(posted_elements),
+        signal, // تمرير الإشارة لإلغاء الطلب
       })
+
+                // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+                clearTimeout(timeout);
+
+    if (response.ok) {
       // استلام الرد من الخادم
       const data = await response.json();
       if (data.success) {
+        closeDialog()
         redirection('users_ar','success',data.message);
       } else {
+        closeDialog()
         showAlert("fail", data.message);
       };
-
+    } else {
+      closeDialog();
+      showAlert('fail', `Request failed with status code: ${response.status}`); 
+    }
     } catch (error) {
-      console.error("Error updating employee:", error.message);
+      closeDialog();
+      catch_error(error);
       // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
     }
   });
@@ -265,50 +285,18 @@ if (!user_id) {
 
 
   document.querySelector("#btn_delete").addEventListener("click", async function () {
-    try {
 
-      
-      if (inputErrors) {
-        showAlert('fail','رجاء اصلح  حقول الادخال التى تحتوى على اخطاء')
-        return;
-    }
+    await fetchDelete1(
+      {user_id},
+      'users_permission',
+      'هل تريد حذف البيانات ؟',
+      10,
+      '/delete_User_from_user_update_ar',
+      true,
+      'users_ar'
+    )
 
-      // event.preventDefault(); // if <a>
-      // تأكيد المستخدم
-
-
-      // تجهيز البيانات للإرسال إلى الخادم
-      const posted_elements = {
-        user_id,
-      };
-
-      await showDialog('','هل تريد حذف المستخدم ؟','');
-      if (!dialogAnswer){
-        return
-      }
-      // إرسال البيانات إلى الخادم
-      const response = await fetch("/delete_User_from_user_edit_ar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(posted_elements),
-      })
-      // استلام الرد من الخادم
-      const data = await response.json();
-      if (data.success) {
-        closeDialog();
-        redirection('users_ar','success',data.message);
-      } else {
-        closeDialog();
-        showAlert("fail", data.message);
-      };
-
-    } catch (error) {
-      console.error("Error deleting employee:", error.message);
-      // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
-    }
-  });
+});
 
 
 

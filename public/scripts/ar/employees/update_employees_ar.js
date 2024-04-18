@@ -33,7 +33,7 @@ async function get_employee_data_fn() {
             };
      
             // إرسال البيانات إلى الخادم
-            const response = await fetch('/editEmployee', {
+            const response = await fetch('/updateEmployee', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -120,7 +120,7 @@ async function update_employee_data() {
     }
 
     // إرسال البيانات إلى الخادم
-    const response = await fetch('/edit_employee', {
+    const response = await fetch('/update_employee', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -139,7 +139,7 @@ async function update_employee_data() {
         showAlert('fail', data.message);
       };
   } catch (error) {
-    console.error('Error editing employee:', error.message);
+    console.error('Error updating employee:', error.message);
     // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
   }
 };
@@ -222,12 +222,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-    document.querySelector('#btn_edit').addEventListener('click', function () {
-      update_employee_data();
+    document.querySelector('#btn_update').addEventListener('click',async function () {
+
+          // تحضير البيانات
+    const employee_name_input = document.querySelector('#employee_name_input').value.trim();
+    const employee_job_input = document.querySelector('#employee_job_input').value.trim();
+    const employee_beta2a_input = document.querySelector('#employee_beta2a_input').value.trim();
+    const employee_adress_input = document.querySelector('#employee_adress_input').value.trim();
+    const employee_phone_input = document.querySelector('#employee_phone_input').value.trim();
+    const employee_emergency_phone_input = document.querySelector('#employee_emergency_phone_input').value.trim();
+    const employee_start_date_input = document.querySelector('#employee_start_date_input').value.trim();
+    const employee_leave_date_input = document.querySelector('#employee_leave_date_input').value.trim();
+    const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+
+
+      await fetchUpdate1(
+        {employee_name_input,
+          employee_job_input,
+          employee_beta2a_input,
+          employee_adress_input,
+          employee_phone_input,
+          employee_emergency_phone_input,
+          employee_start_date_input,
+          employee_leave_date_input,
+          today,
+          employee_id},
+          'employees_permission',
+          'هل تريد تعديل بيانات الموظف ؟',
+          10,
+          '/update_employee',
+          true,
+          'employees_ar'
+      )
     });
 
-    document.querySelector('#btn_delete').addEventListener('click', function () {
-      delete_employee_fn();
+    document.querySelector('#btn_delete').addEventListener('click', async function () {
+      
+     await fetchDelete1(
+        {employee_id,},
+        'employees_permission',
+        'هل تريد حذف بيانات الموظف',
+        10,
+        '/delete_employee',
+        true,
+        'employees_ar'
+      )
     });    
     
 

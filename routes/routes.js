@@ -63,10 +63,10 @@ router.get('/users_add_ar', (req, res) => {
 
 
 
-router.get('/users_edit_ar', (req, res) => {
+router.get('/users_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.general_permission === 6) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_edit_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_update_ar.html'));
         }else{
             res.redirect('/users_ar?reason=2');
         };
@@ -124,10 +124,10 @@ router.get('/new_employee_ar', (req, res) => {
 });
 
 
-router.get('/edit_employee_ar', (req, res) => {
+router.get('/update_employee_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.general_permission > 3 ||  req.session.employees_permission > 2) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'employees' ,'edit_employee_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'employees' ,'update_employee_ar.html'));
         }else{
             res.redirect('/employees_ar?reason=2');
         };
@@ -164,10 +164,10 @@ router.get('/attendance_add_ar', (req, res) => {
 });
 
 
-router.get('/attendance_edit_ar', (req, res) => {
+router.get('/attendance_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.general_permission > 3 ||  req.session.attendance_permission > 2) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'attendance' ,'attendance_edit_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'attendance' ,'attendance_update_ar.html'));
         }else{
             res.redirect('/attendance_ar?reason=2');
         };
@@ -206,10 +206,10 @@ router.get('/production_add_ar', (req, res) => {
 });
 
 
-router.get('/production_edit_ar', (req, res) => {
+router.get('/production_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.general_permission > 3 ||  req.session.production_permission > 2) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'production' ,'production_edit_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'production' ,'production_update_ar.html'));
         }else{
             res.redirect('/production_view_ar?reason=2');
         };

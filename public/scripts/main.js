@@ -1,4 +1,9 @@
 
+//#region Main Global Variables
+ let body_content = document.querySelector('#body_content');
+//#region 
+
+
 //#region fixed information
 const user_name_session = sessionStorage.getItem('username');
 const header_user_name = document.querySelector('#header_user_name');
@@ -15,7 +20,7 @@ user_setting_btn.addEventListener('click',function(){
     hide_User_options();
     const id = sessionStorage.getItem('current_id');
     sessionStorage.setItem("user_id", id);
-    window.location.href = "/users_edit_ar";
+    window.location.href = "/users_update_ar";
   } catch (error) {
     catch_error('user_setting_btn EROR',error.message)
   }
@@ -228,13 +233,17 @@ function closeDialog() {
 
 //#region error handling
 //todo el fekra hena enak hatzher el message beta3 el error fakt eza kont fat7 el bernameg 3ala el windwos beta3k local ama ezaraf3to 3ala  host msh hayzhar
-function catch_error(message, erroType) {
+function catch_error(error) {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    console.error(message, erroType);
+      // في بيئة التطوير المحلية، يعرض معلومات الخطأ في وحدة التحكم
+      console.error('Error details:', error);
   } else {
-    showAlert('fail', 'An error occurred. Please try again later.');
-  };
-};
+      // في بيئة الإنتاج، يعرض رسالة عامة للمستخدمين
+      showAlert('fail', 'An error occurred. Please try again later.');
+  }
+}
+
+
 //#endregion END - error handling
 
 //#region dark Mode
@@ -519,7 +528,7 @@ function forward() {
 //#region redirection and reason
 async function redirection(page, messageType, messageText) {
   showAlert(messageType, messageText);
-  document.querySelector('#body_content').style.pointerEvents = 'none';
+  body_content.style.pointerEvents = 'none';
   
   // تأخير تنفيذ الكود بمدة 3 ثواني
   await new Promise(resolve => setTimeout(resolve, 3000));
@@ -563,9 +572,11 @@ function showRedirectionReason() {
 async function logout(){
     try {
 
-      if (!confirm(`هل تريد الخروج من التطبيق؟`)) {
-        return;
-      };
+    await showDialog('','هل تريد الخروج من التطبيق ؟','');
+    if (!dialogAnswer){
+      return
+    }
+
 
       hide_User_options(); // hide user_option div
 
@@ -579,11 +590,13 @@ async function logout(){
       const data = await response.json();
   
       if (data.success) {
+        closeDialog();
         redirection('login','info','تم تسجيل الخروج بنجاح : سيتم تجويلك الى الصفحه الرئيسيه')
       } else {
         showAlert('fail',data.message);
       }
     } catch (error) {
+      closeDialog();
       catch_error('logout Error',error.message);
     }
 };
@@ -695,6 +708,18 @@ function showLoadingIcon(element) {
   element.title = 'رجاء الانتظار قليلا...' // اضافه تلميح
 }
 
+//* how to use 
+/*
+de ay code hat7to keda 
+const login_div = document.querySelector('#login_div');   << da el zorar ely enta 3ayz yzhar feh el icon
+
+hategy maslan apl el fetch tro7 fe el fn 3amel keda
+showLoadingIcon(loginBtn);
+
+nfs el amr fe el hideen loading
+*/
+
+
 function hideLoadingIcon(element) {
   element.classList.remove('loading_icon');
   element.disabled = false; // تشغيل العنصر
@@ -703,3 +728,154 @@ function hideLoadingIcon(element) {
 
 
 //#endregion end- loading
+
+//#region fetching...
+
+
+
+  //#region Update fetching...
+  async function fetchUpdate1(posted_elements_AS_OBJECT,permission_name_string,dialogMessage_string,ResponseTimeBySecends_Time_secends,FetchURL_string,redirctionStatues_boolean,redirectionPage_string,){
+    const controller = new AbortController();
+      const signal = controller.signal;
+      
+      try {
+          if (inputErrors) {
+              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+              return;
+          }
+          
+          const permission = await btn_permission(permission_name_string,'update');
+       
+          if(!permission) {
+           return;
+          };
+  
+          // // تجهيز البيانات للإرسال إلى الخادم
+          // const posted_elements = {
+          //     user_id,
+          // };
+          
+          await showDialog('', dialogMessage_string, '');
+          if (!dialogAnswer) {
+              return;
+          }
+          
+          // تعيين حد زمني للطلب
+          const timeout = setTimeout(() => {
+              controller.abort(); // إلغاء الطلب
+          }, ResponseTimeBySecends_Time_secends*1000); // 10 ثواني
+          
+          // إرسال الطلب إلى الخادم
+          const response = await fetch(FetchURL_string, {
+              method: 'post',
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify(posted_elements_AS_OBJECT),
+              signal, // تمرير الإشارة لإلغاء الطلب
+          });
+          
+          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+          clearTimeout(timeout);
+          
+          if (response.ok) {
+              const data = await response.json();
+              closeDialog();
+              if (data.success) {
+                if (redirctionStatues_boolean) {
+                  body_content.style.pointerEvents = 'none'; // disable body_content
+                  redirection(redirectionPage_string, 'success', data.message);
+                }
+              } else {
+                body_content.style.pointerEvents = 'auto'; // disable body_content
+                  showAlert('fail', data.message);
+              }
+          } else {
+              closeDialog();
+              showAlert('fail', `Request failed with status code: ${response.status}`);
+          }
+      } catch (error) {
+          closeDialog();
+          catch_error(error);
+          showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه تحديث البيانات .');
+      }
+  
+  }
+  //#endregion END - update - fetching
+
+  //#region delete fetching
+  async function fetchDelete1(posted_elements_AS_OBJECT,permission_name,dialogMessage,ResponseTimeBySecends,FetchURL,redirction_Boolean_Statues,redirectionPage,){
+    const controller = new AbortController();
+      const signal = controller.signal;
+      
+      try {
+          if (inputErrors) {
+              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+              return;
+          }
+          
+          const permission = await btn_permission(permission_name,'delete');
+       
+          if(!permission) {
+           return;
+          };
+  
+          // // تجهيز البيانات للإرسال إلى الخادم
+          // const posted_elements = {
+          //     user_id,
+          // };
+          
+          await showDialog('', dialogMessage, '');
+          if (!dialogAnswer) {
+              return;
+          }
+          
+          // تعيين حد زمني للطلب
+          const timeout = setTimeout(() => {
+              controller.abort(); // إلغاء الطلب
+          }, ResponseTimeBySecends*1000); // 10 ثواني
+          
+          // إرسال الطلب إلى الخادم
+          const response = await fetch(FetchURL, {
+              method: 'post',
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify(posted_elements_AS_OBJECT),
+              signal, // تمرير الإشارة لإلغاء الطلب
+          });
+          
+          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+          clearTimeout(timeout);
+          
+          if (response.ok) {
+              const data = await response.json();
+              closeDialog();
+              if (data.success) {
+                if (redirction_Boolean_Statues) {
+                  body_content.style.pointerEvents = 'none';
+                  redirection(redirectionPage, 'success', data.message);
+                }
+              } else {
+                body_content.style.pointerEvents = 'auto';
+                  showAlert('fail', data.message);
+              }
+          } else {
+              closeDialog();
+              showAlert('fail', `Request failed with status code: ${response.status}`);
+          }
+      } catch (error) {
+          closeDialog();
+          showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه حذف البيانات .');
+          catch_error(error);
+          // console.error("Error deleting employee:", error.message);
+          
+      }
+  
+  }
+  //#endregion End - delete fetching
+
+
+
+
+//#endregion END- fetching

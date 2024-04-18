@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>تعديل جرد</title>
+  <title>Document</title>
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
@@ -18,6 +18,7 @@
     <button id="scrollToTopBtn">&#9650;</button>
 
      <!-- start ------------------------------------------------------------------------------------------>
+
      <div class="header">
       <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
         <i class="fa-solid fa-bars"></i>
@@ -75,11 +76,11 @@
           المؤثرات
         </a>
 
-        <a href="production_view_ar" target="_self" class="sidebar-active">
-            <i class="fa-solid fa-industry"></i>
-            الانتاج
-          </a>
-
+        <a href="production_view_ar" target="_self" class="">
+          <i class="fa-solid fa-industry"></i>
+          الانتاج
+        </a>
+        
         <a href="attendance_report_ar" target="_self" class="">
           <i class="fa-regular fa-rectangle-list"></i>
           <p>تقارير</p>
@@ -97,41 +98,77 @@
         </a>
       </div>
 
-
     <div id="white_backcolor" class="white_backcolor">
       <!-- content -->
       <div id="content_space">
         <h2 class="h2">
           <i class="fa-solid fa-arrow-right back_icon" onclick="back()"></i>
           <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
-          الانتاج والجرد / تعديل
+          الموظفين / تعديل موظف
         </h2>
         <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-        <input type="hidden" id="hidden_id_input">
-        <label for="date1" class="lbl_sm">التاريخ</label>
-        <!-- date -->
-        <div class="input_with_icon_div">
-          <input type="search" id="date1" class="hover input_date datepicker"
-            placeholder="التاريخ..." readonly autocomplete="off">
-          <i class="fa-regular fa-calendar"></i>
-        </div>
 
-          <label for="production_amount_input" class="lbl_sm">الانتاج</label>
-          <input type="search" id="production_amount_input" class="input_text_sm hover" autocomplete="off" oninput="check_parse(this,'number')">
-          
 
-          <label for="sales_amount_input" class="lbl_sm">اجمالى المنصرف</label>
-          <input type="search" id="sales_amount_input" class="input_text_sm hover" oninput="check_parse(this,'number')">
 
-          <label for="note1_input" class="lbl_sm">البيان</label>
-          <input type="search" id="note1_input" class="input_text_xl hover" autocomplete="off">
+
+          <label for="employee_name_input" class="lbl_sm">اسم الموظف</label>
+          <input type="search" id="employee_name_input" class="input_text_md hover" autocomplete="off">
+         
+
+
+          <label for="employee_job_input" class="lbl_sm">الوظيفة</label>
+          <input type="search" id="employee_job_input" class="input_text_md hover">
+
+          <label for="employee_beta2a_input" class="lbl_sm">رقم البطاقة</label>
+          <input type="search" id="employee_beta2a_input" class="input_text_md hover">
+
+          <label for="employee_adress_input" class="lbl_sm">العنوان</label>
+          <input type="search" id="employee_adress_input" class="input_text_xl hover">
+
+          <label for="employee_phone_input" class="lbl_sm">رقم هاتف شخصى</label>
+          <input type="tel" id="employee_phone_input" class="input_text_md hover">
+
+          <label for="employee_emergency_phone_input" class="lbl_sm">رقم طوارىء</label>
+          <input type="tel" id="employee_emergency_phone_input" class="input_text_md hover">
+
+          <label for="employee_start_date_input" class="lbl_sm">تاريخ التعيين</label>
+          <!-- date -->
+          <div class="input_with_icon_div">
+            <input type="search" id="employee_start_date_input" class="hover input_date datepicker"
+              placeholder="التاريخ..." readonly>
+            <i class="fa-regular fa-calendar left_icon"></i>
+          </div>
+
+          <label for="employee_leave_date_input" class="lbl_sm">تاريخ ترك العمل</label>
+          <!-- date -->
+          <div class="input_with_icon_div">
+            <input type="search" id="employee_leave_date_input" class="hover input_date datepicker"
+              placeholder="التاريخ..." readonly>
+            <i class="fa-regular fa-calendar left_icon"></i>
+          </div>
+
 
 
           <div class="btn_container_top_border">
-            <button class="btn_save" id="btn_edit">تعديل</button>
+            <button class="btn_update" id="btn_update">تعديل</button>
             <button class="btn_cancel" id="btn_delete">حذف</button>
+            <!-- <a href="employee_delete_ar" class="btn_delete" onclick="checkPermissions(event)">تجرب الحذف</a> -->
           </div>
+
+
+        <!-- search in table -->
+        <!-- <div id="search-div" style="display: flex;">
+                    <div class="search_div">
+                        <input type="text" name="searchInput" id="searchInput" placeholder="search" class="hover">
+                        <div class="clearArrow" id="clearArrow1" title="clear search">✗</div>
+                        <i class="fa-solid fa-magnifying-glass left_icon"></i>
+                    </div>
+                    <button id="searchBtn" name="searchBtn" class="searchBtn">search</button>
+                </div> -->
+
+        <!-- table container filled by js -->
+        <!-- <div id="table-container"></div> -->
 
       </div>
     </div>
@@ -143,8 +180,12 @@
   <!-- scripts------------------------------------------------------------------------------ -->
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/production/production_edit_ar.js"></script>
+  <script src="/public/scripts/ar/employees/update_employees_ar.js"></script>
 
+
+<script>
+
+</script>
 
 </body>
 

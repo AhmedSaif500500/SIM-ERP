@@ -32,7 +32,7 @@ async function get_attendance_data_fn() {
             };
             
             // إرسال البيانات إلى الخادم
-            const response = await fetch('/editattendance', {
+            const response = await fetch('/updateattendance', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -321,164 +321,57 @@ function measureDistanceToBottom() {
   window.addEventListener('scroll', measureDistanceToBottom);
   window.addEventListener('resize', measureDistanceToBottom);
 
-  // استدعاء الدالة لقياس المسافة لأول مرة
-  // measureDistanceToBottom();
-  //#endregion end ------
-
 }
 //#endregion fill dropdown     
 
 
-//#region  edit function
-document.querySelector('#btn_edit').addEventListener('click', async function () {
-    try {
+//#region  update function
+document.querySelector('#btn_update').addEventListener('click', async function () {
 
-      if (inputErrors) {
-        showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
-        return;
-      }
+        // استعداد البيانات
+        const date_input = document.querySelector('#date_input').value;
+        const id_hidden_input = document.querySelector('#id_hidden_input').value;
+        const dropdown_select_input = document.querySelector('#dropdown_select_input').value;
+        const days_input = document.querySelector('#days_input').value.trim();
+        const hours_inpu = document.querySelector('#hours_inpu').value.trim();
+        const values_input = document.querySelector('#values_input').value.trim();
+        const note_inpute = document.querySelector('#note_inpute').value.trim();
+        // const btn_save = document.querySelector('#btn_save');
+        const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 
-      // event.preventDefault(); // if <a>
-  
-      // استعداد البيانات
-      const date_input = document.querySelector('#date_input').value;
-      const id_hidden_input = document.querySelector('#id_hidden_input').value;
-      const dropdown_select_input = document.querySelector('#dropdown_select_input').value;
-      const days_input = document.querySelector('#days_input').value.trim();
-      const hours_inpu = document.querySelector('#hours_inpu').value.trim();
-      const values_input = document.querySelector('#values_input').value.trim();
-      const note_inpute = document.querySelector('#note_inpute').value.trim();
-      // const btn_save = document.querySelector('#btn_save');
-      const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-      // البيانات الأخرى...
-        
+  await fetchDelete1(
+    {  attendance_id,
+      id_hidden_input,
+      date_input,
+      days_input,
+      hours_inpu,
+      values_input,
+      note_inpute,
+      today,},
+      'attendance_permission',
+      'هل تريد تحديث بيانات المؤثر',
+      10,
+      '/attendance_update',
+      true,
+      'attendance_ar'
+  );
 
- 
-      // التحقق من صحة البيانات هنا
-  
-      if (!id_hidden_input) {
-        showAlert('fail', 'من فضلك اختر احد الموظفين من القائمه')
-        return; // يجب إعادة التنفيذ بمجرد إظهار الخطأ أو إتخاذ إجراء آخر
-      };
-  
-      if (days_input === "0" && hours_inpu === "0" && values_input === "0") {
-        showAlert('fail', 'ادخل قيمه واحده على الاقل من القيم الثلاثه')
-        return; // يجب إعادة التنفيذ بمجرد إظهار الخطأ أو إتخاذ إجراء آخر
-      };
-  
-  
-  
-      // return;
-      // تأكيد المستخدم
-
-  
-      // تجهيز البيانات للإرسال إلى الخادم
-      const posted_elements = {
-        attendance_id,
-        id_hidden_input,
-        date_input,
-        days_input,
-        hours_inpu,
-        values_input,
-        note_inpute,
-        today,
-      };
-      
-      await showDialog('','هل تريد تعديل البيانات ؟','');
-      if (!dialogAnswer){
-        return
-      }
-      // إرسال البيانات إلى الخادم
-      const response = await fetch('/attendance_edit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(posted_elements)
-      });
-      // استلام الرد من الخادم
-      const data = await response.json();
-      if (data.success) {
-        closeDialog();
-        showAlert('success', data.message);
-        redirection('attendance_ar','warning','سيتم توجيهك الى صفحه المؤثرات الرئيسيه');
-      } else {
-        closeDialog();
-        showAlert('fail', data.message);
-      };
-    } catch (error) {
-      console.error('Error adding new record:', error.message);
-      // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
-    }
   });
   
-  
-//   function clear() {
-//     const fieldsToClear = [
-//       '#id_hidden_input',
-//       '#dropdown_select_input',
-//       '#days_input',
-//       '#hours_inpu',
-//       '#values_input',
-//       '#note_inpute',
-//     ];
-//     fieldsToClear.forEach(field => {
-//       document.querySelector(field).value = null;
-//     });
-//     document.querySelector('#date_input').value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-  
-//   };
-  //#endregion End save Function
-
 
   //#region  delete function
   document.querySelector('#btn_delete').addEventListener('click', async function () {
-    try {
 
-      if (inputErrors) {
-        showAlert("fail", "رجاء اصلح  حقول الادخال التى تحتوى على اخطاء");
-        return;
-      }
-      
-        const permission = await btn_permission('attendance_permission','delete');
-     
-        if(!permission) {
-         return;
-        };
-     
-              // تأكيد المستخدم
+    await fetchDelete1(
+      {attendance_id},
+      'attendance_permission',
+      'هل تريد حذف المؤثر ؟',
+      10,
+      '/attendance_delete',
+      true,
+      'attendance_ar'
+    );
 
-  
-         // تحضير البيانات التى سيتم ارسالها للخادم
-         const posted_elements = {
-           attendance_id
-         };
-         
-         await showDialog('','هل تريد حذف البيانات ؟','');
-         if (!dialogAnswer){
-           return
-         }
-             // إرسال البيانات إلى الخادم
-             const response = await fetch('/attendance_delete', {
-               method: 'POST',
-               headers: {
-                 'Content-Type': 'application/json'
-               },
-               body: JSON.stringify(posted_elements)
-             });
-             // استلام الرد من الخادم
-             const data = await response.json();
-               if (data.success) {
-                closeDialog();
-                 showAlert('success', data.message);
-                 redirection('attendance_ar','warning','سيتم توجيهك الى صفحه المؤثرات الرئيسيه')
-               } else {
-                closeDialog();
-                 showAlert('fail', data.message);
-               };
-       } catch (error) {
-         console.error('Error Deleting employee',error.message)
-       }
 });   
   //#endregion end - delete function
  
@@ -487,15 +380,6 @@ document.querySelector('#btn_edit').addEventListener('click', async function () 
 
 
 //#endregion End- Functions
-
-
-
-
-
-
-
-
-
 
     
     document.addEventListener('DOMContentLoaded', async function () {

@@ -18,7 +18,7 @@ async function openPage(dirPageName, perm_name, perm_type) {
           showAlert('fail', 'عفوًا لا تملك صلاحية الإضافة');
         }
         break;
-      case 'edit':
+      case 'update':
         if (X1 > 3 || X2 > 2) {
           window.location.href = dirPageName;
         } else {
@@ -76,7 +76,7 @@ async function openPage(dirPageName, perm_name, perm_type) {
             }, 4000);
           }
           break;
-        case 'edit':
+        case 'update':
           if (X1 > 3 || X2 > 2) {
            
           } else {
@@ -120,7 +120,7 @@ async function openPage(dirPageName, perm_name, perm_type) {
           return false;
         }
         break;
-      case 'edit':
+      case 'update':
         if (X1 > 3 || X2 > 2) {
           return true;
         } else {

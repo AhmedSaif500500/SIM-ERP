@@ -26,7 +26,7 @@
 
   --btn_new_backcolor: #2196f3;
   --btn_save_backcolor: #04aa6d;
-  --btn_edit_backcolor: #ff5722;
+  --btn_update_backcolor: #ff5722;
   --btn_cancel_backcolor: #f44336;
   --btn_color: rgb(255, 255, 255);
 
@@ -114,7 +114,7 @@
 
   --btn_new_backcolor: #2196f3;
   --btn_save_backcolor: #04aa6d;
-  --btn_edit_backcolor: #ff5722;
+  --btn_update_backcolor: #ff5722;
   --btn_cancel_backcolor: #f44336;
   --btn_color: rgb(255, 255, 255);
 
@@ -900,8 +900,8 @@ width: 100% !important;
   background-color: var(--btn_new_backcolor);
 }
 
-.btn_edit {
-  background-color: var(--btn_edit_backcolor);
+.btn_update {
+  background-color: var(--btn_update_backcolor);
 }
 
 .btn_cancel {
@@ -910,7 +910,7 @@ width: 100% !important;
 
 .btn_save,
 .btn_new,
-.btn_edit,
+.btn_update,
 .btn_cancel {
   position: relative;
   display: flex; flex-direction: row;
@@ -930,7 +930,7 @@ width: 100% !important;
 
 .btn_save:hover,
 .btn_new:hover,
-.btn_edit:hover,
+.btn_update:hover,
 .btn_cancel:hover,
 .btn_search:hover {
   opacity: var(--btn_hover_opacity);
@@ -938,7 +938,7 @@ width: 100% !important;
 
 .btn_save:active,
 .btn_new:active,
-.btn_edit:active,
+.btn_update:active,
 .btn_cancel:active,
 .btn_search:active {
   transform: scale(1.1); /* زيادة حجم العنصر بنسبة 10% */
@@ -2050,15 +2050,15 @@ font-size: 2rem;
   height: 3.5rem;
 }
 
-.tabble_edite_btn {
+.tabble_update_btn {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   padding: 0.2rem;
-  background-color: var(--btn_edit_backcolor);
+  background-color: var(--btn_update_backcolor);
   color: var(--btn_color);
-  border: 0.1rem solid var(--btn_edit_backcolor);
+  border: 0.1rem solid var(--btn_update_backcolor);
   border-radius: 0.3rem;
   cursor: pointer;
   transition: var(--transition);
@@ -2079,7 +2079,7 @@ font-size: 2rem;
 }
 
 
-.tabble_edite_btn:hover, .tabble_view_btn:hover {
+.tabble_update_btn:hover, .tabble_view_btn:hover {
   opacity: var(--btn_hover_opacity);
   /* لون خلفية الزر عند التحويل إليه */
 }
@@ -2351,7 +2351,7 @@ font-size: 2rem;
   
   .dialog_body{
     position: relative;
-    display: flex; flex-direction: column; justify-content: center; align-items: start;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
 
   }
 
@@ -2370,6 +2370,8 @@ font-size: 2rem;
   .dialog_footer{
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
     line-height: 3.2rem;
     padding-block-start: 1.5rem;

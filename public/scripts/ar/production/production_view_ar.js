@@ -65,7 +65,7 @@ async function fillAttendancetable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_edite_btn" onclick="tabble_edite_btn_fn(this)">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;">${row.datex}</td>
                             <td style="width: 100%">${row.note}</td>
@@ -225,8 +225,8 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function tabble_edite_btn_fn(editBtn) {
-  const row  = editBtn.closest("tr")
+async function tabble_update_btn_fn(updateBtn) {
+  const row  = updateBtn.closest("tr")
 
   const production_data = {
      id_value : row.cells[1].textContent,
@@ -236,8 +236,8 @@ async function tabble_edite_btn_fn(editBtn) {
      sales_value : row.cells[5].textContent,
   }
 
-  sessionStorage.setItem('production_edite_data',JSON.stringify(production_data))
-  window.location.href = 'production_edit_ar';
+  sessionStorage.setItem('production_update_data',JSON.stringify(production_data))
+  window.location.href = 'production_update_ar';
 };
 
 

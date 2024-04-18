@@ -61,7 +61,7 @@ async function fillAttendancetable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(employee => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_edite_btn" onclick="tabble_edite_btn_fn(${employee.id})">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(${employee.id})">تحرير</button> </td>
                             <td style="display: none">${employee.id}</td>
                             <td style="width: 100%;">${employee.name}</td>
                           </tr>`;
@@ -151,8 +151,8 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function tabble_edite_btn_fn(employeeId) {
-    // const permission = await btn_permission('employees_permission','edit');
+async function tabble_update_btn_fn(employeeId) {
+    // const permission = await btn_permission('employees_permission','update');
 
     // if (!permission){ // if false
     //     return;
@@ -161,7 +161,7 @@ async function tabble_edite_btn_fn(employeeId) {
     const selectedEmployee = data.find(X => X.id === employeeId);
     if (selectedEmployee){
         sessionStorage.setItem('employee_id',selectedEmployee.id);
-        window.location.href = '/edit_employee_ar';
+        window.location.href = '/update_employee_ar';
     }else{
         return;
     };

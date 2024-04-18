@@ -376,7 +376,7 @@ async function permissions(req, secendary_permission, perm_type) {
         });
         return false;
       }
-    case 'edit':
+    case 'update':
       if (X1 > 3 || X2 > 2) {
         return true;
       } else {
@@ -595,8 +595,8 @@ app.post("/addNewuser", async (req, res) => {
 });
 
 
-// edit user
-app.post("/editUser", async (req, res) => {
+// update user
+app.post("/updateUser", async (req, res) => {
   try {
     const posted_elements = req.body;
     //! Permission
@@ -662,12 +662,12 @@ app.post("/editUser", async (req, res) => {
 });
 
 
-app.post("/edit_User_from_user_edit_ar", async (req, res) => {
+app.post("/update_User_from_user_update_ar", async (req, res) => {
   try {
     const posted_elements = await req.body;
 
     //! Permission
-    await permissions(req, 'Users_permission', 'edit');
+    await permissions(req, 'Users_permission', 'update');
     if (!permissions) { return; };
 
     let general_permission =parseInt(req.session.general_permission);
@@ -785,7 +785,7 @@ app.post("/edit_User_from_user_edit_ar", async (req, res) => {
 });
 
 // Delete_user
-app.post("/delete_User_from_user_edit_ar", async (req, res) => {
+app.post("/delete_User_from_user_update_ar", async (req, res) => {
   try {
     const posted_elements = req.body;
     
@@ -923,8 +923,8 @@ app.post("/addNewEmployee", async (req, res) => {
   }
 });
 
-// edit Employee
-app.post("/editEmployee", async (req, res) => {
+// update Employee
+app.post("/updateEmployee", async (req, res) => {
   try {
 
     //! Permission
@@ -978,11 +978,11 @@ app.post("/editEmployee", async (req, res) => {
   }
 });
 
-// edit_Employee
-app.post("/edit_employee", async (req, res) => {
+// update_Employee
+app.post("/update_employee", async (req, res) => {
   try {
     //! Permission
-    await permissions(req, 'employees_permission', 'edit');
+    await permissions(req, 'employees_permission', 'update');
     if (!permissions) { return; };
 
     
@@ -1255,7 +1255,7 @@ app.get("/get_All_attendance_Data", async (req, res) => {
     //     LEFT JOIN  employees E on A.employee_id = E.id
     //     ORDER BY A.datex DESC`);
 
-        let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.note, A.datex, A.last_update
+        let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
         FROM Attendance A
         LEFT JOIN  employees E on A.employee_id = E.id
         ORDER BY A.datex DESC`;
@@ -1265,6 +1265,9 @@ app.get("/get_All_attendance_Data", async (req, res) => {
       id: row.id,
       employee_id: row.employee_id,
       employee_name: row.employee_name,
+      days : row.days,
+      hours : row.hours,
+      values : row.values,
       note: row.note,
       datex: row.datex,
     }));
@@ -1279,8 +1282,8 @@ app.get("/get_All_attendance_Data", async (req, res) => {
 });
 
 
-// edit attendance
-app.post("/editattendance", async (req, res) => {
+// update attendance
+app.post("/updateattendance", async (req, res) => {
   try {
     const posted_elements = req.body;
 
@@ -1335,7 +1338,7 @@ app.post("/editattendance", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error editattendance:", error.message);
+    console.error("Error updateattendance:", error.message);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء تحميل البيانات",
@@ -1345,13 +1348,13 @@ app.post("/editattendance", async (req, res) => {
 
 
 // 4:- Update Attendance data
-// edit_Employee
-app.post("/attendance_edit", async (req, res) => {
+// update_Employee
+app.post("/attendance_update", async (req, res) => {
   try {
 
         const posted_elements = req.body;
     //! Permission
-    await permissions(req, 'attendance_permission', 'edit');
+    await permissions(req, 'attendance_permission', 'update');
     if (!permissions) { return; };
 
                     //! sql injection check
@@ -1564,11 +1567,11 @@ ORDER BY
 });
 
 
-// Edit production
-app.post("/production_edit_ar", async (req, res) => {
+// update production
+app.post("/production_update_ar", async (req, res) => {
   try {
     //! Permission
-    await permissions(req, 'production_permission', 'edit');
+    await permissions(req, 'production_permission', 'update');
     if (!permissions) { return; };
 
     
@@ -1613,7 +1616,7 @@ app.post("/production_edit_ar", async (req, res) => {
       });
   
   } catch (error) {
-    console.error("Error production_edit_ar", error);
+    console.error("Error production_update_ar", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء تعديل البيانات",

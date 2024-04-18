@@ -62,6 +62,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <th style="display: none;">employee_id</th>
                                 <th>التاريخ</th>
                                 <th>الموظف</th>
+                                <th>يوم</th>
+                                <th>ساعة</th>
+                                <th>قيمة</th>
                                 <th>البيان</th>
                             </tr>
                             </thead>
@@ -71,11 +74,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_edite_btn" onclick="tabble_edite_btn_fn(${row.id})">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(${row.id})">تحرير</button> </td>
                             <td style="display: none;">${row.id}</td>
                             <td style="display: none;">${row.employee_id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
                             <td style="width: auto; white-space: nowrap;">${row.employee_name}</td>
+                            <td style="width: auto; white-space: nowrap;">${row.days}</td>
+                            <td style="width: auto; white-space: nowrap;">${row.hours}</td>
+                            <td style="width: auto; white-space: nowrap;">${row.values}</td>
                             <td style="width: 100%; white-space: wrap;">${row.note}</td>
                           </tr>`;
         });
@@ -89,10 +95,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td id="tfooter4"></td>
                 <td id="tfooter5"></td>
                 <td id="tfooter6"></td>
+                <td id="tfooter7"></td>
+                <td id="tfooter8"></td>
+                <td id="tfooter9"></td>
             </tr>
 
             <tr id="table_fotter_buttons_row">
-                <td colspan="6">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                <td colspan="9">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                     <div class='flex_H'>
                         <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                         <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -129,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let tableBody = document.getElementById("employees_table").getElementsByTagName("tbody")[0];
     document.getElementById("tfooter1").textContent = tableBody.rows.length; // عدد الصفوف
     // البدء بعملية جمع الأعمدة
-      /*
+    
     for (let i = 0; i < tableBody.rows.length; i++) {
         let row = tableBody.rows[i];
         
@@ -178,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
             values_cell.innerHTML = ""
         };
     }
-    */
+   
     
     //#endregion End - loops table for totals and colores
 
@@ -197,7 +206,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const nameMatch = row.employee_name && row.employee_name.toString().toLowerCase().includes(searchValue);
             const dateMatch = row.datex && row.datex.toString().toLowerCase().includes(searchValue);
             const noteMatch = row.note && row.note.toString().toLowerCase().includes(searchValue);
-            return dateMatch || nameMatch || noteMatch ;
+            const daysMatch = row.days && row.days.toString().toLowerCase().includes(searchValue);
+            const hoursMatch = row.note && row.note.toString().toLowerCase().includes(searchValue);
+            const valuesMatch = row.note && row.note.toString().toLowerCase().includes(searchValue);
+            return dateMatch || nameMatch || noteMatch || daysMatch || hoursMatch || valuesMatch;
         });
 
         slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
@@ -233,8 +245,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    async function tabble_edite_btn_fn(attendanceId) {
-        // const permission = await btn_permission('employees_permission','edit');
+    async function tabble_update_btn_fn(attendanceId) {
+        // const permission = await btn_permission('employees_permission','update');
 
         // if (!permission){ // if false
         //     return;
@@ -243,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedAttendance = data.find(X => X.id === attendanceId);
         if (selectedAttendance) {
             sessionStorage.setItem('attendance_id', selectedAttendance.id);
-            window.location.href = '/attendance_edit_ar';
+            window.location.href = '/attendance_update_ar';
         } else {
             return;
         };
