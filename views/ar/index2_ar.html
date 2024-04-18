@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .number-input-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px;
+        }
+
+        .number-input {
+            width: 50px;
+            font-size: 16px;
+            padding: 5px;
+            text-align: center;
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .control-button {
+            cursor: pointer;
+            font-size: 20px;
+            margin: 2px;
+            transition: background-color 0.3s;
+        }
+
+        .control-button.up {
+            background-color: lightblue;
+            color: white;
+        }
+
+        .control-button.down {
+            background-color: lightcoral;
+            color: white;
+        }
+    </style>
+    <title>Custom Number Input</title>
+</head>
+<body>
+    <div class="number-input-container">
+        <div class="control-buttons">
+            <div class="control-button up" onclick="increaseValue()">▲</div>
+            <div class="control-button down" onclick="decreaseValue()">▼</div>
+        </div>
+        <input type="text" id="numberInput" class="number-input" value="0" />
+    </div>
+
+    <script>
+        function increaseValue() {
+            var input = document.getElementById("numberInput");
+            var value = parseFloat(input.value) + 1;
+            input.value = value;
+            updateColors();
+        }
+
+        function decreaseValue() {
+            var input = document.getElementById("numberInput");
+            var value = parseFloat(input.value) - 1;
+            input.value = value;
+            updateColors();
+        }
+
+        function updateColors() {
+            var input = document.getElementById("numberInput");
+            var upButton = document.querySelector(".control-button.up");
+            var downButton = document.querySelector(".control-button.down");
+            var value = parseFloat(input.value);
+
+            if (value > 0) {
+                upButton.style.backgroundColor = 'lightblue';
+                upButton.style.color = 'white';
+                downButton.style.backgroundColor = 'white';
+                downButton.style.color = 'black';
+                input.style.backgroundColor = 'white';
+                input.style.color = 'black';
+            } else if (value < 0) {
+                downButton.style.backgroundColor = 'lightcoral';
+                downButton.style.color = 'white';
+                upButton.style.backgroundColor = 'white';
+                upButton.style.color = 'black';
+                input.style.backgroundColor = 'red';
+                input.style.color = 'white';
+            } else {
+                upButton.style.backgroundColor = 'lightblue';
+                upButton.style.color = 'white';
+                downButton.style.backgroundColor = 'lightcoral';
+                downButton.style.color = 'white';
+                input.style.backgroundColor = 'white';
+                input.style.color = 'black';
+            }
+        }
+    </script>
+</body>
+</html>
