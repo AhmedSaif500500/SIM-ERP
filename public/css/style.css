@@ -1356,7 +1356,7 @@ html[dir="rtl"] {
 
 /* تطبيق الرسوم المتحركة على الشريط الجانبي عند ظهوره واختفائه */
 .sidebar_Media_Show {
-  position: absolute;
+  position: fixed;
   display: flex;
   flex-direction: column;
   height: calc(100vh - var(--header_element_height));
