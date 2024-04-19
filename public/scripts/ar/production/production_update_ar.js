@@ -49,7 +49,7 @@ const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm
       
 
       async function delete_production() {
-
+const id = parseInt(document.querySelector(`#hidden_id_input`).value);
         await fetchDelete1(
           {id},
           'production_permission',
