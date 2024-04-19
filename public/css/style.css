@@ -1982,13 +1982,7 @@ font-size: 2rem;
   margin: 0 auto;
   overflow: auto;
 }
-/* 
-الكود دا  وظيفته انه بيخلى الهيدر ثابت لما تعمل سكرول لكن بيتعارض مع الاوفرفلو الى فى التابل كونتينير  لو شلتها هتشتغل مش عارف ايه المشكله
-.review_table thead{
-  position: sticky;
-  inset-block-start: 5.9rem; /* da nafs hight beta3 el header 3ashan  yb2a el thead ta7t el header lama ykon sticky */
-}
- */
+
 .review_table th {
   align-items: center;
   text-align: start;
