@@ -245,7 +245,7 @@ if(!dialogAnswer){
                 // تعيين حد زمني للطلب
                 const timeout = setTimeout(() => {
                   controller.abort(); // إلغاء الطلب
-              }, ResponseTimeBySecends_Time_secends*1000); // 10 ثواني
+              },10000); // 10 ثواني
               
       // إرسال البيانات إلى الخادم
       const response = await fetch("/update_User_from_user_update_ar", {
