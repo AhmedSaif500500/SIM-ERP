@@ -1360,13 +1360,13 @@ html[dir="rtl"] {
   display: flex;
   flex-direction: column;
   height: calc(100vh - var(--header_element_height));
-  width: 100%;
+  width: 50%;
   inset-inline-start: 0;
   overflow: auto;
   z-index: 10;
   transition: var(--transition);
   min-height: auto; /* مهم لإزالة الحد الأدنى من الارتفاع في الشريط الجانبي */
-  
+  border: var(--border_normal);
   /* تطبيق الرسوم المتحركة */
   animation-duration: 0.3s; /* يمكنك تغيير مدة الرسوم المتحركة حسب الحاجة */
   animation-fill-mode: forwards; /* يحافظ على الحالة النهائية للرسوم المتحركة */
@@ -1395,7 +1395,7 @@ html[dir="rtl"] {
   justify-content: center;
   margin-block-end: 1rem;
   width: 3rem;
-  inset-inline-start: 92%;
+  inset-inline-start: 83%;
   transition: var(--transition);
 }
 
