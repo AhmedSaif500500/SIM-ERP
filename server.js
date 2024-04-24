@@ -115,7 +115,7 @@ app.use(
     httpOnly: true, // يمنع الوصول إلى ملف تعريف الارتباط من جافا سكريبت
     secure: true, // يجب أن يكون true إذا كنت تعمل على HTTPS
     sameSite: 'lax', // أو 'strict' لضمان إرسال ملف تعريف الارتباط فقط عبر الطلبات من نفس الأصل
-    cookie: { maxAge: 1000 * 60 * 5 }, // مدة صلاحية الجلسة (10 دقائق)
+    cookie: { maxAge: 1000 * 60 * 1440 }, // مدة صلاحية الجلسة (10 دقائق)
   })
 );
 
@@ -163,7 +163,7 @@ async function check_last_activity_fn() {
   const now = new Date();
 
   // احسب وقت الحد الفاصل (5 دقائق)
-  const sessionTime = new Date(now.getTime() - 1000 * 60 * 5);
+  const sessionTime = new Date(now.getTime() - 1000 * 60 * 1440);
 
   try {
     // قم بتنفيذ استعلام SQL باستخدام `db.none`
