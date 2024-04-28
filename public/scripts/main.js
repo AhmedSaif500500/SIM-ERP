@@ -399,51 +399,66 @@ function total_column(totalVariable, rowData) {
   //#endregion END - total column
 
   //#region dragable ( rows > drag and drop )
-  function makeTableRowsDraggable(tableId) {
-    const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-    let draggedRow = null;
-  
-    table.addEventListener('mousedown', function(event) {
-      if (event.target.classList.contains('drag-handle')) {
-        draggedRow = event.target.closest('tr');
-        draggedRow.style.cursor = 'grabbing';
-        const mouseY = event.clientY;
-        const initialTop = draggedRow.getBoundingClientRect().top;
+function makeTableRowsDraggable(tableId) {
+  const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+  let draggedRow = null;
+  let initialY = null;
+
+  const startDragHandler = function(event) {
+    if (event.target.classList.contains('drag-handle')) {
+      draggedRow = event.target.closest('tr');
+      draggedRow.style.cursor = 'grabbing';
+      initialY = event.clientY || event.touches[0].clientY;
+    }
+  };
+
+  const dragMoveHandler = function(event) {
+    if (draggedRow) {
+      const currentY = event.clientY || event.touches[0].clientY;
+      const deltaY = currentY - initialY;
+      draggedRow.style.transform = `translateY(${deltaY}px)`;
+    }
+  };
+
+  const endDragHandler = function(event) {
+    if (draggedRow) {
+      draggedRow.style.cursor = 'grab';
+      draggedRow.style.transform = '';
+      const targetRow = document.elementFromPoint(
+        event.clientX || event.changedTouches[0].clientX,
+        event.clientY || event.changedTouches[0].clientY
+      ).closest('tr');
+      
+      if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
+        const rows = Array.from(table.children);
+        const indexDragged = rows.indexOf(draggedRow);
+        const indexTarget = rows.indexOf(targetRow);
         
-        const mouseMoveHandler = function(event) {
-          const deltaY = event.clientY - mouseY;
-          draggedRow.style.transform = `translateY(${deltaY}px)`;
-        };
-  
-        const mouseUpHandler = function(event) {
-          document.removeEventListener('mousemove', mouseMoveHandler);
-          document.removeEventListener('mouseup', mouseUpHandler);
-          draggedRow.style.cursor = 'grab';
-          draggedRow.style.transform = '';
-          const targetRow = document.elementFromPoint(event.clientX, event.clientY).closest('tr');
-          if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
-            const rows = Array.from(table.children);
-            const indexDragged = rows.indexOf(draggedRow);
-            const indexTarget = rows.indexOf(targetRow);
-            if (indexTarget > indexDragged) {
-              table.insertBefore(draggedRow, targetRow.nextSibling);
-            } else {
-              table.insertBefore(draggedRow, targetRow);
-            }
-          }
-          draggedRow = null;
-        };
-        
-  
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
+        if (indexTarget > indexDragged) {
+          table.insertBefore(draggedRow, targetRow.nextSibling);
+        } else {
+          table.insertBefore(draggedRow, targetRow);
+        }
       }
-    });
-  
-    table.addEventListener('dragstart', function(event) {
-      event.preventDefault();
-    });
-  }
+      draggedRow = null;
+      initialY = null;
+    }
+  };
+
+  table.addEventListener('mousedown', startDragHandler);
+  table.addEventListener('touchstart', startDragHandler);
+
+  document.addEventListener('mousemove', dragMoveHandler);
+  document.addEventListener('touchmove', dragMoveHandler);
+
+  document.addEventListener('mouseup', endDragHandler);
+  document.addEventListener('touchend', endDragHandler);
+
+  table.addEventListener('dragstart', function(event) {
+    event.preventDefault();
+  });
+}
+
   
 
 
