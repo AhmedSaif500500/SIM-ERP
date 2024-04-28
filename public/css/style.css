@@ -2156,7 +2156,7 @@ margin: 0.5rem;
 .input_table td div input{
 position: relative;
 height: var(--input_height);
-width :12rem;
+width :10rem;
 background-color: var(--input_text_background_color);
 color: var(--Font_Color);
 padding: 0 .5rem;
