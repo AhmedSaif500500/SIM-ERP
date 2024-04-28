@@ -342,15 +342,15 @@ a {
 }
 
 .ta7ded1 {
-  border: red solid 0.1rem;
+  border: red solid 0.1rem !important;
 }
 
 .ta7ded2 {
-  border: blue solid 0.1rem;
+  border: blue solid 0.1rem !important;
 }
 
 .ta7ded3 {
-  border: green solid 0.1rem;
+  border: green solid 0.1rem !important;
 }
 
 /* General And library*/
@@ -377,14 +377,14 @@ input[type="checkbox"]:hover {
 }
 
 .hover_error:hover{
-  border: var(--input_error_border);
-  outline: 0;
+  border: var(--input_error_border) !important;
+  outline: 0 !important;
 }
 
 .hover_error:focus {
-  border: var(--input_error_border);
-  outline: 0;
-  box-shadow: var(--box_shadow_border_hover);
+  border: var(--input_error_border) !important;
+  outline: 0 !important;
+  box-shadow: var(--box_shadow_border_hover) !important;
 }
 
 
@@ -852,12 +852,8 @@ width: 100% !important;
 }
 
 .input_error{
-  border: var(--input_error_border)  ;
+  border: var(--input_error_border)!important;
 }
-
-
-
-
 
 
 /* ! End - input-text*/
@@ -981,7 +977,7 @@ width: 100% !important;
   text-wrap: nowrap;
 }
 
-.permission_select {
+.permission_select{
   width: 25rem;
   height: var(--input_height);
   color: var(--Font_Color);
@@ -1356,17 +1352,17 @@ html[dir="rtl"] {
 
 /* تطبيق الرسوم المتحركة على الشريط الجانبي عند ظهوره واختفائه */
 .sidebar_Media_Show {
-  position: absolute;
+  position: fixed;
   display: flex;
   flex-direction: column;
   height: calc(100vh - var(--header_element_height));
-  width: 100%;
+  width: 70%;
   inset-inline-start: 0;
   overflow: auto;
   z-index: 10;
   transition: var(--transition);
   min-height: auto; /* مهم لإزالة الحد الأدنى من الارتفاع في الشريط الجانبي */
-  
+  border: var(--border_normal);
   /* تطبيق الرسوم المتحركة */
   animation-duration: 0.3s; /* يمكنك تغيير مدة الرسوم المتحركة حسب الحاجة */
   animation-fill-mode: forwards; /* يحافظ على الحالة النهائية للرسوم المتحركة */
@@ -1395,7 +1391,7 @@ html[dir="rtl"] {
   justify-content: center;
   margin-block-end: 1rem;
   width: 3rem;
-  inset-inline-start: 92%;
+  inset-inline-start: 88%;
   transition: var(--transition);
 }
 
@@ -1972,11 +1968,9 @@ font-size: 2rem;
 /* tables */
 
 /* table containesr */
-.table-container{
-  position: relative;
-  display: flex; flex-direction: row; flex-wrap: nowrap;  flex-grow: 1;
+.table_container{
+  display: flex; flex-direction: column;
   overflow: auto;
-
 }
 .review_table {
   border-collapse: collapse;
@@ -1984,11 +1978,6 @@ font-size: 2rem;
   width: 100%;
   margin: 0 auto;
   overflow: auto;
-}
-
-.review_table thead{
-  position: sticky;
-  inset-block-start: 5.9rem; /* da nafs hight beta3 el header 3ashan  yb2a el thead ta7t el header lama ykon sticky */
 }
 
 .review_table th {
@@ -2112,6 +2101,129 @@ font-size: 2rem;
 .table_footer_btn:hover {
   opacity: var(--btn_hover_opacity);
 }
+/****************************************************************/
+/** input table */
+
+.input_table {
+  /* border-collapse: collapse; */
+  border: none;
+  /* border-radius: 0.3rem; */
+  width: 100%;
+  margin: 0 auto;
+  overflow: auto;
+  
+}
+
+.input_table th {
+  align-items: center;
+  text-align: start;
+  background-color: var(--table_header_background_color);
+  color: var(--table_header_color);
+  height: 2.5rem;
+  text-align: justify;
+  transition: var(--transition);
+}
+
+
+/*___________________________________*/
+
+.input_table tr{
+  height: var(--input_height);
+}
+
+.input_table tr td{
+margin: 0.5rem;
+}
+.input_table td div{
+  display: flex; flex-direction: row; height: 100%; justify-content: start; align-items: center;
+
+}
+
+
+.input_table td div span{
+  display: flex; flex-direction: column; justify-content: center;
+  background-color: var(--btn_search_backcolor);
+  color: var(--btn_search_color);
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-inline-end: none;
+  padding: 0.5rem 0.5rem;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+
+.input_table td div input{
+position: relative;
+height: var(--input_height);
+width :12rem;
+background-color: var(--input_text_background_color);
+color: var(--Font_Color);
+padding: 0 .5rem;
+height: var(--input_height);
+border: var(--border_normal);
+border-radius: 0.3rem;
+transition: var(--transition);
+
+}
+
+.dragbutton_table{
+  display: flex; flex-direction: row; justify-content: center; align-items: center;
+  width: fit-content;
+  padding-inline-end: .5rem;
+}
+.dragbutton_table button{
+  cursor: pointer;
+}
+.table_buttons_div{
+  display: flex; flex-direction: row; justify-content: start; align-items: center;
+  height: 100%;
+  gap: 1rem;
+  padding-inline-start: 1rem;
+}
+
+.table_buttons_div button{
+  cursor: pointer;
+  background-color: inherit;
+  opacity: 0.8;
+}
+
+.table_buttons_div button:hover,
+.dragbutton_table button:hover{
+  opacity: 0.6;
+}
+.table_buttons_div button:focus,
+.dragbutton_table button:focus{
+  transform: scale(1.1); /* زيادة حجم العنصر بنسبة 10% */
+}
+
+.table_textarea{
+  color: var(--Font_Color);
+  /* height: 2.5rem; */
+  height: 100%;
+  width: 100%;
+  border: var(--border_normal);
+  padding: 0.5rem;
+  /* resize: none; إخفاء زرار التحكم في حجم الـ textarea */
+  transition: var(--transition);
+  align-items: center;
+  border: var(--border_normal);
+  transition: var(--transition);
+  color: var(--Font_Color);
+  background-color: var(--input_text_background_color);
+}
+
+/*________________________________*/
+
+
+
+
+
+
+
+
+
+
 
 /*! END / table-----------------------------------------------*/
 

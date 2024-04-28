@@ -1,76 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    /* تنسيق العناصر في الـ navbar */
-.navbar {
-  overflow: hidden;
-  background-color: #333;
-}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draggable Handle Button for Table Rows</title>
+<style>
+  /* قم بتخصيص النمط حسب الحاجة */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
 
-.header_user_div {
-  float: right;
-  overflow: hidden;
-}
+  th, td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
 
-#header_user_name {
-  padding: 14px 16px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  background-color: inherit;
-  color: white;
-}
+  th {
+    background-color: #f2f2f2;
+  }
 
-/* تنسيق قائمة السقوط */
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  float: none;
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  text-align: right;
-}
-
-.dropdown-content a:hover {
-  background-color: #ddd;
-}
-
-.header_user_div:hover .dropdown-content {
-  display: block;
-}
-
-/* تنسيق صورة زر الخروج */
-.logout-icon {
-  width: 20px;
-  height: 20px;
-  margin-left: 10px;
-}
-
-  </style>
+  .drag-handle {
+    cursor: grab;
+  }
+</style>
 </head>
 <body>
-  <div class="navbar">
-    <div class="header_user_div">
-      <button id="header_user_name">اسم المستخدم</button>
-      <div class="dropdown-content">
-        <a href="#">الاعدادات</a>
-        <a href="#">الخروج <img src="logout_icon.png" alt="logout" class="logout-icon"></a>
-      </div>
-    </div>
-  </div>
-  
+
+<table id="myTable">
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+      <th>Header 3</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Row 1 Data 1</td>
+      <td>Row 1 Data 2</td>
+      <td>Row 1 Data 3</td>
+      <td><button class="drag-handle">Drag</button></td>
+    </tr>
+    <tr>
+      <td>Row 2 Data 1</td>
+      <td>Row 2 Data 2</td>
+      <td>Row 2 Data 3</td>
+      <td><button class="drag-handle">Drag</button></td>
+    </tr>
+    <!-- الصفوف الأخرى هنا -->
+  </tbody>
+</table>
+
+<script>
+  function makeTableRowsDraggable(tableId) {
+    const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+    let draggedRow = null;
+
+    table.addEventListener('mousedown', function(event) {
+      if (event.target.classList.contains('drag-handle')) {
+        draggedRow = event.target.closest('tr');
+        draggedRow.style.cursor = 'grabbing';
+        const mouseY = event.clientY;
+        const initialTop = draggedRow.getBoundingClientRect().top;
+        
+        const mouseMoveHandler = function(event) {
+          const deltaY = event.clientY - mouseY;
+          draggedRow.style.transform = `translateY(${deltaY}px)`;
+        };
+
+        const mouseUpHandler = function(event) {
+          document.removeEventListener('mousemove', mouseMoveHandler);
+          document.removeEventListener('mouseup', mouseUpHandler);
+          draggedRow.style.cursor = 'grab';
+          draggedRow.style.transform = '';
+          const targetRow = document.elementFromPoint(event.clientX, event.clientY).closest('tr');
+          if (targetRow !== draggedRow) {
+            const rows = Array.from(table.children);
+            const indexDragged = rows.indexOf(draggedRow);
+            const indexTarget = rows.indexOf(targetRow);
+            if (indexTarget > indexDragged) {
+              table.insertBefore(draggedRow, targetRow.nextSibling);
+            } else {
+              table.insertBefore(draggedRow, targetRow);
+            }
+          }
+          draggedRow = null;
+        };
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+      }
+    });
+
+    table.addEventListener('dragstart', function(event) {
+      event.preventDefault();
+    });
+  }
+
+  // استدعاء الدالة وتمرير اسم الجدول كمعلمة
+  makeTableRowsDraggable('myTable');
+</script>
+
 </body>
 </html>

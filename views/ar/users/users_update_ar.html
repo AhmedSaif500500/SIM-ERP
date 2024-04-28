@@ -75,6 +75,16 @@
           المؤثرات
         </a>
 
+        <a href="production_view_ar" target="_self" class="">
+          <i class="fa-solid fa-industry"></i>
+          الانتاج
+        </a>
+
+        <a href="bread_view_ar" target="_self" class="">
+          <i class="fa-solid fa-bread-slice"></i>
+          العيش
+        </a>
+        
         <a href="attendance_report_ar" target="_self" class="">
           <i class="fa-regular fa-rectangle-list"></i>
           <p>تقارير</p>
@@ -96,7 +106,9 @@
         <!-- content -->
         <div id="content_space">
           <h2 class="h2">
-            <i class="fa-solid fa-arrow-right back_icon" onclick="back()"></i>
+            <a href="users_ar">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
             <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
             المستخدمين / مستخدم جديد
           </h2>
@@ -131,13 +143,12 @@
                     class="pass_input hover" autocomplete="on">
                   <i class="fa-solid fa-key left_icon"></i>
                 </div>
-                <button id="show_pass_btn1" class="btn_eye hover" 
-                onmousedown="showPassword('pass_input1', 'eye_icon1')"
-                onmouseup="hidePassword('pass_input1', 'eye_icon1')"
-                ontouchstart="showPassword('pass_input1', 'eye_icon1')"
-                ontouchend="hidePassword('pass_input1', 'eye_icon1')"
-                ><i id="eye_icon1" class="fa-regular fa-eye eye_icon"></i>
-              </button>
+                <button id="show_pass_btn1" class="btn_eye hover" onmousedown="showPassword('pass_input1', 'eye_icon1')"
+                  onmouseup="hidePassword('pass_input1', 'eye_icon1')"
+                  ontouchstart="showPassword('pass_input1', 'eye_icon1')"
+                  ontouchend="hidePassword('pass_input1', 'eye_icon1')"><i id="eye_icon1"
+                    class="fa-regular fa-eye eye_icon"></i>
+                </button>
               </div>
 
               <!-- pass div -->
@@ -147,13 +158,12 @@
                     class="pass_input hover" autocomplete="on">
                   <i class="fa-solid fa-key left_icon"></i>
                 </div>
-                <button id="show_pass_btn2" class="btn_eye hover" 
-                onmousedown="showPassword('pass_input2', 'eye_icon2')"
+                <button id="show_pass_btn2" class="btn_eye hover" onmousedown="showPassword('pass_input2', 'eye_icon2')"
                   onmouseup="hidePassword('pass_input2', 'eye_icon2')"
                   ontouchstart="showPassword('pass_input2', 'eye_icon2')"
-                  ontouchend="hidePassword('pass_input2', 'eye_icon2')"
-                  ><i id="eye_icon2" class="fa-regular fa-eye eye_icon"></i>
-                  </button>
+                  ontouchend="hidePassword('pass_input2', 'eye_icon2')"><i id="eye_icon2"
+                    class="fa-regular fa-eye eye_icon"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -180,7 +190,7 @@
 
 
           <table id="permissions_table" class="review_table" style="display: none; margin-block-start: 2rem;">
-           <thead style="inset-block-start: 0;">
+            <thead style="inset-block-start: 0;">
               <tr>
                 <th>م</th>
                 <th style="display: none;">ID</th>
@@ -246,7 +256,7 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
 
-               <!--  production -->
+              <!--  production -->
               <tr>
                 <td style="width: auto;">3</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
@@ -263,6 +273,26 @@
                 </td>
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
+
+
+              <!-- bread -->
+              <tr>
+                <td style="width: auto;">3</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">العيش</td>
+                <td style="width: auto;">
+                  <select class="permission_table_select" id="table_permission_bread"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
 
             </tbody>
             <tfoot>
@@ -294,7 +324,7 @@
 
 
           <div class="btn_container_top_border">
-            <button class="btn_edit" id="btn_edit">تعديل</button>
+            <button class="btn_update" id="btn_update">تعديل</button>
             <button class="btn_cancel" id="btn_delete">حذف</button>
           </div>
 
@@ -322,7 +352,7 @@
   <!-- scripts------------------------------------------------------------------------------ -->
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/users/users_edit_ar.js"></script>
+  <script src="/public/scripts/ar/users/users_update_ar.js"></script>
 
 
 </body>

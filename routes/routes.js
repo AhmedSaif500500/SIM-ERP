@@ -219,6 +219,49 @@ router.get('/production_update_ar', (req, res) => {
 });
 //#endregion end production
 
+
+//#region bread
+
+router.get('/bread_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.general_permission > 1 ||  req.session.bread_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_view_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+
+router.get('/bread_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.general_permission > 2 ||  req.session.bread_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_add_ar.html'));
+        }else{
+            res.redirect('/bread_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/bread_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.general_permission > 3 ||  req.session.bread_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_update_ar.html'));
+        }else{
+            res.redirect('/bread_view_ar?reason=2');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion end bread
+
 //#region reports 
 router.get('/attendance_report_ar', (req, res) => {
     if (req.session.isLoggedIn) {

@@ -1,6 +1,6 @@
 
 //check permissions
-pagePermission('production_permission','view');
+pagePermission('bread_permission','view');
 
 
 // إعلان المتغير على مستوى الـ script  
@@ -12,13 +12,13 @@ const searchInput = document.getElementById('searchInput');
 
 //#region  ( baynat el employees mn el database )
 // get data from db and store it in array1
-let data = [];
+// let data = [];
 let array1 = [];
 let slice_Array1 = [];
 
 
 async function geteProductionData_fn() {
-    const response = await fetch('/get_All_production_Data');
+    const response = await fetch('/get_All_bread_Data');
      data = await response.json();
 
     // تحديث array1 بنتيجة الـ slice
@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", function () {
     showFirst50RowAtTheBegening();
 });
 
+
+
 async function fillAttendancetable() {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
@@ -45,22 +47,22 @@ async function fillAttendancetable() {
     // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
     // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
     // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
-    
-        //* Prepare GLOBAL variables Befor sum functions
-        total_column1.value = 0
-        total_column2.value = 0
 
+    //* Prepare GLOBAL variables Befor sum functions
+    total_column1.value = 0
+    total_column2.value = 0
         // إعداد رأس الجدول
-        let tableHTML = `<table id="production_table" class="review_table">
+        let tableHTML = `<table id="bread_table" class="review_table">
                         <thead>
                             <tr>
                                 <th></th>
                                 <th style="display: none;" >ID</th>
                                 <th style="widrh: auto; white-space: nowrap;">التاريخ</th>
-                                <th style="width: 100%">البيان</th>
-                                <th style="width: auto; white-space: nowrap;">انتاج</th>
-                                <th style="width: auto; white-space: nowrap;">صرف</th>
-                                <th style="width: 100%; white-space: nowrap; font-weight: bold;">جرد</th> 
+                                <th style="widrh: auto; white-space: nowrap;">اليوم</th>
+                                <th style="display: none;">vendor_id</th>
+                                <th style="width: auto; white-space: nowrap;">المورد</th>
+                                <th style="width: auto; white-space: nowrap;">العدد</th>
+                                <th style="width: 100%; white-space: nowrap; opacity: 0.7;">الوزن</th> 
                             </tr>
                             </thead>
                             <tbody>`;
@@ -72,10 +74,13 @@ async function fillAttendancetable() {
                             <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;">${row.datex}</td>
-                            <td style="width: 100%">${row.note}</td>
-                            <td style="width: auto; white-space: nowrap;">${total_column(total_column1,row.procution_amount)}</td>
-                            <td style="width: auto; white-space: nowrap;">${total_column(total_column2,row.sales_amount)}</td>
-                            <td style="width: auto; white-space: nowrap; font-weight: bold;">${row.cumulative_balance}</td>
+                            <td style="widrh: auto; white-space: nowrap;">${day_name(row.datex)}</td>
+                            <td style="display: none;">${row.vendor_id}</td>
+                            <td style="width: 100%">${row.vendore_name}</td>
+                            <td style="width: auto; white-space: nowrap;">${total_column(total_column1, row.amount)}</td>
+                            <td style="width: auto; white-space: nowrap; opacity: 0.7;">${total_column(total_column2, row.wazn)}</td>
+                            
+                            
                           </tr>`;
         });
 
@@ -83,15 +88,16 @@ async function fillAttendancetable() {
         <tfoot>
             <tr class="table_totals_row";>
                 <td id="tfooter1" ></td>
-                <td id="tfooter2" style="display: none" ></td>
+                <td id="tfooter2" style="display: none;" ></td>
                 <td id="tfooter3"></td>
-                <td id="tfooter4" style="width: 100%"></td>
-                <td id="tfooter5"></td>
-                <td id="tfooter6"></td>
-                <td id="tfooter7" style="width: auto; font-weight: bold;"></td>
+                <td id="tfooter4"></td>
+                <td id="tfooter5" style="display: none;"></td>
+                <td id="tfooter6" style="width: 100%"></td>
+                <td id="tfooter7" style="width: auto; white-space: nowrap;"></td>
+                <td id="tfooter8" style="width: auto; opacity: 0.7;"></td>
             </tr>
                         <tr id="table_fotter_buttons_row">
-                            <td colspan="7">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                            <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
                                  <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                                  <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -104,16 +110,19 @@ async function fillAttendancetable() {
         tableHTML += '</table>';
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = tableHTML;
+        tableContainer.innerHTML = await tableHTML;
 
 
-// عرض نتائج الجمع
 document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-document.getElementById("tfooter5").textContent = total_column1.value;
-document.getElementById("tfooter6").textContent = total_column2.value;
+document.getElementById("tfooter7").textContent = total_column1.value;
+document.getElementById("tfooter8").textContent = total_column2.value;
 
 
 
+        //#endregion End totalst Functions
+
+        // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
+// document.getElementById("tfooter1").textContent = slice_Array1.length; //  عدد الصفوف
 
 if (array1.length > 0 && array1.length <= 50) {
     document.querySelector('#table_fotter_buttons_row').style.display = "none";
@@ -133,10 +142,10 @@ async function performSearch() {
     // فلترة البيانات بناءً على قيمة البحث
     array1 = data.filter(row => {
         const datex = row.datex && row.datex.toString().toLowerCase().includes(searchValue);
-        const note = row.note && row.note.toString().toLowerCase().includes(searchValue);
-        const production_amount = row.production_amount && row.production_amount.toString().toLowerCase().includes(searchValue);
-        const sales_amount = row.sales_amount && row.sales_amount.toString().toLowerCase().includes(searchValue);
-        return datex || note || production_amount || sales_amount;
+        const vendore_name = row.vendore_name && row.vendore_name.toString().toLowerCase().includes(searchValue);
+        const total_wazn = row.total_wazn && row.total_wazn.toString().toLowerCase().includes(searchValue);
+        const total_amount = row.sales_amount && row.total_amount.toString().toLowerCase().includes(searchValue);
+        return datex || vendore_name || total_wazn || total_amount;
     });
 
     // تحديد جزء البيانات للعرض (أول 50 صف فقط)
@@ -144,10 +153,10 @@ async function performSearch() {
 
     // ملء الجدول بالبيانات
     await fillAttendancetable();
-
+/*
 //#region  افاء عامود ال جرد اذا كان هناك نتائج فى البحث
            
-    const cumulativeBalanceColumnHeaders = document.querySelectorAll('#production_table th:nth-child(7), #production_table td:nth-child(7)');
+    const cumulativeBalanceColumnHeaders = document.querySelectorAll('#bread_table th:nth-child(7), #bread_table td:nth-child(7)');
     
     if (searchValue) {
         // إذا كانت قيمة البحث موجودة، أخفِ عمود الجرد
@@ -161,7 +170,7 @@ async function performSearch() {
         });
     }
 //#endregion
-
+*/
 }
 
 
@@ -193,19 +202,23 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
+
+
 async function tabble_update_btn_fn(updateBtn) {
   const row  = updateBtn.closest("tr")
 
   const production_data = {
-     id_value : row.cells[1].textContent,
-     date_value : row.cells[2].textContent,
-     note_value : row.cells[3].textContent,
-     procution_value : row.cells[4].textContent,
-     sales_value : row.cells[5].textContent,
+    h_id : row.cells[1].textContent,
+    datex : row.cells[2].textContent,
+     day : row.cells[3].textContent,
+     vendor_id : row.cells[4].textContent,
+     vendore_name : row.cells[5].textContent,
+     total_wazn : row.cells[6].textContent,
+     total_amount : row.cells[6].textContent,
   }
 
-  sessionStorage.setItem('production_update_data',JSON.stringify(production_data))
-  window.location.href = 'production_update_ar';
+  sessionStorage.setItem('bread_update_data',JSON.stringify(production_data))
+  window.location.href = 'bread_update_ar';
 };
 
 

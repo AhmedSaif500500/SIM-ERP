@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عيش</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+  <style>
+    .unit {
+      /* padding: 0.2rem; */
+      border-radius: 3px;
+      pointer-events: none;
+      background-color: var(--btn_search_backcolor);
+      height: 100%;
+      width: fit-content;
+      padding: .5rem;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header">
+      <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
+        <i class="fa-solid fa-bars"></i>
+      </a>
+      <div class="header_dark_lang_control">
+        <a id="dark_toggle_btn" class="">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+        </a>
+        <a href="" id="lang_btn" class=""> en </a>
+      </div>
+
+      <div class="header_menue">
+        <a href="">
+          <i class="fa-solid fa-question"></i>
+          مساعده
+        </a>
+
+        <!-- <a href="">
+            <i class="fa-solid fa-info"></i>
+            <p>Home</p>
+          </a> -->
+
+      </div>
+
+
+      <div class="header_user_div">
+        <button id="header_user_name"></button>
+        <div id="user_options" class="user_options" style="display: none;">
+          <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
+          <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar">
+        <div id="closeMenueIcon" class="closeMenueIcon">
+          <i class="fa-solid fa-square-xmark"></i>
+        </div>
+
+        <a href="home_ar" target="_self" class="">
+          <i class="fa-solid fa-display"></i>
+          الملخص
+        </a>
+
+        <a href="employees_ar" target="_self" class="">
+          <i class="fa-solid fa-user-tie"></i>
+          الموظفين
+        </a>
+
+        <a href="attendance_ar" target="_self" class="">
+          <i class="fa-solid fa-person-circle-exclamation"></i>
+          المؤثرات
+        </a>
+
+        <a href="production_view_ar" target="_self" class="">
+          <i class="fa-solid fa-industry"></i>
+          الانتاج
+        </a>
+
+        <a href="bread_view_ar" target="_self" class="sidebar-active">
+          <i class="fa-solid fa-bread-slice"></i>
+          العيش
+        </a>
+        
+        <a href="attendance_report_ar" target="_self" class="">
+          <i class="fa-regular fa-rectangle-list"></i>
+          <p>تقارير</p>
+        </a>
+        <!-- <a href="index2.html" target="_self"> -->
+        <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
+          <i class="fa-solid fa-user"></i>
+          المستخدمين
+        </a>
+        <a id="Custmize_sidebar" href="#">
+          <i class="fa-solid fa-gear"></i>
+          <p>تخصيص</p>
+        </a>
+      </div>
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space">
+          <h2 class="h2">
+            <a href="bread_view_ar">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
+            العيش / جديد
+          </h2>
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+          <label for="date1" class="lbl_sm">التاريخ</label>
+          <!-- date -->
+          <div class="input_with_icon_div">
+            <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+              autocomplete="off">
+            <i class="fa-regular fa-calendar"></i>
+          </div>
+          <label for="date1" class="lbl_sm">اسم المورد</label>
+          <select name="" id="vendore_select" class="select_year" style="width: fit-content;">
+            <option value="1">حسين مرزوق</option>
+            <option value="2">ابراهيم ملش</option>
+          </select>
+          <!-- table -->
+          <div style="width: auto; max-width: 100%; overflow: auto;" class="">
+            <table id="myTable" class="input_table">
+              <thead class="">
+                <tr>
+                  <th></th>
+                  <th style="width: auto;">الكمية</th>
+                  <th style="width: auto;">الوزن</th>
+                  <th style="width: auto;"></th>
+                </tr>
+              </thead>
+              <tbody class="">
+                <tr class="">
+                  <td style="width: auto;" class="">
+                    <div class="dragbutton_table">
+                      <button class="drag-handle">
+                        <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                        </button>
+                    </div>
+                  </td>
+                  <td style="width: auto;" class="">
+                    <div class="">
+                      <span>عدد</span>
+                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                    </div>
+                  </td>
+                  <td style="width: auto;" class="">
+                    <div class="">
+                      <span>كيلو</span>
+                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                    </div>
+                  </td>
+                  <td style="width: 100%;" class="">
+                    <div class="table_buttons_div">
+                      <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                      <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot class="">
+                <tr class="">
+                  <td id="lengthColumn1"></td>
+                  <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
+                  <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
+                  <td id="sumColumn3"></td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="">
+                    <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
+                    <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
+                    <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                    </select>
+                  </div>
+                  </td>
+                </tr>
+
+              </tfoot>
+            </table>
+          </div>
+          <div class="btn_container_top_border">
+            <button class="btn_save" id="btn_save">حفظ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+
+
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/bread/bread_add_ar.js"></script>
+
+
+</body>
+
+</html>

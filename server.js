@@ -148,7 +148,7 @@ app.use("/", routes);
 //#region started server functions
 
 //! 1: put all is_active to false for all users
-async function make_all_users_is_active_to_false(){ // we use this function in the begining of server start
+async function make_all_users_is_active_to_false() { // we use this function in the begining of server start
   await db.none(`UPDATE users SET is_active = false`)
 }
 //#endregion End - sstarted server functions
@@ -199,24 +199,24 @@ app.post("/Login", async (req, res) => {
     //1: receive data from frontend html>body
     const posted_elements = req.body;
 
-        //! sql injection check
-        const hasBadSymbols = sql_anti_injection([
-          posted_elements.username_Input,
-          posted_elements.password_Input,
-          // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-      ]);
-            if (hasBadSymbols) {
-                return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-            };
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.username_Input,
+      posted_elements.password_Input,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
-            //* start --------------------------------------------------
+    //* start --------------------------------------------------
 
     //2: get Today
     const today = new Date().toISOString().split("T")[0];
 
 
     let query = `SELECT * FROM users WHERE TRIM(user_name) = $1`;
-    let rows = await db.any(query,[
+    let rows = await db.any(query, [
       posted_elements.username_Input
     ])
 
@@ -251,7 +251,7 @@ app.post("/Login", async (req, res) => {
         // await db.none("UPDATE users SET is_active = true WHERE id = $1", [req.session.userId]);
 
         let query = `UPDATE users SET is_active = true WHERE id = $1`;
-        await db.any(query,[
+        await db.any(query, [
           req.session.userId
         ]);
         //4.1.2: send response to frontend with some data
@@ -303,16 +303,16 @@ app.post("/Login", async (req, res) => {
 app.get("/Logout", async (req, res) => {
   try {
 
-            //! sql injection check
-            const hasBadSymbols = sql_anti_injection([
-              req.session.userId
-              // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-          ]);
-                if (hasBadSymbols) {
-                    return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                };
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      req.session.userId
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
-                //* start-----------------------------------
+    //* start-----------------------------------
     // // تحقق من وجود userId في الجلسة
     // if (!req.session.userId) {
     //   return res.status(400).json({
@@ -322,7 +322,7 @@ app.get("/Logout", async (req, res) => {
     // }
 
     let query = `UPDATE users SET is_active = false WHERE id = $1`;
-    await db.none(query,[
+    await db.none(query, [
       req.session.userId
     ]);
     // تحديث is_active إلى false في قاعدة البيانات قبل إنهاء الجلسة
@@ -398,25 +398,22 @@ async function permissions(req, secendary_permission, perm_type) {
       }
   }
 
-  if (permissions.length > 0) {
-    console.log(`this is general_permission ${X1}`);
-    console.log(`this is employees_permission ${X2}`);
-  }
+
 };
 
 // get new id ( table foreign Key)
 async function newId_fn(tableName) {
   // قم بتنفيذ الاستعلام للحصول على الحد الأقصى من القيم الموجودة
   const query = await db.any(`SELECT MAX(id) AS id FROM ${tableName}`);
-  
+
   // افتراض أن الحد الأقصى للقيمة الأولية هو 1 إذا لم يكن هناك أي سجلات
   let result = 1;
-  
+
   // تحقق مما إذا كان `query` فارغًا أو إذا لم يكن هناك قيمة في `query[0].id`
   if (query && query.length > 0 && query[0].id !== null) {
-      result = parseInt(query[0].id) + 1;
+    result = parseInt(query[0].id) + 1;
   }
-  
+
   // ارجع `result`
   return result;
 }
@@ -435,14 +432,14 @@ async function last_activity(req) {
 function sql_anti_injection(values) {
   // تحقق من كل قيمة في المصفوفة
   for (let value of values) {
-      // إذا كانت القيمة سلسلة نصية
-      if (typeof value === 'string') {
-          // قم بإزالة المسافات الزائدة وتعقيمها
-          // وتحقق من وجود رموز ضارة
-          if (value.trim().match(/['";$%&<>]/)) {
-              return true; // عثر على رمز ضار
-          }
+    // إذا كانت القيمة سلسلة نصية
+    if (typeof value === 'string') {
+      // قم بإزالة المسافات الزائدة وتعقيمها
+      // وتحقق من وجود رموز ضارة
+      if (value.trim().match(/['";$%&<>]/)) {
+        return true; // عثر على رمز ضار
       }
+    }
   }
   return false; // لا يوجد رموز ضارة
 }
@@ -463,8 +460,8 @@ app.get("/get_All_users_Data", async (req, res) => {
       return;
     };
 
-    let general_permission =parseInt(req.session.general_permission);
-    if(!general_permission || general_permission !== 6){
+    let general_permission = parseInt(req.session.general_permission);
+    if (!general_permission || general_permission !== 6) {
       return res.json({
         success: false,
         message: "Sorry,you  can't use this featue",
@@ -504,37 +501,37 @@ app.post("/addNewuser", async (req, res) => {
     await permissions(req, 'Users_permission', 'add');
     if (!permissions) { return; };
 
-    let general_permission =parseInt(req.session.general_permission);
-    if(!general_permission || general_permission !== 6){
+    let general_permission = parseInt(req.session.general_permission);
+    if (!general_permission || general_permission !== 6) {
       return res.json({
         success: false,
         message: "Sorry,you  can't use this featue",
       });
     };
 
-               //! sql injection check
-               const hasBadSymbols = sql_anti_injection([
-                posted_elements.user_name_input,
-                posted_elements.pass_input1,
-                posted_elements.general_permission_select,
-                posted_elements.table_permission_users,
-                posted_elements.table_permission_employee,
-                posted_elements.table_permission_attendance,
-                posted_elements.table_permission_production,
-                posted_elements.today
-                // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-            ]);
-                  if (hasBadSymbols) {
-                      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                  };
-  
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.user_name_input,
+      posted_elements.pass_input1,
+      posted_elements.general_permission_select,
+      posted_elements.table_permission_users,
+      posted_elements.table_permission_employee,
+      posted_elements.table_permission_attendance,
+      posted_elements.table_permission_production,
+      posted_elements.today
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
 
     //* Start--------------------------------------------------------------
 
 
 
     //1: receive data from frontend new_employee_ar.
-    
+
 
     //2: validation data befor inserting to db
     // const rows = await db.any(
@@ -543,11 +540,11 @@ app.post("/addNewuser", async (req, res) => {
     // );
 
     let query = `SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1`;
-    let rows = await db.any(query,[
+    let rows = await db.any(query, [
       posted_elements.user_name_input
     ]);
 
-    
+
     if (rows.length > 0) {
       // اذا حصل على نتائج
       return res.json({
@@ -562,8 +559,8 @@ app.post("/addNewuser", async (req, res) => {
       const newId = await newId_fn('users');
 
 
-      let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, attendance_permission, production_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-      await db.none(query,[
+      let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, attendance_permission, production_permission, bread_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+      await db.none(query, [
         newId,
         posted_elements.user_name_input,
         pass_input1,
@@ -572,6 +569,7 @@ app.post("/addNewuser", async (req, res) => {
         posted_elements.table_permission_employee,
         posted_elements.table_permission_attendance,
         posted_elements.table_permission_production,
+        posted_elements.table_permission_bread,
         posted_elements.today,
       ]);
 
@@ -605,8 +603,8 @@ app.post("/updateUser", async (req, res) => {
       return;
     }
 
-    let general_permission =parseInt(req.session.general_permission);
-    if(!general_permission || general_permission !== 6){
+    let general_permission = parseInt(req.session.general_permission);
+    if (!general_permission || general_permission !== 6) {
       return res.json({
         success: false,
         message: "Sorry,you  can't use this featue",
@@ -614,18 +612,18 @@ app.post("/updateUser", async (req, res) => {
     };
 
 
-                   //! sql injection check
-                   const hasBadSymbols = sql_anti_injection([
-                    posted_elements.user_id
-                    // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-                ]);
-                      if (hasBadSymbols) {
-                          return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                      };
-      
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.user_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
     //* Start--------------------------------------------------------------
     //1: receive data from frontend new_employee_ar.
-    
+
 
     //2: validation data befor inserting to db
     // const rows = await db.any("SELECT * FROM users WHERE id = $1", [
@@ -635,7 +633,7 @@ app.post("/updateUser", async (req, res) => {
 
 
     let query = `SELECT * FROM users WHERE id = $1`;
-    let rows = await db.any(query,[
+    let rows = await db.any(query, [
       posted_elements.user_id
     ]);
 
@@ -670,30 +668,30 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
     await permissions(req, 'Users_permission', 'update');
     if (!permissions) { return; };
 
-    let general_permission =parseInt(req.session.general_permission);
-    if(!general_permission || general_permission !== 6){
+    let general_permission = parseInt(req.session.general_permission);
+    if (!general_permission || general_permission !== 6) {
       return res.json({
         success: false,
         message: "Sorry,you  can't use this featue",
       });
     };
 
-                       //! sql injection check
-                       const hasBadSymbols = sql_anti_injection([
-                        posted_elements.user_name_input,
-                        posted_elements.pass_input1,
-                        posted_elements.user_id,
-                        posted_elements.general_permission_select,
-                        posted_elements.table_permission_users,
-                        posted_elements.table_permission_employee,
-                        posted_elements.table_permission_attendance,
-                        posted_elements.table_permission_production,
-                        posted_elements.today
-                        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-                    ]);
-                          if (hasBadSymbols) {
-                              return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                          };
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.user_name_input,
+      posted_elements.pass_input1,
+      posted_elements.user_id,
+      posted_elements.general_permission_select,
+      posted_elements.table_permission_users,
+      posted_elements.table_permission_employee,
+      posted_elements.table_permission_attendance,
+      posted_elements.table_permission_production,
+      posted_elements.today
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
     //* Start--------------------------------------------------------------
 
@@ -715,7 +713,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
 
 
     let query = `SELECT user_name FROM users WHERE user_name = $1 and id != $2`;
-    let rows = await db.any(query,[
+    let rows = await db.any(query, [
       posted_elements.user_name_input,
       posted_elements.user_id
     ]);
@@ -738,8 +736,8 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
 
 
 
-        let query = `Update Users set user_name = $1, user_password = $2, general_permission = $3, users_permission = $4, employees_permission = $5, attendance_permission = $6, production_permission = $7, datex = $8 WHERE id = $9`;
-        await db.any(query,[
+        let query = `Update Users set user_name = $1, user_password = $2, general_permission = $3, users_permission = $4, employees_permission = $5, attendance_permission = $6, production_permission = $7, bread_permission = $8 datex = $9 WHERE id = $10`;
+        await db.any(query, [
           posted_elements.user_name_input,
           pass_input1,
           posted_elements.general_permission_select,
@@ -747,6 +745,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_employee,
           posted_elements.table_permission_attendance,
           posted_elements.table_permission_production,
+          posted_elements.table_permission_bread,
           posted_elements.today,
           posted_elements.user_id
         ]);
@@ -758,14 +757,15 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
         });
       } else {  // فى حالة تعديل البيانات بدون تعديل كلمة المرور الحالية
 
-        let query = `Update Users set user_name = $1, general_permission = $2, users_permission = $3,  employees_permission = $4, attendance_permission = $5, production_permission = $6, datex = $7 WHERE id = $8`;
-        await db.any(query,[
+        let query = `Update Users set user_name = $1, general_permission = $2, users_permission = $3,  employees_permission = $4, attendance_permission = $5, production_permission = $6, bread_permission = $7, datex = $8 WHERE id = $9`;
+        await db.any(query, [
           posted_elements.user_name_input,
           posted_elements.general_permission_select,
           posted_elements.table_permission_users,
           posted_elements.table_permission_employee,
           posted_elements.table_permission_attendance,
           posted_elements.table_permission_production,
+          posted_elements.table_permission_bread,
           posted_elements.today,
           posted_elements.user_id,
         ]);
@@ -788,27 +788,27 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
 app.post("/delete_User_from_user_update_ar", async (req, res) => {
   try {
     const posted_elements = req.body;
-    
+
     //! Permission
     await permissions(req, 'Users_permission', 'delete');
     if (!permissions) { return; };
 
-    let general_permission =parseInt(req.session.general_permission);
-    if(!general_permission || general_permission !== 6){
+    let general_permission = parseInt(req.session.general_permission);
+    if (!general_permission || general_permission !== 6) {
       return res.json({
         success: false,
         message: "Sorry,you  can't use this featue",
       });
     };
-    
-                       //! sql injection check
-                       const hasBadSymbols = sql_anti_injection([
-                        posted_elements.user_id
-                        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-                    ]);
-                          if (hasBadSymbols) {
-                              return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                          };
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.user_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
     //* Start--------------------------------------------------------------
 
@@ -820,7 +820,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
     // ]);
 
     let query = `DELETE FROM users WHERE id = $1`;
-    await db.none(query,[
+    await db.none(query, [
       posted_elements.user_id,
     ]);
 
@@ -849,7 +849,7 @@ app.post("/addNewEmployee", async (req, res) => {
     await permissions(req, 'employees_permission', 'add');
     if (!permissions) { return; };
 
-    
+
     //! sql injection check
     const hasBadSymbols = sql_anti_injection([
       posted_elements.employee_name_input,
@@ -862,12 +862,12 @@ app.post("/addNewEmployee", async (req, res) => {
       posted_elements.employee_start_date_input,
       posted_elements.employee_leave_date_input
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-  ]);
-        if (hasBadSymbols) {
-            return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-        };
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
     //* Start--------------------------------------------------------------
-  
+
 
     //2: validation data befor inserting to db
     // const rows = await db.any(
@@ -876,7 +876,7 @@ app.post("/addNewEmployee", async (req, res) => {
     // );
 
     let X = `SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1`;
-    let rows = await db.any(X,[
+    let rows = await db.any(X, [
       posted_elements.employee_name_input
     ]);
 
@@ -931,16 +931,16 @@ app.post("/updateEmployee", async (req, res) => {
     await permissions(req, 'employees_permission', 'view');
     if (!permissions) { return; };
 
-        const posted_elements = req.body;
+    const posted_elements = req.body;
 
-        //! sql injection check
-        const hasBadSymbols = sql_anti_injection([
-          posted_elements.employee_id
-          // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-      ]);
-            if (hasBadSymbols) {
-                return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-            };
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.employee_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
     //* Start--------------------------------------------------------------
 
@@ -952,7 +952,7 @@ app.post("/updateEmployee", async (req, res) => {
     //   posted_elements.employee_id,
     // ]);
     let query = `SELECT * FROM employees WHERE id = $1`;
-    let rows =  await db.any(query,[
+    let rows = await db.any(query, [
       posted_elements.employee_id,
     ]);
 
@@ -985,7 +985,7 @@ app.post("/update_employee", async (req, res) => {
     await permissions(req, 'employees_permission', 'update');
     if (!permissions) { return; };
 
-    
+
     const posted_elements = req.body;
 
     //! sql injection check
@@ -993,11 +993,11 @@ app.post("/update_employee", async (req, res) => {
       posted_elements.employee_name_input,
       posted_elements.employee_job_input
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-  ]);
-        if (hasBadSymbols) {
-            return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-        };
-      
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
 
     //* Start--------------------------------------------------------------
 
@@ -1010,11 +1010,11 @@ app.post("/update_employee", async (req, res) => {
     // );
 
     let query1 = `SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1 AND id != $2`;
-    let rows =  await db.any(query1,[
+    let rows = await db.any(query1, [
       posted_elements.employee_name_input, posted_elements.employee_id
     ]);
 
-    
+
     if (rows.length > 0) {
       // اذا حصل على نتائج
       return res.json({
@@ -1040,7 +1040,7 @@ app.post("/update_employee", async (req, res) => {
       // );
 
       let query2 = `UPDATE employees SET employee_name = $1, datex = $2, emp_job = $3, emp_beta2a = $4, emp_adress = $5, emp_personal_phone = $6, emp_emergency_phone = $7, emp_start_date = $8, emp_end_date = $9 where id = $10`;
-      await db.none(query2,[
+      await db.none(query2, [
         posted_elements.employee_name_input,
         posted_elements.today,
         posted_elements.employee_job_input,
@@ -1052,7 +1052,7 @@ app.post("/update_employee", async (req, res) => {
         posted_elements.employee_leave_date_input,
         posted_elements.employee_id,
       ]);
-  
+
 
       return res.json({
         success: true,
@@ -1075,19 +1075,19 @@ app.post("/delete_employee", async (req, res) => {
     await permissions(req, 'employees_permission', 'delete');
     if (!permissions) { return; };
 
-       
-       const posted_elements = req.body;
-        //! sql injection check
-        const hasBadSymbols = sql_anti_injection([
-          posted_elements.employee_id
-          // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-      ]);
-            if (hasBadSymbols) {
-                return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-            };
+
+    const posted_elements = req.body;
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.employee_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
     //* Start--------------------------------------------------------------
- 
+
 
     //3: insert data into db
     // await db.none("DELETE FROM employees WHERE id = $1", [
@@ -1095,7 +1095,7 @@ app.post("/delete_employee", async (req, res) => {
     // ]);
 
     let query1 = `DELETE FROM employees WHERE id = $1`;
-    await db.none(query1,[
+    await db.none(query1, [
       posted_elements.employee_id
     ]);
 
@@ -1154,19 +1154,19 @@ app.post("/attendance_add", async (req, res) => {
 
     const posted_elements = req.body;
 
-            //! sql injection check
-            const hasBadSymbols = sql_anti_injection([
-              posted_elements.id_hidden_input,
-              posted_elements.date_input,
-              posted_elements.days_input,
-              posted_elements.hours_inpu,
-              posted_elements.values_input,
-              posted_elements.note_inpute
-              // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-          ]);
-                if (hasBadSymbols) {
-                    return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                };
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.id_hidden_input,
+      posted_elements.date_input,
+      posted_elements.days_input,
+      posted_elements.hours_inpu,
+      posted_elements.values_input,
+      posted_elements.note_inpute
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
     //* Start--------------------------------------------------------------
 
 
@@ -1188,7 +1188,7 @@ app.post("/attendance_add", async (req, res) => {
     // );
 
     let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
-    await db.none(query1,[
+    await db.none(query1, [
       newId,
       posted_elements.id_hidden_input,
       posted_elements.date_input,
@@ -1255,19 +1255,19 @@ app.get("/get_All_attendance_Data", async (req, res) => {
     //     LEFT JOIN  employees E on A.employee_id = E.id
     //     ORDER BY A.datex DESC`);
 
-        let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
+    let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
         FROM Attendance A
         LEFT JOIN  employees E on A.employee_id = E.id
         ORDER BY A.datex DESC`;
-        let rows =  await db.any(query1);
+    let rows = await db.any(query1);
 
     const data = rows.map((row) => ({
       id: row.id,
       employee_id: row.employee_id,
       employee_name: row.employee_name,
-      days : row.days,
-      hours : row.hours,
-      values : row.values,
+      days: row.days,
+      hours: row.hours,
+      values: row.values,
       note: row.note,
       datex: row.datex,
     }));
@@ -1291,14 +1291,14 @@ app.post("/updateattendance", async (req, res) => {
     await permissions(req, 'attendance_permission', 'view');
     if (!permissions) { return; };
 
-                //! sql injection check
-                const hasBadSymbols = sql_anti_injection([
-                  posted_elements.attendance_id
-                  // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-              ]);
-                    if (hasBadSymbols) {
-                        return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                    };
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.attendance_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
     //* Start--------------------------------------------------------------
 
@@ -1320,7 +1320,7 @@ app.post("/updateattendance", async (req, res) => {
     LEFT JOIN  employees E on A.employee_id = E.id
     where A.id=$1
     ORDER BY A.datex DESC`;
-    let rows = await db.any(query1,[
+    let rows = await db.any(query1, [
       posted_elements.attendance_id,
     ]);
 
@@ -1352,26 +1352,26 @@ app.post("/updateattendance", async (req, res) => {
 app.post("/attendance_update", async (req, res) => {
   try {
 
-        const posted_elements = req.body;
+    const posted_elements = req.body;
     //! Permission
     await permissions(req, 'attendance_permission', 'update');
     if (!permissions) { return; };
 
-                    //! sql injection check
-                    const hasBadSymbols = sql_anti_injection([
-                      posted_elements.id_hidden_input,
-                      posted_elements.date_input,
-                      posted_elements.days_input,
-                      posted_elements.hours_inpu,
-                      posted_elements.values_input,
-                      posted_elements.note_inpute,
-                      posted_elements.attendance_id
-                      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-                  ]);
-                        if (hasBadSymbols) {
-                            return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                        };
-    
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.id_hidden_input,
+      posted_elements.date_input,
+      posted_elements.days_input,
+      posted_elements.hours_inpu,
+      posted_elements.values_input,
+      posted_elements.note_inpute,
+      posted_elements.attendance_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
     //* Start--------------------------------------------------------------
 
 
@@ -1389,7 +1389,7 @@ app.post("/attendance_update", async (req, res) => {
     // );
 
     let query1 = `UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7`;
-    await db.none(query1,[
+    await db.none(query1, [
       posted_elements.id_hidden_input,
       posted_elements.date_input,
       posted_elements.days_input,
@@ -1417,21 +1417,21 @@ app.post("/attendance_update", async (req, res) => {
 // attendance_delete
 app.post("/attendance_delete", async (req, res) => {
   try {
-       
-        const posted_elements = req.body;
+
+    const posted_elements = req.body;
     //! Permission
     await permissions(req, 'attendance_permission', 'delete');
     if (!permissions) { return; };
 
-                        //! sql injection check
-                        const hasBadSymbols = sql_anti_injection([
-                          posted_elements.attendance_id
-                          // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-                      ]);
-                            if (hasBadSymbols) {
-                                return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                            };
-        
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.attendance_id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
 
     //* Start--------------------------------------------------------------
 
@@ -1442,7 +1442,7 @@ app.post("/attendance_delete", async (req, res) => {
     // ]);
 
     let query1 = `DELETE FROM attendance WHERE id = $1`;
-    await db.none(query1,[
+    await db.none(query1, [
       posted_elements.attendance_id
     ]);
 
@@ -1472,7 +1472,7 @@ app.post("/production_add_ar", async (req, res) => {
     await permissions(req, 'production_permission', 'add');
     if (!permissions) { return; };
 
-    
+
     //! sql injection check
     const hasBadSymbols = sql_anti_injection([
       posted_elements.production_amount_input,
@@ -1481,12 +1481,12 @@ app.post("/production_add_ar", async (req, res) => {
       posted_elements.date1,
       posted_elements.today
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-  ]);
-        if (hasBadSymbols) {
-            return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-        };
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
     //* Start--------------------------------------------------------------
-  
+
 
 
     //3: insert data into db
@@ -1574,7 +1574,7 @@ app.post("/production_update_ar", async (req, res) => {
     await permissions(req, 'production_permission', 'update');
     if (!permissions) { return; };
 
-    
+
     const posted_elements = req.body;
 
     //! sql injection check
@@ -1586,35 +1586,35 @@ app.post("/production_update_ar", async (req, res) => {
       posted_elements.date1,
       posted_elements.today
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-  ]);
-        if (hasBadSymbols) {
-            return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-        };
-      
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
 
     //* Start--------------------------------------------------------------
 
 
-      let query2 = `UPDATE production
+    let query2 = `UPDATE production
         SET datex = $1,
         procution_amount = $2,
         sales_amount = $3,
         note = $4
         where id = $5`;
-      await db.none(query2,[
-        posted_elements.date1,
-        posted_elements.production_amount_input,
-        posted_elements.sales_amount_input,
-        posted_elements.note1_input,
-        posted_elements.id_input
-      ]);
-  
+    await db.none(query2, [
+      posted_elements.date1,
+      posted_elements.production_amount_input,
+      posted_elements.sales_amount_input,
+      posted_elements.note1_input,
+      posted_elements.id_input
+    ]);
 
-      return res.json({
-        success: true,
-        message: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الجرد الرئيسيه",
-      });
-  
+
+    return res.json({
+      success: true,
+      message: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الجرد الرئيسيه",
+    });
+
   } catch (error) {
     console.error("Error production_update_ar", error);
     res.status(500).json({
@@ -1632,19 +1632,19 @@ app.post("/delete_production", async (req, res) => {
     await permissions(req, 'production_permission', 'delete');
     if (!permissions) { return; };
 
-       
-       const posted_elements = req.body;
-        //! sql injection check
-        const hasBadSymbols = sql_anti_injection([
-          posted_elements.id
-          // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-      ]);
-            if (hasBadSymbols) {
-                return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-            };
+
+    const posted_elements = req.body;
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.id
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
 
     //* Start--------------------------------------------------------------
- 
+
 
     //3: insert data into db
     // await db.none("DELETE FROM employees WHERE id = $1", [
@@ -1652,7 +1652,7 @@ app.post("/delete_production", async (req, res) => {
     // ]);
 
     let query1 = `DELETE FROM production WHERE id = $1`;
-    await db.none(query1,[
+    await db.none(query1, [
       posted_elements.id
     ]);
 
@@ -1671,7 +1671,259 @@ app.post("/delete_production", async (req, res) => {
 //#endregion END- production
 
 
-//#region  reports
+//#region  bread
+
+//#endregion end bread
+
+//#region bread_review
+app.get("/get_All_bread_Data", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, 'bread_permission', 'view');
+    if (!permissions) { return; };
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `SELECT
+    h.id AS h_id, 
+    h.datex, 
+    h.vendor_id, 
+    v.vendore_name, 
+    SUM(b.wazn) AS total_wazn, 
+    SUM(b.amount) AS total_amount
+FROM bread_header AS h
+left JOIN vendors AS v ON h.vendor_id = v.id
+INNER JOIN bread_body AS b ON h.id = b.bread_header_id 
+GROUP BY h.id, h.datex, h.vendor_id, v.vendore_name
+ORDER BY h.datex DESC, h.id DESC;
+`;
+    let rows = await db.any(query1);
+
+    const data = rows.map((row) => ({
+      id: row.h_id,
+      datex: row.datex,
+      vendor_id: row.vendor_id,
+      vendore_name: row.vendore_name,
+      wazn: row.total_wazn,
+      amount: row.total_amount
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error get_All_bread_Data:", err);
+    res.status(500).send("Error:");
+  }
+});
+
+
+//#region add_bread
+app.post('/api/bread_add', async (req, res) => {
+  const posted_elements = req.body;
+
+  try {
+    const newId_bread_header = await newId_fn('bread_header');
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+      let query1 = `INSERT INTO bread_header
+                    (id, datex, vendor_id)
+                    VALUES($1, $2, $3);`;
+
+      await tx.none(query1, [
+        newId_bread_header,
+        posted_elements.datex,
+        posted_elements.vendore_id
+      ]);
+
+      let newId_bread_body = await newId_fn('bread_body');
+
+      for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_bread_body);
+        let query2 = `INSERT INTO bread_body
+                      (id, bread_header_id, wazn, amount)
+                      VALUES($1, $2, $3, $4);`;
+
+        await tx.none(query2, [
+          newId,
+          newId_bread_header,
+          element.wazn,
+          element.amount,
+        ]);
+
+        newId_bread_body = parseInt(newId_bread_body) + 1
+      }
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم الحفظ بنجاح",
+    });
+  } catch (error) {
+    console.error('Error adding account:', error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+
+//#region update bread
+
+app.post('/get_bread_Data_for_update_page', async (req, res) => {
+  try {
+    const posted_elements = req.body;
+    //! Permission
+    await permissions(req, 'bread_permission', 'update');
+    if (!permissions) { return; };
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+
+    let query1 = `SELECT
+    wazn, 
+    amount
+FROM bread_body
+WHERE bread_header_id = $1 ;`;
+    let rows = await db.any(query1, [
+      posted_elements.h_id,
+    ]);
+
+    const data = rows.map((row) => ({
+      wazn: row.wazn,
+      amount: row.amount,
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error get_bread_Data_for_update_page:", err);
+    res.status(500).send("Error:");
+  }
+});
+
+
+//! Update code
+app.post('/api/bread_update', async (req, res) => {
+
+
+  try {
+    const posted_elements = req.body;
+    await db.tx(async (tx) => {
+      // delete data from body as a first stip
+
+      let query0 = `DELETE FROM bread_body
+    WHERE bread_header_id = $1;`;
+
+      await tx.none(query0, [
+        posted_elements.h_id
+      ]);
+
+
+      // add data
+      const newId_bread_header = await newId_fn('bread_header');
+
+      // تنفيذ معاملة قاعدة البيانات
+
+      let query1 = `INSERT INTO bread_header
+                    (id, datex, vendor_id)
+                    VALUES($1, $2, $3);`;
+
+      await tx.none(query1, [
+        newId_bread_header,
+        posted_elements.datex,
+        posted_elements.vendore_id
+      ]);
+
+      let newId_bread_body = await newId_fn('bread_body');
+
+      for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_bread_body);
+        let query2 = `INSERT INTO bread_body
+                      (id, bread_header_id, wazn, amount)
+                      VALUES($1, $2, $3, $4);`;
+
+        await tx.none(query2, [
+          newId,
+          newId_bread_header,
+          element.wazn,
+          element.amount,
+        ]);
+
+        newId_bread_body = parseInt(newId_bread_body) + 1
+      }
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم التعديل بنجاح",
+    });
+  } catch (error) {
+    console.error('Error adding account:', error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية التحديث وتم إلغاء العملية",
+    });
+  }
+});
+
+//! Delete code
+app.post('/api/bread_delete', async (req, res) => {
+
+      //! Permission
+      await permissions(req, 'bread_permission', 'delete');
+      if (!permissions) { return; };
+  
+      //* Start--------------------------------------------------------------
+
+  try {
+    const posted_elements = req.body;
+    await db.tx(async (tx) => {
+      // delete data from body as a first stip
+
+      let query0 = `DELETE FROM bread_body
+    WHERE bread_header_id = $1;`;
+
+      await tx.none(query0, [
+        posted_elements.h_id
+      ]);
+
+
+      let query1 = `DELETE FROM bread_header
+                    WHERE id = $1;`;
+
+      await tx.none(query1, [
+        posted_elements.h_id
+      ]);
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم الحذف بنجاح",
+    });
+  } catch (error) {
+    console.error('Error adding account:', error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+    });
+  }
+});
+//#endregion end - update bread
+
 
 // report attendance
 app.post("/report_attendance", async (req, res) => {
@@ -1682,42 +1934,23 @@ app.post("/report_attendance", async (req, res) => {
     if (!permissions) { return; };
 
 
-                            //! sql injection check
-                            const hasBadSymbols = sql_anti_injection([
-                              posted_elements.report_type,
-                              posted_elements.employee_id,
-                              posted_elements.month,
-                              posted_elements.year
-                              // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-                          ]);
-                                if (hasBadSymbols) {
-                                    return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-                                };
-            
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.report_type,
+      posted_elements.employee_id,
+      posted_elements.month,
+      posted_elements.year
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+    };
+
 
     //* Start--------------------------------------------------------------
 
-    
+
     if (posted_elements.report_type === 2) {
-
-      // const rows = await db.any(`
-      //     SELECT
-      //       e.id As employee_id,
-      //       e.employee_name,
-      //       SUM(a.days) AS total_days,
-      //       SUM(a.hours) AS total_hours,
-      //       SUM(a.values) AS total_values
-      //     FROM attendance a
-      //     LEFT JOIN employees e ON e.id = a.employee_id
-      //     WHERE 
-      //       EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $1
-      //       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
-      //     GROUP BY e.employee_name, e.id
-      //     ORDER BY e.employee_name ASC`, [
-      //   posted_elements.month,
-      //   posted_elements.year,
-      // ]);
-
       let query1 = `SELECT
       e.id As employee_id,
       e.employee_name,
@@ -1731,7 +1964,7 @@ app.post("/report_attendance", async (req, res) => {
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
     GROUP BY e.employee_name, e.id
     ORDER BY e.employee_name ASC`;
-      let rows = await db.any(query1,[
+      let rows = await db.any(query1, [
         posted_elements.month,
         posted_elements.year,
       ]);
@@ -1756,29 +1989,6 @@ app.post("/report_attendance", async (req, res) => {
 
     } else { // فى حاله الموظف الفردى عندما يكون نوع التقرير 1 
 
-      // const rows = await db.any(`
-      // SELECT
-      //   a.id,
-      //   e.id As employee_id,
-      //   e.employee_name,
-      //   a.days,
-      //   a.hours,
-      //   a.values,
-      //   a.note,
-      //   a.datex
-      // FROM attendance a
-      // LEFT JOIN employees e ON e.id = a.employee_id
-      // WHERE 
-      //   a.employee_id = $1
-      //   AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
-      //   AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
-      // ORDER BY e.employee_name ASC`, [
-      //   posted_elements.employee_id,
-      //   posted_elements.month,
-      //   posted_elements.year,
-      // ]);
-
-
       let query1 = `SELECT
       a.id,
       e.id As employee_id,
@@ -1795,7 +2005,7 @@ app.post("/report_attendance", async (req, res) => {
       AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
     ORDER BY e.employee_name ASC`;
-      let rows = await db.any(query1,[
+      let rows = await db.any(query1, [
         posted_elements.employee_id,
         posted_elements.month,
         posted_elements.year,
@@ -1842,7 +2052,7 @@ app.listen(port, () => {
   console.log(`server is runing on http://localhost:${port}`);
 
   //! اوامر تنفذ مبشره بعد تشغيل السيرفر 
-    make_all_users_is_active_to_false();
+  make_all_users_is_active_to_false();
 });
 
 

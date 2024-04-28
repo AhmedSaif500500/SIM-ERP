@@ -153,6 +153,11 @@ async function fillAttendancetable() {
     let report_type = parseInt(select_report.value);
     if (report_type === 2) { // فى حاله كل الموظفين
 
+               //* Prepare GLOBAL variables Befor sum functions
+       total_column1.value = 0
+       total_column2.value = 0
+       total_column3.value = 0
+
         // إعداد رأس الجدول
         let tableHTML = `<table id="attendance_table" class="review_table">
         <thead>
@@ -174,9 +179,9 @@ async function fillAttendancetable() {
             <td> <button class="tabble_view_btn" onclick="tabble_view_btn_fn(this)">عرض</button> </td>
             <td style="display: none;">${row.employee_id}</td>
             <td style="display: ;width: 100%;">${row.employee_name}</td>
-            <td style="width: auto; white-space: nowrap; text-align: center;">${row.total_days}</td>
-            <td style="width: auto; white-space: nowrap; text-align: center;">${row.total_hours}</td>
-            <td style="width: auto; white-space: nowrap; text-align: center;">${row.total_values}</td>
+            <td style="width: auto; white-space: nowrap; text-align: center;">${total_column(total_column1,row.total_days)}</td>
+            <td style="width: auto; white-space: nowrap; text-align: center;">${total_column(total_column2,row.total_hours)}</td>
+            <td style="width: auto; white-space: nowrap; text-align: center;">${total_column(total_column3,row.total_values)}</td>
           </tr>`;
         });
 
@@ -221,72 +226,13 @@ async function fillAttendancetable() {
 
 
 //------------------------------------------------
-        //  عمليات صف الاجمالى 
 
-
-// تعريف المتغيرات الخاصة بجمع الأعمدة
-let total_days = 0;
-let total_hours = 0;
-let total_values = 0;
-
-// الحصول على الجدول
-
-let tableBody = document.getElementById("attendance_table").getElementsByTagName("tbody")[0];
-
-// البدء بعملية جمع الأعمدة
-for (let i = 0; i < tableBody.rows.length; i++) {
-    let row = tableBody.rows[i];
-    
-
-    let days_cell = row.cells[3]; let days_Value =  parseFloat(days_cell.textContent);
-    let hours_cell = row.cells[4]; let hours_value =  parseFloat(hours_cell.textContent);
-    let values_cell = row.cells[5]; let values_value =  parseFloat(values_cell.textContent);
-
-
-    // التحقق من أن القيم قابلة للتحويل إلى أرقام وجمعها
-    if (!isNaN(days_Value)) {
-        total_days += days_Value;
-        if(days_Value < 0 ){
-            days_cell.style.color = "red"
-        }else if (days_Value === 0){
-            days_cell.innerHTML = "";
-        };
-    }else{
-        days_cell.innerHTML = ""
-    };
-
-
-
-    if (!isNaN(hours_value)) {
-        total_hours += hours_value;
-        if(hours_value < 0 ){
-            hours_cell.style.color = "red"
-        }else if (hours_value === 0){
-            hours_cell.innerHTML = "";
-        };
-    }else{
-        hours_cell.innerHTML = ""
-    };
-
-
-
-    if (!isNaN(values_value)) {
-        total_values += values_value;
-        if(values_value < 0 ){
-            values_cell.style.color = "red"
-        }else if (values_value === 0){
-            values_cell.innerHTML = "";
-        };
-    }else{
-        values_cell.innerHTML = ""
-    };
-}
 
 // عرض نتائج الجمع
-document.getElementById("tfooter1").textContent = tableBody.rows.length; // عدد الصفوف
-document.getElementById("tfooter4").textContent = total_days;
-document.getElementById("tfooter5").textContent = total_hours;
-document.getElementById("tfooter6").textContent = total_values;
+document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
+document.getElementById("tfooter4").textContent = total_column1.value;
+document.getElementById("tfooter5").textContent = total_column2.value;
+document.getElementById("tfooter6").textContent = total_column3.value;
 
 
 

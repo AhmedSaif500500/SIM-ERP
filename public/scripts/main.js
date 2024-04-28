@@ -351,6 +351,117 @@ flatpickr(".datepicker", {
 //! END_______________________
 //#endregion End -- flatpicker
 
+//#region table
+
+  //#region totl_column 
+  //! GLOBAL totalVariableName for columns (( دى متغيرات تحسبا لوجود ست اعمده عايزين يتجمعو ))
+let total_column1 = { value: 0 };
+let total_column2 = { value: 0 };
+let total_column3 = { value: 0 };
+let total_column4 = { value: 0 };
+let total_column5 = { value: 0 };
+let total_column6 = { value: 0 };
+
+function total_column(totalVariable, rowData) {
+  try {
+    
+
+    if (!isNaN(rowData)) {
+        totalVariable.value += rowData; // sum
+        if (parseFloat(rowData) < 0) {
+            return `<span style="color: red">${rowData}</span>`;
+        } else if (parseFloat(rowData) === 0) {
+            return '';
+        } else {
+            return rowData;
+        }
+    } else {
+        return '';
+    }
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+//?  use it like this 
+//todoa 1 :  first  code line after FillAttendanceTable lazem t3mel prepare Global variables ely hatshta8ala 3alhea  7asp 3add el columns ely enta 3ayz tegm3ha 
+//? example       total_column1.value = 0
+//? example       total_column2.value = 0
+
+//todo 2: hatst5dem el function fe el td  zay Keda 3ashan te3mel sum we fnafs el wa2t trg3 el value beta3 el cell
+//? example  <td style="width: auto; white-space: nowrap;">${total_column(total_amount, row.amount)}</td>
+
+//todo 3: a5er 7aga ba3d  el table mayktmel  hat7ot el totals beta3k
+//? document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
+//? document.getElementById("tfooter7").textContent = total_column1.value;
+//? document.getElementById("tfooter8").textContent = total_column2.value;
+
+  //#endregion END - total column
+
+  //#region dragable ( rows > drag and drop )
+  function makeTableRowsDraggable(tableId) {
+    const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+    let draggedRow = null;
+  
+    table.addEventListener('mousedown', function(event) {
+      if (event.target.classList.contains('drag-handle')) {
+        draggedRow = event.target.closest('tr');
+        draggedRow.style.cursor = 'grabbing';
+        const mouseY = event.clientY;
+        const initialTop = draggedRow.getBoundingClientRect().top;
+        
+        const mouseMoveHandler = function(event) {
+          const deltaY = event.clientY - mouseY;
+          draggedRow.style.transform = `translateY(${deltaY}px)`;
+        };
+  
+        const mouseUpHandler = function(event) {
+          document.removeEventListener('mousemove', mouseMoveHandler);
+          document.removeEventListener('mouseup', mouseUpHandler);
+          draggedRow.style.cursor = 'grab';
+          draggedRow.style.transform = '';
+          const targetRow = document.elementFromPoint(event.clientX, event.clientY).closest('tr');
+          if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
+            const rows = Array.from(table.children);
+            const indexDragged = rows.indexOf(draggedRow);
+            const indexTarget = rows.indexOf(targetRow);
+            if (indexTarget > indexDragged) {
+              table.insertBefore(draggedRow, targetRow.nextSibling);
+            } else {
+              table.insertBefore(draggedRow, targetRow);
+            }
+          }
+          draggedRow = null;
+        };
+        
+  
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+      }
+    });
+  
+    table.addEventListener('dragstart', function(event) {
+      event.preventDefault();
+    });
+  }
+  
+
+
+   //*HOW TO USE 
+  /*
+  1 : hat7ot fe ele button el 5as be ele draggable fe el table tr  ha7ot class = 'drag-handle'
+  2 : lazem if there is icon inside button yo have to make it disabled click like that 
+                            <button class="drag-handle ta7ded1">
+                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                      </button>
+
+  3 : call the funcion and path the id of table as a parameter  makeTableRowsDraggable('myTable');
+  4 : Make sure that table is loaded befor you call this function > @!important 
+  */ 
+
+  //#endregion END - dragable 
+//#endregion ENd - table
+
 //#region day_name
 function day_name(dateStr) {
   // صيغة التاريخ: dd-mm-yyyy
@@ -516,9 +627,9 @@ function changeSelect(selectId, optionValue) {
 
 //#region back and forward
 
-function back() {
-  window.history.back();
-};
+// function back() {
+//   window.history.back();
+// };
 
 function forward() {
   window.history.forward();
@@ -876,6 +987,133 @@ function hideLoadingIcon(element) {
   //#endregion End - delete fetching
 
 
+  async function fetchData_post1(FetchURL,posted_elements_AS_OBJECT,permission_name,permission_type,dialogMessage,ResponseTimeBySecends,redirectionPage,error_message){
+    const controller = new AbortController();
+      const signal = controller.signal;
+      
+      try {
+          if (inputErrors) {
+              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+              return;
+          }
+          
+          const permission = await btn_permission(permission_name,permission_type);
+       
+          if(!permission) {
+           return;
+          };
+  
+          // // تجهيز البيانات للإرسال إلى الخادم
+          // const posted_elements = {
+          //     user_id,
+          // };
+          
+          await showDialog('', dialogMessage, '');
+          if (!dialogAnswer) {
+              return;
+          }
+          
+          // تعيين حد زمني للطلب
+          const timeout = setTimeout(() => {
+              controller.abort(); // إلغاء الطلب
+          }, ResponseTimeBySecends*1000); // 10 ثواني
+          
+          // إرسال الطلب إلى الخادم
+          const response = await fetch(FetchURL, {
+              method: 'post',
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify(posted_elements_AS_OBJECT),
+              signal, // تمرير الإشارة لإلغاء الطلب
+          });
+          
+          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+          clearTimeout(timeout);
+          
+          if (response.ok) {
+              const data = await response.json();
+              closeDialog();
+              if (data.success) {
+                  body_content.style.pointerEvents = 'none';
+                  redirection(redirectionPage, 'success', data.message_ar);
+              } else {
+                body_content.style.pointerEvents = 'auto';
+                  showAlert('fail', data.message_ar);
+              }
+          } else {
+              closeDialog();
+              showAlert('fail', `Request failed with status code: ${response.status}`);
+          }
+      } catch (error) {
+          closeDialog();
+          showAlert('fail',error_message);
+          catch_error(error);
+      }
+  }
+  
 
+  // let data = [];
+  async function fetchData_postAndGet(FetchURL,posted_elements_AS_OBJECT,permission_name,permission_type,ResponseTimeBySecends,is_confirm_dialog,dialogMessage,error_message){
+    const controller = new AbortController();
+      const signal = controller.signal;
+      
+      try {
+          if (inputErrors) {
+              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+              return;
+          }
+          
+          const permission = await btn_permission(permission_name,permission_type);
+       
+          if(!permission) {
+           return;
+          };
+  
+          // // تجهيز البيانات للإرسال إلى الخادم
+          // const posted_elements = {
+          //     user_id,
+          // };
+          if (is_confirm_dialog) {
+            if (is_confirm_dialog)
+            await showDialog('', dialogMessage, '');
+            if (!dialogAnswer) {
+                return;
+            }
+          }
+
+          
+          // تعيين حد زمني للطلب
+          const timeout = setTimeout(() => {
+              controller.abort(); // إلغاء الطلب
+          }, ResponseTimeBySecends*1000); // 10 ثواني
+          
+          // إرسال الطلب إلى الخادم
+          const response = await fetch(FetchURL, {
+              method: 'post',
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify(posted_elements_AS_OBJECT),
+              signal, // تمرير الإشارة لإلغاء الطلب
+          });
+          
+          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+          clearTimeout(timeout);
+          
+          if (response.ok) {
+            // closeDialog();
+              data = await response.json();
+          } else {
+            // closeDialog();
+              showAlert('fail', `Request failed with status code: ${response.status}`);
+          }
+      } catch (error) {
+        // closeDialog();
+          showAlert('fail',error_message);
+          catch_error(error);
+      }
+  }
 
 //#endregion END- fetching
+

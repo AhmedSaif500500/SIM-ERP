@@ -11,8 +11,8 @@ const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm
           // event.preventDefault(); // if <a>
       
           // استعداد البيانات
-          const production_amount_input = document.querySelector('#production_amount_input').value.trim();
-          const sales_amount_input = document.querySelector('#sales_amount_input').value.trim();
+          const production_amount_input = parseFloat(document.querySelector('#production_amount_input').value.trim()) || 0;
+          const sales_amount_input = parseFloat(document.querySelector('#sales_amount_input').value.trim()) || 0;
           const note1_input = document.querySelector('#note1_input').value.trim();
           const date1 = document.querySelector('#date1').value.trim();
           

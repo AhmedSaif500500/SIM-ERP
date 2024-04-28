@@ -17,6 +17,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
       let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value); // 5aleha let msh const
       let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value); // 5aleha let msh const
       let table_permission_production = parseInt(document.querySelector("#table_permission_production").value); // 5aleha let msh const
+      let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value); // 5aleha let msh const
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
 
       // التحقق من صحة البيانات هنا
@@ -38,6 +39,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         table_permission_employee = 0;
         table_permission_attendance = 0;
         table_permission_production = 0;
+        table_permission_bread = 0;
         // add here all tables select permission id
       };
 
@@ -54,6 +56,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         table_permission_employee,
         table_permission_attendance,
         table_permission_production,
+        table_permission_bread,
         today,
       };
 

@@ -58,6 +58,7 @@ if (!user_id) {
       document.querySelector('#table_permission_employee').value = array1.employees_permission;
       document.querySelector('#table_permission_attendance').value = array1.attendance_permission;
       document.querySelector('#table_permission_production').value = array1.production_permission;
+      document.querySelector('#table_permission_bread').value = array1.bread_permission;
     } catch (error) {
       catch_error('error in show_data', error.message);
     };
@@ -182,6 +183,7 @@ if (!user_id) {
       let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value);
       let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value);
       let table_permission_production = parseInt(document.querySelector("#table_permission_production").value);
+      let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value);
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
       const changePassword_div = document.querySelector('#changePassword_div');
 
@@ -223,6 +225,7 @@ if(!dialogAnswer){
         table_permission_employee = 0;
         table_permission_attendance = 0;
         table_permission_production = 0;
+        table_permission_bread = 0;
         // add here all tables select permission id
       };
 
@@ -239,13 +242,14 @@ if(!dialogAnswer){
         table_permission_employee,
         table_permission_attendance,
         table_permission_production,
+        table_permission_bread,
         today,
       };
 
                 // تعيين حد زمني للطلب
                 const timeout = setTimeout(() => {
                   controller.abort(); // إلغاء الطلب
-              }, ResponseTimeBySecends_Time_secends*1000); // 10 ثواني
+              },10000); // 10 ثواني
               
       // إرسال البيانات إلى الخادم
       const response = await fetch("/update_User_from_user_update_ar", {
