@@ -399,66 +399,66 @@ function total_column(totalVariable, rowData) {
   //#endregion END - total column
 
   //#region dragable ( rows > drag and drop )
-function makeTableRowsDraggable(tableId) {
-  const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-  let draggedRow = null;
-  let initialY = null;
-
-  const startDragHandler = function(event) {
-    if (event.target.classList.contains('drag-handle')) {
-      draggedRow = event.target.closest('tr');
-      draggedRow.style.cursor = 'grabbing';
-      initialY = event.clientY || event.touches[0].clientY;
-    }
-  };
-
-  const dragMoveHandler = function(event) {
-    if (draggedRow) {
-      const currentY = event.clientY || event.touches[0].clientY;
-      const deltaY = currentY - initialY;
-      draggedRow.style.transform = `translateY(${deltaY}px)`;
-    }
-  };
-
-  const endDragHandler = function(event) {
-    if (draggedRow) {
-      draggedRow.style.cursor = 'grab';
-      draggedRow.style.transform = '';
-      const targetRow = document.elementFromPoint(
-        event.clientX || event.changedTouches[0].clientX,
-        event.clientY || event.changedTouches[0].clientY
-      ).closest('tr');
-      
-      if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
-        const rows = Array.from(table.children);
-        const indexDragged = rows.indexOf(draggedRow);
-        const indexTarget = rows.indexOf(targetRow);
-        
-        if (indexTarget > indexDragged) {
-          table.insertBefore(draggedRow, targetRow.nextSibling);
-        } else {
-          table.insertBefore(draggedRow, targetRow);
-        }
+  function makeTableRowsDraggable(tableId) {
+    const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+    let draggedRow = null;
+    let initialY = null;
+  
+    const startDragHandler = function(event) {
+      if (event.target.classList.contains('drag-handle')) {
+        draggedRow = event.target.closest('tr');
+        draggedRow.style.cursor = 'grabbing';
+        initialY = event.clientY || event.touches[0].clientY;
       }
-      draggedRow = null;
-      initialY = null;
-    }
-  };
-
-  table.addEventListener('mousedown', startDragHandler);
-  table.addEventListener('touchstart', startDragHandler);
-
-  document.addEventListener('mousemove', dragMoveHandler);
-  document.addEventListener('touchmove', dragMoveHandler);
-
-  document.addEventListener('mouseup', endDragHandler);
-  document.addEventListener('touchend', endDragHandler);
-
-  table.addEventListener('dragstart', function(event) {
-    event.preventDefault();
-  });
-}
-
+    };
+  
+    const dragMoveHandler = function(event) {
+      if (draggedRow) {
+        const currentY = event.clientY || event.touches[0].clientY;
+        const deltaY = currentY - initialY;
+        draggedRow.style.transform = `translateY(${deltaY}px)`;
+      }
+    };
+  
+    const endDragHandler = function(event) {
+      if (draggedRow) {
+        draggedRow.style.cursor = 'grab';
+        draggedRow.style.transform = '';
+        const targetRow = document.elementFromPoint(
+          event.clientX || event.changedTouches[0].clientX,
+          event.clientY || event.changedTouches[0].clientY
+        ).closest('tr');
+        
+        if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
+          const rows = Array.from(table.children);
+          const indexDragged = rows.indexOf(draggedRow);
+          const indexTarget = rows.indexOf(targetRow);
+          
+          if (indexTarget > indexDragged) {
+            table.insertBefore(draggedRow, targetRow.nextSibling);
+          } else {
+            table.insertBefore(draggedRow, targetRow);
+          }
+        }
+        draggedRow = null;
+        initialY = null;
+      }
+    };
+  
+    table.addEventListener('mousedown', startDragHandler);
+    table.addEventListener('touchstart', startDragHandler);
+  
+    document.addEventListener('mousemove', dragMoveHandler);
+    document.addEventListener('touchmove', dragMoveHandler);
+  
+    document.addEventListener('mouseup', endDragHandler);
+    document.addEventListener('touchend', endDragHandler);
+  
+    table.addEventListener('dragstart', function(event) {
+      event.preventDefault();
+    });
+  }
+  
   
 
 

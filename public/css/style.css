@@ -333,6 +333,7 @@ i {
   color: var(--icon_btn_color);
   font-size: 1.7rem;
   transition: var(--transition);
+  opacity: 0.8;
 }
 
 p,
@@ -2171,9 +2172,15 @@ transition: var(--transition);
   display: flex; flex-direction: row; justify-content: center; align-items: center;
   width: fit-content;
   padding-inline-end: .5rem;
+  background-color: inherit;
 }
 .dragbutton_table button{
   cursor: pointer;
+  background-color: inherit;
+}
+
+.dragbutton_table button i{
+color: var(--Font_Color);
 }
 .table_buttons_div{
   display: flex; flex-direction: row; justify-content: start; align-items: center;
@@ -2197,6 +2204,8 @@ transition: var(--transition);
   transform: scale(1.1); /* زيادة حجم العنصر بنسبة 10% */
 }
 
+
+
 .table_textarea{
   color: var(--Font_Color);
   /* height: 2.5rem; */
@@ -2211,6 +2220,11 @@ transition: var(--transition);
   transition: var(--transition);
   color: var(--Font_Color);
   background-color: var(--input_text_background_color);
+}
+
+.table_total_row td{
+  color: var(--Font_Color);
+  font-weight: bold;
 }
 
 /*________________________________*/

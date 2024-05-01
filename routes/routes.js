@@ -277,6 +277,16 @@ router.get('/attendance_report_ar', (req, res) => {
 
 //#endregion reports
 
+//#region accounting
 
+router.get('/accounts_view_ar', async (req, res) => {
+    if (req.session.isLoggedIn) {  
+        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'accounts_view_ar.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
+
+//#endregion end - accounting
 
 module.exports = router;

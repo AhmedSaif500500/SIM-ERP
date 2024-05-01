@@ -43,8 +43,7 @@ open Terminal vscode
 
 //#endregion End-Guid
 
-// ! #region app-Started
-//=======================
+//#region app-Started
 const express = require("express");
 const path = require("path"); // استدعاء مكتبة path
 const bodyParser = require("body-parser");
@@ -119,45 +118,15 @@ app.use(
   })
 );
 
-
-
-//#endregion End / App-Started
-
 //! lazem el code da to7to ba3d tahy2t el session
 const routes = require("./routes/routes");
 app.use("/", routes);
 
-//=======================================
+//#endregion End / App-Started
 
+//#region cron 
 
-//========================================================================
-//#endregion End-Database
-
-//#region Page : index.html
-
-//#endregion
-
-// #region Page : index2.html
-
-//#endregion
-
-/****************************************************** */
-
-/****************************************** */
-
-//#region started server functions
-
-//! 1: put all is_active to false for all users
-async function make_all_users_is_active_to_false() { // we use this function in the begining of server start
-  await db.none(`UPDATE users SET is_active = false`)
-}
-//#endregion End - sstarted server functions
-
-
-//#region cron to make schedule to check user sessions  if is not active  will go to database and make is_active = flase in users table
-
-
-//#region Cron Functions
+  //#region Cron Functions
 async function check_last_activity_fn() {
   // احسب الوقت الحالي
   const now = new Date();
@@ -182,16 +151,17 @@ async function check_last_activity_fn() {
 
 //#endregion End Cron Functions
 
-//#region cron schedule
+  //#region cron schedule
 // جدول المهمة لتعمل كل 5 دقائق
 cron.schedule("*/5 * * * *", async () => { //الكود دا يعنى ان الكود سيتم تنفيذه اذا كانت القيمه تقبل القسمه على خمسه بغض النظر اذ كان شهر يوم ساعه  دقيقه
   check_last_activity_fn()
 });
 //#endregionEnd - cron schedule
 
+//#endregion end cron
+
 
 //#endregion end-cron
-
 
 //#region Login
 app.post("/Login", async (req, res) => {
@@ -241,6 +211,7 @@ app.post("/Login", async (req, res) => {
         req.session.username = rows[0].user_name; // على سبيل المثال، يمكنك تخزين اسم المستخدم
 
         req.session.general_permission = rows[0].general_permission
+        req.session.accounts_permission = rows[0].accounts_permission
         req.session.employees_permission = rows[0].employees_permission
         req.session.attendance_permission = rows[0].attendance_permission
         req.session.users_permission = rows[0].users_permission
@@ -268,6 +239,7 @@ app.post("/Login", async (req, res) => {
           users_permission: rows[0].users_permission,
           production_permission: rows[0].production_permission,
           bread_permission: rows[0].bread_permission,
+          accounts_permission: rows[0].accounts_permission,
         });
 
         last_activity(req);
@@ -447,6 +419,7 @@ function sql_anti_injection(values) {
 
 //#endregion End- Templets
 
+//*-- PAGES ---------------------------------------------
 
 //#region users
 
@@ -1145,322 +1118,323 @@ app.get("/get_All_Employees_Data", async (req, res) => {
 
 //#region attendance
 
-// Add attendance_add
-app.post("/attendance_add", async (req, res) => {
-  try {
-    //! Permission
-    await permissions(req, 'attendance_permission', 'add');
-    if (!permissions) { return; };
-
-    const posted_elements = req.body;
-
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-    };
-    //* Start--------------------------------------------------------------
-
-
-
-
-    //3: insert data into db
-    const newId = await newId_fn('attendance')
-    // await db.none(
-    //   "INSERT INTO attendance (id, employee_id, datex, days, hours, values, note) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-    //   [
-    //     newId,
-    //     posted_elements.id_hidden_input,
-    //     posted_elements.date_input,
-    //     posted_elements.days_input,
-    //     posted_elements.hours_inpu,
-    //     posted_elements.values_input,
-    //     posted_elements.note_inpute,
-    //   ]
-    // );
-
-    let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
-    await db.none(query1, [
-      newId,
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
-    ]);
-
-    //4: send a response to frontend about success transaction
-    res.json({
-      success: true,
-      message: "تم حفظ البيانات بنجاح",
-    });
-  } catch (error) {
-    console.error("Error adding employee:", error.message);
-    // send a response to frontend about fail transaction
-    res.status(500).json({
-      success: false,
-      message: "حدث خطأ أثناء الاضافه",
-    });
-  }
-});
-
-// 2:- get data to fill dropdownbox of employees
-app.get("/getEmployeesData1", async (req, res) => {
-  try {
-
-    //! Permission
-    await permissions(req, 'attendance_permission', 'view');
-    if (!permissions) { return; };
-
-    //* Start--------------------------------------------------------------
-    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
-
-    let query1 = `SELECT e.id, e.employee_name FROM employees e`;
-    let rows = await db.any(query1);
-
-    const data = rows.map((row) => ({
-      id: row.id,
-      employee_name: row.employee_name,
-    }));
-    res.json(data);
-  } catch (error) {
-    console.error("Error while get Employees Data", error.message);
-    res.join;
-    res
-      .status(500)
-      .json({ success: false, message: "Error while get Employees Data" });
-  }
-});
-
-// 3:- get data for review tables
-app.get("/get_All_attendance_Data", async (req, res) => {
-  try {
-    //! Permission
-    await permissions(req, 'attendance_permission', 'view');
-    if (!permissions) { return; };
-
-    //* Start--------------------------------------------------------------
-    // const rows =
-    //   await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.note, A.datex, A.last_update
-    //     FROM Attendance A
-    //     LEFT JOIN  employees E on A.employee_id = E.id
-    //     ORDER BY A.datex DESC`);
-
-    let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
-        FROM Attendance A
-        LEFT JOIN  employees E on A.employee_id = E.id
-        ORDER BY A.datex DESC`;
-    let rows = await db.any(query1);
-
-    const data = rows.map((row) => ({
-      id: row.id,
-      employee_id: row.employee_id,
-      employee_name: row.employee_name,
-      days: row.days,
-      hours: row.hours,
-      values: row.values,
-      note: row.note,
-      datex: row.datex,
-    }));
-
-    res.json(data);
-  } catch (error) {
-    console.error("Error getEmployeesData1:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "حدث خطأ أثناء عرض البيانات" });
-  }
-});
-
-
-// update attendance
-app.post("/updateattendance", async (req, res) => {
-  try {
-    const posted_elements = req.body;
-
-    //! Permission
-    await permissions(req, 'attendance_permission', 'view');
-    if (!permissions) { return; };
-
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.attendance_id
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-    };
-
-    //* Start--------------------------------------------------------------
-
-
-
-
-
-    //2: validation data befor inserting to db
-    // const rows = await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
-    // FROM Attendance A
-    // LEFT JOIN  employees E on A.employee_id = E.id
-    // where A.id=$1
-    // ORDER BY A.datex DESC`, [
-    //   posted_elements.attendance_id,
-    // ]);
-
-    let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
-    FROM Attendance A
-    LEFT JOIN  employees E on A.employee_id = E.id
-    where A.id=$1
-    ORDER BY A.datex DESC`;
-    let rows = await db.any(query1, [
-      posted_elements.attendance_id,
-    ]);
-
-    if (rows.length > 0) {
-      // اذا حصل على نتائج
-      return res.json({
+  //#region 1: Add attendance_add
+  app.post("/attendance_add", async (req, res) => {
+    try {
+      //! Permission
+      await permissions(req, 'attendance_permission', 'add');
+      if (!permissions) { return; };
+  
+      const posted_elements = req.body;
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.id_hidden_input,
+        posted_elements.date_input,
+        posted_elements.days_input,
+        posted_elements.hours_inpu,
+        posted_elements.values_input,
+        posted_elements.note_inpute
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+      };
+      //* Start--------------------------------------------------------------
+  
+  
+  
+  
+      //3: insert data into db
+      const newId = await newId_fn('attendance')
+      // await db.none(
+      //   "INSERT INTO attendance (id, employee_id, datex, days, hours, values, note) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      //   [
+      //     newId,
+      //     posted_elements.id_hidden_input,
+      //     posted_elements.date_input,
+      //     posted_elements.days_input,
+      //     posted_elements.hours_inpu,
+      //     posted_elements.values_input,
+      //     posted_elements.note_inpute,
+      //   ]
+      // );
+  
+      let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+      await db.none(query1, [
+        newId,
+        posted_elements.id_hidden_input,
+        posted_elements.date_input,
+        posted_elements.days_input,
+        posted_elements.hours_inpu,
+        posted_elements.values_input,
+        posted_elements.note_inpute,
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
         success: true,
-        message: "data get success",
-        rows: rows,
+        message: "تم حفظ البيانات بنجاح",
       });
-    } else {
-      return res.json({
+    } catch (error) {
+      console.error("Error adding employee:", error.message);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
         success: false,
-        message: "Faild to get data from server",
+        message: "حدث خطأ أثناء الاضافه",
       });
     }
-  } catch (error) {
-    console.error("Error updateattendance:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "حدث خطأ أثناء تحميل البيانات",
-    });
-  }
-});
+  });
+  //#endregion END - Add attendance_add
 
+  //#region 2: get data to fill dropdownbox of employees
+  app.get("/getEmployeesData1", async (req, res) => {
+    try {
+  
+      //! Permission
+      await permissions(req, 'attendance_permission', 'view');
+      if (!permissions) { return; };
+  
+      //* Start--------------------------------------------------------------
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `SELECT e.id, e.employee_name FROM employees e`;
+      let rows = await db.any(query1);
+  
+      const data = rows.map((row) => ({
+        id: row.id,
+        employee_name: row.employee_name,
+      }));
+      res.json(data);
+    } catch (error) {
+      console.error("Error while get Employees Data", error.message);
+      res.join;
+      res
+        .status(500)
+        .json({ success: false, message: "Error while get Employees Data" });
+    }
+  });
+  //#endregion 
 
-// 4:- Update Attendance data
-// update_Employee
-app.post("/attendance_update", async (req, res) => {
-  try {
+  //#region 3: get data for review tables
+  app.get("/get_All_attendance_Data", async (req, res) => {
+    try {
+      //! Permission
+      await permissions(req, 'attendance_permission', 'view');
+      if (!permissions) { return; };
+  
+      //* Start--------------------------------------------------------------
+      // const rows =
+      //   await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.note, A.datex, A.last_update
+      //     FROM Attendance A
+      //     LEFT JOIN  employees E on A.employee_id = E.id
+      //     ORDER BY A.datex DESC`);
+  
+      let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
+          FROM Attendance A
+          LEFT JOIN  employees E on A.employee_id = E.id
+          ORDER BY A.datex DESC`;
+      let rows = await db.any(query1);
+  
+      const data = rows.map((row) => ({
+        id: row.id,
+        employee_id: row.employee_id,
+        employee_name: row.employee_name,
+        days: row.days,
+        hours: row.hours,
+        values: row.values,
+        note: row.note,
+        datex: row.datex,
+      }));
+  
+      res.json(data);
+    } catch (error) {
+      console.error("Error getEmployeesData1:", error.message);
+      res
+        .status(500)
+        .json({ success: false, message: "حدث خطأ أثناء عرض البيانات" });
+    }
+  });
+  //#endregion
 
-    const posted_elements = req.body;
-    //! Permission
-    await permissions(req, 'attendance_permission', 'update');
-    if (!permissions) { return; };
+  //#region 4: update attendance
+  app.post("/updateattendance", async (req, res) => {
+    try {
+      const posted_elements = req.body;
+  
+      //! Permission
+      await permissions(req, 'attendance_permission', 'view');
+      if (!permissions) { return; };
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.attendance_id
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+      };
+  
+      //* Start--------------------------------------------------------------
+  
+  
+  
+  
+  
+      //2: validation data befor inserting to db
+      // const rows = await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
+      // FROM Attendance A
+      // LEFT JOIN  employees E on A.employee_id = E.id
+      // where A.id=$1
+      // ORDER BY A.datex DESC`, [
+      //   posted_elements.attendance_id,
+      // ]);
+  
+      let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
+      FROM Attendance A
+      LEFT JOIN  employees E on A.employee_id = E.id
+      where A.id=$1
+      ORDER BY A.datex DESC`;
+      let rows = await db.any(query1, [
+        posted_elements.attendance_id,
+      ]);
+  
+      if (rows.length > 0) {
+        // اذا حصل على نتائج
+        return res.json({
+          success: true,
+          message: "data get success",
+          rows: rows,
+        });
+      } else {
+        return res.json({
+          success: false,
+          message: "Faild to get data from server",
+        });
+      }
+    } catch (error) {
+      console.error("Error updateattendance:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ أثناء تحميل البيانات",
+      });
+    }
+  });
+  //#endregion
 
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
-      posted_elements.attendance_id
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-    };
+  //#region 5: Update Attendance data
+  app.post("/attendance_update", async (req, res) => {
+    try {
+  
+      const posted_elements = req.body;
+      //! Permission
+      await permissions(req, 'attendance_permission', 'update');
+      if (!permissions) { return; };
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.id_hidden_input,
+        posted_elements.date_input,
+        posted_elements.days_input,
+        posted_elements.hours_inpu,
+        posted_elements.values_input,
+        posted_elements.note_inpute,
+        posted_elements.attendance_id
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+      };
+  
+      //* Start--------------------------------------------------------------
+  
+  
+      // await db.none(
+      //   "UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7",
+      //   [
+      //     posted_elements.id_hidden_input,
+      //     posted_elements.date_input,
+      //     posted_elements.days_input,
+      //     posted_elements.hours_inpu,
+      //     posted_elements.values_input,
+      //     posted_elements.note_inpute,
+      //     posted_elements.attendance_id,
+      //   ]
+      // );
+  
+      let query1 = `UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7`;
+      await db.none(query1, [
+        posted_elements.id_hidden_input,
+        posted_elements.date_input,
+        posted_elements.days_input,
+        posted_elements.hours_inpu,
+        posted_elements.values_input,
+        posted_elements.note_inpute,
+        posted_elements.attendance_id
+      ]);
+  
+      return res.json({
+        success: true,
+        message: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
+      });
+      // }
+    } catch (error) {
+      console.error("Error get employee data:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ أثناء تعديل البيانات",
+      });
+    }
+  });
+  //#endregion
 
-    //* Start--------------------------------------------------------------
-
-
-    // await db.none(
-    //   "UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7",
-    //   [
-    //     posted_elements.id_hidden_input,
-    //     posted_elements.date_input,
-    //     posted_elements.days_input,
-    //     posted_elements.hours_inpu,
-    //     posted_elements.values_input,
-    //     posted_elements.note_inpute,
-    //     posted_elements.attendance_id,
-    //   ]
-    // );
-
-    let query1 = `UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7`;
-    await db.none(query1, [
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
-      posted_elements.attendance_id
-    ]);
-
-    return res.json({
-      success: true,
-      message: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
-    });
-    // }
-  } catch (error) {
-    console.error("Error get employee data:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "حدث خطأ أثناء تعديل البيانات",
-    });
-  }
-});
-
-
-// attendance_delete
-app.post("/attendance_delete", async (req, res) => {
-  try {
-
-    const posted_elements = req.body;
-    //! Permission
-    await permissions(req, 'attendance_permission', 'delete');
-    if (!permissions) { return; };
-
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.attendance_id
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
-    };
-
-
-    //* Start--------------------------------------------------------------
-
-
-    //3: insert data into db
-    // await db.none("DELETE FROM attendance WHERE id = $1", [
-    //   posted_elements.attendance_id,
-    // ]);
-
-    let query1 = `DELETE FROM attendance WHERE id = $1`;
-    await db.none(query1, [
-      posted_elements.attendance_id
-    ]);
-
-    return res.json({
-      success: true,
-      message: "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
-    });
-  } catch (error) {
-    console.error("Error get employee data:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "حدث خطأ أثناء حذف ",
-    });
-  }
-});
-
-
-
+  //#region 6: Delete attatendace
+  app.post("/attendance_delete", async (req, res) => {
+    try {
+  
+      const posted_elements = req.body;
+      //! Permission
+      await permissions(req, 'attendance_permission', 'delete');
+      if (!permissions) { return; };
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.attendance_id
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({ success: false, message: "Invalid input detected due to prohibited characters. Please review your input and try again." });
+      };
+  
+  
+      //* Start--------------------------------------------------------------
+  
+  
+      //3: insert data into db
+      // await db.none("DELETE FROM attendance WHERE id = $1", [
+      //   posted_elements.attendance_id,
+      // ]);
+  
+      let query1 = `DELETE FROM attendance WHERE id = $1`;
+      await db.none(query1, [
+        posted_elements.attendance_id
+      ]);
+  
+      return res.json({
+        success: true,
+        message: "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
+      });
+    } catch (error) {
+      console.error("Error get employee data:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ أثناء حذف ",
+      });
+    }
+  });
+  
+  //#endregion
+//#endregion END - attendance
 
 //#region production
 
@@ -1670,12 +1644,9 @@ app.post("/delete_production", async (req, res) => {
 });
 //#endregion END- production
 
-
 //#region  bread
 
-//#endregion end bread
-
-//#region bread_review
+//#region 1: bread_review
 app.get("/get_All_bread_Data", async (req, res) => {
   try {
 
@@ -1717,9 +1688,9 @@ ORDER BY h.datex DESC, h.id DESC;
     res.status(500).send("Error:");
   }
 });
+//#endregion
 
-
-//#region add_bread
+//#region 2: add_bread
 app.post('/api/bread_add', async (req, res) => {
   const posted_elements = req.body;
 
@@ -1773,8 +1744,9 @@ app.post('/api/bread_add', async (req, res) => {
   }
 });
 
+//#endregion
 
-//#region update bread
+//#region 3: get_bread_Data_for_update_page
 
 app.post('/get_bread_Data_for_update_page', async (req, res) => {
   try {
@@ -1809,10 +1781,11 @@ WHERE bread_header_id = $1 ;`;
   }
 });
 
+//#endregion
 
-//! Update code
+//#region 4: /api/bread_update
+  //! Update code
 app.post('/api/bread_update', async (req, res) => {
-
 
   try {
     const posted_elements = req.body;
@@ -1877,55 +1850,60 @@ app.post('/api/bread_update', async (req, res) => {
   }
 });
 
-//! Delete code
+//#endregion
+
+//#region 5: /api/bread_delete
+  //! Delete code
 app.post('/api/bread_delete', async (req, res) => {
 
-      //! Permission
-      await permissions(req, 'bread_permission', 'delete');
-      if (!permissions) { return; };
-  
-      //* Start--------------------------------------------------------------
+  //! Permission
+  await permissions(req, 'bread_permission', 'delete');
+  if (!permissions) { return; };
 
-  try {
-    const posted_elements = req.body;
-    await db.tx(async (tx) => {
-      // delete data from body as a first stip
+  //* Start--------------------------------------------------------------
 
-      let query0 = `DELETE FROM bread_body
-    WHERE bread_header_id = $1;`;
+try {
+const posted_elements = req.body;
+await db.tx(async (tx) => {
+  // delete data from body as a first stip
 
-      await tx.none(query0, [
-        posted_elements.h_id
-      ]);
+  let query0 = `DELETE FROM bread_body
+WHERE bread_header_id = $1;`;
+
+  await tx.none(query0, [
+    posted_elements.h_id
+  ]);
 
 
-      let query1 = `DELETE FROM bread_header
-                    WHERE id = $1;`;
+  let query1 = `DELETE FROM bread_header
+                WHERE id = $1;`;
 
-      await tx.none(query1, [
-        posted_elements.h_id
-      ]);
-    });
-
-    // إذا تم تنفيذ جميع الاستعلامات بنجاح
-    return res.json({
-      success: true,
-      message_ar: "تم الحذف بنجاح",
-    });
-  } catch (error) {
-    console.error('Error adding account:', error);
-
-    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
-    return res.json({
-      success: false,
-      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
-    });
-  }
+  await tx.none(query1, [
+    posted_elements.h_id
+  ]);
 });
+
+// إذا تم تنفيذ جميع الاستعلامات بنجاح
+return res.json({
+  success: true,
+  message_ar: "تم الحذف بنجاح",
+});
+} catch (error) {
+console.error('Error adding account:', error);
+
+// إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+return res.json({
+  success: false,
+  message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+});
+}
+});
+//#endregion
+
+
 //#endregion end - update bread
 
-
-// report attendance
+//#region report attendance
 app.post("/report_attendance", async (req, res) => {
   try {
     const posted_elements = req.body;
@@ -2004,7 +1982,7 @@ app.post("/report_attendance", async (req, res) => {
       a.employee_id = $1
       AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
-    ORDER BY e.employee_name ASC`;
+    ORDER BY a.datex DESC, e.employee_name ASC;`;
       let rows = await db.any(query1, [
         posted_elements.employee_id,
         posted_elements.month,
@@ -2042,9 +2020,277 @@ app.post("/report_attendance", async (req, res) => {
     });
   };
 });
-// End- reports
+
+//#endregion
+
+//#region  Accounts
+
+app.get('/api/tree', async (req, res) => {
+  try {
+      // استعلام SQL لجلب بيانات الشجرة
+      const treeData = await db.any(`
+          SELECT h1.id AS account_id,
+                 h1.account_name AS account_name,
+                 h1.is_final_account AS is_final_account,
+                 h1.account_no as account_no,
+                 h1.finance_statement as finance_statement,
+                 h1.cashflow_statement as cashflow_statement,
+                 h1.starting_balance_value as starting_balance_value,
+                 h1.starting_balance_type as starting_balance_type,
+                 h1.can_be_deleted as can_be_deleted,
+                 h1.is_main_acc as is_main_acc,
+                  h2.id AS parent_id,
+                  h2.account_name AS parent_name
+          FROM accounts_header h1
+          LEFT JOIN accounts_body b ON h1.id = b.account_id
+          LEFT JOIN accounts_header h2 ON b.parent_id = h2.id;
+      `);
+      res.json(treeData);
+  } catch (error) {
+      console.error('Error fetching tree data:', error);
+      res.status(500).send('Server Error');
+  }
+});
 
 
+// contextmenu / add new node
+app.post('/api/add-account', async (req, res) => {
+  const posted_elements = req.body;
+  
+  try {
+
+      //#region validation
+
+      //check account
+
+      //#endregion end- validation
+
+
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+          // أدخل into accounts_header
+          let new_account_id = await newId_fn('accounts_header');
+          let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, cashflow_statement, starting_balance_value, starting_balance_type, can_be_deleted)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+          await tx.none(query1, [
+              new_account_id,
+              posted_elements.account_name,
+              posted_elements.account_no,
+              posted_elements.is_final_account,
+              posted_elements.statment_type_value,
+              posted_elements.cash_flow_statement_value,
+              posted_elements.starting_balance_value,
+              posted_elements.starting_balance_type,
+              true,
+          ]);
+
+          // أدخل into accounts_body
+          let new_id = await newId_fn('accounts_body');
+          let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                        VALUES ($1, $2, $3)`;
+          await tx.none(query2, [
+              new_id,
+              posted_elements.account_parent_name_id,
+              new_account_id
+          ]);
+      });
+
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+          success: true,
+          message_ar: "تم إضافة الحساب بنجاح",
+      });
+  } catch (error) {
+      console.error('Error adding account:', error);
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+          success: false, // العملية فشلت
+          message_ar: "حدث خطأ أثناء عملية الإضافة وتم إلغاء العملية",
+      });
+  }
+});
+
+
+
+// contextmenu / update new node
+app.post('/api/update-account', async (req, res) => {
+  const posted_elements = req.body;
+  
+  try {
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+          // أدخل into accounts_header
+          // let new_account_id = await newId_fn('accounts_header');
+
+          let query1 = `UPDATE accounts_header SET 
+          account_name = $1,
+          account_no = $2,
+          finance_statement = $3,
+          cashflow_statement = $4,
+          starting_balance_value = $5,
+          starting_balance_type = $6
+          WHERE id = $7`;
+          await tx.none(query1, [
+              posted_elements.account_name,
+              posted_elements.account_no,
+              posted_elements.statment_type_value,
+              posted_elements.cash_flow_statement_value,
+              posted_elements.starting_balance_value,
+              posted_elements.starting_balance_type,
+              posted_elements.account_id
+          ]);
+
+
+      });
+
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+          success: true,
+          message_ar: "تم تعديل الحساب بنجاح",
+      });
+  } catch (error) {
+      console.error('Error adding account:', error);
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+          success: false, // العملية فشلت
+          message_ar: "حدث خطأ أثناء عملية التعديل وتم إلغاء العملية",
+      });
+  }
+});
+
+
+// مسار لمعالجة طلبات حذف الحساب
+app.post('/api/delete-account', async (req, res) => {
+  try {
+      const { account_id } = req.body;
+
+      // تحقق مما إذا كان يمكن حذف العقدة (قد تحتاج إلى التحقق من وجود عقد فرعية أولاً)
+      const query1 = 'SELECT COUNT(*) as count FROM accounts_body WHERE parent_id = $1';
+      const rows = await db.any(query1, [account_id]);
+
+
+      // تحقق من أن النتيجة ليست فارغة وأنها تحتوي على القيمة المطلوبة
+      if (rows.length > 0 && rows[0].count > 0) {
+
+        console.log(`has sub-accounts`);
+          // لا يمكن حذف العقدة لأن لديها عقد فرعية
+          return res.json({
+            success: false,
+            message_ar: "لا يمكن حذف الحساب المحدد لوجود حسابات فرعيه بداخليه",
+            message_en: "Cannot delete account with sub-accounts",
+          });
+      }
+
+      // حذف العقدة من قاعدة البيانات
+      const deleteQuery = 'DELETE FROM accounts_header WHERE id = $1';
+      await db.none(deleteQuery, [account_id]);
+
+      // إرسال استجابة نجاح إلى العميل
+      return res.json({
+        success: true,
+        message_ar: "تم حذف الحساب بنجاح",
+        message_en: "Account deleted successfully",
+      });
+  } catch (error) {
+      console.error('Error deleting account:', error);
+      // إرسال استجابة خطأ إلى العميل
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن حذف الحساب لوجود حسابات فرعيه بداخله",
+        message_en: "Can't delete this account with sub-accounts in it",
+      });
+  }
+});
+
+
+
+
+// dnd / drag and drop changes
+app.post('/api/update-account-parent', async (req, res) => {
+  try {
+      const { account_id, new_parent_id } = req.body; // جلب معلومات العقدة المراد تعديلها
+
+      // تحديث الأب الخاص بالعقدة في قاعدة البيانات
+      const updateQuery = `
+          UPDATE accounts_body
+          SET parent_id = $1
+          WHERE account_id = $2;
+      `;
+      await db.query(updateQuery, [new_parent_id, account_id]);
+
+      // إرسال استجابة نجاح إلى العميل
+      res.status(200).send('Parent updated successfully');
+  } catch (error) {
+      console.error('Error updating parent:', error);
+      // إرسال خطأ إلى العميل
+      res.status(500).send('Failed to update parent');
+  }
+});
+
+
+
+// // مسار لمعالجة دفعة التغييرات الواردة من العميل
+// app.post('/api/batch-changes', async (req, res) => {
+//   try {
+//       // جلب قائمة التغييرات من الطلب
+//       const changes = req.body.changes;
+
+//       // بدء معاملة قاعدة البيانات
+//       await db.query('BEGIN');
+
+//       // التعامل مع كل تغيير على حدة
+//       for (const change of changes) {
+//           if (change.type === 'create') {
+//               // إنشاء عقدة جديدة في قاعدة البيانات
+//               const { id, parent, text } = change;
+//               await db.query(
+//                   'INSERT INTO accounts_header (id, parent_id, account_name) VALUES ($1, $2, $3)',
+//                   [id, parent, text]
+//               );
+//           } else if (change.type === 'delete') {
+//               // حذف عقدة من قاعدة البيانات
+//               const { id } = change;
+//               await db.query(
+//                   'DELETE FROM accounts_header WHERE id = $1',
+//                   [id]
+//               );
+//           } else if (change.type === 'move') {
+//               // تحديث موضع عقدة في قاعدة البيانات
+//               const { id, new_parent, position } = change;
+//               await db.query(
+//                   'UPDATE accounts_header SET parent_id = $1, position = $2 WHERE id = $3',
+//                   [new_parent, position, id]
+//               );
+//           }
+//       }
+
+//       // إذا سارت جميع التغييرات بشكل جيد، قم بإنهاء المعاملة
+//       await db.query('COMMIT');
+
+//       // إرسال استجابة ناجحة إلى العميل
+//       res.status(200).send('Changes applied successfully');
+//   } catch (error) {
+//       // في حالة حدوث خطأ، قم بإلغاء المعاملة
+//       await client.query('ROLLBACK');
+
+//       // إرسال خطأ إلى العميل
+//       console.error('Error applying changes:', error);
+//       res.status(500).send('Failed to apply changes');
+//   }
+// });
+
+
+//#endregion
+
+
+//*-- server----------------------------------------------
+//#region started server functions
+
+//! 1: put all is_active to false for all users
+async function make_all_users_is_active_to_false() { // we use this function in the begining of server start
+  await db.none(`UPDATE users SET is_active = false`)
+}
+//#endregion End - sstarted server functions
 
 //******************************************************************** */
 
