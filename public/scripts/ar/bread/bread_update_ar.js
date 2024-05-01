@@ -87,7 +87,7 @@ async function geteProductionData_fn() {
 
         tableHTML += `</tbody>
         <tfoot class="">
-                <tr class="">
+                <tr class="table_total_row">
                   <td id="lengthColumn1"></td>
                   <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
                   <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
