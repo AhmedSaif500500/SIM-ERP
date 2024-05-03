@@ -468,7 +468,7 @@ input[type="checkbox"]:hover {
 /*todo @Media*/
 @media screen and (max-width: 750px) {
   .media_width_100 {
-    width: 100%;
+    width: 100% !important;
   }
 }
 
@@ -503,7 +503,7 @@ width: 100% !important;
 .m_05{
   margin: 0.5rem !important;
 }
-.m_1{
+.m_10{
   margin: 1rem !important;
 }
 .m_15{
@@ -1170,6 +1170,7 @@ width: 100% !important;
   cursor: pointer;
   transition: var(--transition);
 }
+
 
 .header_menue {
   display: flex; flex-direction:row; flex-grow: 1; flex-wrap: nowrap;

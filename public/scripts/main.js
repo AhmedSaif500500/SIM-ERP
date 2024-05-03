@@ -250,6 +250,7 @@ function catch_error(error) {
 //! dark mode toggle button
 document.querySelector('#dark_toggle_btn').addEventListener('click', function (event) {
   try {
+
     event.preventDefault; // stop <a> herf
     const body = document.querySelector('body');
     const darkMode = localStorage.getItem('darkmode')

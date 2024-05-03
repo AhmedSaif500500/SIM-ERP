@@ -114,7 +114,7 @@ app.use(
     httpOnly: true, // يمنع الوصول إلى ملف تعريف الارتباط من جافا سكريبت
     secure: true, // يجب أن يكون true إذا كنت تعمل على HTTPS
     sameSite: 'lax', // أو 'strict' لضمان إرسال ملف تعريف الارتباط فقط عبر الطلبات من نفس الأصل
-    cookie: { maxAge: 1000 * 60 * 5 }, // مدة صلاحية الجلسة (10 دقائق)
+    cookie: { maxAge: 1000 * 60 * 60 }, // مدة صلاحية الجلسة (60 دقائق)
   })
 );
 
@@ -132,7 +132,7 @@ async function check_last_activity_fn() {
   const now = new Date();
 
   // احسب وقت الحد الفاصل (5 دقائق)
-  const sessionTime = new Date(now.getTime() - 1000 * 60 * 5);
+  const sessionTime = new Date(now.getTime() - 1000 * 60 * 60);
 
   try {
     // قم بتنفيذ استعلام SQL باستخدام `db.none`
@@ -420,6 +420,70 @@ function sql_anti_injection(values) {
 //#endregion End- Templets
 
 //*-- PAGES ---------------------------------------------
+
+
+//#region owners_and_companies
+
+  //#region 1:- companies view
+  app.get("/get_companies_data", async (req, res) => {
+    try {
+  
+      //! Permission
+      // await permissions(req, 'bread_permission', 'view');
+      // if (!permissions) { return; };
+  
+      //* Start--------------------------------------------------------------
+  
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `select 
+      uc.user_id,
+      u.user_name,
+      uc.company_id,
+      c.company_name,
+      uc.is_active,
+      uc.general_permission,
+      uc.employees_permission,
+      uc.attendance_permission,
+      uc.users_permission,
+      uc.production_permission,
+      uc.bread_permission,
+      uc.acounts_permission
+      
+      from user_company uc 
+      left join users u on uc.user_id = u.id
+      left join companies c on uc.company_id  = c.id
+      where uc.user_id = 1
+       AND  uc.is_active  = true 
+      order BY c.company_name asc;
+  `;
+      let rows = await db.any(query1);
+  
+      const data = rows.map((row) => ({
+        user_id: row.user_id,
+        user_name: row.user_name,
+        company_id: row.company_id,
+        company_name: row.company_name,
+        is_active: row.is_active,
+        general_permission: row.general_permission,
+        employees_permission: row.employees_permission,
+        attendance_permission: row.attendance_permission,
+        users_permission: row.users_permission,
+        production_permission: row.production_permission,
+        bread_permission: row.bread_permission,
+        acounts_permission: row.acounts_permission,
+
+      }));
+  
+      res.json(data);
+    } catch (err) {
+      console.error("Error get_All_bread_Data:", err);
+      res.status(500).send("Error:");
+    }
+  });
+  //#endregion End - companies view
+
+//#endregion  END - owners_and_companies
 
 //#region users
 

@@ -2,18 +2,18 @@
 
 //#region  Authentication
 let Authentication = true;
-const attendance_id = sessionStorage.getItem('attendance_id');
-sessionStorage.removeItem('attendance_id');
-if (!attendance_id) {
+//#region  Authentication
+const attendance_data = JSON.parse(sessionStorage.getItem('attendance_data'));
+sessionStorage.removeItem('attendance_data');
+if (!attendance_data) {
   Authentication = false;
-  showAlert('fail', 'من فضلك اختر من الجدول اولا للتعديل , سيتم توجيهك الى صفحه المؤثرات');
- document.querySelector('#body_content').style.pointerEvents = 'none';
-
-  // الكود الى جوا الدالة دى هينتظر مده 3 ثوانى 3000 حتى يتم تنفيذه
-  setTimeout(() => {
-      window.location.href = '/attendance_ar';
-  }, 3000);
+  redirection('attendance_ar','fail','من فضلك اختر من الجدول اولا للتعديل , سيتم توجيهك الى صفحه المؤثرات')
 };
+
+const attendance_id = attendance_data.attendance_id;
+
+
+
 
 //#endregion end-Authentication
 

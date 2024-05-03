@@ -5,9 +5,15 @@ const path = require('path');
 
 
 //#region login And home
-router.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'views', 'login.html'));
+
+router.get('/', async (req, res) => {
+    if (req.session.isLoggedIn) {  
+        res.sendFile(path.join(__dirname, '..', 'views','ar' , 'home_ar.html'));
+    } else {
+        res.redirect('/login');
+    }
 });
+
 
 router.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views' , 'login.html'));
@@ -288,5 +294,16 @@ router.get('/accounts_view_ar', async (req, res) => {
 });
 
 //#endregion end - accounting
+
+//#region owners_and_companies
+router.get('/companies', async (req, res) => {
+    if (req.session.isLoggedIn) {  
+        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'owners_and_companies', 'companies.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
+
+//#endregion
 
 module.exports = router;
