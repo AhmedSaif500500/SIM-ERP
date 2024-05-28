@@ -1,3 +1,5 @@
+setActiveSidebar('production_view_ar');
+
 const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
     document.querySelector(`#date1`).value = today
     //#region  save function

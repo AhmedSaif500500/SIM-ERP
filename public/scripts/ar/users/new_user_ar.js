@@ -1,4 +1,6 @@
+setActiveSidebar('users_ar');
 //#region  save function
+
 document.querySelector("#btn_save").addEventListener("click", async function () {
     try {
 

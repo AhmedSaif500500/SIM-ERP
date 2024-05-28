@@ -1,4 +1,4 @@
-
+setActiveSidebar('production_view_ar');
 //check permissions
 pagePermission('production_permission','view');
 

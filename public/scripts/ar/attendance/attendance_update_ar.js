@@ -1,5 +1,5 @@
 
-
+setActiveSidebar('attendance_ar');
 //#region  Authentication
 let Authentication = true;
 //#region  Authentication

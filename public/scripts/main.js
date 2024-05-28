@@ -1,54 +1,229 @@
 
 //#region Main Global Variables
- let body_content = document.querySelector('#body_content');
+let body_content = document.querySelector('#body_content');
+let body = document.querySelector('body');
+let currentPage = new URL(window.location.href).pathname.split('/').pop(); // get name page like home
+let currentLang = currentPage.substring(currentPage.length - 2); // فصل اخر حرفين الى هما ar - en 
+
+
 //#region 
 
+//#region add templetes
+
+    //#region add header
+      
+// في ملف JavaScript
+function loadHeaderContents() {
+  const headerDiv = document.querySelector('#header_div');
+  const excludedPages = ['login','companies_ar']
+
+      if (excludedPages.includes(currentPage)) {
+      
+        return;
+    }
+  // الكود HTML كمتغير نصي
+  const headerContent = `
+      <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
+          <i class="fa-solid fa-bars"></i>
+      </a>
+      <div class="header_dark_lang_control">
+          <a id="dark_toggle_btn" class="">
+              <i class="fa-solid fa-circle-half-stroke"></i>
+          </a>
+          <a href="" id="lang_btn" class=""> en </a>
+      </div>
+      <div class="header_menue">
+          <a href="companies_ar">
+          <i class="fa-regular fa-address-book" style="font-size: 2rem"></i>
+              الاعمال التجاريه
+          </a>
+      </div>
+      <div class="header_user_div" style="gap: 0.7rem;">
+          <button id="header_user_name" class="header_user_name"></button>
+          <div id="user_options" class="user_options" style="display: none;">
+              <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
+              <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
+          </div>
+          <button id="header_company_name" class="header_user_name"></button>
+      </div>
+  `;
+
+  // إضافة المحتويات إلى الـ header_div
+  headerDiv.innerHTML = headerContent;
+}
+
+// لا تنس تنفيذ الدالة
+loadHeaderContents();
+
+
+    //#endregion
+
+
+    //#region add sidebar
+    function loadSidebarContents() {
+      const sidebar = document.querySelector('#sidebar');
+      const excludedPages = ['login','companies_ar']
+    
+          if (excludedPages.includes(currentPage)) {
+          
+            return;
+        }
+      // الكود HTML كمتغير نصي
+      const sidebarContent = `
+      <div id="closeMenueIcon" class="closeMenueIcon">
+      <i class="fa-solid fa-square-xmark"></i>
+    </div>
+
+    <a href="home_ar" target="_self" class="">
+      <i class="fa-solid fa-display"></i>
+      الملخص
+    </a>
+
+    <a href="employees_ar" target="_self" class="">
+      <i class="fa-solid fa-user-tie"></i>
+      الموظفين
+    </a>
+
+    <a href="attendance_ar" target="_self" class="">
+      <i class="fa-solid fa-person-circle-exclamation"></i>
+      المؤثرات
+    </a>
+
+    <a href="production_view_ar" target="_self" class="">
+      <i class="fa-solid fa-industry"></i>
+      الانتاج
+    </a>
+
+    <a href="bread_view_ar" target="_self" class="">
+      <i class="fa-solid fa-bread-slice"></i>
+      العيش
+    </a>
+
+
+    <!-- <a href="index2.html" target="_self"> -->
+    <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
+      <i class="fa-solid fa-user"></i>
+      الصلاحيات
+    </a>
+
+    <a href="accounts_view_ar" target="_self" class="">
+      <i class="fa-solid fa-tree fa-bounce" style="color: #FFD43B;"></i>
+      الحسابات
+    </a>
+
+    <a id="Custmize_sidebar" href="#">
+      <i class="fa-solid fa-gear"></i>
+      <p>تخصيص</p>
+    </a>
+
+    <a id="owner_sidebar" href="#">
+      <i class="fa-solid fa-gear"></i>
+      <p>المالك</p>
+    </a>
+      `;
+    
+      // إضافة المحتويات إلى الـ header_div
+      sidebar.innerHTML = sidebarContent;
+    }
+    
+    // لا تنس تنفيذ الدالة
+    loadSidebarContents();
+
+
+    function setActiveSidebar(pageName) {
+      // احصل على العنصر الذي تحتوي قيمة الـ href فيه على اسم الصفحة المعطاة
+      const link = document.querySelector(`a[href="${pageName}"]`);
+  
+      // تأكد من وجود العنصر قبل إضافة الكلاس
+      if (link) {
+          link.classList.add('sidebar-active');
+      }
+  }
+  
+  // لاستدعاء الدالة وتمرير اسم الصفحة كمعلمة
+ 
+    //#endregion 
+//#endregion
 
 //#region fixed information
-const user_name_session = sessionStorage.getItem('username');
+
+function fixed_information() {
+  try {
+    const user_name_session = sessionStorage.getItem('userFullName');
+const user_company_session = sessionStorage.getItem('company_name');
 const header_user_name = document.querySelector('#header_user_name');
+const header_company_name = document.querySelector('#header_company_name');
 const user_setting_btn = document.querySelector('#user_setting_btn');
-if (header_user_name){
+
   header_user_name.textContent = user_name_session
-}else{
-  header_user_name.value = 'user name'
-};
+
+   
+  const excludedPages = ['companies_ar','/','']
+
+      if (excludedPages.includes(currentPage)) {
+        return;
+    }
+
+  header_company_name.textContent = user_company_session
+  } catch (error) {
+    catch_error(error)
+  }
+
+}
+
+fixed_information()
 
 
-user_setting_btn.addEventListener('click',function(){
+
+user_setting_btn.addEventListener('click', function () {
   try {
     hide_User_options();
     const id = sessionStorage.getItem('current_id');
     sessionStorage.setItem("user_id", id);
     window.location.href = "/users_update_ar";
   } catch (error) {
-    catch_error('user_setting_btn EROR',error.message)
+    catch_error('user_setting_btn EROR', error.message)
   }
 });
 
 
-header_user_name.addEventListener('click',function(){
+header_user_name.addEventListener('click', function () {
   user_options_display()
 });
 function user_options_display() {
   const user_options = document.querySelector('#user_options');
-  if (user_options.style.display === 'flex'){
+  if (user_options.style.display === 'flex') {
     hide_User_options()
-  }else{
+  } else {
     show_User_options()
   }
 }
-user_options.addEventListener('blur', function(event) {
-  hide_User_options();
+
+// hide element when focus out of it
+document.addEventListener('click', function (event) {
+  if (user_options !== null) {
+    const clickedElement = event.target;
+    if (!user_options.contains(clickedElement) && clickedElement !== header_user_name) {
+      hide_User_options();
+    }
+  }
+
 });
-function show_User_options(){
-  user_options.style.display = 'flex'
+function show_User_options() {
+  if (user_options !== null) {
+    user_options.style.display = 'flex'
   user_options.focus();
+  }
 }
 
-function hide_User_options(){
-  user_options.style.display = 'none'
+function hide_User_options() {
+  if (user_options !== null) {
+    user_options.style.display = 'none'
+  }
+  
 }
+
+
 
 
 //#endregion END - fixed information
@@ -62,23 +237,28 @@ function hide_User_options(){
 
 function showAlert(type, message) {
   try {
+      const alertHTML = `
+          <div class="alert alert-${type}">
+              ${message}
+          </div>
+      `;
+
+      // إضافة العنصر إلى الـ DOM
       const alertContainer = document.getElementById('alert-container');
-      const alertDiv = document.createElement('div');
-      const alertClass = 'alert-' + type;
-      alertDiv.classList.add('alert', alertClass);
-      alertDiv.innerHTML = message;
-      alertContainer.appendChild(alertDiv);
+      alertContainer.insertAdjacentHTML('beforeend', alertHTML);
 
-      // إنشاء عنصر الصوت المناسب
-      const audioElement = document.createElement('audio');
-      audioElement.setAttribute('id', type);
-      const sourceElement = document.createElement('source');
-      sourceElement.src = '/public/sounds/' + type + '.mp3';
-      sourceElement.type = 'audio/mpeg';
-      audioElement.appendChild(sourceElement);
-      document.body.appendChild(audioElement);
+      // إنشاء العنصر الصوتي
+      const audioHTML = `
+          <audio id="${type}">
+              <source src="/public/sounds/${type}.mp3" type="audio/mpeg">
+          </audio>
+      `;
+      document.body.insertAdjacentHTML('beforeend', audioHTML);
 
-      // عندما يكتمل تحميل الملف الصوتي، قم بتشغيله
+      const alertDiv = alertContainer.lastElementChild;
+      const audioElement = document.getElementById(type);
+
+      // عند اكتمال تحميل الملف الصوتي، قم بتشغيله
       audioElement.addEventListener("canplay", function () {
           audioElement.play();
       });
@@ -115,114 +295,117 @@ function showAlert(type, message) {
 //#endregion End -- Alerts
 
 //#region dialog confirm
-let dialogAnswer = false  // global variable
+let dialogAnswer = false; // متغير عالمي
+
 function showDialog(title, message, icon) {
-  return new Promise((resolve) => {
 
-    dialogAnswer = false;
+    return new Promise((resolve) => {
+        dialogAnswer = false;
 
-      // إنشاء عنصر الـ HTML إذا لم يكن موجودًا بالفعل
-      let overlay = document.getElementById('dialogOverlay');
-      if (!overlay) {
-          // إنشاء التراكب (overlay)
-          overlay = document.createElement('div');
-          overlay.id = 'dialogOverlay';
-          overlay.style.display = 'none'; // يجب أن يكون مخفيًا في البداية
-          document.body.appendChild(overlay);
-          
-          // إنشاء نافذة الحوار (dialog)
-          const dialog = document.createElement('div');
-          dialog.id = 'dialog';
-          dialog.className = 'dialog'; // سيتم تطبيق أنماط CSS الخاصة به
-          
-          // إنشاء الرأس (header)
-          const header = document.createElement('div');
-          header.className = 'dialog_header';
-          const h3 = document.createElement('h3');
-          h3.id = 'dialogTitle';
-          h3.className = '';
-          header.appendChild(h3);
-          dialog.appendChild(header);
-          
-          // إنشاء الجسم (body)
-          const body = document.createElement('div');
-          body.className = 'dialog_body';
-          const p = document.createElement('p');
-          p.id = 'dialogMessage';
-          body.appendChild(p);
-          const i = document.createElement('i');
-          i.id = 'dialogIcon';
-          body.appendChild(i);
-          dialog.appendChild(body);
-          
-          // إنشاء القدم (footer)
-          const footer = document.createElement('div');
-          footer.className = 'dialog_footer';
-          const yesButton = document.createElement('button');
-          yesButton.id = 'yesButton';
-          yesButton.textContent = 'نعم';
-          yesButton.className = 'btn_save';
-          const noButton = document.createElement('button');
-          noButton.id = 'noButton';
-          noButton.textContent = 'لا';
-          noButton.className = 'btn_cancel';
-          footer.appendChild(yesButton);
-          footer.appendChild(noButton);
-          dialog.appendChild(footer);
-          
-          // إضافة نافذة الحوار إلى التراكب
-          overlay.appendChild(dialog);
-      }
+        const dialogHTML = `
+            <div id="dialogOverlay" class="dialogOverlay" style="display: none;">
+                <div id="dialog" class="dialog">
+                    <div class="dialog_header">
+                        <h3 id="dialogTitle"></h3>
+                    </div>
+                    <div class="dialog_body">
+                        <p id="dialogMessage"></p>
+                        <i id="dialogIcon"></i>
+                    </div>
+                    <div class="dialog_footer">
+                        <button id="yesButton" class="btn_save">نعم</button>
+                        <button id="noButton" class="btn_cancel">لا</button>
+                    </div>
+                </div>
+            </div>
+        `;
 
-      // إعداد الرأس والجسم
-      document.getElementById('dialogTitle').textContent = title;
-      document.getElementById('dialogMessage').textContent = message;
+        // إضافة القالب إلى الـ DOM
+        document.body.insertAdjacentHTML('beforeend', dialogHTML);
 
-      // ضبط الأيقونة
-      const dialogIcon = document.getElementById('dialogIcon');
-      dialogIcon.className = icon;
+        // تحديث محتوى العناصر
+        document.getElementById('dialogTitle').textContent = title;
+        document.getElementById('dialogMessage').textContent = message;
+        document.getElementById('dialogIcon').className = icon;
 
-      // عرض النافذة
-      overlay.style.display = 'flex';
+        const overlay = document.getElementById('dialogOverlay');
+        const dialog = document.getElementById('dialog');
 
-      // التحكم في زر "نعم"
-      document.getElementById('yesButton').onclick = function() {
-        showLoadingIcon(this)
-        dialog.style.pointerEvents = 'none'
-          // closeDialog();
-          dialogAnswer = true;
-          resolve(true); // إرجاع true عند النقر على زر "نعم"
-      };
+        const yesButton = document.querySelector(`#dialogOverlay`).querySelector(`#yesButton`);
+        const noButton = document.querySelector(`#dialogOverlay`).querySelector(`#noButton`);
+        // عرض النافذة
+        overlay.style.display = 'flex';
 
-      // التحكم في زر "لا"
-      document.getElementById('noButton').onclick = function() {
-          dialogAnswer = false;
-          closeDialog();
-          resolve(false); // إرجاع false عند النقر على زر "لا"
-      };
-  });
+        // التحكم في زر "نعم"
+        yesButton.onclick = function () {
+            showLoadingIcon(this);
+            body.style.pointerEvents = 'none';
+            dialogAnswer = true;
+            resolve(true);
+        };
+
+        // التحكم في زر "لا"
+        noButton.onclick = function () {
+            dialogAnswer = false;
+            closeDialog();
+            resolve(false);
+        };
+    });
 }
 
-function closeDialog() {
+
+async function closeDialog() {
+  body.style.pointerEvents = 'auto';
   const overlay = document.getElementById('dialogOverlay');
-  
-  // إضافة التحريك للإغلاق
+
+  if (overlay !== null) {
+      // إضافة التحريك للإغلاق
   overlay.style.animation = 'fadeOut 0.3s forwards';
-  
+
   setTimeout(() => {
-      // إخفاء التراكب بعد انتهاء التحريك
-      overlay.style.display = 'none';
-      overlay.style.animation = ''; // إعادة ضبط الأنماط بعد الإخفاء
-      
-      // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
-      // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
-      const dialog = document.getElementById('dialog');
-      const yesButton = document.getElementById('yesButton');
-      hideLoadingIcon(yesButton);
-      dialog.style.pointerEvents = 'auto';
+    // إخفاء التراكب بعد انتهاء التحريك
+
+
+    overlay.remove();
+
+    // overlay.style.display = 'none';
+    // overlay.style.animation = ''; // إعادة ضبط الأنماط بعد الإخفاء
+
+    // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
+    // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
+    // const dialog = document.getElementById('dialog');
+    // const yesButton = document.getElementById('yesButton');
+    // hideLoadingIcon(yesButton);
+    // dialog.style.pointerEvents = 'auto';
   }, 300);
 }
+}
 
+async function closeDialog_input() {
+  const dialogOverlay_input = document.getElementById('dialogOverlay_input');
+
+  if (dialogOverlay_input !== null) {
+      // إضافة التحريك للإغلاق
+      dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
+
+  setTimeout(() => {
+    // إخفاء التراكب بعد انتهاء التحريك
+
+
+    dialogOverlay_input.remove();
+
+    // overlay.style.display = 'none';
+    // overlay.style.animation = ''; // إعادة ضبط الأنماط بعد الإخفاء
+
+    // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
+    // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
+    // const dialog = document.getElementById('dialog');
+    // const yesButton = document.getElementById('yesButton');
+    // hideLoadingIcon(yesButton);
+    // dialog.style.pointerEvents = 'auto';
+  }, 300);
+}
+}
 
 // * HOW TO USE 
 
@@ -235,11 +418,11 @@ function closeDialog() {
 //todo el fekra hena enak hatzher el message beta3 el error fakt eza kont fat7 el bernameg 3ala el windwos beta3k local ama ezaraf3to 3ala  host msh hayzhar
 function catch_error(error) {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      // في بيئة التطوير المحلية، يعرض معلومات الخطأ في وحدة التحكم
-      console.error('Error details:', error);
+    // في بيئة التطوير المحلية، يعرض معلومات الخطأ في وحدة التحكم
+    console.error('Error details:', error);
   } else {
-      // في بيئة الإنتاج، يعرض رسالة عامة للمستخدمين
-      showAlert('fail', 'An error occurred. Please try again later.');
+    // في بيئة الإنتاج، يعرض رسالة عامة للمستخدمين
+    showAlert('fail', 'An error occurred. Please try again later.');
   }
 }
 
@@ -252,7 +435,7 @@ document.querySelector('#dark_toggle_btn').addEventListener('click', function (e
   try {
 
     event.preventDefault; // stop <a> herf
-    const body = document.querySelector('body');
+    
     const darkMode = localStorage.getItem('darkmode')
     if (darkMode && darkMode === 'dark') {
       body.classList.remove('dark');
@@ -269,31 +452,30 @@ document.querySelector('#dark_toggle_btn').addEventListener('click', function (e
 
 //#region  langauge toggle ar - en
 //! save current page in sessionstorage and ar - en toggle
-const currentPage = new URL(window.location.href).pathname.split('/').pop();
-const currentLang = currentPage.substring(currentPage.length - 2); // فصل اخر حرفين الى هما ar - en 
+ 
 sessionStorage.setItem('currentPage', currentPage);
 localStorage.setItem('currentLang', currentLang);
 
 
 
-  // todo  : 5aly balk lazem ykon sa7t el english feha el lang_btn innerHtml : ar  we el 3aks fe el arapy we matnsash el route
-  const lang_btn = document.querySelector('#lang_btn');
-  lang_btn.addEventListener('click', function (event) {
-    event.preventDefault(); // منع السلوك الافتراضى لعنر ال ايه انه لان الهيرف هيعمل ريلود
-    const currentLang = localStorage.getItem('currentLang');
-    const X = sessionStorage.getItem('currentPage');
-    console.log(`${currentLang} -- ${currentLang === 'ar'} -- ${lang_btn.textContent.trim() === 'en'}`);
-    if (currentLang && currentLang === 'ar' && lang_btn.textContent.trim() === 'en') {
-      const page_toggle = X.substring(0, X.length - 2) + 'en';
-      window.location.href = `/${page_toggle}`; // window.location.href = '/home_en';
-    } else if (currentLang && currentLang === 'en' && lang_btn.textContent.trim() === 'ar') {
-      const page_toggle = X.substring(0, X.length - 2) + 'ar';
-      window.location.href = `/${page_toggle}`; // window.location.href = '/home_en';
+// todo  : 5aly balk lazem ykon sa7t el english feha el lang_btn innerHtml : ar  we el 3aks fe el arapy we matnsash el route
+const lang_btn = document.querySelector('#lang_btn');
+lang_btn.addEventListener('click', function (event) {
+  event.preventDefault(); // منع السلوك الافتراضى لعنر ال ايه انه لان الهيرف هيعمل ريلود
+  const currentLang = localStorage.getItem('currentLang');
+  const X = sessionStorage.getItem('currentPage');
+  console.log(`${currentLang} -- ${currentLang === 'ar'} -- ${lang_btn.textContent.trim() === 'en'}`);
+  if (currentLang && currentLang === 'ar' && lang_btn.textContent.trim() === 'en') {
+    const page_toggle = X.substring(0, X.length - 2) + 'en';
+    window.location.href = `/${page_toggle}`; // window.location.href = '/home_en';
+  } else if (currentLang && currentLang === 'en' && lang_btn.textContent.trim() === 'ar') {
+    const page_toggle = X.substring(0, X.length - 2) + 'ar';
+    window.location.href = `/${page_toggle}`; // window.location.href = '/home_en';
 
-    } else {
-      return;
-    };
-  });
+  } else {
+    return;
+  };
+});
 
 //#endregion End -- langauge toggle ar - en
 
@@ -354,8 +536,8 @@ flatpickr(".datepicker", {
 
 //#region table
 
-  //#region totl_column 
-  //! GLOBAL totalVariableName for columns (( دى متغيرات تحسبا لوجود ست اعمده عايزين يتجمعو ))
+//#region totl_column 
+//! GLOBAL totalVariableName for columns (( دى متغيرات تحسبا لوجود ست اعمده عايزين يتجمعو ))
 let total_column1 = { value: 0 };
 let total_column2 = { value: 0 };
 let total_column3 = { value: 0 };
@@ -365,19 +547,19 @@ let total_column6 = { value: 0 };
 
 function total_column(totalVariable, rowData) {
   try {
-    
+
 
     if (!isNaN(rowData)) {
-        totalVariable.value += rowData; // sum
-        if (parseFloat(rowData) < 0) {
-            return `<span style="color: red">${rowData}</span>`;
-        } else if (parseFloat(rowData) === 0) {
-            return '';
-        } else {
-            return rowData;
-        }
-    } else {
+      totalVariable.value += rowData; // sum
+      if (parseFloat(rowData) < 0) {
+        return `<span style="color: red">${rowData}</span>`;
+      } else if (parseFloat(rowData) === 0) {
         return '';
+      } else {
+        return rowData;
+      }
+    } else {
+      return '';
     }
   } catch (error) {
     catch_error(error);
@@ -397,108 +579,108 @@ function total_column(totalVariable, rowData) {
 //? document.getElementById("tfooter7").textContent = total_column1.value;
 //? document.getElementById("tfooter8").textContent = total_column2.value;
 
-  //#endregion END - total column
+//#endregion END - total column
 
-  //#region dragable ( rows > drag and drop )
-  function makeTableRowsDraggable(tableId) {
-    const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-    let draggedRow = null;
-    let initialY = null;
-  
-    const startDragHandler = function(event) {
-      if (event.target.classList.contains('drag-handle')) {
-        draggedRow = event.target.closest('tr');
-        draggedRow.style.cursor = 'grabbing';
-        initialY = event.clientY || event.touches[0].clientY;
-      }
-    };
-  
-    const dragMoveHandler = function(event) {
-      if (draggedRow) {
-        const currentY = event.clientY || event.touches[0].clientY;
-        const deltaY = currentY - initialY;
-        draggedRow.style.transform = `translateY(${deltaY}px)`;
-      }
-    };
-  
-    const endDragHandler = function(event) {
-      if (draggedRow) {
-        draggedRow.style.cursor = 'grab';
-        draggedRow.style.transform = '';
-        const targetRow = document.elementFromPoint(
-          event.clientX || event.changedTouches[0].clientX,
-          event.clientY || event.changedTouches[0].clientY
-        ).closest('tr');
-        
-        if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
-          const rows = Array.from(table.children);
-          const indexDragged = rows.indexOf(draggedRow);
-          const indexTarget = rows.indexOf(targetRow);
-          
-          if (indexTarget > indexDragged) {
-            table.insertBefore(draggedRow, targetRow.nextSibling);
-          } else {
-            table.insertBefore(draggedRow, targetRow);
-          }
+//#region dragable ( rows > drag and drop )
+function makeTableRowsDraggable(tableId) {
+  const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+  let draggedRow = null;
+  let initialY = null;
+
+  const startDragHandler = function (event) {
+    if (event.target.classList.contains('drag-handle')) {
+      draggedRow = event.target.closest('tr');
+      draggedRow.style.cursor = 'grabbing';
+      initialY = event.clientY || event.touches[0].clientY;
+    }
+  };
+
+  const dragMoveHandler = function (event) {
+    if (draggedRow) {
+      const currentY = event.clientY || event.touches[0].clientY;
+      const deltaY = currentY - initialY;
+      draggedRow.style.transform = `translateY(${deltaY}px)`;
+    }
+  };
+
+  const endDragHandler = function (event) {
+    if (draggedRow) {
+      draggedRow.style.cursor = 'grab';
+      draggedRow.style.transform = '';
+      const targetRow = document.elementFromPoint(
+        event.clientX || event.changedTouches[0].clientX,
+        event.clientY || event.changedTouches[0].clientY
+      ).closest('tr');
+
+      if (targetRow && targetRow !== draggedRow && table.contains(targetRow)) {
+        const rows = Array.from(table.children);
+        const indexDragged = rows.indexOf(draggedRow);
+        const indexTarget = rows.indexOf(targetRow);
+
+        if (indexTarget > indexDragged) {
+          table.insertBefore(draggedRow, targetRow.nextSibling);
+        } else {
+          table.insertBefore(draggedRow, targetRow);
         }
-        draggedRow = null;
-        initialY = null;
       }
-    };
-  
-    table.addEventListener('mousedown', startDragHandler);
-    table.addEventListener('touchstart', startDragHandler);
-  
-    document.addEventListener('mousemove', dragMoveHandler);
-    document.addEventListener('touchmove', dragMoveHandler);
-  
-    document.addEventListener('mouseup', endDragHandler);
-    document.addEventListener('touchend', endDragHandler);
-  
-    table.addEventListener('dragstart', function(event) {
-      event.preventDefault();
-    });
-  }
-  
-  
+      draggedRow = null;
+      initialY = null;
+    }
+  };
+
+  table.addEventListener('mousedown', startDragHandler);
+  table.addEventListener('touchstart', startDragHandler);
+
+  document.addEventListener('mousemove', dragMoveHandler);
+  document.addEventListener('touchmove', dragMoveHandler);
+
+  document.addEventListener('mouseup', endDragHandler);
+  document.addEventListener('touchend', endDragHandler);
+
+  table.addEventListener('dragstart', function (event) {
+    event.preventDefault();
+  });
+}
 
 
-   //*HOW TO USE 
-  /*
-  1 : hat7ot fe ele button el 5as be ele draggable fe el table tr  ha7ot class = 'drag-handle'
-  2 : lazem if there is icon inside button yo have to make it disabled click like that 
-                            <button class="drag-handle ta7ded1">
-                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
-                      </button>
 
-  3 : call the funcion and path the id of table as a parameter  makeTableRowsDraggable('myTable');
-  4 : Make sure that table is loaded befor you call this function > @!important 
-  */ 
 
-  //#endregion END - dragable 
+//*HOW TO USE 
+/*
+1 : hat7ot fe ele button el 5as be ele draggable fe el table tr  ha7ot class = 'drag-handle'
+2 : lazem if there is icon inside button yo have to make it disabled click like that 
+                          <button class="drag-handle ta7ded1">
+                    <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                    </button>
+
+3 : call the funcion and path the id of table as a parameter  makeTableRowsDraggable('myTable');
+4 : Make sure that table is loaded befor you call this function > @!important 
+*/
+
+//#endregion END - dragable 
 //#endregion ENd - table
 
 //#region day_name
 function day_name(dateStr) {
   // صيغة التاريخ: dd-mm-yyyy
 
-// const dateStr = "05-02-2024";
+  // const dateStr = "05-02-2024";
 
-// نقوم بتقسيم التاريخ إلى يوم، شهر، وسنة
-const [year, month, day] = dateStr.split('-');
+  // نقوم بتقسيم التاريخ إلى يوم، شهر، وسنة
+  const [year, month, day] = dateStr.split('-');
 
-// نقوم بإنشاء كائن Date باستخدام السنة، الشهر واليوم
-const date = new Date(`${year}-${month}-${day}`);
+  // نقوم بإنشاء كائن Date باستخدام السنة، الشهر واليوم
+  const date = new Date(`${year}-${month}-${day}`);
 
-const options = { weekday: 'short' }; // تحديد نوع الترجمة
-const currentLang = localStorage.getItem('currentLang')
-if (currentLang === 'ar'){
-  const dayName = date.toLocaleDateString('ar-EG', options); // هنا "ar-EG" يشير إلى اللغة العربية
-  return dayName
-}else{
-  const dayName = date.toLocaleDateString('en-US', options); // هنا "ar-EG" يشير إلى اللغة العربية
-  return dayName
-}
+  const options = { weekday: 'short' }; // تحديد نوع الترجمة
+  const currentLang = localStorage.getItem('currentLang')
+  if (currentLang === 'ar') {
+    const dayName = date.toLocaleDateString('ar-EG', options); // هنا "ar-EG" يشير إلى اللغة العربية
+    return dayName
+  } else {
+    const dayName = date.toLocaleDateString('en-US', options); // هنا "ar-EG" يشير إلى اللغة العربية
+    return dayName
+  }
 
 }
 
@@ -574,11 +756,11 @@ function show_redirection_Reason() {
 // });
 
 
-{//!#region Open Menue -- sidbar
-const sidebar = document.querySelector('#sidebar');
+//!#region Open Menue -- sidbar
+  const sidebar = document.querySelector('#sidebar');
   const MenueIcon = document.querySelector('#MenueIcon');
   const closeMenueIcon = document.querySelector('#closeMenueIcon');
-  const body = document.querySelector('body');
+  
 
   // اظهار واخفاء القائمة   عند الضغط على زرار القائمة
   MenueIcon.addEventListener('click', function (event) {
@@ -610,19 +792,19 @@ const sidebar = document.querySelector('#sidebar');
     sidebar.classList.add("sidebar_Media_Show");
     sidebar.classList.add("show");
     body.classList.add('no_scroll');
-};
+  };
 
-function hideMenue() {
+  function hideMenue() {
     sidebar.classList.remove("show");
     sidebar.classList.add("hide");
     setTimeout(() => {
-        sidebar.classList.remove("sidebar_Media_Show");
-        sidebar.classList.remove("hide");
+      sidebar.classList.remove("sidebar_Media_Show");
+      sidebar.classList.remove("hide");
     }, 300); /* تأكد من إزالة الفئات بعد انتهاء الرسوم المتحركة */
     body.classList.remove('no_scroll');
-}
+  }
 
-}//#endregion Open Menue
+//#endregion Open Menue
 
 
 
@@ -655,77 +837,77 @@ function forward() {
 //#region redirection and reason
 async function redirection(page, messageType, messageText) {
   showAlert(messageType, messageText);
-  body_content.style.pointerEvents = 'none';
-  
+  body.style.pointerEvents = 'none';
+
   // تأخير تنفيذ الكود بمدة 3 ثواني
   await new Promise(resolve => setTimeout(resolve, 3000));
-  
+
   // توجيه المستخدم إلى الصفحة المحددة بواسطة window.location.href
   window.location.href = page;
 };
 
 function showRedirectionReason() {
-    let message;
-    const urlParams = new URLSearchParams(window.location.search);
-    const reason = urlParams.get("reason");
-    
-    if (reason){
+  let message;
+  const urlParams = new URLSearchParams(window.location.search);
+  const reason = urlParams.get("reason");
+
+  if (reason) {
     switch (reason) {
-        case "0":
-            message = "عفوا , انت لا تملك صلاحيه العرض"; // Unauthorized message in Arabic
-            break;
+      case "0":
+        message = "عفوا , انت لا تملك صلاحيه العرض"; // Unauthorized message in Arabic
+        break;
       case "1":
         message = "عفوا , انت لا تملك صلاحيه الاضافه"; // Unauthorized message in Arabic
         break;
       case "2":
         message = "عفوا , انت لا تملك صلاحيه التعديل"; // Invalid credentials message in Arabic
         break;
-        case "3":
-            message = "عفوا , انت لا تملك صلاحيه الحذف"; // Invalid credentials message in Arabic
-            break;
+      case "3":
+        message = "عفوا , انت لا تملك صلاحيه الحذف"; // Invalid credentials message in Arabic
+        break;
       default:
         message = "حدث خطأ غير معروف."; // Default error message
     }
-};
-  
-    if (message) {
-      showAlert('fail', message);
-    }
+  };
+
+  if (message) {
+    showAlert('fail', message);
   }
+}
 //#endregion END - redirection
 
 //#region logout
 // افتراض أن لدينا زر تسجيل الخروج بالاسم logoutButton في الـ HTML
-async function logout(){
-    try {
+async function logout() {
+  try {
 
-    await showDialog('','هل تريد الخروج من التطبيق ؟','');
-    if (!dialogAnswer){
+    await showDialog('', 'هل تريد الخروج من التطبيق ؟', '');
+    if (!dialogAnswer) {
       return
     }
 
 
-      hide_User_options(); // hide user_option div
+    hide_User_options(); // hide user_option div
 
-      const response = await fetch('/Logout', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-  
-      const data = await response.json();
-  
-      if (data.success) {
-        closeDialog();
-        redirection('login','info','تم تسجيل الخروج بنجاح : سيتم تجويلك الى الصفحه الرئيسيه')
-      } else {
-        showAlert('fail',data.message);
+    const response = await fetch('/Logout', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    } catch (error) {
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
       closeDialog();
-      catch_error('logout Error',error.message);
+      redirection('login', 'info', 'تم تسجيل الخروج بنجاح : سيتم تجويلك الى الصفحه الرئيسيه')
+    } else {
+      showAlert('fail', data.message);
     }
+  } catch (error) {
+    closeDialog();
+    catch_error('logout Error', error.message);
+  }
 };
 
 // تسجيل خروج فى حاله اغلاق المتسفح او الصفحه بدون تسجيل خروج
@@ -733,7 +915,7 @@ async function logout(){
 //   logout()
 // })
 
-window.addEventListener('beforeunload', function() {
+window.addEventListener('beforeunload', function () {
   const url = '/Logout';
   navigator.sendBeacon(url);
 });
@@ -743,96 +925,125 @@ window.addEventListener('beforeunload', function() {
 //#region sidbar custmize 
 
 // handle users_control_a
-let general_permission = parseInt(sessionStorage.getItem('general_permission'));
+let general_permission = parseInt(sessionStorage.getItem('general_permission')) || 0;
+let owner = sessionStorage.getItem('owner');
 
-if (general_permission && general_permission === 6){
-  document.querySelector(`#users_control_a`).style.display = 'block';
+// console.log(owner);
+if (owner === 'true' || !isNaN(general_permission) && general_permission === 6) {
+  document.querySelector(`#users_control_a`).style.display = 'block';  
+} else {
+  document.querySelector(`#users_control_a`).style.display = 'none';
 }
+
 
 //#endregion
 
 //#region password input show and hidden in input 
 
-   //#region how its work work ? 
-    /*
-    عند استدعاء الداله لازم تستخدم  الاحداث الاربعه دول 
-                  <button id="show_pass_btn1" class="btn_eye hover" 
-              onmousedown="showPassword('pass_input1', 'eye_icon1')"
-              onmouseup="hidePassword('pass_input1', 'eye_icon1')" 
-              ontouchstart="showPassword('pass_input1', 'eye_icon1')"   دا عشان الاندرويد
-              ontouchend="hidePassword('pass_input1', 'eye_icon1')"    دا عشان الاندرويد
-              ><i id="eye_icon1" class="fa-regular fa-eye eye_icon"></i>
-            </button>
-    */
-   //#endregion end how to wirk
-   
-   //#region functions
-   function showPassword(inputId, iconId) {
-    const passwordField = document.querySelector("#" + inputId);
-    const eyeIcon = document.querySelector("#" + iconId);
-    passwordField.type = "text";
-    eyeIcon.classList.remove("fa-eye");
-    eyeIcon.classList.add("fa-eye-slash");
-  }
-  
-  function hidePassword(inputId, iconId) {
-    const passwordField = document.querySelector("#" + inputId);
-    const eyeIcon = document.querySelector("#" + iconId);
-    passwordField.type = "password";
-    eyeIcon.classList.remove("fa-eye-slash");
-    eyeIcon.classList.add("fa-eye");
-  }
-   //#endregion end - functions
+//#region how its work work ? 
+/*
+عند استدعاء الداله لازم تستخدم  الاحداث الاربعه دول 
+              <button id="show_pass_btn1" class="btn_eye hover" 
+          onmousedown="showPassword('pass_input1', 'eye_icon1')"
+          onmouseup="hidePassword('pass_input1', 'eye_icon1')" 
+          ontouchstart="showPassword('pass_input1', 'eye_icon1')"   دا عشان الاندرويد
+          ontouchend="hidePassword('pass_input1', 'eye_icon1')"    دا عشان الاندرويد
+          ><i id="eye_icon1" class="fa-regular fa-eye eye_icon"></i>
+        </button>
+*/
+//#endregion end how to wirk
+
+//#region functions
+function showPassword(inputId, iconId) {
+  const passwordField = document.querySelector("#" + inputId);
+  const eyeIcon = document.querySelector("#" + iconId);
+  passwordField.type = "text";
+  eyeIcon.classList.remove("fa-eye");
+  eyeIcon.classList.add("fa-eye-slash");
+}
+
+function hidePassword(inputId, iconId) {
+  const passwordField = document.querySelector("#" + inputId);
+  const eyeIcon = document.querySelector("#" + iconId);
+  passwordField.type = "password";
+  eyeIcon.classList.remove("fa-eye-slash");
+  eyeIcon.classList.add("fa-eye");
+}
+//#endregion end - functions
 
 //#endregion END-pasword input
 
 //#region check input type
 let inputErrors = false; // المتغير العالمي لتتبع وجود الأخطاء في الإدخال
+
+// دالة لفحص وتحديث حالة الأخطاء في جميع حقول الإدخال
+function updateInputErrors() {
+  const inputs = document.querySelectorAll('input'); // العثور على جميع الحقول النصية
+  let hasError = false; // متغير لتتبع وجود أخطاء
+
+  inputs.forEach(input => {
+    if (input.classList.contains('input_error')) {
+      hasError = true;
+    }
+  });
+
+  // تحديث قيمة inputErrors بناءً على وجود أخطاء
+  inputErrors = hasError;
+}
+
+// دالة للتحقق من صحة القيمة في حقل الإدخال
 function check_parse(inputid, type) {
   const value = inputid.value; // احصل على قيمة حقل الإدخال
   const specialCharRegex = /['";$%&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة
 
   // إذا كان حقل الإدخال فارغًا، أعد null
   if (!value || value.trim() === '') {
-      inputid.classList.remove('hover_error', 'input_error');
-      inputErrors = false; // توجد أخطاء في الإدخال
-      return null;
-      
+    inputid.classList.remove('hover_error', 'input_error');
+    updateInputErrors(); // تحديث حالة الأخطاء
+    return null;
   }
 
   // تحقق من نوع القيمة بناءً على نوع البيانات المطلوب
   if (type === 'string') {
-      // تحقق من وجود أي من الرموز الخاصة في القيمة
-      if (isNaN(value) && !specialCharRegex.test(value)) {
-          inputid.classList.remove('hover_error', 'input_error');
-          inputErrors = false; // توجد أخطاء في الإدخال
-      } else {
-          inputid.classList.add('hover_error', 'input_error');
-          inputErrors = true; // توجد أخطاء في الإدخال
-      }
+    // تحقق من وجود أي من الرموز الخاصة في القيمة
+    if (isNaN(value) && !specialCharRegex.test(value)) {
+      inputid.classList.remove('hover_error', 'input_error');
+      updateInputErrors(); // تحديث حالة الأخطاء
+    } else {
+      inputid.classList.add('hover_error', 'input_error');
+      updateInputErrors(); // تحديث حالة الأخطاء
+      console.log(inputErrors);
+    }
   }
 
   if (type === 'number') {
     // تحقق من وجود أي من الرموز الخاصة في القيمة
     if (isNaN(value) && !specialCharRegex.test(value)) {
       inputid.classList.add('hover_error', 'input_error');
-      inputErrors = true; // توجد أخطاء في الإدخال
-
+      updateInputErrors(); // تحديث حالة الأخطاء
     } else {
       inputid.classList.remove('hover_error', 'input_error');
-      inputErrors = false; // توجد أخطاء في الإدخال
+      updateInputErrors(); // تحديث حالة الأخطاء
     }
+  }
 }
-}
+
 
 //#endregion end - check input type
 
 //#region  loading
 function showLoadingIcon(element) {
-  element.classList.add('loading_icon');
-  // element.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
-  element.disabled = true; // تعطيل العنصر
-  element.title = 'رجاء الانتظار قليلا...' // اضافه تلميح
+  try {
+   
+    element.classList.add('loading_icon');
+    // element.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
+    // body_content.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
+    body.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
+    // element.disabled = true; // تعطيل العنصر
+    element.title = 'رجاء الانتظار قليلا...' // اضافه تلميح
+  } catch (error) {
+    catch_error(error)
+  }
 }
 
 //* how to use 
@@ -848,9 +1059,21 @@ nfs el amr fe el hideen loading
 
 
 function hideLoadingIcon(element) {
-  element.classList.remove('loading_icon');
-  element.disabled = false; // تشغيل العنصر
-  element.title = ''  // تعطيل ال التلميح
+  try {
+    if (!element){
+      return;
+    }
+   
+    // element.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
+    // body_content.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
+    body.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
+    element.classList.remove('loading_icon');
+    // element.disabled = false; // تشغيل العنصر
+    element.title = ''  // تعطيل ال التلميح
+  } catch (error) {
+    catch_error(error)
+  }
+
 }
 
 
@@ -860,276 +1083,295 @@ function hideLoadingIcon(element) {
 
 
 
-  //#region Update fetching...
-  async function fetchUpdate1(posted_elements_AS_OBJECT,permission_name_string,dialogMessage_string,ResponseTimeBySecends_Time_secends,FetchURL_string,redirctionStatues_boolean,redirectionPage_string,){
-    const controller = new AbortController();
-      const signal = controller.signal;
-      
-      try {
-          if (inputErrors) {
-              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
-              return;
-          }
-          
-          const permission = await btn_permission(permission_name_string,'update');
-       
-          if(!permission) {
-           return;
-          };
-  
-          // // تجهيز البيانات للإرسال إلى الخادم
-          // const posted_elements = {
-          //     user_id,
-          // };
-          
-          await showDialog('', dialogMessage_string, '');
-          if (!dialogAnswer) {
-              return;
-          }
-          
-          // تعيين حد زمني للطلب
-          const timeout = setTimeout(() => {
-              controller.abort(); // إلغاء الطلب
-          }, ResponseTimeBySecends_Time_secends*1000); // 10 ثواني
-          
-          // إرسال الطلب إلى الخادم
-          const response = await fetch(FetchURL_string, {
-              method: 'post',
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify(posted_elements_AS_OBJECT),
-              signal, // تمرير الإشارة لإلغاء الطلب
-          });
-          
-          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
-          clearTimeout(timeout);
-          
-          if (response.ok) {
-              const data = await response.json();
-              closeDialog();
-              if (data.success) {
-                if (redirctionStatues_boolean) {
-                  body_content.style.pointerEvents = 'none'; // disable body_content
-                  redirection(redirectionPage_string, 'success', data.message);
-                }
-              } else {
-                body_content.style.pointerEvents = 'auto'; // disable body_content
-                  showAlert('fail', data.message);
-              }
-          } else {
-              closeDialog();
-              showAlert('fail', `Request failed with status code: ${response.status}`);
-          }
-      } catch (error) {
-          closeDialog();
-          catch_error(error);
-          showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه تحديث البيانات .');
+//#region Update fetching...
+async function fetchUpdate1(posted_elements_AS_OBJECT, permission_name_string, dialogMessage_string, ResponseTimeBySecends_Time_secends, FetchURL_string, redirctionStatues_boolean, redirectionPage_string,) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  try {
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      return;
+    }
+
+    const permission = await btn_permission(permission_name_string, 'update');
+
+    if (!permission) {
+      return;
+    };
+
+    // // تجهيز البيانات للإرسال إلى الخادم
+    // const posted_elements = {
+    //     user_id,
+    // };
+
+    await showDialog('', dialogMessage_string, '');
+    if (!dialogAnswer) {
+      return;
+    }
+
+    // تعيين حد زمني للطلب
+    const timeout = setTimeout(() => {
+      controller.abort(); // إلغاء الطلب
+    }, ResponseTimeBySecends_Time_secends * 1000); // 10 ثواني
+
+    // إرسال الطلب إلى الخادم
+    const response = await fetch(FetchURL_string, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal, // تمرير الإشارة لإلغاء الطلب
+    });
+
+    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+    clearTimeout(timeout);
+
+    if (response.ok) {
+      const data = await response.json();
+      closeDialog();
+      if (data.success) {
+        if (redirctionStatues_boolean) {
+          body_content.style.pointerEvents = 'none'; // disable body_content
+          redirection(redirectionPage_string, 'success', data.message);
+        }
+      } else {
+        body_content.style.pointerEvents = 'auto'; // disable body_content
+        showAlert('fail', data.message);
       }
-  
+    } else {
+      closeDialog();
+      showAlert('fail', `Request failed with status code: ${response.status}`);
+    }
+  } catch (error) {
+    closeDialog();
+    catch_error(error);
+    showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه تحديث البيانات .');
   }
-  //#endregion END - update - fetching
 
-  //#region delete fetching
-  async function fetchDelete1(posted_elements_AS_OBJECT,permission_name,dialogMessage,ResponseTimeBySecends,FetchURL,redirction_Boolean_Statues,redirectionPage,){
-    const controller = new AbortController();
-      const signal = controller.signal;
-      
-      try {
-          if (inputErrors) {
-              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
-              return;
-          }
-          
-          const permission = await btn_permission(permission_name,'delete');
-       
-          if(!permission) {
-           return;
-          };
-  
-          // // تجهيز البيانات للإرسال إلى الخادم
-          // const posted_elements = {
-          //     user_id,
-          // };
-          
-          await showDialog('', dialogMessage, '');
-          if (!dialogAnswer) {
-              return;
-          }
-          
-          // تعيين حد زمني للطلب
-          const timeout = setTimeout(() => {
-              controller.abort(); // إلغاء الطلب
-          }, ResponseTimeBySecends*1000); // 10 ثواني
-          
-          // إرسال الطلب إلى الخادم
-          const response = await fetch(FetchURL, {
-              method: 'post',
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify(posted_elements_AS_OBJECT),
-              signal, // تمرير الإشارة لإلغاء الطلب
-          });
-          
-          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
-          clearTimeout(timeout);
-          
-          if (response.ok) {
-              const data = await response.json();
-              closeDialog();
-              if (data.success) {
-                if (redirction_Boolean_Statues) {
-                  body_content.style.pointerEvents = 'none';
-                  redirection(redirectionPage, 'success', data.message);
-                }
-              } else {
-                body_content.style.pointerEvents = 'auto';
-                  showAlert('fail', data.message);
-              }
-          } else {
-              closeDialog();
-              showAlert('fail', `Request failed with status code: ${response.status}`);
-          }
-      } catch (error) {
-          closeDialog();
-          showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه حذف البيانات .');
-          catch_error(error);
-          // console.error("Error deleting employee:", error.message);
-          
+}
+//#endregion END - update - fetching
+
+//#region delete fetching
+async function fetchDelete1(posted_elements_AS_OBJECT, permission_name, dialogMessage, ResponseTimeBySecends, FetchURL, redirction_Boolean_Statues, redirectionPage,) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  try {
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      return;
+    }
+
+    const permission = await btn_permission(permission_name, 'delete');
+
+    if (!permission) {
+      return;
+    };
+
+    // // تجهيز البيانات للإرسال إلى الخادم
+    // const posted_elements = {
+    //     user_id,
+    // };
+
+    await showDialog('', dialogMessage, '');
+    if (!dialogAnswer) {
+      return;
+    }
+
+    // تعيين حد زمني للطلب
+    const timeout = setTimeout(() => {
+      controller.abort(); // إلغاء الطلب
+    }, ResponseTimeBySecends * 1000); // 10 ثواني
+
+    // إرسال الطلب إلى الخادم
+    const response = await fetch(FetchURL, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal, // تمرير الإشارة لإلغاء الطلب
+    });
+
+    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+    clearTimeout(timeout);
+
+    if (response.ok) {
+      const data = await response.json();
+      closeDialog();
+      if (data.success) {
+        if (redirction_Boolean_Statues) {
+          body_content.style.pointerEvents = 'none';
+          redirection(redirectionPage, 'success', data.message);
+        }
+      } else {
+        body_content.style.pointerEvents = 'auto';
+        showAlert('fail', data.message);
       }
-  
+    } else {
+      closeDialog();
+      showAlert('fail', `Request failed with status code: ${response.status}`);
+    }
+  } catch (error) {
+    closeDialog();
+    showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه حذف البيانات .');
+    catch_error(error);
+    // console.error("Error deleting employee:", error.message);
+
   }
-  //#endregion End - delete fetching
+
+}
+//#endregion End - delete fetching
 
 
-  async function fetchData_post1(FetchURL,posted_elements_AS_OBJECT,permission_name,permission_type,dialogMessage,ResponseTimeBySecends,redirectionPage,error_message){
-    const controller = new AbortController();
-      const signal = controller.signal;
-      
-      try {
-          if (inputErrors) {
-              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
-              return;
-          }
-          
-          const permission = await btn_permission(permission_name,permission_type);
-       
-          if(!permission) {
-           return;
-          };
-  
-          // // تجهيز البيانات للإرسال إلى الخادم
-          // const posted_elements = {
-          //     user_id,
-          // };
-          
-          await showDialog('', dialogMessage, '');
-          if (!dialogAnswer) {
-              return;
-          }
-          
-          // تعيين حد زمني للطلب
-          const timeout = setTimeout(() => {
-              controller.abort(); // إلغاء الطلب
-          }, ResponseTimeBySecends*1000); // 10 ثواني
-          
-          // إرسال الطلب إلى الخادم
-          const response = await fetch(FetchURL, {
-              method: 'post',
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify(posted_elements_AS_OBJECT),
-              signal, // تمرير الإشارة لإلغاء الطلب
-          });
-          
-          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
-          clearTimeout(timeout);
-          
-          if (response.ok) {
-              const data = await response.json();
-              closeDialog();
-              if (data.success) {
-                  body_content.style.pointerEvents = 'none';
-                  redirection(redirectionPage, 'success', data.message_ar);
-              } else {
-                body_content.style.pointerEvents = 'auto';
-                  showAlert('fail', data.message_ar);
-              }
-          } else {
-              closeDialog();
-              showAlert('fail', `Request failed with status code: ${response.status}`);
-          }
-      } catch (error) {
-          closeDialog();
-          showAlert('fail',error_message);
-          catch_error(error);
+async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, dialogMessage, ResponseTimeBySecends, redirectionPage, error_message) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  console.log(inputErrors);
+  try {
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      return;
+    }
+
+    const permission = await btn_permission(permission_name, permission_type);
+
+    if (!permission) {
+      return;
+    };
+
+    
+    // // تجهيز البيانات للإرسال إلى الخادم
+    // const posted_elements = {
+    //     user_id,
+    // };
+
+    await showDialog('', dialogMessage, '');
+    if (!dialogAnswer) {
+      return;
+    }
+
+    // تعيين حد زمني للطلب
+    const timeout = setTimeout(() => {
+      controller.abort(); // إلغاء الطلب
+    }, ResponseTimeBySecends * 1000); // 10 ثواني
+
+    // إرسال الطلب إلى الخادم
+    const response = await fetch(FetchURL, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal, // تمرير الإشارة لإلغاء الطلب
+    });
+
+    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+    clearTimeout(timeout);
+
+    if (response.ok) {
+      const data = await response.json();
+      closeDialog();
+      if (data.success) {
+        body_content.style.pointerEvents = 'none';
+        redirection(redirectionPage, 'success', data.message_ar);
+      } else {
+        body_content.style.pointerEvents = 'auto';
+        showAlert('fail', data.message_ar);
       }
+    } else {
+      closeDialog();
+      showAlert('fail', `Request failed with status code: ${response.status}`);
+    }
+  } catch (error) {
+    closeDialog();
+    showAlert('fail', error_message);
+    catch_error(error);
   }
-  
+}
 
-  // let data = [];
-  async function fetchData_postAndGet(FetchURL,posted_elements_AS_OBJECT,permission_name,permission_type,ResponseTimeBySecends,is_confirm_dialog,dialogMessage,error_message){
-    const controller = new AbortController();
-      const signal = controller.signal;
-      
-      try {
-          if (inputErrors) {
-              showAlert('fail','رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
-              return;
-          }
-          
-          const permission = await btn_permission(permission_name,permission_type);
-       
-          if(!permission) {
-           return;
-          };
-  
-          // // تجهيز البيانات للإرسال إلى الخادم
-          // const posted_elements = {
-          //     user_id,
-          // };
-          if (is_confirm_dialog) {
-            if (is_confirm_dialog)
-            await showDialog('', dialogMessage, '');
-            if (!dialogAnswer) {
-                return;
-            }
-          }
 
-          
-          // تعيين حد زمني للطلب
-          const timeout = setTimeout(() => {
-              controller.abort(); // إلغاء الطلب
-          }, ResponseTimeBySecends*1000); // 10 ثواني
-          
-          // إرسال الطلب إلى الخادم
-          const response = await fetch(FetchURL, {
-              method: 'post',
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify(posted_elements_AS_OBJECT),
-              signal, // تمرير الإشارة لإلغاء الطلب
-          });
-          
-          // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
-          clearTimeout(timeout);
-          
-          if (response.ok) {
-            // closeDialog();
-              data = await response.json();
-          } else {
-            // closeDialog();
-              showAlert('fail', `Request failed with status code: ${response.status}`);
-          }
-      } catch (error) {
-        // closeDialog();
-          showAlert('fail',error_message);
-          catch_error(error);
+// let data = [];
+async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, error_message,is_close_dialog) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  try {
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      return;
+    }
+
+
+      const permission = await btn_permission(permission_name, permission_type);
+
+      if (!permission) {
+        return;
+      };
+   
+    // // تجهيز البيانات للإرسال إلى الخادم
+    // const posted_elements = {
+    //     user_id,
+    // };
+    if (is_confirm_dialog) {
+      if (is_confirm_dialog === true)
+        await showDialog('', dialogMessage, '');
+      if (!dialogAnswer) {
+        return;
       }
+    }
+
+
+    // تعيين حد زمني للطلب
+    const timeout = setTimeout(() => {
+      controller.abort(); // إلغاء الطلب
+    }, ResponseTimeBySecends * 1000); // 10 ثواني
+
+    // إرسال الطلب إلى الخادم
+    const response = await fetch(FetchURL, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal, // تمرير الإشارة لإلغاء الطلب
+    });
+
+    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+    clearTimeout(timeout);
+
+    if (response.ok) {
+      if (is_close_dialog === true){closeDialog();}
+      const data = await response.json();
+      return data; // إرجاع البيانات لاستخدامها خارج الدالة
+    } else {
+      if (is_close_dialog === true){closeDialog();}
+      showAlert('fail', `Request failed with status code: ${response.status}`);
+    }
+  } catch (error) {
+    closeDialog();
+    showAlert('fail', error_message);
+    catch_error(error);
   }
+}
 
 //#endregion END- fetching
 
+//#region document EVENTS
+
+  //#region escape btn
+  document.onkeydown = function (event){
+    if (event.key === 'Escape') {  
+        // هنا يمكنك وضع الإجراءات التي تريدها عند الضغط على "esc"
+        closeDialog();
+        hide_User_options();
+    }
+}
+
+  //#endregion
+
+
+//#endregion end- document events

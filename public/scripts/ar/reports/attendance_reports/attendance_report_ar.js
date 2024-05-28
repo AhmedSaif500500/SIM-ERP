@@ -1,4 +1,6 @@
 
+setActiveSidebar('attendance_ar');
+
 //check permissions
 // pagePermission('attendance_permission','view');
 

@@ -1,4 +1,5 @@
 
+setActiveSidebar('employees_ar');
 //check permissions
 pagePermission('employees_permission','view');
 

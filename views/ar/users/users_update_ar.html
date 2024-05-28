@@ -18,85 +18,10 @@
     <button id="scrollToTopBtn">&#9650;</button>
 
     <!-- start ------------------------------------------------------------------------------------------>
-    <div class="header">
-      <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
-        <i class="fa-solid fa-bars"></i>
-      </a>
-      <div class="header_dark_lang_control">
-        <a id="dark_toggle_btn" class="">
-          <i class="fa-solid fa-circle-half-stroke"></i>
-        </a>
-        <a href="" id="lang_btn" class=""> en </a>
-      </div>
-
-      <div class="header_menue">
-        <a href="">
-          <i class="fa-solid fa-question"></i>
-          مساعده
-        </a>
-
-        <!-- <a href="">
-            <i class="fa-solid fa-info"></i>
-            <p>Home</p>
-          </a> -->
-
-      </div>
-
-
-      <div class="header_user_div">
-        <button id="header_user_name"></button>
-        <div id="user_options" class="user_options" style="display: none;">
-          <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
-          <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
-        </div>
-      </div>
-
-
-    </div>
+    <div class="header" id="header_div"></div>
 
     <div class="sub_container">
-      <div id="sidebar" class="sidebar">
-        <div id="closeMenueIcon" class="closeMenueIcon">
-          <i class="fa-solid fa-square-xmark"></i>
-        </div>
-
-        <a href="home_ar" target="_self" class="">
-          <i class="fa-solid fa-display"></i>
-          الملخص
-        </a>
-
-        <a href="employees_ar" target="_self" class="">
-          <i class="fa-solid fa-user-tie"></i>
-          الموظفين
-        </a>
-
-        <a href="attendance_ar" target="_self" class="">
-          <i class="fa-solid fa-person-circle-exclamation"></i>
-          المؤثرات
-        </a>
-
-        <a href="production_view_ar" target="_self" class="">
-          <i class="fa-solid fa-industry"></i>
-          الانتاج
-        </a>
-
-        <a href="bread_view_ar" target="_self" class="">
-          <i class="fa-solid fa-bread-slice"></i>
-          العيش
-        </a>
-        
-
-        <!-- <a href="index2.html" target="_self"> -->
-        <a href="users_ar" target="_self" id="users_control_a" style="display: none;" class="sidebar-active">
-          <i class="fa-solid fa-user"></i>
-          المستخدمين
-        </a>
-
-        <a id="Custmize_sidebar" href="#">
-          <i class="fa-solid fa-gear"></i>
-          <p>تخصيص</p>
-        </a>
-      </div>
+      <div id="sidebar" class="sidebar"></div>
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
@@ -113,58 +38,10 @@
 
 
 
-
+          <p id="p_stop_user_text" style="color: red; text-align: start; margin-block-end: 1rem; display:none">* هذا المستخدم تم ايقافه</p>
           <label for="user_name_input" class="lbl_sm">اسم المستخدم</label>
-          <input type="search" id="user_name_input" class="input_text_md hover" autocomplete="off">
-
-
-          <!-- change password --------------------------------------------------------------------------------- -->
-
-          <button class="btn_new" id="changePassword_btn"
-            style="width: fit-content; margin-block-end: 2rem; margin-block-start: 1rem; ">تعيين كلمة مرور
-            جديده</button>
-          <!-- passwords -->
-
-          <!-- pass div -->
-          <div class="flex-column" id="changePassword_div" style="display: none;">
-
-            <label for="pass_input1" class="lbl_sm">كلمة المرور الجديده</label>
-            <div class="flex_row" style="margin-inline-end: 1rem; display: block;">
-
-
-              <!-- pass div -->
-              <div class="flex_row" style="margin-inline-end: 1rem;">
-                <div class="input_with_icon_div">
-                  <input type="password" name="" id="pass_input1" placeholder="ادخل كلمه المرور الجديده"
-                    class="pass_input hover" autocomplete="on">
-                  <i class="fa-solid fa-key left_icon"></i>
-                </div>
-                <button id="show_pass_btn1" class="btn_eye hover" onmousedown="showPassword('pass_input1', 'eye_icon1')"
-                  onmouseup="hidePassword('pass_input1', 'eye_icon1')"
-                  ontouchstart="showPassword('pass_input1', 'eye_icon1')"
-                  ontouchend="hidePassword('pass_input1', 'eye_icon1')"><i id="eye_icon1"
-                    class="fa-regular fa-eye eye_icon"></i>
-                </button>
-              </div>
-
-              <!-- pass div -->
-              <div class="flex_row" style="margin-inline-end: 1rem;">
-                <div class="input_with_icon_div">
-                  <input type="password" name="" id="pass_input2" placeholder="تأكيد كلمه المرور الجديده"
-                    class="pass_input hover" autocomplete="on">
-                  <i class="fa-solid fa-key left_icon"></i>
-                </div>
-                <button id="show_pass_btn2" class="btn_eye hover" onmousedown="showPassword('pass_input2', 'eye_icon2')"
-                  onmouseup="hidePassword('pass_input2', 'eye_icon2')"
-                  ontouchstart="showPassword('pass_input2', 'eye_icon2')"
-                  ontouchend="hidePassword('pass_input2', 'eye_icon2')"><i id="eye_icon2"
-                    class="fa-regular fa-eye eye_icon"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- end change password -------------------------------------------------------------------- -->
+          <input type="search" id="user_name_input" class="input_text_md hover" title="تعديل الاسم من خلال صفحه الاعمال التجاريه من مستخدم يملك صلاحيات المالك" readonly autocomplete="off">
+          
 
 
           <!-- الصلاحيات -->

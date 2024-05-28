@@ -1,3 +1,4 @@
+setActiveSidebar('employees_ar');
 // let Authentication = true;
 // //#region  Authentication
 // const employee_id = sessionStorage.getItem('employee_id');

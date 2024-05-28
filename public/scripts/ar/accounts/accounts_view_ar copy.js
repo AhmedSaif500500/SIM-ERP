@@ -1,3 +1,5 @@
+setActiveSidebar('accounts_view_ar');
+
 $.get('/api/tree', function (data) {
     // قم بتحويل البيانات إلى تنسيق مناسب لـ jstree
     const treeData = data.map(item => ({

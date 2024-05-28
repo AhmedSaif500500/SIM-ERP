@@ -1,4 +1,6 @@
 
+
+setActiveSidebar('attendance_ar');
 //#region showReason of redirection
 //! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
 

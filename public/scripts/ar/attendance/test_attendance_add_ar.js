@@ -1,3 +1,5 @@
+
+setActiveSidebar('attendance_ar');
 //#region get employees data from server to fill dropdown
 
 let data2 = [];

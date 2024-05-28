@@ -64,7 +64,8 @@
     const data = await response.json();
         if (data.success) {
           
-           showAlert('success',data.message);
+          
+           showAlert('success',data.message_ar);
            showAlert('warning',`Don't forget to sign out when you're done to ensure the security of your account`);
 
 
@@ -72,20 +73,19 @@
            setTimeout(() => {
               sessionStorage.setItem("username", data.username); // save username in seesionStorage to use it in index.html
               sessionStorage.setItem("current_id", data.user_id); // save username in seesionStorage to use it in index.html
-              sessionStorage.setItem("general_permission", data.general_permission); // save username in seesionStorage to use it in index.html
-              sessionStorage.setItem("employees_permission", data.employees_permission); // save username in seesionStorage to use it in index.html
-              sessionStorage.setItem("attendance_permission", data.attendance_permission); // save username in seesionStorage to use it in index.html
+              sessionStorage.setItem("userFullName", data.user_full_name); // save username in seesionStorage to use it in index.html
+              sessionStorage.setItem("owner", data.is_owner); // save username in seesionStorage to use it in index.html
 
-              
+
               //! فحص اذا كان اللغه انجليزى ولا عربى
               const currentLang = localStorage.getItem('currentLang')
               if(currentLang && currentLang === 'en') {
                 login_div.style.pointerEvents = 'auto';
-                  window.location.href = '/home_en';
+                  window.location.href = '/companies_en';
               }else{
 
                 login_div.style.pointerEvents = 'auto';
-                  window.location.href = '/home_ar'; // if no lang saved
+                  window.location.href = '/companies_ar'; // if no lang saved
               };
           }, 3000);
 
@@ -93,7 +93,7 @@
 
         } else {
           hideLoadingIcon(loginBtn);
-          showAlert('fail',data.message) // lazem da el awel befor( login_div.style.pointerEvents = 'auto'; ) 3ashan lw 3akst hatla2y el IDM bysht8al y7mel el sound
+          showAlert('fail',data.message_ar) // lazem da el awel befor( login_div.style.pointerEvents = 'auto'; ) 3ashan lw 3akst hatla2y el IDM bysht8al y7mel el sound
           login_div.style.pointerEvents = 'auto';
             
         };

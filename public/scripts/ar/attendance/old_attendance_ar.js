@@ -1,3 +1,5 @@
+
+setActiveSidebar('attendance_ar');
 const numberInput = document.querySelector("#numberInput");
 const upArrow = document.querySelector("#upArrow");
 const downArrow = document.querySelector("#downArrow");
