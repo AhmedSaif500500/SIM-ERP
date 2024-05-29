@@ -1094,7 +1094,7 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
     
     from user_company uc
     left join users u on uc.user_id = u.id
-    where company_id = $1
+    where uc.company_id = $1
     order by user_name ASC`;
     let rows = await db.any(query, [req.session.company_id]);
 
@@ -1231,7 +1231,7 @@ app.get("/get_All_users_Data", async (req, res) => {
     let query = `select uc.user_id, u.user_full_name as user_name
     from user_company uc
     left join users u on uc.user_id = u.id 
-    where company_id  = $1`;
+    where uc.company_id  = $1`;
     let rows = await db.any(query, [req.session.company_id]);
 
     // const rows = await db.any("SELECT id, user_name  FROM users");
@@ -2000,7 +2000,7 @@ app.get("/getEmployeesData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT e.id, e.employee_name FROM employees e where company_id = $1`;
+    let query1 = `SELECT e.id, e.employee_name FROM employees e where e.company_id = $1`;
     let rows = await db.any(query1, [req.session.company_id]);
 
     const data = rows.map((row) => ({
