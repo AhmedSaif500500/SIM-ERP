@@ -2759,7 +2759,7 @@ app.post("/report_attendance", async (req, res) => {
     FROM attendance a
     LEFT JOIN employees e ON e.id = a.employee_id
     WHERE
-      company_id = $1
+      a.company_id = $1
       AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
     GROUP BY e.employee_name, e.id
@@ -2801,7 +2801,7 @@ app.post("/report_attendance", async (req, res) => {
     FROM attendance a
     LEFT JOIN employees e ON e.id = a.employee_id
     WHERE
-      company_id = $1
+      a.company_id = $1
       AND a.employee_id = $2
       AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $4
