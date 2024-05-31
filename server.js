@@ -241,7 +241,16 @@ app.post("/Login", async (req, res) => {
           });
         }
         //!4.1.1: Start new session
-        const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const forwardedIpsStr = req.headers['x-forwarded-for'];
+        let ipAddress;
+        if (forwardedIpsStr) {
+          // السلسلة يمكن أن تحتوي على عدة عناوين مفصولة بفاصلة، خذ أول عنوان
+          const forwardedIps = forwardedIpsStr.split(',');
+          ipAddress = forwardedIps[0].trim();
+        } else {
+          // إذا لم يكن الرأس موجودًا، استخدم العنوان من socket
+          ipAddress = req.socket.remoteAddress;
+        }
        
         req.session.isLoggedIn = true; // active session
         req.session.ipAddress = ipAddress; // get IP 
