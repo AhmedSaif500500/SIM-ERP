@@ -112,11 +112,29 @@ app.use(
     httpOnly: true, // يمنع الوصول إلى ملف تعريف الارتباط من جافا سكريبت
     secure: true, // يجب أن يكون true إذا كنت تعمل على HTTPS
     sameSite: "lax", // أو 'strict' لضمان إرسال ملف تعريف الارتباط فقط عبر الطلبات من نفس الأصل
-    cookie: { maxAge: 1000 * 60 * 60 }, // مدة صلاحية الجلسة (60 دقائق)
+    cookie: { maxAge: 1000 * 60 * 10 }, // مدة صلاحية الجلسة (60 دقائق)
   })
 );
 
+// Middleware للتحقق من صلاحية الجلسة
+app.use((req, res, next) => {
+  if (!req.session) {
+    return next(); // لا يوجد جلسة، انتقل إلى الوسيط التالي
+  }
 
+  // التحقق من انتهاء مدة صلاحية الجلسة
+  if (req.session.cookie._expires && Date.now() > req.session.cookie._expires) {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Failed to destroy session:', err);
+      }
+      // يمكنك توجيه المستخدم لتسجيل الدخول مرة أخرى أو اتخاذ إجراءات أخرى
+      res.redirect('/login'); // على سبيل المثال، إعادة التوجيه إلى صفحة تسجيل الدخول
+    });
+  } else {
+    next(); // الجلسة لا تزال صالحة، انتقل إلى الوسيط التالي
+  }
+});
 // تأكد من أن الخادم يعمل
 
 
@@ -138,7 +156,7 @@ async function check_last_activity_fn() {
   const now = new Date();
 
   // احسب وقت الحد الفاصل (5 دقائق)
-  const sessionTime = new Date(now.getTime() - 1000 * 60 * 60);
+  const sessionTime = new Date(now.getTime() - 1000 * 60 * 10);
 
   try {
     // قم بتنفيذ استعلام SQL باستخدام `db.none`
@@ -165,7 +183,11 @@ async function check_last_activity_fn() {
 cron.schedule("*/5 * * * *", async () => {
   //الكود دا يعنى ان الكود سيتم تنفيذه اذا كانت القيمه تقبل القسمه على خمسه بغض النظر اذ كان شهر يوم ساعه  دقيقه
   check_last_activity_fn();
+  io.emit('ozkrAllah', { Alzekr: 'اذكر الله'});
 });
+
+
+
 //#endregionEnd - cron schedule
 
 //#endregion end cron
@@ -211,9 +233,9 @@ app.post("/Login", async (req, res) => {
       const isMatch = await bcrypt.compare(password_Input, password_DB);
       const is_active = rows[0].is_active;
       if (is_active) {
-        currentId = parseInt(rows[0].id)
+        let currentId = parseInt(rows[0].id)
         // io.emit('active_user', { username: posted_elements.username_Input });
-        await khorogFawry(req)
+        await khorogFawry(req,currentId)
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
@@ -471,10 +493,13 @@ async function block_user(req, code){
       req.session.owner_id,
       ]);
 
+      await khorogFawry(req,req.session.userId)
       await last_activity(req);
 
       //! destroy session
+      if(req.session){
       req.session.destroy()
+      }
   } catch (error) {
     console.error("Error block_user:", error);
   }
@@ -489,11 +514,14 @@ async function block_user(req, code){
 
 
 //#region khorogFawry
-let currentId;
-async function khorogFawry(req) {
+
+async function khorogFawry(req,userId) {
   let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
   await db.none(query00, [currentId]);
-  io.emit('khorogFawry', { x1: currentId });
+  io.emit('khorogFawry', { x1: userId});
+  if(req.session){
+    req.session.destroy()
+    }
 }
 
 

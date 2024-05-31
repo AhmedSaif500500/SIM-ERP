@@ -1417,10 +1417,18 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 const socket = io();
 socket.on('khorogFawry', (data) => {
-  console.log(`User ${data.username} is now active.`);
   const x1 = parseInt(sessionStorage.getItem(`current_id`))
   if (x1 && x1 === data.x1){
     khorogFawry()
   }
-  // يمكنك هنا تنفيذ أي تعليمات تناسب تطبيقك، مثل عرض رسالة تنبيه للمستخدمين
+});
+
+socket.on('ozkrAllah', (data) => {  
+  const x1 = sessionStorage.getItem(`userFullName`)
+  if (x1) {
+    showAlert('warning',`${data.Alzekr} اخى الحبيب ${x1}`)
+  }else{
+    showAlert('warning',`${data.Alzekr} اخى الحبيب`)
+  }
+  
 });
