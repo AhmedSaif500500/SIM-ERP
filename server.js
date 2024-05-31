@@ -236,7 +236,7 @@ app.post("/Login", async (req, res) => {
       if (is_active) {
         let currentId = parseInt(rows[0].id)
         // io.emit('active_user', { username: posted_elements.username_Input });
-        console.log(`thisi is currentId = ${currentId} typeof ${typeof(currentId)}`);
+        // console.log(`thisi is currentId = ${currentId} typeof ${typeof(currentId)}`);
         await khorogFawry(req,currentId)
         return res.json({
           success: false, // العمليه فشلت

@@ -1418,7 +1418,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 const socket = io();
 socket.on('khorogFawry', (data) => {
   const x1 = parseInt(sessionStorage.getItem(`current_id`))
-  console.log(`this is x1 = ${x1} ${typeof(x1)} and this is ${data.x1} ${typeof(data.x1)}`);
+  // console.log(`this is x1 = ${x1} ${typeof(x1)} and this is ${data.x1} ${typeof(data.x1)}`);
   if (x1 && x1 === data.x1){
     khorogFawry()
   }
