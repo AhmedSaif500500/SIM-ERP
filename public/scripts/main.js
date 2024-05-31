@@ -1415,36 +1415,5 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 
 //#endregion end- document events
-// const ws = new WebSocket('ws://localhost:8080'); // Change the URL and port as needed
 
-let wsUrl;
-if (window.location.protocol === 'https:') {
-  wsUrl = `wss://${window.location.hostname}`; // عنوان URL للنشر باستخدام WSS على المنفذ 443
-} else {
-  wsUrl = `ws://${window.location.hostname}:8080`; // عنوان URL للبيئة المحلية أو HTTP
-}
 
-const ws = new WebSocket(wsUrl);
-
-ws.onopen = function() {
-  console.log('WebSocket connection established');
-};
-
-ws.onmessage = function(event) {
-  const message = JSON.parse(event.data);
-  if (message.action === "khorogFawary") {
-    console.log(`this is id from server ${message.x1} ${typeof(message.x1)} : this is id from frontend ${sessionStorage.getItem('current_id')} ${typeof(parseInt(sessionStorage.getItem('current_id')))}`);
-    const x1 = parseInt(sessionStorage.getItem('current_id'));
-    if (x1 && x1 === message.x1) {
-      khorogFawry();
-    }
-  }
-};
-
-ws.onerror = function(error) {
-  console.error('WebSocket error:', error);
-};
-
-ws.onclose = function() {
-  console.log('WebSocket connection closed');
-};

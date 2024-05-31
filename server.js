@@ -105,21 +105,9 @@ app.use(
   })
 );
 
-// Set up WebSocket server
-const WebSocket = require("ws");
-const wss = new WebSocket.Server({ port: 443, host: '0.0.0.0' }); // الاستماع على جميع الواجهات
-
-wss.on('connection', function connection(ws) {
-  console.log('A new client connected');
-  
-  ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
-    // معالجة الرسائل هنا إذا لزم الأمر
-  });
-});
 
 // تأكد من أن الخادم يعمل
-console.log("WebSocket server is running on ws://0.0.0.0:8080");
+console.log("WebSocket server is running on ws://0.0.0.0:443");
 
 
 //! lazem el code da to7to ba3d tahy2t el session
@@ -212,18 +200,8 @@ app.post("/Login", async (req, res) => {
       const isMatch = await bcrypt.compare(password_Input, password_DB);
       const is_active = rows[0].is_active;
       if (is_active) {
-        // ws.send(JSON.stringify({action: "logout", id: req.session.userId}));
         
-        let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
-        await db.none(query00, [parseInt(rows[0].id)]);
-
-
-        wss.clients.forEach(function each(client) {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ action: "khorogFawary", x1: parseInt(rows[0].id) }));
-          }
-        });
-
+        
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
