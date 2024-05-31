@@ -124,6 +124,7 @@ app.use((req, res, next) => {
 
   // التحقق من انتهاء مدة صلاحية الجلسة
   if (req.session.cookie._expires && Date.now() > req.session.cookie._expires) {
+    
     req.session.destroy((err) => {
       if (err) {
         console.error('Failed to destroy session:', err);
@@ -517,7 +518,7 @@ async function block_user(req, code){
 
 async function khorogFawry(req,userId) {
   let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
-  await db.none(query00, [currentId]);
+  await db.none(query00, [userId]);
   io.emit('khorogFawry', { x1: userId});
   if(req.session){
     req.session.destroy()
