@@ -44,8 +44,18 @@ open Terminal vscode
 //#endregion End-Guid
 
 //#region app-Started
+const http = require('http');
 const express = require("express");
+const socketIo = require('socket.io');
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  // إضافة منطق معالجة الاتصالات هنا
+});
+
 
 const path = require("path"); // استدعاء مكتبة path
 const bodyParser = require("body-parser");
@@ -58,6 +68,7 @@ app.use("/public", express.static("public")); // تحميل جميع الملف�
 app.set("views", path.join(__dirname, "views")); // تعيين المجلد 'views' كمجلد للقوالب
 
 app.set("view engine", "ejs"); // تعيين محرك العرض لـ EJS
+
 
 //! Database
 const pgp = require("pg-promise")();
@@ -107,7 +118,7 @@ app.use(
 
 
 // تأكد من أن الخادم يعمل
-console.log("WebSocket server is running on ws://0.0.0.0:443");
+
 
 
 //! lazem el code da to7to ba3d tahy2t el session
@@ -200,8 +211,9 @@ app.post("/Login", async (req, res) => {
       const isMatch = await bcrypt.compare(password_Input, password_DB);
       const is_active = rows[0].is_active;
       if (is_active) {
-        
-        
+
+        io.emit('active_user', { username: posted_elements.username_Input });
+
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
@@ -3086,7 +3098,7 @@ async function make_all_users_is_active_to_false() {
 
 //******************************************************************** */
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`server is runing on http://localhost:${port}`);
 
   //! اوامر تنفذ مبشره بعد تشغيل السيرفر

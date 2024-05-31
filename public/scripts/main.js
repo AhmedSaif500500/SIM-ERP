@@ -1400,6 +1400,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 //#endregion END- fetching
 
+
 //#region document EVENTS
 
   //#region escape btn
@@ -1412,8 +1413,10 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 }
 
   //#endregion
-
-
 //#endregion end- document events
 
-
+const socket = io();
+socket.on('active_user', (data) => {
+  console.log(`User ${data.username} is now active.`);
+  // يمكنك هنا تنفيذ أي تعليمات تناسب تطبيقك، مثل عرض رسالة تنبيه للمستخدمين
+});
