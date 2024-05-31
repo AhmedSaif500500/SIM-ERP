@@ -124,7 +124,7 @@ app.use((req, res, next) => {
 
   // التحقق من انتهاء مدة صلاحية الجلسة
   if (req.session.cookie._expires && Date.now() > req.session.cookie._expires) {
-    
+
     req.session.destroy((err) => {
       if (err) {
         console.error('Failed to destroy session:', err);
@@ -236,6 +236,7 @@ app.post("/Login", async (req, res) => {
       if (is_active) {
         let currentId = parseInt(rows[0].id)
         // io.emit('active_user', { username: posted_elements.username_Input });
+        console.log(`thisi is currentId = ${currentId} typeof ${typeof(currentId)}`);
         await khorogFawry(req,currentId)
         return res.json({
           success: false, // العمليه فشلت
