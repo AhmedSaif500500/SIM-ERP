@@ -1415,19 +1415,38 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 
 //#endregion end- document events
-const ws = new WebSocket('ws://localhost:8080'); // Change the URL and port as needed
+// const ws = new WebSocket('ws://localhost:8080'); // Change the URL and port as needed
+
+let wsUrl = 'ws://localhost:8080'; // عنوان URL للبيئة المحلية
+if (window.location.hostname !== 'localhost') {
+  wsUrl = `ws://${window.location.hostname}:8080`; // عنوان URL للنشر
+}
+
+const ws = new WebSocket(wsUrl);
+
+ws.onopen = function() {
+  console.log('WebSocket connection established');
+};
 
 ws.onmessage = function(event) {
   const message = JSON.parse(event.data);
   if (message.action === "khorogFawary") {
     console.log(`this is id from server ${message.x1} ${typeof(message.x1)} : this is id from frontend ${sessionStorage.getItem('current_id')} ${typeof(parseInt(sessionStorage.getItem('current_id')))}`);
-    x1 = parseInt(sessionStorage.getItem('current_id'));
-    if(x1 && x1 === message.x1){
-
-      khorogFawry()
+    const x1 = parseInt(sessionStorage.getItem('current_id'));
+    if (x1 && x1 === message.x1) {
+      khorogFawry();
     }
   }
 };
+
+ws.onerror = function(error) {
+  console.error('WebSocket error:', error);
+};
+
+ws.onclose = function() {
+  console.log('WebSocket connection closed');
+};
+
 
 // ws.onmessage = function(event) {
 //     alert('Alert message received from server: ' + event.data);

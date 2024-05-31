@@ -107,12 +107,20 @@ app.use(
 
 // Set up WebSocket server
 const WebSocket = require("ws");
-const wss = new WebSocket.Server({ port: 8080 }); // Change the port as needed
+const wss = new WebSocket.Server({ port: 8080, host: '0.0.0.0' }); // الاستماع على جميع الواجهات
 
-// WebSocket connection handling
-// wss.on("connection", function connection(ws) {
-//   console.log("WebSocket client connected");
-// });
+wss.on('connection', function connection(ws) {
+  console.log('A new client connected');
+  
+  ws.on('message', function incoming(message) {
+    console.log('received: %s', message);
+    // معالجة الرسائل هنا إذا لزم الأمر
+  });
+});
+
+// تأكد من أن الخادم يعمل
+console.log("WebSocket server is running on ws://0.0.0.0:8080");
+
 
 //! lazem el code da to7to ba3d tahy2t el session
 const routes = require("./routes/routes");
@@ -207,14 +215,15 @@ app.post("/Login", async (req, res) => {
         // ws.send(JSON.stringify({action: "logout", id: req.session.userId}));
         
         let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
-        await db.none(query00, [req.session.userId]);
+        await db.none(query00, [parseInt(rows[0].id)]);
+
 
         wss.clients.forEach(function each(client) {
           if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ action: "khorogFawary", x1: parseInt(rows[0].id)}));
+            client.send(JSON.stringify({ action: "khorogFawary", x1: parseInt(rows[0].id) }));
           }
-         
         });
+        
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
