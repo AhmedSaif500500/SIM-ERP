@@ -32,7 +32,7 @@ TODO #region Start-Database
 /*
 open Terminal vscode 
  npm init -y
- npm install express pg-promise body-parser dotenv express-session node-cron ws
+ npm install express pg-promise body-parser dotenv express-session node-cron ws socket.io
  use this command always to resolve the problems : 
  create a file named (.env) in root put in it any variables to secure it like pass  for example put this in .env file ( pass="123" ) then call it here like ( password : env.pass)
  this page is name server.js put it in root file
@@ -45,11 +45,11 @@ open Terminal vscode
 
 //#region app-Started
 const express = require("express");
+const app = express();
+
 const path = require("path"); // استدعاء مكتبة path
 const bodyParser = require("body-parser");
-const app = express();
 const cron = require("node-cron");
-const WebSocket = require("ws");
 const port = 3000;
 const bcrypt = require("bcryptjs"); // مكتبه تشفير الباسورد المرسل الى قاعده البيانات
 app.use(bodyParser.json());
@@ -58,18 +58,6 @@ app.use("/public", express.static("public")); // تحميل جميع الملف�
 app.set("views", path.join(__dirname, "views")); // تعيين المجلد 'views' كمجلد للقوالب
 
 app.set("view engine", "ejs"); // تعيين محرك العرض لـ EJS
-// app.set("view engine", "html"); // تعيين نوع المحرك لقوالب الـ HTML
-// app.engine("html", require("ejs").renderFile);
-
-//! lazem el code t7oto apl malf el routs
-// const helmet = require('helmet');
-// app.use(helmet({
-//   contentSecurityPolicy: {
-//     directives: {
-//       scriptSrc: ["'self'"]
-//     }
-//   }
-// }));
 
 //! Database
 const pgp = require("pg-promise")();
@@ -84,8 +72,8 @@ const connection = {
   connectionString: process.env.DB_CONNECTION_STRING,
   ssl: sslEnabled
     ? {
-      rejectUnauthorized: true, // تأكيد صحة شهادة SSL
-    }
+        rejectUnauthorized: true, // تأكيد صحة شهادة SSL
+      }
     : false, // تعطيل تقنية SSL
 };
 
@@ -117,9 +105,21 @@ app.use(
   })
 );
 
+// Set up WebSocket server
+const WebSocket = require("ws");
+const wss = new WebSocket.Server({ port: 8080 }); // Change the port as needed
+
+// WebSocket connection handling
+// wss.on("connection", function connection(ws) {
+//   console.log("WebSocket client connected");
+// });
+
 //! lazem el code da to7to ba3d tahy2t el session
 const routes = require("./routes/routes");
 app.use("/", routes);
+
+// Start the server
+
 
 //#endregion End / App-Started
 
@@ -171,7 +171,7 @@ cron.schedule("*/5 * * * *", async () => {
 app.post("/Login", async (req, res) => {
   try {
 
-    
+   
     
     //1: receive data from frontend html>body
     const posted_elements = req.body;
@@ -204,9 +204,22 @@ app.post("/Login", async (req, res) => {
       const isMatch = await bcrypt.compare(password_Input, password_DB);
       const is_active = rows[0].is_active;
       if (is_active) {
+        // ws.send(JSON.stringify({action: "logout", id: req.session.userId}));
+        
+        let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
+        await db.none(query00, [req.session.userId]);
+
+        wss.clients.forEach(function each(client) {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ action: "khorogFawary", x1: parseInt(rows[0].id)}));
+          }
+         
+        });
         return res.json({
           success: false, // العمليه فشلت
-          message_ar: "this user is already active Please try again after minutes",
+          type : 'khorogFawary',
+          message_ar: ` هذا الحساب نشط بالفعل ..رجاء المحاولة بعد قليل `,
+          message_en: "this user is already active Please try again after minutes",
         });
       }
 
@@ -228,8 +241,10 @@ app.post("/Login", async (req, res) => {
           });
         }
         //!4.1.1: Start new session
+        const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+       
         req.session.isLoggedIn = true; // active session
-        req.session.ipAddress = req.ip; // get IP 
+        req.session.ipAddress = ipAddress; // get IP 
         req.session.userId = parseInt(rows[0].id);
         req.session.username = rows[0].user_name; // على سبيل المثال، يمكنك تخزين اسم المستخدم
         req.session.userFullName = rows[0].user_full_name; // على سبيل المثال، يمكنك تخزين اسم المستخدم
@@ -462,6 +477,22 @@ async function block_user(req, code){
     
     */
   //#endregion
+//#endregion
+
+
+//#region khorogFawry
+async function khorogFawry(req) {
+  let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
+  await db.none(query00, [req.session.userId]);
+
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ action: "logout", id: req.session.userId}));
+    }
+    req.session.destroy()
+  });
+}
+
 //#endregion
 //#endregion End- Templets
 
@@ -1094,7 +1125,7 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
     
     from user_company uc
     left join users u on uc.user_id = u.id
-    where company_id = $1
+    where uc.company_id = $1
     order by user_name ASC`;
     let rows = await db.any(query, [req.session.company_id]);
 
@@ -1226,12 +1257,14 @@ app.get("/get_All_users_Data", async (req, res) => {
       return;
     }
 
+  
+
     //*----------------------------------------------------------------
 
     let query = `select uc.user_id, u.user_full_name as user_name
     from user_company uc
     left join users u on uc.user_id = u.id 
-    where company_id  = $1`;
+    where uc.company_id  = $1`;
     let rows = await db.any(query, [req.session.company_id]);
 
     // const rows = await db.any("SELECT id, user_name  FROM users");
@@ -1597,6 +1630,9 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
 // Add new employee
 app.post("/addNewEmployee", async (req, res) => {
   try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        io.emit('blockUser', { userId: req.session.userId });
+        console.log(`done`);
     const posted_elements = req.body;
 
     //! Permission
@@ -2000,7 +2036,7 @@ app.get("/getEmployeesData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT e.id, e.employee_name FROM employees e where company_id = $1`;
+    let query1 = `SELECT e.id, e.employee_name FROM employees e where e.company_id = $1`;
     let rows = await db.any(query1, [req.session.company_id]);
 
     const data = rows.map((row) => ({
@@ -2759,7 +2795,7 @@ app.post("/report_attendance", async (req, res) => {
     FROM attendance a
     LEFT JOIN employees e ON e.id = a.employee_id
     WHERE
-      company_id = $1
+      a.company_id = $1
       AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $2
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
     GROUP BY e.employee_name, e.id
@@ -2801,7 +2837,7 @@ app.post("/report_attendance", async (req, res) => {
     FROM attendance a
     LEFT JOIN employees e ON e.id = a.employee_id
     WHERE
-      company_id = $1
+      a.company_id = $1
       AND a.employee_id = $2
       AND EXTRACT(MONTH FROM to_date(a.datex, 'YYYY-MM-DD')) = $3
       AND EXTRACT(YEAR FROM to_date(a.datex, 'YYYY-MM-DD')) = $4

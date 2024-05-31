@@ -779,8 +779,12 @@ async function save_new_user() {
     hideLoadingIcon(this);
     closeDialog();
     closeDialog_input();
-    showAlert('fail', 'حدث خطأ اثناء معالجه البيانات وتم الغاء العمليه')
-    catch_error(error)
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+    }else{
+      showAlert('fail', 'حدث خطأ اثناء معالجه البيانات وتم الغاء العمليه')
+      catch_error(error)
+    }
   }
 };
     //#region noButton
@@ -1332,8 +1336,12 @@ async function update_user_information(btn){
     hideLoadingIcon(btn);
     closeDialog();
     closeDialog_input();
-    showAlert('fail', 'حدث خطأ اثناء معالجه البيانات وتم الغاء العمليه')
-    catch_error(error)
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+    }else{
+      showAlert('fail', 'حدث خطأ اثناء معالجه البيانات وتم الغاء العمليه')
+      catch_error(error)
+    }
   }
 }
 let delete_user = false

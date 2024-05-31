@@ -910,6 +910,38 @@ async function logout() {
   }
 };
 
+
+async function khorogFawry() {
+  try {
+
+    // await showDialog('', 'هل تريد الخروج من التطبيق ؟', '');
+    // if (!dialogAnswer) {
+    //   return
+    // }
+
+
+    hide_User_options(); // hide user_option div
+
+    const response = await fetch('/Logout', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      closeDialog();
+      redirection('login', 'info', 'قام احد المستخدمين بمحاولة تسجيل الدخول بالحساب الحالى : سيتم تجويلك الى الصفحه الرئيسيه')
+    } else {
+      showAlert('fail', data.message);
+    }
+  } catch (error) {
+    closeDialog();
+    catch_error('logout Error', error);
+  }
+};
 // تسجيل خروج فى حاله اغلاق المتسفح او الصفحه بدون تسجيل خروج
 // window.addEventListener('beforeunload', function () {
 //   logout()
@@ -1288,8 +1320,12 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
     }
   } catch (error) {
     closeDialog();
-    showAlert('fail', error_message);
-    catch_error(error);
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+    } else {
+      showAlert('fail', error_message);
+      catch_error(error);
+    }
   }
 }
 
@@ -1353,8 +1389,12 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     }
   } catch (error) {
     closeDialog();
-    showAlert('fail', error_message);
-    catch_error(error);
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+    } else {
+      showAlert('fail', error_message);
+      catch_error(error);
+    }
   }
 }
 
@@ -1375,3 +1415,20 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 
 //#endregion end- document events
+const ws = new WebSocket('ws://localhost:8080'); // Change the URL and port as needed
+
+ws.onmessage = function(event) {
+  const message = JSON.parse(event.data);
+  if (message.action === "khorogFawary") {
+    console.log(`this is id from server ${message.x1} ${typeof(message.x1)} : this is id from frontend ${sessionStorage.getItem('current_id')} ${typeof(parseInt(sessionStorage.getItem('current_id')))}`);
+    x1 = parseInt(sessionStorage.getItem('current_id'));
+    if(x1 && x1 === message.x1){
+
+      khorogFawry()
+    }
+  }
+};
+
+// ws.onmessage = function(event) {
+//     alert('Alert message received from server: ' + event.data);
+// };
