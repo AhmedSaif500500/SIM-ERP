@@ -1417,9 +1417,11 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 //#endregion end- document events
 // const ws = new WebSocket('ws://localhost:8080'); // Change the URL and port as needed
 
-let wsUrl = 'ws://localhost:8080'; // عنوان URL للبيئة المحلية
-if (window.location.hostname !== 'localhost') {
-  wsUrl = `ws://${window.location.hostname}:8080`; // عنوان URL للنشر
+let wsUrl;
+if (window.location.protocol === 'https:') {
+  wsUrl = `wss://${window.location.hostname}:8080`; // عنوان URL للنشر باستخدام WSS
+} else {
+  wsUrl = `ws://${window.location.hostname}:8080`; // عنوان URL للبيئة المحلية أو HTTP
 }
 
 const ws = new WebSocket(wsUrl);
@@ -1446,8 +1448,3 @@ ws.onerror = function(error) {
 ws.onclose = function() {
   console.log('WebSocket connection closed');
 };
-
-
-// ws.onmessage = function(event) {
-//     alert('Alert message received from server: ' + event.data);
-// };
