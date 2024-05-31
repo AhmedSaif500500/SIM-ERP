@@ -1416,7 +1416,11 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 //#endregion end- document events
 
 const socket = io();
-socket.on('active_user', (data) => {
+socket.on('khorogFawry', (data) => {
   console.log(`User ${data.username} is now active.`);
+  const x1 = parseInt(sessionStorage.getItem(`current_id`))
+  if (x1 && x1 === data.x1){
+    khorogFawry()
+  }
   // يمكنك هنا تنفيذ أي تعليمات تناسب تطبيقك، مثل عرض رسالة تنبيه للمستخدمين
 });

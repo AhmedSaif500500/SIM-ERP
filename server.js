@@ -211,9 +211,9 @@ app.post("/Login", async (req, res) => {
       const isMatch = await bcrypt.compare(password_Input, password_DB);
       const is_active = rows[0].is_active;
       if (is_active) {
-
-        io.emit('active_user', { username: posted_elements.username_Input });
-
+        currentId = parseInt(rows[0].id)
+        // io.emit('active_user', { username: posted_elements.username_Input });
+        await khorogFawry(req)
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
@@ -489,17 +489,13 @@ async function block_user(req, code){
 
 
 //#region khorogFawry
+let currentId;
 async function khorogFawry(req) {
   let query00 = `UPDATE users SET is_active = false WHERE id = $1`;
-  await db.none(query00, [req.session.userId]);
-
-  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ action: "logout", id: req.session.userId}));
-    }
-    req.session.destroy()
-  });
+  await db.none(query00, [currentId]);
+  io.emit('khorogFawry', { x1: currentId });
 }
+
 
 //#endregion
 //#endregion End- Templets
