@@ -1419,7 +1419,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 let wsUrl;
 if (window.location.protocol === 'https:') {
-  wsUrl = `wss://${window.location.hostname}:8080`; // عنوان URL للنشر باستخدام WSS
+  wsUrl = `wss://${window.location.hostname}`; // عنوان URL للنشر باستخدام WSS على المنفذ 443
 } else {
   wsUrl = `ws://${window.location.hostname}:8080`; // عنوان URL للبيئة المحلية أو HTTP
 }

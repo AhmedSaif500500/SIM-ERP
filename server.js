@@ -107,7 +107,7 @@ app.use(
 
 // Set up WebSocket server
 const WebSocket = require("ws");
-const wss = new WebSocket.Server({ port: 8080, host: '0.0.0.0' }); // الاستماع على جميع الواجهات
+const wss = new WebSocket.Server({ port: 443, host: '0.0.0.0' }); // الاستماع على جميع الواجهات
 
 wss.on('connection', function connection(ws) {
   console.log('A new client connected');
@@ -223,7 +223,7 @@ app.post("/Login", async (req, res) => {
             client.send(JSON.stringify({ action: "khorogFawary", x1: parseInt(rows[0].id) }));
           }
         });
-        
+
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
