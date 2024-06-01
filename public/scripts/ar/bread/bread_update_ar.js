@@ -30,7 +30,7 @@ async function geteProductionData_fn() {
   const h_id = parseInt(bread_data.h_id);
 
   //! send id and recwive data
-  await fetchData_postAndGet(
+  data =  await fetchData_postAndGet(
     "/get_bread_Data_for_update_page",
     {h_id},
     'bread_permission','update',
@@ -40,7 +40,10 @@ async function geteProductionData_fn() {
     'حدث خطأ اثناء معاجله البيانات',
     true
   )
+
+
  
+
  //! fill data
 
  let tableHTML = `<table id="myTable" class="input_table">
