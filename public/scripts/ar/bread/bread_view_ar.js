@@ -1,4 +1,4 @@
-
+setActiveSidebar('bread_view_ar');
 //check permissions
 pagePermission('bread_permission','view');
 

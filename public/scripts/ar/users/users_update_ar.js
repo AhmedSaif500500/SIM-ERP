@@ -1,10 +1,12 @@
+setActiveSidebar('users_ar');
+
 //#region  get user data and show
 
 
 
 //#region  Authentication
 let Authentication = true;
-const user_id = sessionStorage.getItem('user_id');
+const user_id = parseInt(sessionStorage.getItem('user_id'));
 sessionStorage.removeItem('user_id');
 if (!user_id) {
   Authentication = false;
@@ -37,22 +39,33 @@ if (!user_id) {
 
       const data = await response.json();
 
+     
       if (data.success) {
+
         array1 = data.rows[0]; /* اول صف فقط فى الروز الى فيه البيانات */
         await show_data();
       } else {
-        catch_error('error fetching employee_id 1 : ', data.message);
+        if (data.xx && data.xx === true) {
+         await redirection('login','fail',data.message_ar)
+          return;
+        } else {
+          catch_error('error fetching updateUser: ', data.message_ar);
+          return;
+        }
       }
     } catch (error) {
-      catch_error('error fetching employee_id 3 : ', error.message);
+      catch_error('error fetching updateUser : ', error.message_ar);
     };
   };
 
 
   async function show_data() {
     try {
+      if (array1.is_stop && array1.is_stop === true){
+        document.querySelector(`#p_stop_user_text`).display.style = 'block'
+      }
       const optionValue = array1.general_permission;
-      document.querySelector(`#user_name_input`).value = array1.user_name;
+      document.querySelector(`#user_name_input`).value = array1.user_full_name;
       document.querySelector('#general_permission_select').value = document.querySelector('#general_permission_select').options[optionValue].value;
       document.querySelector('#table_permission_users').value = array1.users_permission;
       document.querySelector('#table_permission_employee').value = array1.employees_permission;
@@ -60,7 +73,7 @@ if (!user_id) {
       document.querySelector('#table_permission_production').value = array1.production_permission;
       document.querySelector('#table_permission_bread').value = array1.bread_permission;
     } catch (error) {
-      catch_error('error in show_data', error.message);
+      catch_error('error in show_data', error.message_ar);
     };
   };
 
@@ -118,17 +131,17 @@ if (!user_id) {
     lastColumn.textContent = text;
   };
 
-  document.querySelector('#changePassword_btn').addEventListener('click', async function () {
-    const changePassword_div = document.querySelector('#changePassword_div');
-    // التحقق مما إذا كان العنصر مخفيًا أم لا
-    if (changePassword_div.style.display === 'none') {
-      // إذا كان مخفيًا، قم بإظهاره
-      changePassword_div.style.display = 'block';
-    } else {
-      // إذا كان ظاهرًا، قم بإخفائه
-      changePassword_div.style.display = 'none';
-    }
-  });
+  // document.querySelector('#changePassword_btn').addEventListener('click', async function () {
+  //   const changePassword_div = document.querySelector('#changePassword_div');
+  //   // التحقق مما إذا كان العنصر مخفيًا أم لا
+  //   if (changePassword_div.style.display === 'none') {
+  //     // إذا كان مخفيًا، قم بإظهاره
+  //     changePassword_div.style.display = 'block';
+  //   } else {
+  //     // إذا كان ظاهرًا، قم بإخفائه
+  //     changePassword_div.style.display = 'none';
+  //   }
+  // });
 
 
   //! events 
@@ -154,7 +167,6 @@ if (!user_id) {
       general_permission_select_change();
       update_Permissions_Levels_Text_OnPageLoad();
     } catch (error) {
-      console.error('Error during DOMContentLoaded:', error);
       catch_error('Error during DOMContentLoaded', error)
     }
   });
@@ -175,9 +187,9 @@ if (!user_id) {
       // event.preventDefault(); // if <a>
 
       // استعداد البيانات
-      const user_name_input = document.querySelector("#user_name_input").value.trim();
-      const pass_input1 = document.querySelector("#pass_input1").value.trim();
-      const pass_input2 = document.querySelector("#pass_input2").value.trim();
+      // const user_name_input = document.querySelector("#user_name_input").value.trim();
+      // const pass_input1 = document.querySelector("#pass_input1").value.trim();
+      // const pass_input2 = document.querySelector("#pass_input2").value.trim();
       let general_permission_select = parseInt(document.querySelector("#general_permission_select").value);
       let table_permission_users = parseInt(document.querySelector("#table_permission_users").value); // 5aleha let msh const
       let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value);
@@ -185,26 +197,26 @@ if (!user_id) {
       let table_permission_production = parseInt(document.querySelector("#table_permission_production").value);
       let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value);
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
-      const changePassword_div = document.querySelector('#changePassword_div');
+      // const changePassword_div = document.querySelector('#changePassword_div');
 
       // التحقق من صحة البيانات هنا
-      if (!user_name_input) {
-        showAlert("fail", "من فضلك تأكد من ادخال اسم المستخدم بشكل صحيح");
-        return;
-      };
+      // if (!user_name_input) {
+      //   showAlert("fail", "من فضلك تأكد من ادخال اسم المستخدم بشكل صحيح");
+      //   return;
+      // };
 
       // التحقق من اراده المستخجم لتعديل الباسورد ام لا 
-      if (changePassword_div.style.display === 'block') {
-        if (!pass_input1 || !pass_input2) {
-          showAlert('fail', 'من فضلك ادخل كلمة المرور الجديده بشكل صحيح')
-          return;
-        } else {
-          if (pass_input1 !== pass_input2) {
-            showAlert('fail', 'كلمة المرور الجديده غير متطابقه')
-            return;
-          };
-        };
-      };
+      // if (changePassword_div.style.display === 'block') {
+      //   if (!pass_input1 || !pass_input2) {
+      //     showAlert('fail', 'من فضلك ادخل كلمة المرور الجديده بشكل صحيح')
+      //     return;
+      //   } else {
+      //     if (pass_input1 !== pass_input2) {
+      //       showAlert('fail', 'كلمة المرور الجديده غير متطابقه')
+      //       return;
+      //     };
+      //   };
+      // };
 
       // تأكيد المستخدم
 await showDialog('','هل تريد تعديل بيانات المستخدم','');
@@ -213,14 +225,15 @@ if(!dialogAnswer){
 }
 
       // التحقق اذا المستخدم يريد ادخال  كلمة مرور جديده ام لا 
-      let newPassword_Condition = false;
-      if (changePassword_div.style.display === 'block') {
-        newPassword_Condition = true;
-      };
+      // let newPassword_Condition = false;
+      // if (changePassword_div.style.display === 'block') {
+      //   newPassword_Condition = true;
+      // };
 
 
       // ضبط قيم الصلاحيات
       if (general_permission_select !== 1 || general_permission_select === 0) {
+        
         table_permission_users = 0;
         table_permission_employee = 0;
         table_permission_attendance = 0;
@@ -228,15 +241,12 @@ if(!dialogAnswer){
         table_permission_bread = 0;
         // add here all tables select permission id
       };
-
+      console.log(user_id);
 
 
       // تجهيز البيانات للإرسال إلى الخادم
       const posted_elements = {
         user_id,
-        newPassword_Condition,
-        user_name_input,
-        pass_input1,
         general_permission_select,
         table_permission_users,
         table_permission_employee,
@@ -269,10 +279,16 @@ if(!dialogAnswer){
       const data = await response.json();
       if (data.success) {
         closeDialog()
-        redirection('users_ar','success',data.message);
+        await redirection('users_ar','success',data.message_ar);
       } else {
         closeDialog()
-        showAlert("fail", data.message);
+        if(data.xx && data.xx === true){
+          await redirection('login','fail',data.message_ar);
+          return;
+        }else{
+          showAlert("fail", data.message_ar);
+        }
+
       };
     } else {
       closeDialog();
@@ -284,8 +300,6 @@ if(!dialogAnswer){
       // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
     }
   });
-
-
 
 
   document.querySelector("#btn_delete").addEventListener("click", async function () {

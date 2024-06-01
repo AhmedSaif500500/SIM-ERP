@@ -1,4 +1,5 @@
 
+setActiveSidebar('employees_ar');
 //check permissions
 pagePermission('employees_permission','view');
 
@@ -61,7 +62,7 @@ async function fillAttendancetable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(employee => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(${employee.id})">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${employee.id}</td>
                             <td style="width: 100%;">${employee.name}</td>
                           </tr>`;
@@ -151,20 +152,22 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function tabble_update_btn_fn(employeeId) {
+async function tabble_update_btn_fn(updateBtn) {
     // const permission = await btn_permission('employees_permission','update');
 
     // if (!permission){ // if false
     //     return;
     // };
     // عثر على الموظف باستخدام معرف الموظف
-    const selectedEmployee = data.find(X => X.id === employeeId);
-    if (selectedEmployee){
-        sessionStorage.setItem('employee_id',selectedEmployee.id);
-        window.location.href = '/update_employee_ar';
-    }else{
-        return;
-    };
+
+    const row  = updateBtn.closest("tr")
+
+    const employees_data = {
+        employee_id : row.cells[1].textContent
+    }
+  
+    sessionStorage.setItem('employees_data',JSON.stringify(employees_data))
+    window.location.href = 'update_employee_ar';
 };
 
 

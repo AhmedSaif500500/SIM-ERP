@@ -15,87 +15,14 @@
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
     <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    
     <button id="scrollToTopBtn">&#9650;</button>
 
      <!-- start ------------------------------------------------------------------------------------------>
-     <div class="header">
-      <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
-        <i class="fa-solid fa-bars"></i>
-      </a>
-      <div class="header_dark_lang_control">
-        <a id="dark_toggle_btn" class="">
-          <i class="fa-solid fa-circle-half-stroke"></i>
-        </a>
-        <a href="" id="lang_btn" class=""> en </a>
-      </div>
-
-      <div class="header_menue">
-        <a href="">
-          <i class="fa-solid fa-question"></i>
-          مساعده
-        </a>
-
-        <!-- <a href="">
-            <i class="fa-solid fa-info"></i>
-            <p>Home</p>
-          </a> -->
-
-      </div>
-
-
-      <div class="header_user_div">
-        <button id="header_user_name"></button>
-        <div id="user_options" class="user_options" style="display: none;">
-          <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
-          <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
-        </div>
-      </div>
-
-
-    </div>
+     <div class="header" id="header_div"></div>
 
     <div class="sub_container">
-      <div id="sidebar" class="sidebar">
-        <div id="closeMenueIcon" class="closeMenueIcon">
-          <i class="fa-solid fa-square-xmark"></i>
-        </div>
-
-        <a href="home_ar" target="_self" class="">
-          <i class="fa-solid fa-display"></i>
-          الملخص
-        </a>
-
-        <a href="employees_ar" target="_self" class="sidebar-active">
-          <i class="fa-solid fa-user-tie"></i>
-          الموظفين
-        </a>
-
-        <a href="attendance_ar" target="_self" class="">
-          <i class="fa-solid fa-person-circle-exclamation"></i>
-          المؤثرات
-        </a>
-
-        <a href="production_view_ar" target="_self" class="">
-          <i class="fa-solid fa-industry"></i>
-          الانتاج
-        </a>
-
-        <a href="bread_view_ar" target="_self" class="">
-          <i class="fa-solid fa-bread-slice"></i>
-          العيش
-        </a>
-        
-        <!-- <a href="index2.html" target="_self"> -->
-        <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
-          <i class="fa-solid fa-user"></i>
-          المستخدمين
-        </a>
-
-        <a id="Custmize_sidebar" href="#">
-          <i class="fa-solid fa-gear"></i>
-          <p>تخصيص</p>
-        </a>
-      </div>
+      <div id="sidebar" class="sidebar"></div>
 
 
     <div id="white_backcolor" class="white_backcolor">
@@ -178,6 +105,7 @@
 
   <!-- scripts------------------------------------------------------------------------------ -->
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
   <script src="/public/scripts/ar/employees/new_employee_ar.js"></script>
 

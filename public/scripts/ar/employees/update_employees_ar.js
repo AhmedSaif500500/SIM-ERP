@@ -1,19 +1,30 @@
+setActiveSidebar('employees_ar');
+// let Authentication = true;
+// //#region  Authentication
+// const employee_id = sessionStorage.getItem('employee_id');
+// sessionStorage.removeItem('employee_id');
+// if (!employee_id) {
+//   Authentication = false;
+//   showAlert('fail', 'من فضلك اختر الموظف اولا للتعديل , سيتم توجيهك الى صفحه الموظفين');
+//  document.querySelector('#body_content').style.pointerEvents = 'none';
+
+//   // الكود الى جوا الدالة دى هينتظر مده 3 ثوانى 3000 حتى يتم تنفيذه
+//   setTimeout(() => {
+//       window.location.href = '/employees_ar';
+//   }, 3000);
+// };
+
+
 let Authentication = true;
 //#region  Authentication
-const employee_id = sessionStorage.getItem('employee_id');
-sessionStorage.removeItem('employee_id');
-if (!employee_id) {
+const employees_data = JSON.parse(sessionStorage.getItem('employees_data'));
+sessionStorage.removeItem('employees_data');
+if (!employees_data) {
   Authentication = false;
-  showAlert('fail', 'من فضلك اختر الموظف اولا للتعديل , سيتم توجيهك الى صفحه الموظفين');
- document.querySelector('#body_content').style.pointerEvents = 'none';
-
-  // الكود الى جوا الدالة دى هينتظر مده 3 ثوانى 3000 حتى يتم تنفيذه
-  setTimeout(() => {
-      window.location.href = '/employees_ar';
-  }, 3000);
+  redirection('employees_ar','fail','من فضلك اختر الموظف اولا للتعديل , سيتم توجيهك الى صفحه الموظفين')
 };
 
-
+const employee_id = employees_data.employee_id;
 
 //#endregion end-Authentication
 

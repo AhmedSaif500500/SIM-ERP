@@ -1,108 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Draggable Handle Button for Table Rows</title>
-<style>
-  /* قم بتخصيص النمط حسب الحاجة */
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  th, td {
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-  }
-
-  th {
-    background-color: #f2f2f2;
-  }
-
-  .drag-handle {
-    cursor: grab;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buttons from Objects</title>
 </head>
+
 <body>
 
-<table id="myTable">
-  <thead>
-    <tr>
-      <th>Header 1</th>
-      <th>Header 2</th>
-      <th>Header 3</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Row 1 Data 1</td>
-      <td>Row 1 Data 2</td>
-      <td>Row 1 Data 3</td>
-      <td><button class="drag-handle">Drag</button></td>
-    </tr>
-    <tr>
-      <td>Row 2 Data 1</td>
-      <td>Row 2 Data 2</td>
-      <td>Row 2 Data 3</td>
-      <td><button class="drag-handle">Drag</button></td>
-    </tr>
-    <!-- الصفوف الأخرى هنا -->
-  </tbody>
-</table>
+    <div id="dialogOverlay_input" class="dialogOverlay">
+        <div id="users_table_view" class="dialog" style="display: none"> </div>
 
-<script>
-  function makeTableRowsDraggable(tableId) {
-    const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-    let draggedRow = null;
+        <div id="dialog5" class="dialog">
 
-    table.addEventListener('mousedown', function(event) {
-      if (event.target.classList.contains('drag-handle')) {
-        draggedRow = event.target.closest('tr');
-        draggedRow.style.cursor = 'grabbing';
-        const mouseY = event.clientY;
-        const initialTop = draggedRow.getBoundingClientRect().top;
-        
-        const mouseMoveHandler = function(event) {
-          const deltaY = event.clientY - mouseY;
-          draggedRow.style.transform = `translateY(${deltaY}px)`;
-        };
+            <div class="dialog_header">
+                <h3 id="dialogTitle"></h3>
+            </div>
+            <div id="dialog_body_button_div" class="row x_center y_center mb_10 wrap w_full" style="gap: 1rem;">
+                <button id="btn_new_user" class="btn_new" onclick="new_user_fn()">مستخدم جديد</button>
+                <button id="btn_update_current_user" class="btn_update">تعديل مستخدم حالى</button>
+            </div>
 
-        const mouseUpHandler = function(event) {
-          document.removeEventListener('mousemove', mouseMoveHandler);
-          document.removeEventListener('mouseup', mouseUpHandler);
-          draggedRow.style.cursor = 'grab';
-          draggedRow.style.transform = '';
-          const targetRow = document.elementFromPoint(event.clientX, event.clientY).closest('tr');
-          if (targetRow !== draggedRow) {
-            const rows = Array.from(table.children);
-            const indexDragged = rows.indexOf(draggedRow);
-            const indexTarget = rows.indexOf(targetRow);
-            if (indexTarget > indexDragged) {
-              table.insertBefore(draggedRow, targetRow.nextSibling);
-            } else {
-              table.insertBefore(draggedRow, targetRow);
-            }
-          }
-          draggedRow = null;
-        };
+            <div class="dialog_body w_full scroll">
+                <div id="new_user_dive" class="column x_start y_start w_full" style="display: none;">
+                    <h2 id="h2_new_user" class="h2">
+                        <i class="fa-solid fa-arrow-right back_icon" onclick="
+                  document.querySelector('#dialog_body_button_div').style.display = 'flex'
+                  document.querySelector('#new_user_dive').style.display = 'none'
+                  document.querySelector('#yesButton').style.display = 'none'
+                  "></i>
+                        <i id="i_h2_header_new_user" class="fa-solid fa-arrow-left forward_icon"></i>
+                        مستخدم جديد
+                    </h2>
+                    <label for="user_name_input" class="lbl_sm">اسم المستخدم ( المستخدم فى الدخول )</label>
+                    <input type="search" id="user_name_input" class="input_text_md w_full hover"
+                        oninput="check_parse(this, 'string')" autocomplete="off">
 
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-      }
-    });
 
-    table.addEventListener('dragstart', function(event) {
-      event.preventDefault();
-    });
-  }
+                    <!-- pass div -->
+                    <button id="btn_change_pass" class="btn_new"
+                        style="width: fit-content; margin-block-end: 2rem; margin-block-start: 1rem; display: none;"
+                        onclick="btn_change_pass_fn()">تعيين كلمة مرور
+                        جديده</button>
 
-  // استدعاء الدالة وتمرير اسم الجدول كمعلمة
-  makeTableRowsDraggable('myTable');
-</script>
+                    <!-- passwords -->
+                    <div id="pass_div" class="flex-column w_full" style="flex-wrap: nowrap;">
+                        <div id="new_pass_div" class="column" style="display:none">
+                            <label for="pass_input_new_pass_inpu" class="lbl_sm">كلمة المرور القديمة</label>
+
+                            <div id="input_your_new_pass_div" class="flex_row w_full"
+                                style="margin-inline-end: 1rem; display: flex">
+                                <div class="input_with_icon_div w_full">
+                                    <input type="password" name="" id="pass_input_new_pass_inpu"
+                                        placeholder="ادخل كلمه المرور الجديده" class="pass_input w_full hover"
+                                        autocomplete="on">
+                                    <i class="fa-solid fa-key left_icon"></i>
+                                </div>
+                                <button id="show_pass_btn1" class="btn_eye hover"
+                                    onmousedown="showPassword('pass_input_new_pass_inpu', 'eye_icon1')"
+                                    onmouseup="hidePassword('pass_input_new_pass_inpu', 'eye_icon1')"
+                                    ontouchstart="showPassword('pass_input_new_pass_inpu', 'eye_icon1')"
+                                    ontouchend="hidePassword('pass_input_new_pass_inpu', 'eye_icon1')"><i id="eye_icon1"
+                                        class="fa-regular fa-eye eye_icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <label for="pass_input1" class="lbl_sm">كلمة المرور الجديده</label>
+                        <!-- pass div -->
+                        <div class="flex_row w_full">
+                            <div class="input_with_icon_div w_full">
+                                <input type="password" name="" id="pass_input1" oninput="check_parse(this, 'string')"
+                                    placeholder="ادخل كلمه المرور" class="pass_input hover w_full" autocomplete="on">
+                                <i class="fa-solid fa-key left_icon"></i>
+                            </div>
+                            <button id="show_pass_btn1" class="btn_eye hover"
+                                onmousedown="showPassword('pass_input1', 'eye_icon1')"
+                                onmouseup="hidePassword('pass_input1', 'eye_icon1')"
+                                ontouchstart="showPassword('pass_input1', 'eye_icon1')"
+                                ontouchend="hidePassword('pass_input1', 'eye_icon1')"><i id="eye_icon1"
+                                    class="fa-regular fa-eye eye_icon"></i>
+                            </button>
+                        </div>
+
+                        <!-- pass div -->
+                        <div class="flex_row w_full">
+                            <div class="input_with_icon_div w_full">
+                                <input type="password" name="" id="pass_input2" oninput="check_parse(this, 'string')"
+                                    placeholder="تأكيد كلمه المرور" class="pass_input w_full hover" autocomplete="on">
+                                <i class="fa-solid fa-key left_icon"></i>
+                            </div>
+                            <button id="show_pass_btn2" class="btn_eye hover"
+                                onmousedown="showPassword('pass_input2', 'eye_icon2')"
+                                onmouseup="hidePassword('pass_input2', 'eye_icon2')"
+                                ontouchstart="showPassword('pass_input2', 'eye_icon2')"
+                                ontouchend="hidePassword('pass_input2', 'eye_icon2')"><i id="eye_icon2"
+                                    class="fa-regular fa-eye eye_icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <label for="user_fullName_input" class="lbl_sm">اسم المستخدم بالكامل</label>
+                    <input type="search" id="user_fullName_input" class="input_text_md w_full hover"
+                        oninput="check_parse(this, 'string')" title="الاسم الذى يظهر على الشاشه للاخرين"
+                        autocomplete="off">
+
+
+                    <!-- الصلاحيات -->
+
+                    <label for="general_permission_select" class="lbl_sm">صلاحيات عامه</label>
+                    <select class="permission_select hover mb_10" id="user_main_permission_select">
+                        <option value="0" selected>صلاحيات المالك ( كل الشركات )</option>
+                        <option value="1">صلاحيات مقيده ( شركات محدده )</option>
+                    </select>
+
+                    <!-- الشركات -->
+                    <div id="companies_div" class="column" style="display: none">
+                        <label for="div1" class="lbl_sm">شركات منضمه</label>
+                        <div id="div1" class="tags_div hover scroll">
+                            <!-- Buttons in div1 -->
+
+                        </div>
+
+                        <label for="div2" class="lbl_sm">شركات غير منضمه</label>
+                        <div id="div2" class="tags_div hover scroll">
+                            <!-- Buttons in div2 -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dialog_footer">
+                <button id="yesButton" class="btn_save" style="display: none;">حفظ</button>
+                <button id="updateButton" class="btn_update" style="display: none;"
+                    onclick="update_user_information()">تعديل</button>
+                <button id="noButton" class="btn_cancel" onclick="noButton()">إنهاء</button>
+            </div>
+        </div>
+    </div>
 
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-
+setActiveSidebar('bread_view_ar');
 
 let Authentication = true;
 //#region  Authentication
@@ -37,7 +37,8 @@ async function geteProductionData_fn() {
     10,
     false,
     '',
-    'حدث خطأ اثناء معاجله البيانات'
+    'حدث خطأ اثناء معاجله البيانات',
+    true
   )
  
  //! fill data

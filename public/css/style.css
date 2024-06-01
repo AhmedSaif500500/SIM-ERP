@@ -468,7 +468,7 @@ input[type="checkbox"]:hover {
 /*todo @Media*/
 @media screen and (max-width: 750px) {
   .media_width_100 {
-    width: 100%;
+    width: 100% !important;
   }
 }
 
@@ -503,7 +503,7 @@ width: 100% !important;
 .m_05{
   margin: 0.5rem !important;
 }
-.m_1{
+.m_10{
   margin: 1rem !important;
 }
 .m_15{
@@ -1171,6 +1171,7 @@ width: 100% !important;
   transition: var(--transition);
 }
 
+
 .header_menue {
   display: flex; flex-direction:row; flex-grow: 1; flex-wrap: nowrap;
   transition: var(--transition);
@@ -1189,7 +1190,7 @@ width: 100% !important;
   transition: var(--transition);
   height: var(--header_element_height); /* all header elements must take this value */
 }
-#header_user_name{
+.header_user_name{
   position: relative;
   font-weight: bold;
   cursor: pointer;
@@ -2430,7 +2431,7 @@ color: var(--Font_Color);
 
 /** Dialog*/
     /* تغليف النافذة */
-    #dialogOverlay {
+    .dialogOverlay {
       position: fixed;
       display: flex;
       flex-direction: column;
@@ -2441,7 +2442,7 @@ color: var(--Font_Color);
       width: 100vw;
       height: 100vh;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
+      z-index: 998;
   }
   
   /* النافذة */
@@ -2453,6 +2454,8 @@ color: var(--Font_Color);
       animation: fadeIn 0.3s;
       /* margin-block-start: 50%; */
   }
+
+
 
   .dialog_header{
     position: relative;

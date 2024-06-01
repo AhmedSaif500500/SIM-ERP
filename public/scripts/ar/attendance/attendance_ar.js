@@ -1,4 +1,6 @@
 
+
+setActiveSidebar('attendance_ar');
 //#region showReason of redirection
 //! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
 
@@ -79,7 +81,7 @@ async function fillAttendancetable() {
     // slice_Array1 = ""; // تفريغ المصفوفه
     slice_Array1.forEach(row => {
         tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(${row.id})">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none;">${row.id}</td>
                             <td style="display: none;">${row.employee_id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
@@ -191,20 +193,23 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function tabble_update_btn_fn(attendanceId) {
+async function tabble_update_btn_fn(updateBtn) {
     // const permission = await btn_permission('employees_permission','update');
 
     // if (!permission){ // if false
     //     return;
     // };
     // عثر على الموظف باستخدام معرف الموظف
-    const selectedAttendance = data.find(X => X.id === attendanceId);
-    if (selectedAttendance) {
-        sessionStorage.setItem('attendance_id', selectedAttendance.id);
+    console.log(`start`);
+    const row  = updateBtn.closest("tr")
+
+    const attendance_data = {
+        attendance_id : row.cells[1].textContent
+      }
+
+        sessionStorage.setItem('attendance_data',JSON.stringify(attendance_data))
         window.location.href = '/attendance_update_ar';
-    } else {
-        return;
-    };
+
 };
 
 //#endregion end - table

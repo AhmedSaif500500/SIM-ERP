@@ -1,3 +1,4 @@
+setActiveSidebar('bread_view_ar');
 const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 
 
@@ -136,7 +137,7 @@ const vendore_id = vendore_select.value
   });
 
 
-  console.log(`fetch will start`);
+
   await fetchData_post1(
     "/api/bread_add",
     {vendore_id,datex,posted_array},

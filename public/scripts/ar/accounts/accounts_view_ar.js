@@ -1,4 +1,5 @@
 
+setActiveSidebar('accounts_view_ar');
 // alertify.alert('هذه رسالة تنبيه.');
 //#region variables
 const tree_info = document.querySelector(`#tree_info`);

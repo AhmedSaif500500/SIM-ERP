@@ -36,11 +36,12 @@
       </a>
 
       <div class="header_user_div">
-        <button id="header_user_name"></button>
+        <button id="header_user_name" class="header_user_name"></button>
         <div id="user_options" class="user_options" style="display: none;">
           <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
           <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
         </div>
+        <button id="header_company_name" class="header_user_name"></button>
       </div>
 
 
@@ -73,10 +74,6 @@
         </div>
       </div>
       <p id="loginInformation" class="label_small" tabindex="-1">Please inset UserName and Password</p>
-
-      <a href="home_ar" style="position: absolute; inset-block-end: 3rem; inset-inline-end: 2rem;">
-        <i class="fa-solid fa-arrow-right back_icon" id="go_icon"></i>
-      </a>
     </div>
 
 
@@ -84,9 +81,12 @@
   </div>
   <!-- ________________________________________________________________ -->
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script>
   <script src="/public/scripts/login.js"></script>
+  <script>
 
+</script>
 
 </body>
 

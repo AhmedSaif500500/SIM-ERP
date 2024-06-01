@@ -1,4 +1,5 @@
     //#region  save function
+    setActiveSidebar('employees_ar');
     document.querySelector('#btn_save').addEventListener('click',async function () {
         try {
 
@@ -28,64 +29,35 @@
           };
       
           // تأكيد المستخدم
-    await showDialog('','هل تريد حفظ البيانات ؟','');
-    if (!dialogAnswer){
-      return
-    }
+
       
           // تجهيز البيانات للإرسال إلى الخادم
-          const posted_elements = {
-            employee_name_input,
-            employee_job_input,
-            employee_beta2a_input,
-            employee_adress_input,
-            employee_phone_input,
-            employee_emergency_phone_input,
-            employee_start_date_input,
-            employee_leave_date_input,
-            today,
-          };
+
       
           // إرسال البيانات إلى الخادم
-          const response = await fetch('/addNewEmployee', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(posted_elements)
-          });
-          // استلام الرد من الخادم
-          const data = await response.json();
-            if (data.success) {
-              closeDialog();
-              showAlert('success', data.message);
-              clear();
-            } else {
-              closeDialog();
-              showAlert('fail', data.message);
-            };
+          await fetchData_post1(
+            "/addNewEmployee",
+            {employee_name_input,
+              employee_job_input,
+              employee_beta2a_input,
+              employee_adress_input,
+              employee_phone_input,
+              employee_emergency_phone_input,
+              employee_start_date_input,
+              employee_leave_date_input,
+              today},
+            'employees_permission','add',
+            'هل تريد حفظ بيانات الموظف الجديد',
+            10,
+                'new_employee_ar',
+                'حدث خطأ اثناء اضافه الموظف وتم الغاء العمليه'
+            )
         } catch (error) {
           console.error('Error adding employee:', error.message);
           // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
         }
       });
-      
 
-      function clear() {
-const fieldsToClear = [
-'#employee_name_input',
-'#employee_job_input',
-'#employee_beta2a_input',
-'#employee_adress_input',
-'#employee_phone_input',
-'#employee_emergency_phone_input',
-'#employee_start_date_input',
-'#employee_leave_date_input'
-];
-fieldsToClear.forEach(field => {
-    document.querySelector(field).value = null;
-});
-      };
           //#endregion End save Function
       
       

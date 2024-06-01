@@ -1,4 +1,5 @@
 
+setActiveSidebar('attendance_ar');
 //#region general functions
 document.querySelector('#date_input').value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 

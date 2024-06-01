@@ -1,4 +1,6 @@
 
+setActiveSidebar('attendance_ar');
+
 //check permissions
 // pagePermission('attendance_permission','view');
 
@@ -26,8 +28,7 @@ const currentYear = date.getFullYear();
 changeSelect('select_month',currentMonth);
 changeSelect('select_year',currentYear);
 
-console.log("الشهر الحالي هو:", currentMonth);
-console.log("العام الحالي هو:", currentYear);
+
 
 
 

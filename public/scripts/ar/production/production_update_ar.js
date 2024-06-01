@@ -1,4 +1,4 @@
-
+setActiveSidebar('production_view_ar');
 
 let Authentication = true;
 //#region  Authentication
