@@ -147,24 +147,39 @@ loadHeaderContents();
 
 //#region fixed information
 
-function fixed_information() {
+async function fixed_information() {
   try {
     const user_name_session = sessionStorage.getItem('userFullName');
-const user_company_session = sessionStorage.getItem('company_name');
+    const user_company_session = sessionStorage.getItem('company_name');
 const header_user_name = document.querySelector('#header_user_name');
 const header_company_name = document.querySelector('#header_company_name');
 const user_setting_btn = document.querySelector('#user_setting_btn');
 
-  header_user_name.textContent = user_name_session
+    const excludedPages1 = ['/','login']
+    if (excludedPages1.includes(currentPage)) {
+      return;
+  }else{
+    if (!user_name_session) {
+      window.location.href = "/login";
+      return;
+    }else{
+      header_user_name.textContent = user_name_session
+    }
+  }
 
-   
-  const excludedPages = ['companies_ar','/','']
+  const excludedPages = ['companies_ar','/','login']
 
       if (excludedPages.includes(currentPage)) {
         return;
+    }else{
+      if (!user_name_session || !user_company_session) {
+        window.location.href = "/login";
+        return;
+      } else {
+        header_company_name.textContent = user_company_session
+      }
     }
 
-  header_company_name.textContent = user_company_session
   } catch (error) {
     catch_error(error)
   }

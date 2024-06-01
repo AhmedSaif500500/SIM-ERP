@@ -100,7 +100,7 @@ db.connect()
     console.error("Error connecting to the database:", error.message); // في حالة الفشل
     process.exit();
   });
-
+const session_time = 30
 // ! Lazem el code da yt7t Befor routes definition
 const session = require("express-session");
 app.use(
@@ -112,7 +112,7 @@ app.use(
     httpOnly: true, // يمنع الوصول إلى ملف تعريف الارتباط من جافا سكريبت
     secure: true, // يجب أن يكون true إذا كنت تعمل على HTTPS
     sameSite: "lax", // أو 'strict' لضمان إرسال ملف تعريف الارتباط فقط عبر الطلبات من نفس الأصل
-    cookie: { maxAge: 1000 * 60 * 30 }, // مدة صلاحية الجلسة (60 دقائق)
+    cookie: { maxAge: 1000 * 60 * session_time }, // مدة صلاحية الجلسة (60 دقائق)
   })
 );
 
@@ -157,7 +157,7 @@ async function check_last_activity_fn() {
   const now = new Date();
 
   // احسب وقت الحد الفاصل (5 دقائق)
-  const sessionTime = new Date(now.getTime() - 1000 * 60 * 30);
+  const sessionTime = new Date(now.getTime() - 1000 * 60 * session_time);
 
   try {
     // قم بتنفيذ استعلام SQL باستخدام `db.none`

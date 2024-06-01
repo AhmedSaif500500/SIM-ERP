@@ -1,7 +1,7 @@
 {
     "name": "karmasha",
     "short_name": "Karmasha", 
-    "start_url": "/home_ar",
+    "start_url": "/login",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#000000",
