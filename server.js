@@ -1280,6 +1280,53 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 //#endregion
 //#endregion  END - owners_and_companies
 
+//#region todo
+
+  //#region get todo data
+  app.get("/get_All_todo_Data", async (req, res) => {
+    try {
+      //! Permission
+      // await permissions(req, "production_permission", "view");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      //* Start--------------------------------------------------------------
+  
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `select
+      t.id,
+      t.datex,
+      t.is_done,
+      t.text
+      from todo t
+      where t.user_id = $1 and company_id = $2
+        ORDER BY
+            t.is_done DESC, t.datex DESC;;
+  ;`;
+      let rows = await db.any(query1, [
+        req.session.userId,
+        req.session.company_id,
+      ]);
+  
+      const data = rows.map((row) => ({
+        id: row.id,
+        datex: row.datex,
+        is_done: row.is_done,
+        note: row.text,
+      }));
+  
+      res.json(data);
+    } catch (err) {
+      console.error("Error todo data:", err.message);
+      res.status(500).send("Error: getting todo list");
+    }
+  });
+  //#endregion
+
+//#endregion
+
 //#region users
 
 // review  users data
