@@ -211,6 +211,11 @@ async function tabble_update_btn_fn(updateBtn) {
 
 
 //#region 
+const new_todo_btn = document.querySelector(`#new_todo_btn`);
+new_todo_btn.addEventListener('click', function (){
+  showAlert('info','هذه الاضافة لم تكتمل بعد')
+})
+
 
 //#region showReason of redirection
 //! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
