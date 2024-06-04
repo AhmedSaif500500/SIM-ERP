@@ -1303,7 +1303,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       from todo t
       where t.user_id = $1 and company_id = $2
         ORDER BY
-            t.is_done DESC, t.datex DESC;;
+            t.is_done ASC, t.datex DESC, t.id DESC;
   ;`;
       let rows = await db.any(query1, [
         req.session.userId,
@@ -1323,9 +1323,280 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       res.status(500).send("Error: getting todo list");
     }
   });
+
+
+  app.post("/api/todo_add", async (req, res) => {
+    try {
+
+      const posted_elements = req.body;
+  
+      // //! Permission
+      // await permissions(req, "employees_permission", "add");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.datex,
+        posted_elements.note,
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+      //* Start--------------------------------------------------------------
+  
+  
+      //3: insert data into db
+      const newId = await newId_fn("todo");
+  
+      let query = `
+    INSERT INTO todo (id, user_id, datex, is_done, text, company_id)
+    VALUES ($1, $2, $3, $4, $5, $6)
+  `;
+      await db.none(query, [
+        newId,
+        req.session.userId,
+        posted_elements.datex,
+        false,
+        posted_elements.note,
+        req.session.company_id,
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم حفظ البيانات بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء معالجة البيانات",
+      });
+    }
+  });
+
+
+  app.post("/api/todo_update", async (req, res) => {
+    try {
+
+      const posted_elements = req.body;
+  
+      // //! Permission
+      // await permissions(req, "employees_permission", "add");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.id_value,
+        posted_elements.datex,
+        posted_elements.note,
+        posted_elements.is_checked,
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //! check if hack
+      let query0 = `SELECT id FROM todo WHERE id = $1 AND user_id =$2 AND company_id = $3`;
+      let rows0 = await db.any(query0, [
+        posted_elements.id_value,
+        req.session.userId,
+        req.session.company_id,
+      ]);
+      if (rows0.length === 0) {
+        await block_user(req,'todoBlock1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+  
+      //3: insert data into db
+    
+  
+      let query = `
+    update todo set datex = $1, is_done = $2, text = $3
+    WHERE id = $4
+  `;
+      await db.none(query, [
+        posted_elements.datex,
+        posted_elements.is_checked,
+        posted_elements.note,
+        posted_elements.id_value,
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم تعديل البيانات بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء معالجة البيانات",
+      });
+    }
+  });
+
+
+  app.post("/api/todo_update_is_checked", async (req, res) => {
+    try {
+
+      const posted_elements = req.body;
+  
+      // //! Permission
+      // await permissions(req, "employees_permission", "add");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.id_value,
+        posted_elements.isChecked,
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //! check if hack
+      let query0 = `SELECT id FROM todo WHERE id = $1 AND user_id =$2 AND company_id = $3`;
+      let rows0 = await db.any(query0, [
+        posted_elements.id_value,
+        req.session.userId,
+        req.session.company_id,
+      ]);
+      if (rows0.length === 0) {
+        await block_user(req,'todoBlock2')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+  
+      //3: insert data into db
+    
+  
+      let query = `
+    update todo set is_done = $1
+    WHERE id = $2
+  `;
+      await db.none(query, [
+        posted_elements.isChecked,
+        posted_elements.id_value
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم تعديل البيانات بنجاح",
+      });
+    } catch (error) {
+      console.error("Error update todo2:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء معالجة البيانات",
+      });
+    }
+  });
+
+
+  app.post("/api/todo_delete", async (req, res) => {
+    try {
+
+      const posted_elements = req.body;
+  
+      // //! Permission
+      // await permissions(req, "employees_permission", "add");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.id_value,
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //! check if hack
+      let query0 = `SELECT id FROM todo WHERE id = $1 AND user_id =$2 AND company_id = $3`;
+      let rows0 = await db.any(query0, [
+        posted_elements.id_value,
+        req.session.userId,
+        req.session.company_id,
+      ]);
+      if (rows0.length === 0) {
+        await block_user(req,'todoBlock2')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+  
+      //3: insert data into db
+    
+  
+      let query = `
+    DELETE FROM todo WHERE id = $1
+  `;
+      await db.none(query, [
+        posted_elements.id_value
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم حذف البيانات بنجاح",
+      });
+    } catch (error) {
+      console.error("Error update todo2:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء معالجة البيانات",
+      });
+    }
+  });
   //#endregion
 
 //#endregion
+
+
 
 //#region users
 

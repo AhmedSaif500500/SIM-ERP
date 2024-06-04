@@ -6,6 +6,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 //----------------------------------------
 
+const save_btn = document.querySelector('#save_btn');
+const update_btn = document.querySelector('#update_btn');
+const hidden_input = document.querySelector('#hidden_input');
+const note_textarea = document.querySelector('#note_textarea');
+const date_input = document.querySelector('#date_input');
+const h2_id = document.querySelector('#h2_id');
+const noButton = document.querySelector('#noButton');
+const dialogOverlay_input = document.querySelector('#dialogOverlay_input');
+const new_todo_btn = document.querySelector(`#new_todo_btn`);
+const checked_div = document.querySelector(`#checked_div`);
+const checked_input = document.querySelector(`#checked_input`);
+
+date_input.value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+
 const tableContainer = document.getElementById('table-container');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
@@ -69,17 +83,27 @@ async function fillTodotable() {
         // إضافة صفوف الجدول بناءً على البيانات
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
+
+            let isChecked = row.is_done ? 'checked' : ''; // تحديد ما إذا كان يجب تحديد الخانة
+            let noteClass = row.is_done ? 'deleted_text' : ''; // إضافة deleted_text إلى العناصر التي تم حذفها
             tableHTML += `<tr>
                             <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
-                            <td style="width: auto;">${row.is_done}</td>
-                            <td style="width: 100%; white-space: wrap;">${row.note}</td>
-                            <td style="width: auto; white-space: nowrap;">X</td>
+                            <td style="width: auto; text-align: center;">
+                                <input type="checkbox" onchange="checked_fn(this)" ${isChecked}> <!-- استخدام السمة isChecked هنا -->
+                            </td>
+                            <td style="width: 100%; white-space: wrap;" class="${noteClass}">${row.note}</td> <!-- إضافة الفئة noteClass هنا -->
+                            <td style="width: auto; text-align: center;" class="">
+                            <div class="table_buttons_div">
+                              <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                          </td>
                           </tr>`;
         });
-
-        tableHTML += `</tbody>
+        
+        tableHTML += `</tbody>;
+        
         <tfoot>
             <tr class="table_totals_row";>
                 <td id="tfooter1"></td>
@@ -133,9 +157,7 @@ async function performSearch() {
     array1 = data.filter(row => {
         const datex = row.datex && row.datex.toString().toLowerCase().includes(searchValue);
         const note = row.note && row.note.toString().toLowerCase().includes(searchValue);
-        const production_amount = row.production_amount && row.production_amount.toString().toLowerCase().includes(searchValue);
-        const sales_amount = row.sales_amount && row.sales_amount.toString().toLowerCase().includes(searchValue);
-        return datex || note || production_amount || sales_amount;
+        return datex || note;
     });
 
     // تحديد جزء البيانات للعرض (أول 50 صف فقط)
@@ -192,30 +214,140 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function tabble_update_btn_fn(updateBtn) {
-  const row  = updateBtn.closest("tr")
-
-  const production_data = {
-     id_value : row.cells[1].textContent,
-     date_value : row.cells[2].textContent,
-     note_value : row.cells[3].textContent,
-     procution_value : row.cells[4].textContent,
-     sales_value : row.cells[5].textContent,
-  }
-
-  sessionStorage.setItem('production_update_data',JSON.stringify(production_data))
-  window.location.href = 'production_update_ar';
-};
 
 
+
+async function checked_fn(checkbox) {
+    const row  = checkbox.closest("tr")
+    const id_value = row.cells[1].textContent
+    let isChecked = checkbox.checked; // يتم فحص ما إذا كانت القيمة محددة (true) أو غير محددة (false)
+   
+    // let noteCell = checkbox.parentNode.cells[4]; // يحصل على الـ <td> الذي يحتوي على الـ note
+    let noteCell = row.cells[4]; // يحصل على الـ <td> الذي يحتوي على الـ note
+
+    await fetchData_post1(
+        "/api/todo_update_is_checked",
+        {id_value,isChecked},
+        'pass','pass',
+        'هل تريد تعديل حالة الملاحظه ؟',
+        15,
+        'home_ar',
+        'حدث خطأ اثناء معالجة البيانات'
+      )
+
+
+    
+    // if (isChecked) {
+    //     noteCell.classList.add('deleted_text'); // إذا كانت القيمة محددة، يتم إضافة الفئة deleted_text
+    // } else {
+    //     noteCell.classList.remove('deleted_text'); // إذا كانت القيمة غير محددة، يتم إزالة الفئة deleted_text
+    // }
+}
 
 
 //#region 
-const new_todo_btn = document.querySelector(`#new_todo_btn`);
+
+
+function clear_todo(){
+    date_input.value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+    checked_div.style.display = 'none'
+    h2_id.textContent = 'ملاحظه جديدة'
+    hidden_input.value = ''
+    note_textarea.value = ''
+}
+
 new_todo_btn.addEventListener('click', function (){
-  showAlert('info','هذه الاضافة لم تكتمل بعد')
+    clear_todo()
+    dialogOverlay_input.style.display = 'flex'
 })
 
+
+
+
+
+
+ 
+  
+  save_btn.addEventListener('click', async function(){
+    datex = date_input.value;
+    note = note_textarea.value;
+    await fetchData_post1(
+        "/api/todo_add",
+        {datex,note},
+        'pass','pass',
+        'هل تريد حفظ البيانات ؟',
+        15,
+        'home_ar',
+        'حدث خطأ اثناء حفظ البيانات'
+      )
+      
+    })
+    
+  
+    async function tabble_update_btn_fn(updateBtn) {
+        const row  = updateBtn.closest("tr")
+        
+        checked_div.style.display = 'flex'
+        h2_id.textContent = 'تعديل ملاحظة'
+        hidden_input.value = row.cells[1].textContent
+        date_input.value= row.cells[2].textContent
+        const checkbox = row.cells[3].querySelector("input[type='checkbox']");
+        checked_input.checked = checkbox.checked
+        note_textarea.value = row.cells[4].textContent
+        dialogOverlay_input.style.display = 'flex'
+      };
+
+      update_btn.addEventListener('click', async function(){
+        const id_value = hidden_input.value
+        const datex = date_input.value;
+        const note = note_textarea.value;
+        const is_checked = checked_input.checked
+        
+
+
+        await fetchData_post1(
+            "/api/todo_update",
+            {id_value,
+            datex,
+            note,
+            is_checked},
+            'pass','pass',
+            'هل تريد تعديل البيانات ؟',
+            15,
+            'home_ar',
+            'حدث خطأ اثناء تعديل البيانات'
+          )
+        })
+
+
+async function deleteRow(button){
+    const row  = button.closest("tr")
+    const id_value = row.cells[1].textContent
+
+    await fetchData_post1(
+        "/api/todo_delete",
+        {id_value},
+        'pass','pass',
+        'هل تريد حذف هذه الملاحظه ؟',
+        15,
+        'home_ar',
+        'حدث خطأ اثناء معالجة البيانات'
+      )
+
+}
+
+  noButton.onclick = function () {
+    try {
+        dialogOverlay_input.style.display = 'none'
+        closeDialog()
+        clear_todo()
+    } catch (error) {
+        dialogOverlay_input.style.display = 'none'
+        closeDialog()
+        clear_todo()
+        catch_error(error)
+    }
+  };
 
 //#region showReason of redirection
 //! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
@@ -225,3 +357,5 @@ new_todo_btn.addEventListener('click', function (){
   });
   
   //#endregion End - showReason of redirection
+
+

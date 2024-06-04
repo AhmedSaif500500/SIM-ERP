@@ -7,6 +7,7 @@
   <title>Document</title>
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
 </head>
 
 <body class="body scroll">
@@ -19,9 +20,10 @@
     <!-- start ------------------------------------------------------------------------------------------>
 
     <div class="header" id="header_div">
-
-
     </div>
+
+
+  
 
     <div class="sub_container">
       <div id="sidebar" class="sidebar"></div>
@@ -34,11 +36,10 @@
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
-            الملاحظات
+            الرئيسيه
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
-          <h4 class="h2" style="margin: 3rem auto; border: none;">Your database will expire on July 9, 2024</h4>
-
+      
           <div class="btn_container">
             <button id="new_todo_btn" class="btn_new">ملاحظة جديده</button>
           </div>
@@ -60,8 +61,57 @@
       </div>
     </div>
   </div>
+
+  <!-- dialog--------------------------------------------------------------- -->
+  <div id="dialogOverlay_input" class="dialogOverlay" style='display: none;'>
+ 
+    <div id="dialog5" class="dialog dialog_input">
+
+        <div class="dialog_header">
+            <h3 id="dialogTitle"></h3>
+        </div>
+
+        <h2 id="h2_id" class="h2">
+        <i class="fa-solid fa-arrow-right back_icon" onclick="
+          document.querySelector('#users_table_view').style.display = 'none'
+          document.querySelector('#dialog5').style.display = 'block'
+        "></i>
+        <i class="fa-solid fa-arrow-left forward_icon"></i>
+        المستخدمين
+      </h2>
+
+      <!-- date -->
+      <label for="date_input" class="lbl_sm">التاريخ</label>
+      <div class="input_with_icon_div w_full">
+        <input type="search" id="date_input" class="hover input_date datepicker w_full" placeholder="التاريخ..." readonly
+          autocomplete="off">
+        <i class="fa-regular fa-calendar left_icon"></i>
+      </div>
+
+      <input type="hidden" id="hidden_input">
+
+        <div class="dialog_body w_full scroll" style="align-items: start;justify-content: start">
+          <label for="note_textarea" class="lbl_sm">الملاحظه</label>
+          <textarea name="" id="note_textarea" class="text_area1 hover" oninput="check_parse(this,'string')" style="margin-block-end: 1rem;"></textarea>
+
+          <div id="checked_div" class="column x_start y_start" style="display: none">
+            <label for="note_textarea" class="lbl_sm">الحالة</label>
+            <input id="checked_input" type="checkbox">
+          </div>
+
+        </div>
+        <div id="dialog_footer" class="dialog_footer">
+        <button id="save_btn" class="btn_save">حفظ</button>
+        <button id="update_btn" class="btn_update">تعديل</button>
+        <button id="noButton" class="btn_cancel" onclick="noButton()">إنهاء</button>
+        </div>
+    </div>
+</div>
+        
+ <!-- dialog--------------------------------------------------------------- -->
+
   <!-- scripts------------------------------------------------------------------------ -->
-  <script src="/public/flatpickr/dist/flatpickr.min.js"></script>
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script>

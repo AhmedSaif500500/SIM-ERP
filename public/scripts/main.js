@@ -1327,7 +1327,12 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
         redirection(redirectionPage, 'success', data.message_ar);
       } else {
         body_content.style.pointerEvents = 'auto';
-        showAlert('fail', data.message_ar);
+        if (data.xx && data.xx === true) {
+          redirection('login','fail', data.message_ar)
+        }else{
+          showAlert('fail', data.message_ar);
+        }
+        
       }
     } else {
       closeDialog();

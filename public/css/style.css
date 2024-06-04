@@ -34,6 +34,7 @@
   --btn_search_color: rgb(51, 51, 51);
 
   --btn_hover_opacity: 0.8;
+  
 
   /** input Text*/
   --input_text_background_color: rgb(255, 255, 255);
@@ -840,6 +841,17 @@ width: 100% !important;
   margin-block-end: 1rem;
   color: var(--Font_Color);
   background-color: var(--input_text_background_color);
+}
+
+.text_area1{
+  position: relative;
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  transition: var(--transition);
+  padding: 0.5rem;
+  width: 100%;
+  height: 20rem;
+  resize: none;
 }
 
 @media screen and (max-width: 750px) {
@@ -2187,7 +2199,7 @@ color: var(--Font_Color);
   display: flex; flex-direction: row; justify-content: start; align-items: center;
   height: 100%;
   gap: 1rem;
-  padding-inline-start: 1rem;
+  /* padding-inline-start: 1rem; */
 }
 
 .table_buttons_div button{
@@ -2455,13 +2467,24 @@ color: var(--Font_Color);
       /* margin-block-start: 50%; */
   }
 
-
+  .dialog_input{
+    width: 40rem !important;
+    overflow: auto !important;
+  }
+  @media screen and (max-width: 600px) {
+    .dialog_input {
+      width: 90% !important;
+      max-height: 90% !important;
+    }
+  }
 
   .dialog_header{
     position: relative;
     display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: start;
     margin-block-end: 1rem;
   }
+
+
 
 /* 
   .dialog_header h3 {
@@ -2518,4 +2541,10 @@ color: var(--Font_Color);
       border-radius: 3px;
       cursor: pointer;
   } */
+
+  .deleted_text{
+    text-decoration: line-through;
+    color: gray;
+    transition: var(--transition);
+  }
   
