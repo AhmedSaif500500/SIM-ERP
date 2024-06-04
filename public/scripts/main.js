@@ -379,19 +379,7 @@ async function closeDialog() {
 
   setTimeout(() => {
     // إخفاء التراكب بعد انتهاء التحريك
-
-
     overlay.remove();
-
-    // overlay.style.display = 'none';
-    // overlay.style.animation = ''; // إعادة ضبط الأنماط بعد الإخفاء
-
-    // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
-    // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
-    // const dialog = document.getElementById('dialog');
-    // const yesButton = document.getElementById('yesButton');
-    // hideLoadingIcon(yesButton);
-    // dialog.style.pointerEvents = 'auto';
   }, 300);
 }
 }

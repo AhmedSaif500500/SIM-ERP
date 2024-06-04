@@ -251,6 +251,8 @@ async function checked_fn(checkbox) {
 function clear_todo(){
     date_input.value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
     checked_div.style.display = 'none'
+    update_btn.style.display = 'none'
+    save_btn.style.display = 'flex'
     h2_id.textContent = 'ملاحظه جديدة'
     hidden_input.value = ''
     note_textarea.value = ''
@@ -288,6 +290,8 @@ new_todo_btn.addEventListener('click', function (){
         const row  = updateBtn.closest("tr")
         
         checked_div.style.display = 'flex'
+        update_btn.style.display = 'flex'
+        save_btn.style.display = 'none'
         h2_id.textContent = 'تعديل ملاحظة'
         hidden_input.value = row.cells[1].textContent
         date_input.value= row.cells[2].textContent
@@ -338,14 +342,20 @@ async function deleteRow(button){
 
   noButton.onclick = function () {
     try {
-        dialogOverlay_input.style.display = 'none'
-        closeDialog()
-        clear_todo()
+        dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => {
+            dialogOverlay_input.style.display = 'none'
+            closeDialog()
+            clear_todo()
+            dialogOverlay_input.style.animation = 'none';
+          }, 300);
+          
     } catch (error) {
         dialogOverlay_input.style.display = 'none'
         closeDialog()
         clear_todo()
         catch_error(error)
+        dialogOverlay_input.style.animation = 'none';
     }
   };
 
