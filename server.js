@@ -1596,8 +1596,6 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 
 //#endregion
 
-
-
 //#region users
 
 // review  users data
@@ -3238,21 +3236,21 @@ app.get("/api/tree", async (req, res) => {
   try {
     let query1 = `
     SELECT h1.id AS account_id,
-           h1.account_name AS account_name,
-           h1.is_final_account AS is_final_account,
-           h1.account_no as account_no,
-           h1.finance_statement as finance_statement,
-           h1.cashflow_statement as cashflow_statement,
-           h1.starting_balance_value as starting_balance_value,
-           h1.starting_balance_type as starting_balance_type,
-           h1.can_be_deleted as can_be_deleted,
-           h1.is_main_acc as is_main_acc,
-            h2.id AS parent_id,
-            h2.account_name AS parent_name
-    FROM accounts_header h1
-    where h1.company_id = $1
-    LEFT JOIN accounts_body b ON h1.id = b.account_id
-    LEFT JOIN accounts_header h2 ON b.parent_id = h2.id;`;
+    h1.account_name AS account_name,
+    h1.is_final_account AS is_final_account,
+    h1.account_no AS account_no,
+    h1.finance_statement AS finance_statement,
+    h1.cashflow_statement AS cashflow_statement,
+    h1.starting_balance_value AS starting_balance_value,
+    h1.starting_balance_type AS starting_balance_type,
+    h1.can_be_deleted AS can_be_deleted,
+    h1.is_main_acc AS is_main_acc,
+    h2.id AS parent_id,
+    h2.account_name AS parent_name
+FROM accounts_header h1
+LEFT JOIN accounts_body b ON h1.id = b.account_id
+LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
+WHERE h1.company_id = $1;;`;
 
     // استعلام SQL لجلب بيانات الشجرة
     let treeData = await db.any(query1, [req.session.company_id]);

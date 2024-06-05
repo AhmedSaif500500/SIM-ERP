@@ -266,14 +266,14 @@
     display: inline-block;
     width: 1px;
     height: 2.4em;
-    background: white;
+    background: var(--bg_white_backcolor);
     margin: 0 .5em 0 0;
-    border-left: 1px solid #e2e3e3
+    border-left: 1px solid var(--bg_sidebar)
 }
 
 .vakata-context .vakata-contextmenu-shortcut {
     font-size: .8em;
-    color: silver;
+    color: var(--bg_sidebar);
     opacity: .5;
     display: none
 }
@@ -294,7 +294,7 @@
 .vakata-context-rtl .vakata-context-separator>a {
     margin: 0 2.4em 0 0;
     border-left: 0;
-    border-right: 1px solid #e2e3e3
+    border-right: 1px solid var(--bg_sidebar)
 }
 
 .vakata-context-rtl .vakata-context-left ul {
@@ -311,8 +311,8 @@ margin-inline-end: 0.8rem;
 
 .vakata-context-rtl li>a .vakata-contextmenu-sep {
     margin: 0 0 0 .5em;
-    border-left-color: white;
-    background: #e2e3e3
+    border-left-color: var(--bg_white_backcolor);
+    background: var(--bg_white_backcolor)
 }
 
 #jstree-marker {
@@ -372,15 +372,15 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default .jstree-hovered {
-    background: #e7f4f9;
+    background: var(--hover_btn_color);
     border-radius: 2px;
-    box-shadow: inset 0 0 1px #cccccc
+    box-shadow: inset 0 0 1px var(--hover_btn_color)
 }
 
 .jstree-default .jstree-context {
-    background: #e7f4f9;
+    background: var(--hover_btn_color);
     border-radius: 2px;
-    box-shadow: inset 0 0 1px #cccccc
+    box-shadow: inset 0 0 1px var(--hover_btn_color)
 }
 
 .jstree-default .jstree-clicked {
@@ -396,7 +396,7 @@ margin-inline-end: 0.8rem;
 
 .jstree-default .jstree-disabled {
     background: transparent;
-    color: #666666
+    color: var(--h2_border_bottom);
 }
 
 .jstree-default .jstree-disabled.jstree-hovered {
@@ -405,13 +405,13 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default .jstree-disabled.jstree-clicked {
-    background: #efefef
+    background: var(var(--hover_btn_color))
 }
 
 .jstree-default .jstree-disabled>.jstree-icon {
     opacity: .8;
     filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");
-    filter: gray;
+    filter: var(--h2_border_bottom);
     -webkit-filter: grayscale(100%)
 }
 
@@ -431,7 +431,7 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default.jstree-checkbox-no-clicked .jstree-clicked.jstree-hovered {
-    background: #e7f4f9
+    background: var(--bg_sidebar)
 }
 
 .jstree-default.jstree-checkbox-no-clicked>.jstree-wholerow-ul .jstree-wholerow-clicked {
@@ -439,7 +439,7 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default.jstree-checkbox-no-clicked>.jstree-wholerow-ul .jstree-wholerow-clicked.jstree-wholerow-hovered {
-    background: #e7f4f9
+    background: var(--bg_sidebar)
 }
 
 .jstree-default>.jstree-striped {
@@ -462,13 +462,13 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default .jstree-wholerow-hovered {
-    background: #e7f4f9
+    background: var(--bg_sidebar)
 }
 
 .jstree-default .jstree-wholerow-clicked {
-    background: #beebff;
-    background: -webkit-linear-gradient(top, #beebff 0%, #a8e4ff 100%);
-    background: linear-gradient(to bottom, #beebff 0%, #a8e4ff 100%)
+    background: var(--btn_search_backcolor);
+    background: -webkit-linear-gradient(top, var(--btn_search_backcolor) 0%, var(--btn_search_backcolor) 100%);
+    background: linear-gradient(to bottom, var(--btn_search_backcolor) 0%, var(--btn_search_backcolor) 100%)
 }
 
 .jstree-default .jstree-node {
@@ -555,7 +555,7 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default .jstree-disabled.jstree-clicked {
-    background: #efefef
+    background: var(--btn_search_backcolor);
 }
 
 .jstree-default .jstree-checkbox {
@@ -587,7 +587,7 @@ margin-inline-end: 0.8rem;
 .jstree-default .jstree-checkbox-disabled {
     opacity: .8;
     filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");
-    filter: gray;
+    filter: var(--btn_search_backcolor);
     -webkit-filter: grayscale(100%)
 }
 
@@ -782,7 +782,7 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default-small .jstree-disabled.jstree-clicked {
-    background: #efefef
+    background: var(--btn_search_backcolor)
 }
 
 .jstree-default-small .jstree-checkbox {
@@ -814,7 +814,7 @@ margin-inline-end: 0.8rem;
 .jstree-default-small .jstree-checkbox-disabled {
     opacity: .8;
     filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");
-    filter: gray;
+    filter: var(--btn_search_backcolor);
     -webkit-filter: grayscale(100%)
 }
 
@@ -1009,7 +1009,7 @@ margin-inline-end: 0.8rem;
 }
 
 .jstree-default-large .jstree-disabled.jstree-clicked {
-    background: #efefef
+    background: var(--btn_search_backcolor)
 }
 
 .jstree-default-large .jstree-checkbox {
@@ -1041,7 +1041,7 @@ margin-inline-end: 0.8rem;
 .jstree-default-large .jstree-checkbox-disabled {
     opacity: .8;
     filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'jstree-grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#jstree-grayscale");
-    filter: gray;
+    filter: var(--btn_search_backcolor);
     -webkit-filter: grayscale(100%)
 }
 
@@ -1285,26 +1285,26 @@ margin-inline-end: 0.8rem;
     }
 
     .jstree-default-responsive .jstree-wholerow {
-        border-top: 1px solid rgba(255, 255, 255, 0.7);
+        border-top: 1px solid var(--btn_search_backcolor);
         border-bottom: 1px solid rgba(64, 64, 64, 0.2);
-        background: #ebebeb;
+        background: var(--btn_search_backcolor);
         height: 40px
     }
 
     .jstree-default-responsive .jstree-wholerow-hovered {
-        background: #e7f4f9
+        background: var(--bg_sidebar)
     }
 
     .jstree-default-responsive .jstree-wholerow-clicked {
-        background: #beebff
+        background: var(--bg_sidebar)
     }
 
     .jstree-default-responsive .jstree-children .jstree-last>.jstree-wholerow {
-        box-shadow: inset 0 -6px 3px -5px #666666
+        box-shadow: inset 0 -6px 3px -5px var(--btn_search_backcolor);
     }
 
     .jstree-default-responsive .jstree-children .jstree-open>.jstree-wholerow {
-        box-shadow: inset 0 6px 3px -5px #666666;
+        box-shadow: inset 0 6px 3px -5px var(--btn_search_backcolor);
         border-top: 0
     }
 
