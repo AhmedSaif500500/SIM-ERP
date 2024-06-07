@@ -1408,7 +1408,6 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 //#endregion END- fetching
 
-
 //#region document EVENTS
 
   //#region escape btn
@@ -1423,6 +1422,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
   //#endregion
 //#endregion end- document events
 
+//#region socket
 const socket = io();
 socket.on('khorogFawry', (data) => {
   const x1 = parseInt(sessionStorage.getItem(`current_id`))
@@ -1441,3 +1441,14 @@ socket.on('ozkrAllah', (data) => {
   }
   
 });
+//#endregion
+
+
+
+
+
+
+
+
+
+

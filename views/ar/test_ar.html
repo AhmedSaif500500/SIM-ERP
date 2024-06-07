@@ -9,136 +9,177 @@
 
 <body>
 
-    <div id="dialogOverlay_input" class="dialogOverlay">
-        <div id="users_table_view" class="dialog" style="display: none"> </div>
-
-        <div id="dialog5" class="dialog">
-
-            <div class="dialog_header">
-                <h3 id="dialogTitle"></h3>
+        <!-- employee name -->
+        <label for="dropdown_select_input" class="lbl_sm">اسم الموظف</label>
+        <!-- dropdown -->
+        <div class="dropdown_container" id="dropdown_container">
+          <div class="dropdown_select" id="dropdown_select">
+            <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة"
+              class="dropdown_select_input hover" readonly autocomplete="off">
+            <i class="fa-solid fa-caret-down left_icon"></i>
+            <input type="hidden" id="id_hidden_input" readonly>
+          </div>
+          <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
+            <div class="dropdown_search">
+              <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
+                oninput="performSearch()" autocomplete="off">
             </div>
-            <div id="dialog_body_button_div" class="row x_center y_center mb_10 wrap w_full" style="gap: 1rem;">
-                <button id="btn_new_user" class="btn_new" onclick="new_user_fn()">مستخدم جديد</button>
-                <button id="btn_update_current_user" class="btn_update">تعديل مستخدم حالى</button>
+            <div class="dropdown_menue-items" id="dropdownItems">
+              <!-- قائمة الخيارات تظهر هنا -->
             </div>
-
-            <div class="dialog_body w_full scroll">
-                <div id="new_user_dive" class="column x_start y_start w_full" style="display: none;">
-                    <h2 id="h2_new_user" class="h2">
-                        <i class="fa-solid fa-arrow-right back_icon" onclick="
-                  document.querySelector('#dialog_body_button_div').style.display = 'flex'
-                  document.querySelector('#new_user_dive').style.display = 'none'
-                  document.querySelector('#yesButton').style.display = 'none'
-                  "></i>
-                        <i id="i_h2_header_new_user" class="fa-solid fa-arrow-left forward_icon"></i>
-                        مستخدم جديد
-                    </h2>
-                    <label for="user_name_input" class="lbl_sm">اسم المستخدم ( المستخدم فى الدخول )</label>
-                    <input type="search" id="user_name_input" class="input_text_md w_full hover"
-                        oninput="check_parse(this, 'string')" autocomplete="off">
-
-
-                    <!-- pass div -->
-                    <button id="btn_change_pass" class="btn_new"
-                        style="width: fit-content; margin-block-end: 2rem; margin-block-start: 1rem; display: none;"
-                        onclick="btn_change_pass_fn()">تعيين كلمة مرور
-                        جديده</button>
-
-                    <!-- passwords -->
-                    <div id="pass_div" class="flex-column w_full" style="flex-wrap: nowrap;">
-                        <div id="new_pass_div" class="column" style="display:none">
-                            <label for="pass_input_new_pass_inpu" class="lbl_sm">كلمة المرور القديمة</label>
-
-                            <div id="input_your_new_pass_div" class="flex_row w_full"
-                                style="margin-inline-end: 1rem; display: flex">
-                                <div class="input_with_icon_div w_full">
-                                    <input type="password" name="" id="pass_input_new_pass_inpu"
-                                        placeholder="ادخل كلمه المرور الجديده" class="pass_input w_full hover"
-                                        autocomplete="on">
-                                    <i class="fa-solid fa-key left_icon"></i>
-                                </div>
-                                <button id="show_pass_btn1" class="btn_eye hover"
-                                    onmousedown="showPassword('pass_input_new_pass_inpu', 'eye_icon1')"
-                                    onmouseup="hidePassword('pass_input_new_pass_inpu', 'eye_icon1')"
-                                    ontouchstart="showPassword('pass_input_new_pass_inpu', 'eye_icon1')"
-                                    ontouchend="hidePassword('pass_input_new_pass_inpu', 'eye_icon1')"><i id="eye_icon1"
-                                        class="fa-regular fa-eye eye_icon"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <label for="pass_input1" class="lbl_sm">كلمة المرور الجديده</label>
-                        <!-- pass div -->
-                        <div class="flex_row w_full">
-                            <div class="input_with_icon_div w_full">
-                                <input type="password" name="" id="pass_input1" oninput="check_parse(this, 'string')"
-                                    placeholder="ادخل كلمه المرور" class="pass_input hover w_full" autocomplete="on">
-                                <i class="fa-solid fa-key left_icon"></i>
-                            </div>
-                            <button id="show_pass_btn1" class="btn_eye hover"
-                                onmousedown="showPassword('pass_input1', 'eye_icon1')"
-                                onmouseup="hidePassword('pass_input1', 'eye_icon1')"
-                                ontouchstart="showPassword('pass_input1', 'eye_icon1')"
-                                ontouchend="hidePassword('pass_input1', 'eye_icon1')"><i id="eye_icon1"
-                                    class="fa-regular fa-eye eye_icon"></i>
-                            </button>
-                        </div>
-
-                        <!-- pass div -->
-                        <div class="flex_row w_full">
-                            <div class="input_with_icon_div w_full">
-                                <input type="password" name="" id="pass_input2" oninput="check_parse(this, 'string')"
-                                    placeholder="تأكيد كلمه المرور" class="pass_input w_full hover" autocomplete="on">
-                                <i class="fa-solid fa-key left_icon"></i>
-                            </div>
-                            <button id="show_pass_btn2" class="btn_eye hover"
-                                onmousedown="showPassword('pass_input2', 'eye_icon2')"
-                                onmouseup="hidePassword('pass_input2', 'eye_icon2')"
-                                ontouchstart="showPassword('pass_input2', 'eye_icon2')"
-                                ontouchend="hidePassword('pass_input2', 'eye_icon2')"><i id="eye_icon2"
-                                    class="fa-regular fa-eye eye_icon"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <label for="user_fullName_input" class="lbl_sm">اسم المستخدم بالكامل</label>
-                    <input type="search" id="user_fullName_input" class="input_text_md w_full hover"
-                        oninput="check_parse(this, 'string')" title="الاسم الذى يظهر على الشاشه للاخرين"
-                        autocomplete="off">
-
-
-                    <!-- الصلاحيات -->
-
-                    <label for="general_permission_select" class="lbl_sm">صلاحيات عامه</label>
-                    <select class="permission_select hover mb_10" id="user_main_permission_select">
-                        <option value="0" selected>صلاحيات المالك ( كل الشركات )</option>
-                        <option value="1">صلاحيات مقيده ( شركات محدده )</option>
-                    </select>
-
-                    <!-- الشركات -->
-                    <div id="companies_div" class="column" style="display: none">
-                        <label for="div1" class="lbl_sm">شركات منضمه</label>
-                        <div id="div1" class="tags_div hover scroll">
-                            <!-- Buttons in div1 -->
-
-                        </div>
-
-                        <label for="div2" class="lbl_sm">شركات غير منضمه</label>
-                        <div id="div2" class="tags_div hover scroll">
-                            <!-- Buttons in div2 -->
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="dialog_footer">
-                <button id="yesButton" class="btn_save" style="display: none;">حفظ</button>
-                <button id="updateButton" class="btn_update" style="display: none;"
-                    onclick="update_user_information()">تعديل</button>
-                <button id="noButton" class="btn_cancel" onclick="noButton()">إنهاء</button>
-            </div>
+          </div>
         </div>
-    </div>
 
+
+
+    <script>
+
+async function createDropdown(fetchUrl, tableName, columnProperties, searchColumns) {
+  let data = [];
+  let array1 = [];
+  let slice_Array1 = [];
+
+  async function getData() {
+    const response = await fetch(fetchUrl);
+    data = await response.json();
+    array1 = data.slice();
+  };
+
+  async function showFirst50Rows() {
+    await getData();
+    slice_Array1 = array1.slice(0, 50);
+    fillTable();
+  }
+
+  async function fillTable() {
+    let tableHTML = `<table id="${tableName}" class="review_table">
+                      <thead><tr>`;
+
+    columnProperties.forEach(col => {
+      tableHTML += `<th style="${col.style}">${col.header}</th>`;
+    });
+
+    tableHTML += `</tr></thead><tbody>`;
+
+    slice_Array1.forEach(row => {
+      tableHTML += `<tr onclick="selectedRow(this)">`;
+      columnProperties.forEach(col => {
+        tableHTML += `<td style="${col.style}">${row[col.key]}</td>`;
+      });
+      tableHTML += `</tr>`;
+    });
+
+    tableHTML += `</tbody><tfoot>
+                    <tr id="table_footer_buttons_row">
+                      <td colspan="${columnProperties.length}">
+                        <div class='flex_H'>
+                          <button class="table_footer_btn" onclick="showAllRows()">All</button>
+                          <button class="table_footer_btn" onclick="showFirst50Rows()">50</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot></table>`;
+
+    document.querySelector('#dropdownItems').innerHTML = tableHTML;
+
+    if (array1.length > 0 && array1.length <= 50) {
+      document.querySelector('#table_footer_buttons_row').style.display = "none";
+    } else if (array1.length < 1) {
+      document.querySelector('#table_footer_buttons_row').innerHTML = `<td colspan='${columnProperties.length}' class="td_no_result">لا نتائج</td>`;
+    }
+  };
+
+  async function performSearch() {
+    const searchValue = document.querySelector('#dropdown_search_input').value.trim().toLowerCase();
+
+    array1 = data.filter(row => {
+      return searchColumns.some(col => {
+        return row[col] && row[col].toString().toLowerCase().includes(searchValue);
+      });
+    });
+
+    slice_Array1 = array1.slice(0, 50);
+    fillTable();
+  }
+
+  async function showAllRows() {
+    slice_Array1 = array1.slice();
+    await fillTable();
+  }
+
+  function selectedRow(row) {
+    document.querySelector('#id_hidden_input').value = row.cells[0].textContent;
+    document.querySelector('#dropdown_select_input').value = row.cells[1].textContent;
+    hideDropdown();
+  };
+
+  function toggleDropdown() {
+    if (dropdown_menue.style.display === "none") {
+      measureDistanceToBottom();
+      showDropdown();
+    } else {
+      measureDistanceToBottom();
+      hideDropdown();
+    }
+  }
+
+  async function showDropdown() {
+    await showFirst50Rows();
+    dropdown_menue.style.display = "block";
+  }
+
+  function hideDropdown() {
+    dropdown_menue.style.display = "none";
+    document.querySelector('#dropdown_search_input').value = "";
+  }
+
+  dropdown_select.addEventListener("click", toggleDropdown);
+
+  document.addEventListener("click", (event) => {
+    if (!document.querySelector('#dropdown_select').contains(event.target) &&
+      !document.querySelector('#dropdown_menue').contains(event.target) &&
+      !event.target.closest(`#${tableName}`)) {
+      hideDropdown();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      hideDropdown();
+    }
+  });
+
+  function measureDistanceToBottom() {
+    const dropdown_container = document.querySelector('#dropdown_container');
+    const rect = dropdown_container.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const distanceToBottom = windowHeight - rect.bottom;
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const distanceToBottomRem = distanceToBottom / fontSize;
+
+    if (distanceToBottomRem < 21) {
+      dropdown_menue.classList.add("dropdown_menue_Open_top");
+      dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
+    } else {
+      dropdown_menue.classList.add("dropdown_menue_Open_bottom");
+      dropdown_menue.classList.remove("dropdown_menue_Open_top");
+    }
+
+    window.addEventListener('scroll', measureDistanceToBottom);
+    window.addEventListener('resize', measureDistanceToBottom);
+  }
+}
+   
+
+
+
+    // استخدام الدالة
+    createDropdown('/getEmployeesData1', 'employees_table', [
+      { key: 'id', header: 'ID', style: 'display: none;' },
+      { key: 'employee_name', header: 'Name', style: 'width: 100%;' }
+    ], ['id', 'employee_name']);
+    
+    </script>
 </body>
 
 </html>

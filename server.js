@@ -97,7 +97,7 @@ db.connect()
     obj.done();
   })
   .catch((error) => {
-    console.error("Error connecting to the database:", error.message); // في حالة الفشل
+    console.error("Error connecting to the database:", error); // في حالة الفشل
     process.exit();
   });
 const session_time = 30
@@ -173,7 +173,7 @@ async function check_last_activity_fn() {
       `Users updated based on last_activity older than ${sessionTime}`
     );
   } catch (error) {
-    console.error("Error cron check_last_activity_fn:", error.message);
+    console.error("Error cron check_last_activity_fn:", error);
   }
 }
 
@@ -311,7 +311,7 @@ app.post("/Login", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Login Error:", error.message);
+    console.error("Login Error:", error);
     res.status(500).json({
       success: false,
       message_ar: "Login Error",
@@ -359,7 +359,7 @@ app.get("/Logout", async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Logout Error:", error.message);
+    console.error("Logout Error:", error);
     res.status(500).json({ success: false, message: "Logout Error" });
   }
 });
@@ -1270,7 +1270,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       not_included_companies: rows3,
     });
   } catch (error) {
-    console.error("Error get users data:", error.message);
+    console.error("Error get users data:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ معالجة البيانات",
@@ -1721,7 +1721,7 @@ app.post("/addNewuser", async (req, res) => {
       last_activity(req);
     }
   } catch (error) {
-    console.error("Error adding new user:", error.message);
+    console.error("Error adding new user:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
@@ -1966,7 +1966,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
         "تم حذف بيانات المستخدم بنجاح : سيتم توجيهك الى صفحه المستخدمين الرئيسية",
     });
   } catch (error) {
-    console.error("Error Deleting user data:", error.message);
+    console.error("Error Deleting user data:", error);
     res.status(500).json({
       success: false,
       message: "توجد عمليات فى التطبيق مرتبطه بهذا المستخدم ولا يمكن حذفه",
@@ -2059,7 +2059,7 @@ app.post("/addNewEmployee", async (req, res) => {
       message_ar: "تم حفظ الموظف بنجاح",
     });
   } catch (error) {
-    console.error("Error adding employee:", error.message);
+    console.error("Error adding employee:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
@@ -2120,7 +2120,7 @@ app.post("/updateEmployee", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error get employee data:", error.message);
+    console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء معالجة البيانات",
@@ -2164,7 +2164,7 @@ app.post("/update_employee", async (req, res) => {
     // );
 
     let query1 = `SELECT TRIM(employee_name) FROM employees 
-    WHERE company_id = $1 AND TRIM(employee_name) = $2 AND id != $2
+    WHERE company_id = $1 AND TRIM(employee_name) = $2 AND id != $3
      `;
     let rows = await db.any(query1, [
       req.session.company_id,
@@ -2218,7 +2218,7 @@ app.post("/update_employee", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error get employee data:", error.message);
+    console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء اضافة  الموظف",
@@ -2268,7 +2268,7 @@ app.post("/delete_employee", async (req, res) => {
         "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
     });
   } catch (error) {
-    console.error("Error get employee data:", error.message);
+    console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
       message:
@@ -2364,7 +2364,7 @@ app.post("/attendance_add", async (req, res) => {
       message: "تم حفظ البيانات بنجاح",
     });
   } catch (error) {
-    console.error("Error adding attendance:", error.message);
+    console.error("Error adding attendance:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
@@ -2395,7 +2395,7 @@ app.get("/getEmployeesData1", async (req, res) => {
     }));
     res.json(data);
   } catch (error) {
-    console.error("Error while get Employees Data", error.message);
+    console.error("Error while get Employees Data", error);
     res.join;
     res
       .status(500)
@@ -2440,7 +2440,7 @@ app.get("/get_All_attendance_Data", async (req, res) => {
 
     res.json(data);
   } catch (error) {
-    console.error("Error getEmployeesData1:", error.message);
+    console.error("Error getEmployeesData1:", error);
     res
       .status(500)
       .json({ success: false, message: "حدث خطأ أثناء عرض البيانات" });
@@ -2507,7 +2507,7 @@ app.post("/updateattendance", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error updateattendance:", error.message);
+    console.error("Error updateattendance:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء تحميل البيانات",
@@ -2579,7 +2579,7 @@ app.post("/attendance_update", async (req, res) => {
     });
     // }
   } catch (error) {
-    console.error("Error get employee data:", error.message);
+    console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء تعديل البيانات",
@@ -2630,7 +2630,7 @@ app.post("/attendance_delete", async (req, res) => {
         "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
     });
   } catch (error) {
-    console.error("Error get employee data:", error.message);
+    console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء حذف ",
@@ -2845,7 +2845,7 @@ app.post("/delete_production", async (req, res) => {
         "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه الجرد والانتاج الرئيسيه",
     });
   } catch (error) {
-    console.error("Error get employee data:", error.message);
+    console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ اثناء حذف البيانات",
@@ -3220,7 +3220,7 @@ app.post("/report_attendance", async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("Error report_attendance:", error.message);
+    console.error("Error report_attendance:", error);
     res.status(500).json({
       success: false,
       message: "حدث خطأ أثناء تحميل البيانات",
