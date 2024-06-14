@@ -1,120 +1,177 @@
-
-setActiveSidebar('attendance_ar');
-//#region  Authentication
-let Authentication = true;
-//#region  Authentication
-const attendance_data = JSON.parse(sessionStorage.getItem('attendance_data'));
-sessionStorage.removeItem('attendance_data');
-if (!attendance_data) {
-  Authentication = false;
-  redirection('attendance_ar','fail','من فضلك اختر من الجدول اولا للتعديل , سيتم توجيهك الى صفحه المؤثرات')
-};
-
-const attendance_id = attendance_data.attendance_id;
+setActiveSidebar('bread_view_ar');
+const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 
 
+const date1 = document.querySelector('#date1');
+const vendore_select = document.querySelector('#vendore_select');
 
 
-//#endregion end-Authentication
+date1.value = today
+
+function update_input_table_total(input) {
+  const column_index = input.closest("td").cellIndex
+  console.log(column_index);
+}
 
 
-//#region get data from server
-async function get_attendance_data_fn() {
-    try {
 
-        if(!Authentication){
-            return;
-        }
-            //!2: send id to server then receive data from server response
-            // تجهيز البيانات للإرسال إلى الخادم
-            const posted_elements = {
-                attendance_id,
-            };
-            
-            // إرسال البيانات إلى الخادم
-            const response = await fetch('/updateattendance', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(posted_elements)
-            });
+function addRows() {
+  var table = document.getElementById("myTable");
+  var numRows = parseInt(document.getElementById("columnSelect").value);
 
-              const data = await  response.json();
-              
-           
-                    if (data.success) {
-                        array1 = data.rows[0]; /* اول صف فقط فى الروز الى فيه البيانات */
-                        show_data();
-                    } else {
-                        console.log("Error adding employee:", data.message); 
-                    };
-
-    } catch (error) {
-        console.error('Error getting employee data:', error.message);
-    };
-};
+  // إضافة صف جديد فارغ في نهاية الجدول
+  for (var i = 0; i < numRows; i++) {
+    var emptyRow = document.createElement("tr");
+    emptyRow.innerHTML = `
+                  <td style="width: auto;" class="">
+                    <div class="dragbutton_table">
+                    <button class="drag-handle">
+                    <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                    </button>
+                    </div>
+                  </td>
 
 
-function show_data() {
-    try {
-        if(!Authentication){
-            return;
-        }
-document.querySelector('#id_hidden_input').value = array1.employee_id;
-document.querySelector(`#date_input`).value = array1.datex;
-document.querySelector('#dropdown_select_input').value = array1.employee_name; 
-document.querySelector('#days_input').value =  array1.days;
-document.querySelector('#hours_inpu').value = array1.hours;
-document.querySelector('#values_input').value = array1.values;
-document.querySelector('#note_inpute').value = array1.note;
-    } catch (error) {
-        console.error('error in show_data',error.message)
-    };
-};
+                  <td style="width: auto;" class="">
+                    <div class="input_table_input_divno">
+                      <span>عدد</span>
+                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                    </div>
+                  </td>
 
-//! set colors 
-function checkValueAndSetColor(numberInputId) {
+                  <td style="width: auto;" class="">
+                    <div class="input_table_input_div">
+                      <span>كيلو</span>
+                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                    </div>
+                  </td>
+
+                  <td style="width: 100%;" class="">
+                    <div class="table_buttons_div">
+                      <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                      <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                  </td>
+`;
+    table.querySelector('tbody').appendChild(emptyRow);
+  }
+}
+
+
+function deleteRow(btn) {
+  //فى حالة اذا كان صف واحد فقط
+  const rows_length = parseInt(btn.closest("tbody").rows.length);
+  if (rows_length === 1 ){
+    showAlert('info','لايمكن حذف هذا الصف ,يمكنك حذف العمليه بالكامل بدلا من ذلك')
+    return;
+  }
+  const row = btn.closest("tr");
+  row.remove();
+  updateFooter()
+}
+
+function copyRow(btn) {
+  // الحصول على الصف الذي يحتوي على الزرار الذي تم النقر عليه
+  const row = btn.closest("tr");
+
+  // استنساخ الصف
+  const newRow = row.cloneNode(true);
+
+  // إدراج الصف المستنسخ بعد الصف الحالي
+  row.parentNode.insertBefore(newRow, row.nextSibling);
+  updateFooter()
+}
+
+function updateFooter() {
+  let sum1 = 0;
+  let sum2 = 0;
+  const cells = document.querySelectorAll("#myTable tbody tr td div input");
+  cells.forEach(function (cell) {
+    let cellValue = parseFloat(cell.value);
+    if (isNaN(cellValue)) {
+      cellValue = 0;
+    }
+    const cellIndex = cell.closest("td").cellIndex;
     
-    const numberInput = document.querySelector('#' + numberInputId);
-    if (numberInput.value !== '') {
-      const value = parseFloat(numberInput.value);
-      if (value > 0) {
-        numberInput.style.backgroundColor = 'var(--btn_save_backcolor)';
-        numberInput.style.color = 'var(--btn_color)';
-      } else if (value < 0) {
-        numberInput.style.backgroundColor = 'var(--btn_cancel_backcolor)';
-        numberInput.style.color = 'var(--btn_color)';
-      } else {
-        numberInput.style.backgroundColor = 'var(--input_text_background_color)';
-        numberInput.style.color = 'var(--Font_Color)';
-      };
-    };
-};
+    if (cellIndex === 1) {
+      sum1 += cellValue;
+      document.getElementById("sumColumn1").textContent = sum1;
+    } else if (cellIndex === 2) {
+      sum2 += cellValue;
+      document.getElementById("sumColumn2").textContent = sum2;
+    }
+  });
+}
+
+function handle_input_event(input){
+  check_parse(input,'number');
+  updateFooter()
+}
+
+
+  // استدعاء الدالة وتمرير اسم الجدول كمعلمة
+  makeTableRowsDraggable('myTable');
+
+async function add_new_bread() {
+
+// preparing bread_header data
+const datex = date1.value;
+const vendore_id = vendore_select.value
+
+  //preparing bread_body Data
+  const tableRows = document.querySelectorAll('#myTable tbody tr');
+  const posted_array = [];
   
+  tableRows.forEach(row => {
+      const inputs = row.querySelectorAll('input[type="search"]');
+      
+      if (inputs.length >= 2) { // التحقق من وجود ما لا يقل عن اثنين من العناصر input
+          const amount = +inputs[0].value || 0; // في هذا السياق، علامة الجمع + تحول القيمة إلى عدد عائم. إذا كانت القيمة غير رقمية، فستعود إلى القيمة الافتراضية التي هي صفر
+          const wazn = +inputs[1].value || 0; // في هذا السياق، علامة الجمع + تحول القيمة إلى عدد عائم. إذا كانت القيمة غير رقمية، فستعود إلى القيمة الافتراضية التي هي صفر
+          const rowData = {
+              amount: amount,
+              wazn: wazn
+          };
+          posted_array.push(rowData);
+      }
+  });
 
-  document.querySelector('#days_input').addEventListener('input', function () {checkValueAndSetColor('days_input')});
-  document.querySelector('#hours_inpu').addEventListener('input', function () {checkValueAndSetColor('hours_inpu')});
-  document.querySelector('#values_input').addEventListener('input', function () {checkValueAndSetColor('values_input')});
-  
+
+
+  await fetchData_post1(
+    "/api/bread_add",
+    {vendore_id,datex,posted_array},
+    'bread_permission','add',
+    'هل تريد حفظ البيانات ؟',
+    10,
+    'bread_add_ar',
+    'حدث خطأ اثناء حفظ البيانات'
+  )
+}
+
+document.querySelector('#btn_save').addEventListener('click', async function (){
+  await add_new_bread();
+})
+
+
+document.addEventListener('DOMContentLoaded', async function(){
+  makeTableRowsDraggable('myTable'); // make sure that the table already loaded
+ })
+ 
 
 
 
-//#endregion END- get data from server
-
-
-//#region get employees data from server to fill dropdown
-
-let data = [];
+//!------------------------------------------------------------------------
+//let data = [];
 let array1 = [];
 let slice_Array1 = [];
 
 
 // تحضير البيانات من السيرفر
 async function getEmployeesData_fn() {
-    if(!Authentication){
-        return;
-    }
+    // if(!Authentication){
+    //     return;
+    // }
 
   const response = await fetch("/getEmployeesData1");
   data = await response.json();
@@ -322,73 +379,5 @@ function measureDistanceToBottom() {
   window.addEventListener('resize', measureDistanceToBottom);
 
 }
-//#endregion fill dropdown     
 
-
-//#region  update function
-document.querySelector('#btn_update').addEventListener('click', async function () {
-
-        // استعداد البيانات
-        const date_input = document.querySelector('#date_input').value;
-        const id_hidden_input = document.querySelector('#id_hidden_input').value;
-        const dropdown_select_input = document.querySelector('#dropdown_select_input').value;
-        const days_input = document.querySelector('#days_input').value.trim();
-        const hours_inpu = document.querySelector('#hours_inpu').value.trim();
-        const values_input = document.querySelector('#values_input').value.trim();
-        const note_inpute = document.querySelector('#note_inpute').value.trim();
-        // const btn_save = document.querySelector('#btn_save');
-        const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-
-  await fetchDelete1(
-    {  attendance_id,
-      id_hidden_input,
-      date_input,
-      days_input,
-      hours_inpu,
-      values_input,
-      note_inpute,
-      today,},
-      'attendance_permission',
-      'هل تريد تحديث بيانات المؤثر',
-      10,
-      '/attendance_update',
-      true,
-      'attendance_ar'
-  );
-
-  });
-  
-
-  //#region  delete function
-  document.querySelector('#btn_delete').addEventListener('click', async function () {
-
-    await fetchDelete1(
-      {attendance_id},
-      'attendance_permission',
-      'هل تريد حذف المؤثر ؟',
-      10,
-      '/attendance_delete',
-      true,
-      'attendance_ar'
-    );
-
-});   
-  //#endregion end - delete function
- 
-
-
-
-
-//#endregion End- Functions
-
-    
-    document.addEventListener('DOMContentLoaded', async function () {
-        await get_attendance_data_fn();
-        checkValueAndSetColor('days_input');
-        checkValueAndSetColor('hours_inpu');
-        checkValueAndSetColor('values_input');
-    });
-
-
-
-
+//!--------------------------------------------------------------------

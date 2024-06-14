@@ -25,7 +25,7 @@
   </style>
 </head>
 
-<body class="body scroll">
+<body class="body">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -36,16 +36,16 @@
     <div class="header" id="header_div"></div>
 
     <div class="sub_container">
-      <div id="sidebar" class="sidebar"></div>
+      <div id="sidebar" class="sidebar scroll"></div>
       
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space">
+        <div id="content_space" class="scroll">
           <h2 class="h2">
             <a href="bread_view_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-            <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
+       
             العيش / جديد
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
@@ -84,13 +84,13 @@
                     </div>
                   </td>
                   <td style="width: auto;" class="">
-                    <div class="">
+                    <div class="input_table_input_div">
                       <span>عدد</span>
                       <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
                   <td style="width: auto;" class="">
-                    <div class="">
+                    <div class="input_table_input_div">
                       <span>كيلو</span>
                       <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
@@ -146,8 +146,8 @@
 
   <!-- scripts------------------------------------------------------------------------------ -->
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
-  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
   <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
   <script src="/public/scripts/ar/bread/bread_add_ar.js"></script>
 
 

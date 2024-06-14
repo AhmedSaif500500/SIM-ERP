@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
 </head>
 
-<body class="body scroll">
+<body class="body">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -21,17 +21,17 @@
      <div class="header" id="header_div"></div>
 
     <div class="sub_container">
-      <div id="sidebar" class="sidebar"></div>
+      <div id="sidebar" class="sidebar scroll"></div>
 
 
     <div id="white_backcolor" class="white_backcolor">
       <!-- content -->
-      <div id="content_space">
+      <div id="content_space" class="scroll">
         <h2 class="h2">
           <a href="home_ar">
             <i class="fa-solid fa-arrow-right back_icon"></i>
           </a>
-          <i class="fa-solid fa-arrow-left forward_icon" onclick="forward()"></i>
+     
           التقارير / المؤثرات
         </h2>
         <!-- ________________________________________________CONTENT_____________________________________________________________ -->
@@ -63,7 +63,7 @@
               <div class="dropdown_container" id="dropdown_container">
                 <div class="dropdown_select" id="dropdown_select">
                   <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة" class="dropdown_select_input hover" readonly autocomplete="off">
-                  <i class="fa-solid fa-angle-down"></i>
+                  <i class="fa-solid fa-caret-down left_icon"></i>
                 </div>
                 <input type="hidden" id="id_hidden_input" readonly>
                 <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">

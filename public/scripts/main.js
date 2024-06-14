@@ -111,6 +111,16 @@ loadHeaderContents();
       الحسابات
     </a>
 
+    <a href="transaction_add_ar" target="_self" class="">
+      <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
+      قيد محاسبى
+    </a>
+
+    <a href="test_ar" target="_self" class="">
+    <i class="fa-solid fa-tree fa-bounce" style="color: red;"></i>
+    test
+  </a>
+
     <a id="Custmize_sidebar" href="#">
       <i class="fa-solid fa-gear"></i>
       <p>تخصيص</p>
@@ -483,32 +493,42 @@ lang_btn.addEventListener('click', function (event) {
 //#endregion End -- langauge toggle ar - en
 
 //#region scroll Button Top
-const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+const content_space = document.querySelector(`#content_space`);
 
 // Show button when user scrolls down
-window.addEventListener("scroll", () => {
-  if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) { /* عنصر البودى اوى عنصر داخل البودى  اذا الاسكرول اكبر من 500 بيكسيل*/
-    scrollToTopBtn.style.display = "block";
-  } else {
-    scrollToTopBtn.style.display = "none";
-  }
-});
-
-
+if (content_space !== null) {
+  const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+  content_space.addEventListener("scroll", () => {
+    if (content_space.scrollTop > 200 || document.documentElement.scrollTop > 200) { /* عنصر البودى اوى عنصر داخل البودى  اذا الاسكرول اكبر من 500 بيكسيل*/
+      scrollToTopBtn.style.display = "block";
+    } else {
+      scrollToTopBtn.style.display = "none";
+    }
+  });
+  
 // Scroll to top when button is clicked
-const rootElement = document.documentElement;
+// const rootElement = document.documentElement;
 
 function scrollToTop() {
   // Scroll to top logic
-  rootElement.scrollTo({
+  // rootElement.scrollTo({
+    content_space.scrollTo({
     top: 0,
     behavior: "smooth" /* هنا هيطلع لفوق فى خلال 0.3 ثانيه  دى القيمه الافتراضيه مهما كان طول الصفحه هيطلع فى خلال 0.3 ثانيه*/
 
   });
 }
+
 scrollToTopBtn.addEventListener("click", function () {
   scrollToTop();
 });
+
+}
+
+
+
+
 //#endregion end - scroll Button Top
 
 //#region flatpicker

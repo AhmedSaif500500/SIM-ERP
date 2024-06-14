@@ -69,13 +69,13 @@ async function geteProductionData_fn() {
               </div>
             </td>
             <td style="width: auto;" class="">
-              <div class="">
+              <div class="input_table_input_div">
                 <span>عدد</span>
                 <input value="${row.amount}" type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
             <td style="width: auto;" class="">
-              <div class="">
+              <div class="input_table_input_div">
                 <span>كيلو</span>
                 <input value="${row.wazn}" type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
@@ -180,26 +180,22 @@ function addRows() {
                   <td style="width: auto;" class="">
                     <div class="dragbutton_table">
                       <button class="drag-handle">
-                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
-                      </button>
+                        <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                        </button>
                     </div>
                   </td>
-
-
                   <td style="width: auto;" class="">
-                    <div class="">
+                    <div class="input_table_input_div">
                       <span>عدد</span>
                       <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
-
                   <td style="width: auto;" class="">
-                    <div class="">
+                    <div class="input_table_input_div">
                       <span>كيلو</span>
                       <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
-
                   <td style="width: 100%;" class="">
                     <div class="table_buttons_div">
                       <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
@@ -210,7 +206,6 @@ function addRows() {
     table.querySelector('tbody').appendChild(emptyRow);
   }
 }
-
 
 
 function handle_input_event(input){

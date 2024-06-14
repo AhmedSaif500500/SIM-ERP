@@ -262,6 +262,13 @@ new_todo_btn.addEventListener('click', function (){
     clear_todo()
     dialogOverlay_input.style.display = 'flex'
 })
+
+
+
+
+
+
+ 
   
   save_btn.addEventListener('click', async function(){
     datex = date_input.value;
@@ -300,6 +307,7 @@ new_todo_btn.addEventListener('click', function (){
         const note = note_textarea.value;
         const is_checked = checked_input.checked
         
+
 
         await fetchData_post1(
             "/api/todo_update",

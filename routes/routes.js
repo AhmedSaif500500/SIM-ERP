@@ -294,6 +294,14 @@ router.get('/accounts_view_ar', async (req, res) => {
     }
 });
 
+
+router.get('/transaction_add_ar', async (req, res) => {
+    if (req.session.isLoggedIn) {  
+        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'transactions', 'transaction_add_ar.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
 //#endregion end - accounting
 
 //#region owners_and_companies
