@@ -1876,7 +1876,8 @@ font-size: 2rem;
   display: flex; flex-direction: row; justify-content: start; align-items: center;
   border: var(--border_normal);
   border-radius: 0.3rem;
-  height: var(--input_height);
+  /* height: var(--input_height); */
+  height: 100%;
   min-width: 12rem;
   /* width: fit-content; */
   width: 100%;
@@ -2174,7 +2175,8 @@ font-size: 2rem;
   position: relative;
   border: none;
   width: 25rem;
-  height: var(--input_height);
+  /* height: var(--input_height); */
+  height: 100%;
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
   border-radius: 0.3rem;
@@ -2200,7 +2202,7 @@ font-size: 2rem;
   color: var(--Font_Color);
   transition: var(--transition);
   align-items: center;
-  z-index: 1;
+  /* z-index: 1; */
   
 }
 
@@ -2304,11 +2306,13 @@ font-size: 2rem;
 /*___________________________________*/
 
 .input_table tr{
-  height: var(--input_height);
+  min-height: var(--input_height);
+  height: auto;
 }
 
 .input_table tr td{
 margin: 0.5rem;
+height: 100%;
 }
 .input_table .input_table_input_div{
   display: flex; flex-direction: row; height: 100%; justify-content: start; align-items: center;

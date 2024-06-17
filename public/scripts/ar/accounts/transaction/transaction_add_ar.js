@@ -32,7 +32,7 @@ function addRows() {
 
 
                             <!-- dropdown -->
-                <td style="width: auto;">
+                <td style="width: auto; height: var(--input_height);">
                   <div class="dropdown_container_input_table" id="">
                     <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
                       <div id="" class="dropdown_select_input hover"></div>
