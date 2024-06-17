@@ -9,7 +9,7 @@ date1.value = today
 
 function update_input_table_total(input) {
   const column_index = input.closest("td").cellIndex
-  console.log(column_index);
+
 }
 
 
@@ -325,13 +325,7 @@ async function toggleDropdown(dropdown) {
   if (dropdown_menue.style.display === "none") {
     await measureDistanceToBottom(td,dropdown_menue);
     await showDropdown(td,dropdown_menue);
-    // const td = dropdown.closest("td");
-    // const dropdownItems = td.querySelector(`#dropdownItems`)
-    // const dropdown_search = td.querySelector(`.dropdown_search`);
-    // const dropdown_container = td.querySelector(`#dropdown_container`);
-    // const dropdown_select = td.querySelector(`#dropdown_select`);
-    // const dropdown_select_input = td.querySelector(`#dropdown_select_input`);
-    // const width = dropdownItems.offsetWidth
+
    
 
 
@@ -351,6 +345,7 @@ async function showDropdown(td,dropdown_menue) {
 
 // إخفاء القائمة
 function hideDropdown() {
+  
   const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
   All_dropdown_menue.forEach(dropdown_menue => {
     dropdown_menue.style.display = "none";
@@ -363,15 +358,18 @@ function hideDropdown() {
 
 // إخفاء القائمة عند فقدان التركيز
 document.addEventListener("click", (event) => {
-  if (
-    !document.querySelector('.dropdown_select_input_table').contains(event.target) &&
-    !document.querySelector('.dropdown_menue').contains(event.target) &&
-    !event.target.closest('#accounts_table') // تحقق مما إذا كانت النقرة ليست داخل الجدول
-  ) {
-    // alert(`i will hide menue now`);
+  // console.log('Clicked element:', event.target);
+  const classesToCheck = ['dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input'];
+
+  const clickedInside = classesToCheck.some(className => {
+    return event.target.classList.contains(className) || event.target.closest(`.${className}`);
+  });
+
+  if (!clickedInside) {
     hideDropdown();
   }
 });
+
 
 // إخفاء القائمة عند الضغط على مفتاح الهروب
 document.addEventListener("keydown", (event) => {
