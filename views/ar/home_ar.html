@@ -80,12 +80,17 @@
 
       <!-- date -->
       <label for="date_input" class="lbl_sm">التاريخ</label>
-      <div class="input_with_icon_div w_full">
+                <div class="input_with_icon_div">
+                  <input type="search" id="date_input" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+                    autocomplete="off">
+                  <i class="fa-regular fa-calendar left_icon"></i>
+                </div>
+
+            <!-- <div class="input_with_icon_div w_full">
         <input type="search" id="date_input" class="hover input_date datepicker w_full" placeholder="التاريخ..." readonly
           autocomplete="off">
         <i class="fa-regular fa-calendar left_icon"></i>
-      </div>
-
+      </div> -->
       <input type="hidden" id="hidden_input">
 
         <div class="dialog_body w_full scroll" style="align-items: start;justify-content: start">

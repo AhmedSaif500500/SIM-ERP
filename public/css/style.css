@@ -676,17 +676,21 @@ width: 100% !important;
   border: none;
   height: fit-content;
   width: fit-content;
+  justify-content: start;
   align-items: center;
 }
-
+/*
 @media screen and (max-width: 750px) {
   .input_with_icon_div {
     width: 100%;
   }
 }
+  */
+
 .input_with_icon_div i {
   position: absolute;
-  inset-inline-start: 1rem;
+  inset-inline-end: 0.3rem;
+  font-size: 1.5rem;
   pointer-events: none;
   /* هنا تجعل الصورة غير قابلة للاستجابة للنقرات */
   color: var(--icon_btn_color);
@@ -744,11 +748,11 @@ width: 100% !important;
   display: block;
   border-radius: 0.3rem;
   border: var(--border_normal);
-  padding-block-start: 0.7rem;
-  padding-inline-start: 3rem;
-  padding-block-end: 0.7rem;
-  padding-inline-end: 0.7rem;
-  width: 12rem;
+  padding-block-start: 0.5rem;
+  padding-inline-end: 2rem;
+  padding-block-end: 0.5rem;
+  padding-inline-start: 0.5rem;
+  width: 10.5rem;
   height: var(--input_height);
   transition: var(--transition);
   background-color: var(--input_text_background_color);
@@ -763,9 +767,9 @@ width: 100% !important;
   border-radius: 0.3rem;
   border: var(--border_normal);
   padding-block-start: 0.7rem;
-  padding-inline-start: 3rem;
+  padding-inline-end: 2.7rem;
   padding-block-end: 0.7rem;
-  padding-inline-end: 0.7rem;
+  padding-inline-start: 0.7rem;
   width: 22rem;
   height: var(--input_height);
   transition: var(--transition);
@@ -869,8 +873,7 @@ width: 100% !important;
   .input_text_sm,
   .input_text_md,
   .input_text_lg,
-  .input_text_xl,
-  .input_date {
+  .input_text_xl {
     width: 100%;
   }
 }
@@ -1749,6 +1752,7 @@ font-size: 2rem;
   text-decoration: none;
   margin-block-end: 1rem;
   border-radius: 0.3rem;
+  opacity: 0.9;
   transition: var(--transition);
 }
 
@@ -2409,8 +2413,10 @@ color: var(--Font_Color);
 }
 
 .table_total_row td{
+  padding-block-start: 0.7rem;
   color: var(--Font_Color);
   font-weight: bold;
+  transition: var(--transition);
 }
 
 /** input_table  INPUTS*/

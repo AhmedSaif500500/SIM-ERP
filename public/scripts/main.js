@@ -1048,7 +1048,18 @@ function updateInputErrors() {
 
 // دالة للتحقق من صحة القيمة في حقل الإدخال
 function check_parse(inputid, type) {
-  const value = inputid.value; // احصل على قيمة حقل الإدخال
+  let value
+
+  const elementType = inputid.tagName.toLowerCase();
+  // console.log(elementType);
+  if (elementType === 'td'){
+    value = inputid.textContent;
+  }else{
+      value = inputid.value;   
+  }
+  
+
+   // احصل على قيمة حقل الإدخال
   const specialCharRegex = /['";$%&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة
 
   // إذا كان حقل الإدخال فارغًا، أعد null

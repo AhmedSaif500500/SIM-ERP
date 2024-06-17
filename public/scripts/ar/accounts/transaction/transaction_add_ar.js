@@ -31,7 +31,8 @@ function addRows() {
                 </td>
 
 
-                            <!-- dropdown -->
+
+                <!-- dropdown -->
                 <td style="width: auto; height: var(--input_height);">
                   <div class="dropdown_container_input_table" id="">
                     <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
@@ -46,15 +47,15 @@ function addRows() {
                       </div>
                       <div class="inputTable_dropdown_table_container" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
+  
                       </div>
                     </div>
                   </div>
                 </td>
 
-                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true"></td>
-                <td style="width: auto;" class="inputTable_NumberTd hover" contenteditable="true"></td>
-                <td style="width: auto;" class="inputTable_NumberTd hover" contenteditable="true"></td>
-
+                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" ></td>
+                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
+                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
 
 
                 <td style="width: auto;" class="">
@@ -93,28 +94,17 @@ function copyRow(btn) {
   updateFooter()
 }
 
-function updateFooter() {
-  let sum1 = 0;
-  let sum2 = 0;
-  const cells = document.querySelectorAll("#myTable tbody tr td div input");
-  cells.forEach(function (cell) {
-    let cellValue = parseFloat(cell.value);
-    if (isNaN(cellValue)) {
-      cellValue = 0;
-    }
-    const cellIndex = cell.closest("td").cellIndex;
-    
-    if (cellIndex === 1) {
-      sum1 += cellValue;
-      document.getElementById("sumColumn1").textContent = sum1;
-    } else if (cellIndex === 2) {
-      sum2 += cellValue;
-      document.getElementById("sumColumn2").textContent = sum2;
-    }
-  });
-}
+
 
 function handle_input_event(input){
+  const currentRow = input.closest("tr");
+  const cellIndex = input.closest("td").cellIndex;
+  if (cellIndex === 3) {
+    currentRow.children[4].textContent = "";
+  } else if (cellIndex === 4) {
+    currentRow.children[3].textContent = "";
+  }
+  
   check_parse(input,'number');
   updateFooter()
 }
@@ -345,11 +335,17 @@ async function showDropdown(td,dropdown_menue) {
 
 // إخفاء القائمة
 function hideDropdown() {
-  
-  const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
-  All_dropdown_menue.forEach(dropdown_menue => {
-    dropdown_menue.style.display = "none";
-  })
+  try {
+    const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
+    All_dropdown_menue.forEach(dropdown_menue => {
+      dropdown_menue.style.display = "none";
+      const icon = dropdown_menue.closest(`td`).querySelector(`i`)
+      icon.classList.add('fa-caret-down');
+      icon.classList.remove('fa-caret-up');
+    })
+  } catch (error) {
+    catch_error(error);
+  }
 }
 
 // إظهار/إخفاء القائمة
@@ -378,11 +374,43 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-//#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
 
+function updateFooter() {
+
+  let sum1 = 0;
+  let sum2 = 0;
+  // const cells = document.querySelectorAll("#myTable tbody tr td div input");
+  const cells = document.querySelectorAll(`.inputTable_NumberTd.sum`);
+//  console.log(cells.length);
+ 
+  cells.forEach(function (cell) {
+    let cellValue = parseFloat(cell.textContent);
+    if (isNaN(cellValue)) {
+      cellValue = 0;
+    }
+    const cellIndex = cell.closest("td").cellIndex;
+    
+    // console.log(cellIndex);
+    if (cellIndex === 3) {
+      sum1 += cellValue;
+      document.getElementById("sumColumn3").textContent = sum1;
+    } else if (cellIndex === 4) {
+      sum2 += cellValue;
+      document.getElementById("sumColumn4").textContent = sum2;
+    }
+  });
+
+  document.querySelector(`#difference_debet_cerdit`).textContent = sum1 - sum2
+  // difference_debet_cerdit
+}
+
+
+
+//#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
 function measureDistanceToBottom(td,dropdown_menue) {
   
   const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
+  const icon = dropdown_container.querySelector(`i`)
 
 
   // الحصول على معلومات الحجم والموقع النسبي للعنصر
@@ -400,9 +428,13 @@ function measureDistanceToBottom(td,dropdown_menue) {
   const distanceToBottomRem = distanceToBottom / fontSize;
  
   if (distanceToBottomRem < 21) {  // 5aleh nafs rl hight beta3 el drop_menue + 1 
+    icon.classList.remove('fa-caret-down');
+    icon.classList.add('fa-caret-up');
     dropdown_menue.classList.add("dropdown_menue_Open_top");
     dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
   } else {
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
     dropdown_menue.classList.add("dropdown_menue_Open_bottom");
     dropdown_menue.classList.remove("dropdown_menue_Open_top");
   }

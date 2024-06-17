@@ -63,27 +63,14 @@
 
          
           <label for="date1" class="lbl_sm">التاريخ</label>
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <label for="date1" class="lbl_sm">التاريخ</label>
 
           <!-- date -->
           <div class="input_with_icon_div">
             <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
               autocomplete="off">
-            <i class="fa-regular fa-calendar"></i>
+            <i class="fa-regular fa-calendar left_icon"></i>
           </div>
-
-
-
-          <div style="width: 200px; height: 200px; background-color: blue;">
-            <div class="dropdown_container_input_table"></div>
-          </div>
-          
-        
+              
           <!-- table -->
 
           <table id="myTable" class="input_table">
@@ -92,8 +79,8 @@
                 <th></th>
                 <th style="width: auto;">الحساب</th>
                 <th style="width: 100%;">البيان</th>
-                <th style="width: auto;">مدين</th>
-                <th style="width: auto;">دائن</th>
+                <th style="width: auto; text-align: center;">مدين</th>
+                <th style="width: auto; text-align: center;">دائن</th>
                 <th style="width: auto;"></th>
               </tr>
             </thead>
@@ -129,9 +116,9 @@
                   </div>
                 </td>
 
-                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true"></td>
-                <td style="width: auto;" class="inputTable_NumberTd hover" contenteditable="true"></td>
-                <td style="width: auto;" class="inputTable_NumberTd hover" contenteditable="true"></td>
+                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" ></td>
+                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
+                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
 
 
                 <td style="width: auto;" class="">
@@ -149,15 +136,15 @@
 
               <tr class="table_total_row">
                 <td id="lengthColumn1"></td>
-                <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
-                <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
-                <td id="sumColumn3"></td>
-                <td id="sumColumn4"></td>
+                <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
+                <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
+                <td id="sumColumn3" style="text-align: center">0</td>
+                <td id="sumColumn4" style="text-align: center">0</td>
                 <td id="sumColumn5"></td>
               </tr>
 
               <tr>
-                <td colspan="6" class="">
+                <td colspan="3" class="">
                   <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
                     <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
                     <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
@@ -168,6 +155,12 @@
                     </select>
                   </div>
                 </td>
+
+                <td id="difference_debet_cerdit" colspan="2" class="" style="text-align: center; opacity: 0.5; color: var(--Font_Color); transition: var(--transition);">
+                  0
+                </td>
+
+                <td></td>
               </tr>
 
             </tfoot>
