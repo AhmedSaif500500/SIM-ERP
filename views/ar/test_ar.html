@@ -22,6 +22,15 @@
       justify-content: center;
       align-items: center;
     }
+
+.myTable{
+  width: auto;
+}
+
+.myTable td{
+  width: auto; /* يضمن أن العرض تلقائي بناءً على المحتوى */
+}
+    
   </style>
 </head>
 
@@ -35,13 +44,13 @@
     <!-- start ------------------------------------------------------------------------------------------>
     <div class="header" id="header_div"></div>
 
-    <div class="sub_container scroll">
+    <div class="sub_container">
       <div id="sidebar" class="sidebar scroll"></div>
       
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="ta7ded1 scroll">
-          <h2 class="h2 ta7ded2">
+        <div id="content_space" class="scroll">
+          <h2 class="h2">
             <a href="bread_view_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
@@ -122,31 +131,31 @@
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
                       <span>عدد</span>
-                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
                       <span>كيلو</span>
-                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
 
-                  <td>
+                  <td style="width: auto;">
                                                                           <!-- dropdown -->
 <div class="dropdown_container_input_table" id="dropdown_container">
-  <div class="dropdown_select_input_table" id="dropdown_select">
+  <div class="dropdown_select_input_table" id="dropdown_select" onclick="toggleDropdown(this)">
     <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة"
-      class="dropdown_select_input hover" readonly autocomplete="off">
+      class="dropdown_select_input hover" readonly autocomplete="off" style="width: 15rem;">
     <i class="fa-solid fa-caret-down left_icon"></i>
     <input type="hidden" id="id_hidden_input" readonly>
   </div>
-  <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
+  <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none; width: auto;">
     <div class="dropdown_search">
       <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
         oninput="performSearch()" autocomplete="off">
     </div>
-    <div class="dropdown_menue-items" id="dropdownItems">
+    <div class="inputTable_dropdown_table_container" id="dropdownItems">
       <!-- قائمة الخيارات تظهر هنا -->
     </div>
   </div>
@@ -200,9 +209,6 @@
   </div>
 
   </div>
-
-
-
   <script>
 
   </script>
@@ -211,7 +217,6 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
- 
   <script src="/public/scripts/ar/test.js"></script>
 
 

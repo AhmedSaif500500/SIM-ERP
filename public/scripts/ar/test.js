@@ -1,7 +1,6 @@
 setActiveSidebar('bread_view_ar');
 const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 
-
 const date1 = document.querySelector('#date1');
 const vendore_select = document.querySelector('#vendore_select');
 
@@ -198,7 +197,7 @@ async function fillAttendancetable() {
   // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
   // إعداد رأس الجدول
-  let tableHTML = `<table id="employees_table" class="review_table">
+  let tableHTML = `<table id="employees_table" class="inputTable_dropdown_table">
                         <tbody>`;
 
   // إضافة صفوف الجدول بناءً على البيانات
@@ -206,7 +205,7 @@ async function fillAttendancetable() {
   slice_Array1.forEach(row => {
     tableHTML += `<tr onclick="selectedRow(this)">
                           <td style="display: none;" >${row.id}</td>
-                          <td style="width: 100%;">${row.employee_name}</td>
+                          <td style="width: auto; white-space: nowrap;">${row.employee_name}</td>
                         </tr>`;
   });
 
@@ -233,7 +232,12 @@ async function fillAttendancetable() {
   tableHTML += '</table>';
 
   // تحديث محتوى الصفحة بناءً على البيانات
-  document.querySelector('#dropdownItems').innerHTML = tableHTML;
+  document.querySelector('#dropdownItems').innerHTML = await tableHTML;
+
+  
+
+
+  //! get width of
   //  عمليات صف الاجمالى 
   // جمع القيم في العمود رقم 6
 
@@ -298,10 +302,22 @@ function selectedRow(row) {
 
 
 // إظهار/إخفاء القائمة
-function toggleDropdown() {
+async function toggleDropdown(dropdown) {
   if (dropdown_menue.style.display === "none") {
-    measureDistanceToBottom();
-    showDropdown();
+    await measureDistanceToBottom();
+    await showDropdown();
+    const td = dropdown.closest("td");
+    const dropdownItems = td.querySelector(`#dropdownItems`)
+    const dropdown_search = td.querySelector(`.dropdown_search`);
+    const dropdown_container = td.querySelector(`#dropdown_container`);
+    const dropdown_select = td.querySelector(`#dropdown_select`);
+    const dropdown_select_input = td.querySelector(`#dropdown_select_input`);
+    const width = dropdownItems.offsetWidth
+    dropdown_select_input.style.width = width + 10 + "px"
+    
+    // dropdown_search.style.width = width + "px"
+    // dropdown_container.style.width = width + 10 + "px"
+    // dropdown_select.style.width = width + 10 + "px"
 
   } else {
     measureDistanceToBottom();
@@ -323,7 +339,7 @@ function hideDropdown() {
 
 // إظهار/إخفاء القائمة
 
-dropdown_select.addEventListener("click", toggleDropdown);
+// dropdown_select.addEventListener("click", toggleDropdown);
 
 // إخفاء القائمة عند فقدان التركيز
 document.addEventListener("click", (event) => {

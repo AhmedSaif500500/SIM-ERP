@@ -12,7 +12,7 @@ if (!bread_data) {
 const date1 = document.querySelector('#date1');
 const vendore_id = parseInt(bread_data.vendor_id);
 const vendore_select = document.querySelector('#vendore_select');
-tableContainer = document.querySelector('#table-container')
+myTable = document.querySelector('#myTable')
 
 date1.value = bread_data.datex;
 changeSelect('vendore_select',vendore_id);
@@ -46,7 +46,7 @@ async function geteProductionData_fn() {
 
  //! fill data
 
- let tableHTML = `<table id="myTable" class="input_table">
+ let tableHTML = `
               <thead class="">
                 <tr>
                   <th></th>
@@ -71,13 +71,13 @@ async function geteProductionData_fn() {
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
                 <span>عدد</span>
-                <input value="${row.amount}" type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                <input value="${row.amount}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
                 <span>كيلو</span>
-                <input value="${row.wazn}" type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                <input value="${row.wazn}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
             <td style="width: 100%;" class="">
@@ -113,11 +113,9 @@ async function geteProductionData_fn() {
               </tfoot>
 `;
 
-        // إغلاق الجدول
-        tableHTML += '</table>';
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = await tableHTML;
+        myTable.innerHTML = await tableHTML;
 }
 
 
@@ -187,13 +185,13 @@ function addRows() {
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
                       <span>عدد</span>
-                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
                       <span>كيلو</span>
-                      <input type="search" class="hover" oninput="handle_input_event(this)" autocomplete="off">
+                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
                   <td style="width: 100%;" class="">

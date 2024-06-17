@@ -1862,24 +1862,32 @@ font-size: 2rem;
 
 .dropdown_select i{
   position: absolute;
-  inset-inline-start: 1rem;
+  inset-inline-end: 0.3rem;
   pointer-events: none;
   /* هنا تجعل الصورة غير قابلة للاستجابة للنقرات */
   color: var(--icon_btn_color);
   z-index: 3;
   width: fit-content;
   transition: var(--transition);
+  opacity: 0.7;
 }
 
 .dropdown_select_input {
+  display: flex; flex-direction: row; justify-content: start; align-items: center;
   border: var(--border_normal);
+  border-radius: 0.3rem;
   height: var(--input_height);
+  min-width: 12rem;
+  /* width: fit-content; */
   width: 100%;
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
-  padding-inline-start: 3rem;
-  padding-inline-end: 0.5rem;
+  padding-inline-start: 0.5rem;
+  padding-inline-end: 2rem;
+  padding-block-start: 0.5rem;
+  padding-block-end: 0.5rem;
   cursor: pointer;
+  white-space: nowrap;
   transition: var(--transition);
   z-index: 2;
   
@@ -1889,7 +1897,7 @@ font-size: 2rem;
   position: absolute;
   /* inset-block-start: 100%; */
   inset-inline-end: 0;
-  z-index: 1;
+  z-index: 5;
   /* display: none; */
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
@@ -1909,8 +1917,7 @@ font-size: 2rem;
 }
 
 
-.dropdown_menue input {
-  /* position: relative; */
+/* .dropdown_menue input {
   height: var(--input_height);
   width: 100%;
   padding-block-start: 0;
@@ -1921,7 +1928,7 @@ font-size: 2rem;
   color: var(--Font_Color);
   border: var(--border_normal);
   transition: var(--transition);
-}
+} */
 
 .dropdown_search {
   display: flex;
@@ -1930,9 +1937,9 @@ font-size: 2rem;
   width: 100%;
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
-  padding: 0.6rem;
+  padding: 0.3rem;
   z-index: 2;
-  border: var(--border_normal);
+  /* border: var(--border_normal); */
   transition: var(--transition);
 }
 
@@ -1942,6 +1949,7 @@ font-size: 2rem;
   height: var(--input_height);
   box-sizing: border-box;
   border-radius: 0.3rem;
+  padding: 0.5rem;
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
   border: var(--border_normal);
@@ -2171,8 +2179,7 @@ font-size: 2rem;
   color: var(--Font_Color);
   border-radius: 0.3rem;
   transition: var(--transition);
-  z-index: 1;
-  width: fit-content;
+  width: 100%;
 }
 
 /* @media screen and (max-width: 750px) {
@@ -2210,20 +2217,86 @@ font-size: 2rem;
   opacity: 0.7;
 }
 
+/** inputTable_dropdown_table*/
+
+.inputTable_dropdown_table_container{
+  display: flex; flex-direction: column; justify-content: start; align-items: start; width: 100%;
+}
+
+.inputTable_dropdown_table{
+  border-collapse: collapse;
+  border-radius: 0.3rem;
+  width: 100%;
+  margin: 0 auto;
+  overflow: auto;
+}
+
+.inputTable_dropdown_table th {
+  position: sticky;
+  top: -1px;
+  z-index: 2;
+  align-items: center;
+  text-align: start;
+  background-color: var(--table_header_background_color);
+  color: var(--table_header_color);
+  height: 3rem;
+  text-align: justify;
+  transition: var(--transition);
+}
+
+.inputTable_dropdown_table td,
+.inputTable_dropdown_table th {
+  border: var(--table_border);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+/* todo main row */
+.inputTable_dropdown_table tbody tr:nth-child(odd) {
+  background-color: var(--table_row_main_background_color);
+  color: var(--table_row_main_color);
+  transition: var(--transition);
+}
+
+.inputTable_dropdown_table tbody tr:nth-child(odd):hover {
+  background-color: var(--table_row_main_background_color_while_hover);
+  color: var(--table_row_main_color_while_hover);
+}
+
+
+/* todo alternative row*/
+.inputTable_dropdown_table tbody tr:nth-child(even) {
+  background-color: var(--table_row_alternative_background_color);
+  color: var(--table_row_alternative_color);
+  transition: var(--transition);
+}
+
+.inputTable_dropdown_table tbody tr:nth-child(even):hover {
+  background-color: var(--table_row_alternative_background_color_while_hover);
+  color: var(--table_row_alternative_color_while_hover);
+}
+
+.td_no_result{
+  color: var(--Font_Color);
+}
+
+/** END */
+/* 
 .dropdown_select_input_table input[type="search"] {
   border: var(--border_normal);
   height: var(--input_height);
   width: 100%;
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
-  padding-inline-start: 3rem;
+  padding: 0.5rem;
   padding-inline-end: 0.5rem;
   cursor: pointer;
   transition: var(--transition);
   z-index: 2;
   width: fit-content;
   
-}
+} */
 
 
 
@@ -2255,19 +2328,25 @@ margin: 0.5rem;
 }
 
 
-.input_table td div input{
-position: relative;
-height: var(--input_height);
-width :40rem;
-background-color: var(--input_text_background_color);
-color: var(--Font_Color);
-padding: 0 .5rem;
-height: var(--input_height);
-border: var(--border_normal);
-border-radius: 0.3rem;
-transition: var(--transition);
-
+.input_table_normal_input_text{
+  position: relative;
+  height: var(--input_height);
+  width :10rem;
+  background-color: var(--input_text_background_color);
+  color: var(--Font_Color);
+  padding: 0 .5rem;
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  transition: var(--transition);
 }
+
+
+/* .input_table td div input{
+
+
+} */
+
 
 .dragbutton_table{
   display: flex; flex-direction: row; justify-content: center; align-items: center;
@@ -2284,6 +2363,7 @@ transition: var(--transition);
 color: var(--Font_Color);
 }
 .table_buttons_div{
+  padding: 0.5rem;
   display: flex; flex-direction: row; justify-content: start; align-items: center;
   height: 100%;
   gap: 1rem;
@@ -2294,6 +2374,7 @@ color: var(--Font_Color);
   cursor: pointer;
   background-color: inherit;
   opacity: 0.8;
+  transition: var(--transition);
 }
 
 .table_buttons_div button:hover,
@@ -2328,6 +2409,34 @@ color: var(--Font_Color);
   font-weight: bold;
 }
 
+/** input_table  INPUTS*/
+.inputTable_noteTd{
+  color: var(--Font_Color);
+  background-color: var(--input_text_background_color);
+  border-radius: 0.3rem;
+  border: var(--border_normal);
+  padding: 0.5rem;
+  min-width: 15rem;
+  width: 100%;
+  height: var(--input_height);
+  transition: var(--transition);
+  text-align: start;
+}
+
+.inputTable_NumberTd{
+  color: var(--Font_Color);
+  background-color: var(--input_text_background_color);
+  border-radius: 0.3rem;
+  border: var(--border_normal);
+  padding: 0.5rem;
+  min-width: 7rem;
+  max-width: 15rem;
+  width: auto;
+  height: var(--input_height);
+  transition: var(--transition);
+  text-align: center;
+}
+/** END*/
 /*________________________________*/
 
 

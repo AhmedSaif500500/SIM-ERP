@@ -1,371 +1,420 @@
-setActiveSidebar('home_ar'); // يمكن تغيير 'home_ar' إلى اسم الصفحة المراد تحديدها
-document.addEventListener("DOMContentLoaded", function () {
-  show_redirection_Reason();
-});
+setActiveSidebar('bread_view_ar');
+const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+
+const date1 = document.querySelector('#date1');
+const vendore_select = document.querySelector('#vendore_select');
 
 
-//----------------------------------------
+date1.value = today
 
-const save_btn = document.querySelector('#save_btn');
-const update_btn = document.querySelector('#update_btn');
-const hidden_input = document.querySelector('#hidden_input');
-const note_textarea = document.querySelector('#note_textarea');
-const date_input = document.querySelector('#date_input');
-const h2_id = document.querySelector('#h2_id');
-const noButton = document.querySelector('#noButton');
-const dialogOverlay_input = document.querySelector('#dialogOverlay_input');
-const new_todo_btn = document.querySelector(`#new_todo_btn`);
-const checked_div = document.querySelector(`#checked_div`);
-const checked_input = document.querySelector(`#checked_input`);
-
-date_input.value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-
-const tableContainer = document.getElementById('table-container');
-const searchBtn = document.getElementById('searchBtn');
-const searchInput = document.getElementById('searchInput');
+function update_input_table_total(input) {
+  const column_index = input.closest("td").cellIndex
+  console.log(column_index);
+}
 
 
 
-//#region  ( baynat el employees mn el database )
-// get data from db and store it in array1
-let data = [];
+function addRows() {
+  var table = document.getElementById("myTable");
+  var numRows = parseInt(document.getElementById("columnSelect").value);
+
+  // إضافة صف جديد فارغ في نهاية الجدول
+  for (var i = 0; i < numRows; i++) {
+    var emptyRow = document.createElement("tr");
+    emptyRow.innerHTML = `
+                <td style="width: auto;" class="">
+                  <div class="dragbutton_table">
+                    <button class="drag-handle">
+                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                    </button>
+                  </div>
+                </td>
+
+
+                            <!-- dropdown -->
+                <td style="width: auto;">
+                  <div class="dropdown_container_input_table" id="">
+                    <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
+                      <div id="" class="dropdown_select_input hover"></div>
+                      <i class="fa-solid fa-caret-down left_icon"></i>
+                      <input type="hidden" class="id_hidden_input" id="" readonly>
+                    </div>
+                    <div class="dropdown_menue hover scroll" id="" style="display: none;">
+                      <div class="dropdown_search">
+                        <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
+                          oninput="performSearch(this)" autocomplete="off">
+                      </div>
+                      <div class="inputTable_dropdown_table_container" id="">
+                        <!-- قائمة الخيارات تظهر هنا -->
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true"></td>
+                <td style="width: auto;" class="inputTable_NumberTd hover" contenteditable="true"></td>
+                <td style="width: auto;" class="inputTable_NumberTd hover" contenteditable="true"></td>
+
+
+
+                <td style="width: auto;" class="">
+                  <div class="table_buttons_div">
+                    <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
+                  </div>
+                </td>
+`;
+    table.querySelector('tbody').appendChild(emptyRow);
+  }
+}
+
+
+function deleteRow(btn) {
+  //فى حالة اذا كان صف واحد فقط
+  const rows_length = parseInt(btn.closest("tbody").rows.length);
+  if (rows_length === 1 ){
+    showAlert('info','لايمكن حذف هذا الصف ,يمكنك حذف العمليه بالكامل بدلا من ذلك')
+    return;
+  }
+  const row = btn.closest("tr");
+  row.remove();
+  updateFooter()
+}
+
+function copyRow(btn) {
+  // الحصول على الصف الذي يحتوي على الزرار الذي تم النقر عليه
+  const row = btn.closest("tr");
+
+  // استنساخ الصف
+  const newRow = row.cloneNode(true);
+
+  // إدراج الصف المستنسخ بعد الصف الحالي
+  row.parentNode.insertBefore(newRow, row.nextSibling);
+  updateFooter()
+}
+
+function updateFooter() {
+  let sum1 = 0;
+  let sum2 = 0;
+  const cells = document.querySelectorAll("#myTable tbody tr td div input");
+  cells.forEach(function (cell) {
+    let cellValue = parseFloat(cell.value);
+    if (isNaN(cellValue)) {
+      cellValue = 0;
+    }
+    const cellIndex = cell.closest("td").cellIndex;
+    
+    if (cellIndex === 1) {
+      sum1 += cellValue;
+      document.getElementById("sumColumn1").textContent = sum1;
+    } else if (cellIndex === 2) {
+      sum2 += cellValue;
+      document.getElementById("sumColumn2").textContent = sum2;
+    }
+  });
+}
+
+function handle_input_event(input){
+  check_parse(input,'number');
+  updateFooter()
+}
+
+
+  // استدعاء الدالة وتمرير اسم الجدول كمعلمة
+  makeTableRowsDraggable('myTable');
+
+async function add_new_bread() {
+
+// preparing bread_header data
+const datex = date1.value;
+const vendore_id = vendore_select.value
+
+  //preparing bread_body Data
+  const tableRows = document.querySelectorAll('#myTable tbody tr');
+  const posted_array = [];
+  
+  tableRows.forEach(row => {
+      const inputs = row.querySelectorAll('input[type="search"]');
+      
+      if (inputs.length >= 2) { // التحقق من وجود ما لا يقل عن اثنين من العناصر input
+          const amount = +inputs[0].value || 0; // في هذا السياق، علامة الجمع + تحول القيمة إلى عدد عائم. إذا كانت القيمة غير رقمية، فستعود إلى القيمة الافتراضية التي هي صفر
+          const wazn = +inputs[1].value || 0; // في هذا السياق، علامة الجمع + تحول القيمة إلى عدد عائم. إذا كانت القيمة غير رقمية، فستعود إلى القيمة الافتراضية التي هي صفر
+          const rowData = {
+              amount: amount,
+              wazn: wazn
+          };
+          posted_array.push(rowData);
+      }
+  });
+
+
+
+  await fetchData_post1(
+    "/api/bread_add",
+    {vendore_id,datex,posted_array},
+    'bread_permission','add',
+    'هل تريد حفظ البيانات ؟',
+    10,
+    'bread_add_ar',
+    'حدث خطأ اثناء حفظ البيانات'
+  )
+}
+
+document.querySelector('#btn_save').addEventListener('click', async function (){
+  await add_new_bread();
+})
+
+
+document.addEventListener('DOMContentLoaded', async function(){
+  makeTableRowsDraggable('myTable'); // make sure that the table already loaded
+ })
+ 
+
+
+
+//!------------------------------------------------------------------------
+//let data = [];
 let array1 = [];
 let slice_Array1 = [];
 
 
-async function geteTodoData_fn() {
-    const response = await fetch('/get_All_todo_Data');
-     data = await response.json();
-
-    // تحديث array1 بنتيجة الـ slice
-    array1 = data.slice();
-    
-}
-
-async function showFirst50RowAtTheBegening() {
-    await geteTodoData_fn()
-    slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillTodotable()
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    // استدعاء الدالة عندما تكتمل تحميل الصفحة
-    showFirst50RowAtTheBegening();
-});
-
-async function fillTodotable() {
-    //  @@ هاااااام جدا 
-    // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
-    // el properties hya :
-    // 1 : display: none; > fe 7alt enak ardt e5fa2 el 3amod -- display: ; hatspha fadya fe7alt enak ardt tezhr el 3amod
-    // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
-    // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
-    // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
-    
-        //* Prepare GLOBAL variables Befor sum functions
-        // total_column1.value = 0
-        // total_column2.value = 0
-
-        // إعداد رأس الجدول
-        let tableHTML = `<table id="todo_table" class="review_table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th style="display: none;" >ID</th>
-                                <th style="width: auto; white-space: nowrap;">التاريخ</th>
-                                <th style="width: auto;">الحالة</th>
-                                <th style="width: 100%; white-space: wrap;">الملاحظات</th>
-                                <th style="width: auto; white-space: nowrap;"></th>
-                            </tr>
-                            </thead>
-                            <tbody>`;
-
-        // إضافة صفوف الجدول بناءً على البيانات
-        // slice_Array1 = ""; // تفريغ المصفوفه
-        slice_Array1.forEach(row => {
-
-            let isChecked = row.is_done ? 'checked' : ''; // تحديد ما إذا كان يجب تحديد الخانة
-            let noteClass = row.is_done ? 'deleted_text' : ''; // إضافة deleted_text إلى العناصر التي تم حذفها
-            tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
-                            <td style="display: none">${row.id}</td>
-                            <td style="width: auto; white-space: nowrap;">${row.datex}</td>
-                            <td style="width: auto; text-align: center;">
-                                <input type="checkbox" onchange="checked_fn(this)" ${isChecked}> <!-- استخدام السمة isChecked هنا -->
-                            </td>
-                            <td style="width: 100%; white-space: wrap;" class="${noteClass}">${row.note}</td> <!-- إضافة الفئة noteClass هنا -->
-                            <td style="width: auto; text-align: center;" class="">
-                            <div class="table_buttons_div">
-                              <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
-                          </td>
-                          </tr>`;
-        });
-        
-        tableHTML += `</tbody>
-        
-        <tfoot>
-            <tr class="table_totals_row";>
-                <td id="tfooter1"></td>
-                <td id="tfooter2" style="display: none" ></td>
-                <td id="tfooter3" style="width: auto; white-space: nowrap;"></td>
-                <td id="tfooter4" style="width: auto;"></td>
-                <td id="tfooter5" style="width: 100%; white-space: wrap;"></td>
-                <td id="tfooter6" style="width: auto; white-space: nowrap;"></td>
-            </tr>
-                        <tr id="table_fotter_buttons_row">
-                            <td colspan="6">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
-                                <div class='flex_H'>
-                                 <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tfoot>`;
-
-        // إغلاق الجدول
-        tableHTML += '</table>';
-
-        // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = tableHTML;
-
-
-// عرض نتائج الجمع
-document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-// document.getElementById("tfooter5").textContent = total_column1.value;
-// document.getElementById("tfooter6").textContent = total_column2.value;
-
-
-
-
-if (array1.length > 0 && array1.length <= 50) {
-    document.querySelector('#table_fotter_buttons_row').style.display = "none";
-} else if (array1.length < 1) {
-    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='6' class="td_no_result">لا نتائج</td>`;
-};
-
-
-};
-
-
-// search in attendanceTable
-async function performSearch() {
-    // الحصول على قيمة البحث
-    const searchValue = searchInput.value.trim().toLowerCase();
-
-    // فلترة البيانات بناءً على قيمة البحث
-    array1 = data.filter(row => {
-        const datex = row.datex && row.datex.toString().toLowerCase().includes(searchValue);
-        const note = row.note && row.note.toString().toLowerCase().includes(searchValue);
-        return datex || note;
-    });
-
-    // تحديد جزء البيانات للعرض (أول 50 صف فقط)
-    slice_Array1 = array1.slice(0, 50);
-
-    // ملء الجدول بالبيانات
-    await fillTodotable();
-
-//#region  افاء عامود ال جرد اذا كان هناك نتائج فى البحث
-           
-    const cumulativeBalanceColumnHeaders = document.querySelectorAll('#todo_table th:nth-child(7), #todo_table td:nth-child(7)');
-    
-    if (searchValue) {
-        // إذا كانت قيمة البحث موجودة، أخفِ عمود الجرد
-        cumulativeBalanceColumnHeaders.forEach(element => {
-            element.style.display = 'none';
-        });
-    } else {
-        // إذا لم تكن هناك قيمة في البحث، اعرض عمود الجرد
-        cumulativeBalanceColumnHeaders.forEach(element => {
-            element.style.display = 'table-cell';
-        });
-    }
-//#endregion
-
-}
-
-
-async function ShowAllDataInAttendanceTable(){
-    showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
-    slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillTodotable()
-}
-
-async function showFirst50RowInAttendanceTable(){
-    slice_Array1 = array1.slice(0,50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillTodotable()
-}
-
-
-// عند الضغط على زر البحث
-searchBtn.addEventListener('click',  performSearch);
-
-// حدث عن الضغط على زر المسح الخاص ب الانبوت سيرش الى بيظهر لما بنكتب بيانات
-searchInput.addEventListener('search', function () {
-    performSearch();
-});
-
-// عند الضغط على زرار انتر وانت واقف فى مربع البحث
-searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        performSearch();
-    };
-});
-
-
-
-
-
-async function checked_fn(checkbox) {
-    const row  = checkbox.closest("tr")
-    const id_value = row.cells[1].textContent
-    let isChecked = checkbox.checked; // يتم فحص ما إذا كانت القيمة محددة (true) أو غير محددة (false)
-   
-    // let noteCell = checkbox.parentNode.cells[4]; // يحصل على الـ <td> الذي يحتوي على الـ note
-    let noteCell = row.cells[4]; // يحصل على الـ <td> الذي يحتوي على الـ note
-
-    await fetchData_post1(
-        "/api/todo_update_is_checked",
-        {id_value,isChecked},
-        'pass','pass',
-        'هل تريد تعديل حالة الملاحظه ؟',
-        15,
-        'home_ar',
-        'حدث خطأ اثناء معالجة البيانات'
-      )
-
-
-    
-    // if (isChecked) {
-    //     noteCell.classList.add('deleted_text'); // إذا كانت القيمة محددة، يتم إضافة الفئة deleted_text
-    // } else {
-    //     noteCell.classList.remove('deleted_text'); // إذا كانت القيمة غير محددة، يتم إزالة الفئة deleted_text
+// تحضير البيانات من السيرفر
+async function getEmployeesData_fn() {
+    // if(!Authentication){
+    //     return;
     // }
+
+  const response = await fetch("/getEmployeesData1");
+  data = await response.json();
+
+  // تحديث array1 بنتيجة الـ slice
+  array1 = data.slice();
+};
+
+async function showFirst50RowAtTheBegening(td) {
+  await getEmployeesData_fn()
+  slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+  fillAttendancetable(td)
 }
 
 
-//#region 
 
+async function fillAttendancetable(td) {
+  //  @@ هاااااام جدا 
+  // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
+  // el properties hya :
+  // 1 : display: none; > fe 7alt enak ardt e5fa2 el 3amod -- display: ; hatspha fadya fe7alt enak ardt tezhr el 3amod
+  // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
+  // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
+  // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
-function clear_todo(){
-    date_input.value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-    checked_div.style.display = 'none'
-    update_btn.style.display = 'none'
-    save_btn.style.display = 'flex'
-    h2_id.textContent = 'ملاحظه جديدة'
-    hidden_input.value = ''
-    note_textarea.value = ''
-}
+  // إعداد رأس الجدول
+  let tableHTML = `<table id="accounts_table" class="inputTable_dropdown_table">
+                        <tbody>`;
 
-new_todo_btn.addEventListener('click', function (){
-    clear_todo()
-    dialogOverlay_input.style.display = 'flex'
-})
+  // إضافة صفوف الجدول بناءً على البيانات
+  // slice_Array1 = ""; // تفريغ المصفوفه
+  slice_Array1.forEach(row => {
+    tableHTML += `<tr onclick="selectedRow(this)">
+                          <td style="display: none;" >${row.id}</td>
+                          <td style="width: auto;">${row.employee_name}</td>
+                        </tr>`;
+  });
 
+  tableHTML += `</tbody>
+      <tfoot> 
+      <!--
+          <tr class="table_totals_row">
+              <td id="tfooter1"></td>
+              <td id="tfooter2" style="display: none;"></td>
+          </tr>
+        -->
+          <tr id="table_fotter_buttons_row">
+              <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                  <div class='flex_H'>
+                      <button class="table_footer_btn"  id="w1" onclick="ShowAllDataInAttendanceTable(this)">All</button>
+                      <button class="table_footer_btn"  id="w2" onclick="showFirst50RowInAttendanceTable(this)">50</button>
+                  </div>
+              </td>
+          </tr>
 
+      </tfoot>`;
 
+  // إغلاق الجدول
+  tableHTML += '</table>';
 
+  // تحديث محتوى الصفحة بناءً على البيانات
+  td.querySelector('.inputTable_dropdown_table_container').innerHTML = await tableHTML;
 
-
- 
   
-  save_btn.addEventListener('click', async function(){
-    datex = date_input.value;
-    note = note_textarea.value;
-    await fetchData_post1(
-        "/api/todo_add",
-        {datex,note},
-        'pass','pass',
-        'هل تريد حفظ البيانات ؟',
-        15,
-        'home_ar',
-        'حدث خطأ اثناء حفظ البيانات'
-      )
-      
-    })
-    
-  
-    async function tabble_update_btn_fn(updateBtn) {
-        const row  = updateBtn.closest("tr")
-        
-        checked_div.style.display = 'flex'
-        update_btn.style.display = 'flex'
-        save_btn.style.display = 'none'
-        h2_id.textContent = 'تعديل ملاحظة'
-        hidden_input.value = row.cells[1].textContent
-        date_input.value= row.cells[2].textContent
-        const checkbox = row.cells[3].querySelector("input[type='checkbox']");
-        checked_input.checked = checkbox.checked
-        note_textarea.value = row.cells[4].textContent
-        dialogOverlay_input.style.display = 'flex'
-      };
-
-      update_btn.addEventListener('click', async function(){
-        const id_value = hidden_input.value
-        const datex = date_input.value;
-        const note = note_textarea.value;
-        const is_checked = checked_input.checked
-        
 
 
-        await fetchData_post1(
-            "/api/todo_update",
-            {id_value,
-            datex,
-            note,
-            is_checked},
-            'pass','pass',
-            'هل تريد تعديل البيانات ؟',
-            15,
-            'home_ar',
-            'حدث خطأ اثناء تعديل البيانات'
-          )
-        })
+  //! get width of
+  //  عمليات صف الاجمالى 
+  // جمع القيم في العمود رقم 6
 
 
-async function deleteRow(button){
-    const row  = button.closest("tr")
-    const id_value = row.cells[1].textContent
+  // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
+  // document.getElementById("tfooter1").textContent = slice_Array1.length; //  عدد الصفوف
 
-    await fetchData_post1(
-        "/api/todo_delete",
-        {id_value},
-        'pass','pass',
-        'هل تريد حذف هذه الملاحظه ؟',
-        15,
-        'home_ar',
-        'حدث خطأ اثناء معالجة البيانات'
-      )
-
-}
-
-  noButton.onclick = function () {
-    try {
-        dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
-        setTimeout(() => {
-            dialogOverlay_input.style.display = 'none'
-            closeDialog()
-            clear_todo()
-            dialogOverlay_input.style.animation = 'none';
-          }, 300);
-          
-    } catch (error) {
-        dialogOverlay_input.style.display = 'none'
-        closeDialog()
-        clear_todo()
-        catch_error(error)
-        dialogOverlay_input.style.animation = 'none';
-    }
+  // hide footer btn if rows < 50
+  if (array1.length > 0 && array1.length <= 50) {
+    td.querySelector('#table_fotter_buttons_row').style.display = "none";
+  } else if (array1.length < 1) {
+    td.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='2' class="td_no_result">لا نتائج</td>`;
   };
 
-//#region showReason of redirection
-//! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
 
-  document.addEventListener('DOMContentLoaded', function() {
-    showRedirectionReason();
+};
+
+// search in attendanceTable
+async function performSearch(input) {
+
+  const td = input.closest("td")
+  // الحصول على قيمة البحث
+  // const searchValue = document.querySelector('#dropdown_search_input').value.trim().toLowerCase();
+  const searchValue = td.querySelector('.dropdown_search_input').value.trim().toLowerCase();
+
+
+  // فلترة البيانات بناءً على قيمة البحث
+  array1 = data.filter(row => {
+
+    // التحقق من أن employee.id و employee.name ليستان فارغتين
+    const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
+    const nameMatch = row.employee_name && row.employee_name.toString().toLowerCase().includes(searchValue);
+    return idMatch || nameMatch;
   });
+
+  slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+  fillAttendancetable(td)
+}
+
+async function ShowAllDataInAttendanceTable(button) {
+  const td = button.closest("td");
+  showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
+  slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+  await fillAttendancetable(td)
+
+};
+
+async function showFirst50RowInAttendanceTable(button) {
+  const td = button.closest("td")
+  slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+  await fillAttendancetable(td)
+};
+
+
+// تحديد الخيار المختار وإخفاء القائمة
+function selectedRow(row) {
+  const td = row.closest("td")
+  td.querySelector('.id_hidden_input').value = row.cells[0].textContent; // row.id
+  td.querySelector('.dropdown_select_input').textContent = row.cells[1].textContent; // row.employee_name
+  hideDropdown();
+};
+
+
+
+
+//!--------------------------------------------------------------
+
+
+// إظهار/إخفاء القائمة
+async function toggleDropdown(dropdown) {
+  const td = dropdown.closest("td");
+  const dropdown_menue = td.querySelector(`.dropdown_menue`)
+  if (dropdown_menue.style.display === "none") {
+    await measureDistanceToBottom(td,dropdown_menue);
+    await showDropdown(td,dropdown_menue);
+    // const td = dropdown.closest("td");
+    // const dropdownItems = td.querySelector(`#dropdownItems`)
+    // const dropdown_search = td.querySelector(`.dropdown_search`);
+    // const dropdown_container = td.querySelector(`#dropdown_container`);
+    // const dropdown_select = td.querySelector(`#dropdown_select`);
+    // const dropdown_select_input = td.querySelector(`#dropdown_select_input`);
+    // const width = dropdownItems.offsetWidth
+   
+
+
+  } else {
+    await measureDistanceToBottom(td,dropdown_menue);
+    hideDropdown();
+  }
+}
+
+// إظهار القائمة
+async function showDropdown(td,dropdown_menue) {
+  await showFirst50RowAtTheBegening(td);
   
-  //#endregion End - showReason of redirection
+  td.querySelector('.dropdown_search_input').value = ""
+  dropdown_menue.style.display = "block";
+}
+
+// إخفاء القائمة
+function hideDropdown() {
+  const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
+  All_dropdown_menue.forEach(dropdown_menue => {
+    dropdown_menue.style.display = "none";
+  })
+}
+
+// إظهار/إخفاء القائمة
+
+// dropdown_select.addEventListener("click", toggleDropdown);
+
+// إخفاء القائمة عند فقدان التركيز
+document.addEventListener("click", (event) => {
+  if (
+    !document.querySelector('.dropdown_select_input_table').contains(event.target) &&
+    !document.querySelector('.dropdown_menue').contains(event.target) &&
+    !event.target.closest('#accounts_table') // تحقق مما إذا كانت النقرة ليست داخل الجدول
+  ) {
+    // alert(`i will hide menue now`);
+    hideDropdown();
+  }
+});
+
+// إخفاء القائمة عند الضغط على مفتاح الهروب
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    hideDropdown();
+  }
+});
+
+//#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
+
+function measureDistanceToBottom(td,dropdown_menue) {
+  
+  const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
 
 
+  // الحصول على معلومات الحجم والموقع النسبي للعنصر
+  const rect = dropdown_container.getBoundingClientRect();
+
+  // الحصول على ارتفاع النافذة الرئيسية للمتصفح
+  const windowHeight = window.innerHeight;
+
+  // حساب المسافة بين العنصر والحافة السفلية للشاشة
+  const distanceToBottom = windowHeight - rect.bottom;
+
+  // حساب المسافة بوحدة REM
+  // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const distanceToBottomRem = distanceToBottom / fontSize;
+ 
+  if (distanceToBottomRem < 21) {  // 5aleh nafs rl hight beta3 el drop_menue + 1 
+    dropdown_menue.classList.add("dropdown_menue_Open_top");
+    dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
+  } else {
+    dropdown_menue.classList.add("dropdown_menue_Open_bottom");
+    dropdown_menue.classList.remove("dropdown_menue_Open_top");
+  }
+
+  // طباعة المسافة بوحدة REM إلى وحدة تحكم المتصفح
+
+  // يستدعي الدالة عند حدوث التمرير أو تغيير حجم الشاشة
+  window.addEventListener('scroll', measureDistanceToBottom);
+  window.addEventListener('resize', measureDistanceToBottom);
+
+}
+
+//!--------------------------------------------------------------------
