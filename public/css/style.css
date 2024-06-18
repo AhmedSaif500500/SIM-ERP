@@ -484,9 +484,25 @@ input[type="checkbox"]:hover {
   background-color: inherit !important;
 }
 
+
+/** gap*/
+
+.gap_05{
+  gap: 0.5rem !important;
+}
+
+.gap_10{
+  gap: 1rem !important;
+}
+
+
 /** width*/
 .w_full{
 width: 100% !important;
+}
+
+.w_fit{
+  width: fit-content !important;
 }
 
 
@@ -790,9 +806,9 @@ width: 100% !important;
   border-radius: 0.3rem;
   border: var(--border_normal);
   padding-block-start: 0.7rem;
-  padding-inline-start: 3rem;
+  padding-inline-end: 2rem;
   padding-block-end: 0.7rem;
-  padding-inline-end: 0.7rem;
+  padding-inline-start: 0.7rem;
   width: 22rem;
   height: var(--input_height);
   transition: var(--transition);
@@ -2323,7 +2339,7 @@ height: 100%;
 }
 
 
-.input_table td div span{
+.input_span{
   display: flex; flex-direction: column; justify-content: center;
   background-color: var(--btn_search_backcolor);
   color: var(--btn_search_color);
@@ -2349,6 +2365,45 @@ height: 100%;
   transition: var(--transition);
 }
 
+.refrence_input{
+  position: relative;
+  height: var(--input_height);
+  width :10rem;
+  background-color: var(--input_text_background_color);
+  color: var(--Font_Color);
+  padding: 0 .5rem;
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.refrence_input_auto_mode{
+  position: relative;
+  height: var(--input_height);
+  width :10rem;
+  background-color: var(--btn_search_backcolor);
+  color: var(--btn_search_color);
+  padding: 0 .5rem;
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  transition: var(--transition);
+  pointer-events: none;
+  text-align: center;
+}
+
+.refrence_input_checkbox{
+  display: flex; flex-direction: column; justify-content: center;
+  background-color: var(--btn_search_backcolor);
+  color: var(--btn_search_color);
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-inline-end: none;
+  padding: 0.5rem 0.5rem;
+  transition: var(--transition);
+}
 
 /* .input_table td div input{
 

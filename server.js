@@ -100,8 +100,9 @@ db.connect()
     console.error("Error connecting to the database:", error); // في حالة الفشل
     process.exit();
   });
-const session_time = 30
+
 // ! Lazem el code da yt7t Befor routes definition
+const session_time = 30
 const session = require("express-session");
 app.use(
   session({
@@ -142,6 +143,7 @@ app.use((req, res, next) => {
 
 //! lazem el code da to7to ba3d tahy2t el session
 const routes = require("./routes/routes");
+const { truncate } = require('fs');
 app.use("/", routes);
 
 // Start the server
@@ -154,6 +156,8 @@ app.use("/", routes);
 //#region Cron Functions
 async function check_last_activity_fn() {
   // احسب الوقت الحالي
+
+  
   const now = new Date();
 
   // احسب وقت الحد الفاصل (5 دقائق)
@@ -446,17 +450,47 @@ async function newId_fn(tableName) {
   return result;
 }
 
+// get new refrence
+async function newRefrence_fn(req,int_transaction_type) {
+  // قم بتنفيذ الاستعلام للحصول على الحد الأقصى من القيم الموجودة
+
+
+
+  const query = `SELECT MAX(refrence) AS refrence FROM transaction_header
+                  WHERE company_id = $1 AND transaction_type = ${int_transaction_type}`;
+                                          
+    let rows = await db.any(query, [
+    req.session.owner_id,
+  ]);
+  // افتراض أن الحد الأقصى للقيمة الأولية هو 1 إذا لم يكن هناك أي سجلات
+  let result = 1;
+
+  // تحقق مما إذا كان `query` فارغًا أو إذا لم يكن هناك قيمة في `query[0].id`
+  if (rows && rows.length > 0 && rows[0].refrence !== null) {
+    result = parseInt(rows[0].refrence) + 1;
+  }
+
+  // ارجع `result`
+  return result;
+}
+
 // last activity
 async function last_activity(req) {
-  await db.none(
-    `
-    UPDATE users
-    SET last_activity = NOW(), last_activity_ip = $1
-    WHERE id = $2
-`,[
-  req.session.ipAddress,
-  req.session.userId]
-  );
+
+  try {
+    await db.none(
+      `
+      UPDATE users
+      SET last_activity = NOW(), last_activity_ip = $1
+      WHERE id = $2
+  `,[
+    req.session.ipAddress,
+    req.session.userId]
+    );
+  } catch (error) {
+    console.error("Error last_activity:", error);
+  }
+
 }
 
 // sql injection
@@ -495,8 +529,9 @@ async function block_user(req, code){
       req.session.owner_id,
       ]);
 
-      await khorogFawry(req,req.session.userId)
       await last_activity(req);
+      await khorogFawry(req,req.session.userId)
+     
 
       //! destroy session
       if(req.session){
@@ -537,6 +572,7 @@ async function khorogFawry(req,userId) {
 //#region 1:- companies view
 app.get("/get_companies_data", async (req, res) => {
   try {
+
     //! Permission
     // await permissions(req, 'bread_permission', 'view');
     // if (!permissions) { return; };
@@ -623,7 +659,7 @@ app.post("/api/add_new_company", async (req, res) => {
     ]);
 
     if (rows.length > 0) {
-      console.log(`start`);
+   
       res.json({
         success: false,
         message_ar: "اسم الشركه موجود بالفعل",
@@ -726,6 +762,7 @@ app.post("/company_login", async (req, res) => {
         req.session.users_permission = rows[0].users_permission;
         req.session.production_permission = rows[0].production_permission;
         req.session.bread_permission = rows[0].bread_permission;
+        req.session.transaction_permission = rows[0].transaction_permission;
 
         const data = rows.map((row) => ({
           company_id: rows[0].company_id,
@@ -737,6 +774,7 @@ app.post("/company_login", async (req, res) => {
           production_permission: rows[0].production_permission,
           bread_permission: rows[0].bread_permission,
           accounts_permission: rows[0].accounts_permission,
+          transaction_permission: rows[0].transaction_permission,
         }));
         res.json(data);
       } else {
@@ -812,6 +850,7 @@ app.post("/api/get_companies_users", async (req, res) => {
 //#region 5:- save new user
 app.post("/api/save_new_user", async (req, res) => {
   try {
+    // console.log(req.session.ipAddress);
     const posted_elements = req.body;
 
         //! owner
@@ -1159,9 +1198,9 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
     
     from user_company uc
     left join users u on uc.user_id = u.id
-    where uc.company_id = $1
+    where u.owner_id = $1
     order by user_name ASC`;
-    let rows = await db.any(query, [req.session.company_id]);
+    let rows = await db.any(query, [req.session.owner_id]);
 
     
     // const rows = await db.any("SELECT id, user_name  FROM users");
@@ -1254,7 +1293,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       where owner_id = $1`;
       rows3 = await tx.any(query3, [req.session.owner_id]);
 
-      console.table(rows3);
+      // console.table(rows3);
 
       // قائمة لتخزين الـ company_id الموجودة في rows2
       const companyIds = rows2.map((row) => row.n1);
@@ -1634,101 +1673,65 @@ app.get("/get_All_users_Data", async (req, res) => {
   }
 });
 
-// add new user
-app.post("/addNewuser", async (req, res) => {
-  try {
-    const posted_elements = req.body;
 
-    //! Permission
-    await permissions(req, "Users_permission", "add");
-    if (!permissions) {
-      return;
-    }
 
-    let general_permission = parseInt(req.session.general_permission);
-    if (!general_permission || general_permission !== 6) {
-      return res.json({
-        success: false,
-        message_ar: "Sorry,you  can't use this featue",
-      });
-    }
+//     //* Start--------------------------------------------------------------
 
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.user_name_input,
-      posted_elements.pass_input1,
-      posted_elements.general_permission_select,
-      posted_elements.table_permission_users,
-      posted_elements.table_permission_employee,
-      posted_elements.table_permission_attendance,
-      posted_elements.table_permission_production,
-      posted_elements.today,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
-      });
-    }
+//     //1: receive data from frontend new_employee_ar.
 
-    //* Start--------------------------------------------------------------
+//     //2: validation data befor inserting to db
+//     // const rows = await db.any(
+//     //   "SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1",
+//     //   [posted_elements.user_name_input]
+//     // );
 
-    //1: receive data from frontend new_employee_ar.
+//     let query = `SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1`;
+//     let rows = await db.any(query, [posted_elements.user_name_input]);
 
-    //2: validation data befor inserting to db
-    // const rows = await db.any(
-    //   "SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1",
-    //   [posted_elements.user_name_input]
-    // );
+//     if (rows.length > 0) {
+//       // اذا حصل على نتائج
+//       return res.json({
+//         success: false,
+//         message: "اسم المستخدم موجود بالفعل",
+//       });
+//     } else {
+//       //! تشفير كلمة المرور قبل إدخالها في قاعدة البيانات
+//       const pass_input1 = await bcrypt.hash(posted_elements.pass_input1, 12);
 
-    let query = `SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1`;
-    let rows = await db.any(query, [posted_elements.user_name_input]);
+//       //3: insert data into db
+//       const newId = await newId_fn("users");
 
-    if (rows.length > 0) {
-      // اذا حصل على نتائج
-      return res.json({
-        success: false,
-        message: "اسم المستخدم موجود بالفعل",
-      });
-    } else {
-      //! تشفير كلمة المرور قبل إدخالها في قاعدة البيانات
-      const pass_input1 = await bcrypt.hash(posted_elements.pass_input1, 12);
+//       let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, attendance_permission, production_permission, bread_permission, transaction_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+//       await db.none(query, [
+//         newId,
+//         posted_elements.user_name_input,
+//         pass_input1,
+//         posted_elements.general_permission_select,
+//         posted_elements.table_permission_users,
+//         posted_elements.table_permission_employee,
+//         posted_elements.table_permission_attendance,
+//         posted_elements.table_permission_production,
+//         posted_elements.table_permission_bread,
+//         posted_elements.table_permission_transaction,
+//         posted_elements.today,
+//       ]);
 
-      //3: insert data into db
-      const newId = await newId_fn("users");
-
-      let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, attendance_permission, production_permission, bread_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-      await db.none(query, [
-        newId,
-        posted_elements.user_name_input,
-        pass_input1,
-        posted_elements.general_permission_select,
-        posted_elements.table_permission_users,
-        posted_elements.table_permission_employee,
-        posted_elements.table_permission_attendance,
-        posted_elements.table_permission_production,
-        posted_elements.table_permission_bread,
-        posted_elements.today,
-      ]);
-
-      //4: send a response to frontend about success transaction
-      res.json({
-        success: true,
-        message: "تم حفظ المستخدم بنجاح",
-      });
-      last_activity(req);
-    }
-  } catch (error) {
-    console.error("Error adding new user:", error);
-    // send a response to frontend about fail transaction
-    res.status(500).json({
-      success: false,
-      message: "حدث خطأ أثناء اضافة المستخدم",
-    });
-  }
-});
+//       //4: send a response to frontend about success transaction
+//       res.json({
+//         success: true,
+//         message: "تم حفظ المستخدم بنجاح",
+//       });
+//       last_activity(req);
+//     }
+//   } catch (error) {
+//     console.error("Error adding new user:", error);
+//     // send a response to frontend about fail transaction
+//     res.status(500).json({
+//       success: false,
+//       message: "حدث خطأ أثناء اضافة المستخدم",
+//     });
+//   }
+// });
 
 // update user
 app.post("/updateUser", async (req, res) => {
@@ -1848,6 +1851,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       posted_elements.table_permission_employee,
       posted_elements.table_permission_attendance,
       posted_elements.table_permission_production,
+      posted_elements.table_permission_transaction,
       posted_elements.today,
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
@@ -1891,7 +1895,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
      
         // فى حالة تعديل البيانات شامله  كلمة مرور جديده
        
-        let query1 = `Update user_company set general_permission = $1, users_permission = $2, employees_permission = $3, attendance_permission = $4, production_permission = $5, bread_permission = $6 WHERE user_id = $7 AND company_id = $8`;
+        let query1 = `Update user_company set general_permission = $1, users_permission = $2, employees_permission = $3, attendance_permission = $4, production_permission = $5, bread_permission = $6, transaction_permission = $7 WHERE user_id = $8 AND company_id = $9`;
         await db.any(query1, [
           posted_elements.general_permission_select,
           posted_elements.table_permission_users,
@@ -1899,6 +1903,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_attendance,
           posted_elements.table_permission_production,
           posted_elements.table_permission_bread,
+          posted_elements.table_permission_transaction,
           posted_elements.user_id,
           req.session.company_id
         ]);
@@ -1982,7 +1987,7 @@ app.post("/addNewEmployee", async (req, res) => {
   try {
         // إرسال رسالة إلى العميل عبر WebSocket
         io.emit('blockUser', { userId: req.session.userId });
-        console.log(`done`);
+        
     const posted_elements = req.body;
 
     //! Permission
@@ -2292,7 +2297,7 @@ app.get("/get_All_Employees_Data", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    console.log(req.session.company_id);
+    // console.log(req.session.company_id);
     let query1 = `SELECT e.id, e.employee_name FROM employees e
     WHERE e.company_id = $1`;
     let rows = await db.any(query1, [req.session.company_id]);
@@ -2375,7 +2380,7 @@ app.post("/attendance_add", async (req, res) => {
 //#endregion END - Add attendance_add
 
 //#region 2: get data to fill dropdownbox of employees
-app.get("/getEmployeesData1", async (req, res) => {
+app.post("/getEmployeesData1", async (req, res) => {
   try {
     //! Permission
     await permissions(req, "attendance_permission", "view");
@@ -3426,8 +3431,245 @@ app.post("/api/update-account-parent", async (req, res) => {
   }
 });
 
+// get all final accounts by company_id
+app.post("/getAccountsData1", async (req, res) => {
+  try {
+    // //! Permission
+    // await permissions(req, "attendance_permission", "view");
+    // if (!permissions) {
+    //   return;
+    // }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `SELECT A.id, A.account_name FROM accounts_header A where A.company_id = $1 AND is_final_account = true`;
+    let rows = await db.any(query1, [req.session.company_id]);
+
+    const data = rows.map((row) => ({
+      id: row.id,
+      account_name: row.account_name,
+    }));
+    res.json(data);
+  } catch (error) {
+    console.error("Error while get accounts Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message: "Error while get accounts Data" });
+  }
+});
+
 //#endregion
 
+//#region  transaction
+
+//#region 1: transaction_review
+app.post("/get_All_transaction_Data", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `select
+	id,
+	refrence,
+	datex,	
+	general_note,
+	total_value
+from transaction_header
+where company_id = $1 and transaction_type = 2
+ORDER BY datex DESC, refrence desc;
+`;
+    let rows = await db.any(query1, [req.session.company_id]);
+
+    const data = rows.map((row) => ({
+      id: row.id,
+      refrence: row.refrence,
+      datex: row.datex,
+      note: row.general_note,
+      valuex: row.total_value,
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error get_All_transaction_Data:", err);
+    res.status(500).send("Error:");
+  }
+});
+//#endregion
+
+
+//#region 1: add transaction
+app.post("/api/transaction_add", async (req, res) => {
+  try {
+  const posted_elements = req.body;
+
+  const transaction_type = 2
+
+
+
+    //! Permission
+    await permissions(req, "transaction_permission", "add");
+    if (!permissions) {
+      return;
+    }
+
+
+        //! Permission
+    // await permissions(req, 'bread_permission', 'view');
+    // if (!permissions) { return; };
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_id + obj.note_row + obj.debt + obj.credit ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.total,
+      posted_elements.is_refrence,
+      posted_elements.refrenc_value,
+      posted_elements.general_note,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    //! check diffrence between debit and credit
+      let totalDebt = 0;
+      let totalCredit = 0;
+      // المرور على جميع الكائنات في المصفوفة
+      posted_elements.posted_array.forEach(item => {
+          totalDebt += parseFloat(item.debt); // التأكد من تحويل القيم إلى أرقام
+          totalCredit += parseFloat(item.credit);
+      });
+      if (totalDebt !== totalCredit){
+        return res.json({
+          success: false,
+          message_ar: "القيد غير متوازن",
+        });
+      }
+
+    //! check refrence
+    // console.log(typeof(posted_elements.is_refrence) , posted_elements.is_refrence);
+    
+    if (!posted_elements.is_refrence){
+         
+      if (posted_elements.refrenc_value <= 0){
+        console.log(typeof(posted_elements.refrenc_value) , posted_elements.refrenc_value);
+        return res.json({
+          success: false,
+          message_ar: 'رجاء ادخال مرجع صحيح او تفعيل الوضع التلقائى',
+        });
+      }
+
+      let query01 = `SELECT refrence from transaction_header where company_id = $1 AND transaction_type = $2`;
+      let rows01 = await db.any(query01, [
+        req.session.company_id,
+        transaction_type
+      ]);
+
+      if (rows01.length >0) {
+          return res.json({
+            success: false,
+            message_ar: 'هذا المرجع موجود بالفعل رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح',
+          });
+      }
+    }
+
+        // //! Security hacking 
+        let query02 = `SELECT id from accounts_header where company_id = $1`;
+        let rows02 = await db.any(query02, [
+          req.session.company_id
+        ]);
+        // console.table(rows02)
+    
+        const deafult_accountsId_array = rows02.map((row) => parseInt(row.id));
+        const dataArray = posted_elements.posted_array.map((item) => parseInt(item.account_id));
+        const defrenceArray = dataArray.filter((accountId) => !deafult_accountsId_array.includes(accountId));
+        
+        if (defrenceArray.length > 0){
+
+
+          await block_user(req,'ta1')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });
+        }
+
+        //* start--------------------------------------------
+
+
+  
+   
+    const newId_transaction_header = await newId_fn("transaction_header");
+
+    const newRefrence = await newRefrence_fn(req,transaction_type)
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+      let query1 = `INSERT INTO transaction_header
+                    (id, refrence,datex, company_id, transaction_type, total_value, general_note)
+                    VALUES($1, $2, $3, $4, $5, $6, $7);`;
+
+      await tx.none(query1, [
+        newId_transaction_header,
+        newRefrence,
+        posted_elements.datex,
+        req.session.company_id,
+        transaction_type,
+        posted_elements.total,
+        posted_elements.general_note,
+      ]);
+
+
+      let newId_transaction_body = await newId_fn("transaction_body");
+
+      for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_transaction_body);
+        let query2 = `INSERT INTO transaction_body
+                      (id, transaction_header_id, debit, credit, row_note)
+                      VALUES($1, $2, $3, $4, $5);`;
+
+        await tx.none(query2, [
+          newId,
+          newId_transaction_header,
+          element.debt,
+          element.credit,
+          element.note_row,
+        ]);
+
+        newId_transaction_body = parseInt(newId_transaction_body) + 1;
+      }
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم حفظ البيانات بنجاح",
+    });
+  } catch (error) {
+    console.error("Error adding transaction:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+//#endregion
+
+
+//#endregion
 //*-- server----------------------------------------------
 //#region started server functions
 

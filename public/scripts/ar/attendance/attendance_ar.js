@@ -68,6 +68,7 @@ async function fillAttendancetable() {
                                 <th style="display: none;">id</th>
                                 <th style="display: none;">employee_id</th>
                                 <th>التاريخ</th>
+                                <th>اليوم</th>
                                 <th>الموظف</th>
                                 <th>يوم</th>
                                 <th>ساعة</th>
@@ -85,6 +86,7 @@ async function fillAttendancetable() {
                             <td style="display: none;">${row.id}</td>
                             <td style="display: none;">${row.employee_id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
+                            <td style="width: auto; white-space: nowrap;">${day_name(row.datex)}</td>
                             <td style="width: auto; white-space: nowrap;">${row.employee_name}</td>
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column1,row.days)}</td>
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column2,row.hours)}</td>
@@ -105,10 +107,11 @@ async function fillAttendancetable() {
                 <td id="tfooter7"></td>
                 <td id="tfooter8"></td>
                 <td id="tfooter9"></td>
+                <td id="tfooter10"></td>
             </tr>
 
             <tr id="table_fotter_buttons_row">
-                <td colspan="9">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                <td colspan="10">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                     <div class='flex_H'>
                         <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                         <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -131,13 +134,13 @@ async function fillAttendancetable() {
     if (array1.length > 0 && array1.length <= 50) {
         document.querySelector('#table_fotter_buttons_row').style.display = "none";
     } else if (array1.length < 1) {
-        document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='6' class="td_no_result">لا نتائج</td>`;
+        document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='10' class="td_no_result">لا نتائج</td>`;
     };
 
     document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-    document.getElementById("tfooter6").textContent = total_column1.value;
-    document.getElementById("tfooter7").textContent = total_column2.value;
-    document.getElementById("tfooter8").textContent = total_column3.value;
+    document.getElementById("tfooter7").textContent = total_column1.value;
+    document.getElementById("tfooter8").textContent = total_column2.value;
+    document.getElementById("tfooter9").textContent = total_column3.value;
 
 };
 

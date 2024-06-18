@@ -57,8 +57,8 @@ async function fillAttendancetable() {
                             <tr>
                                 <th></th>
                                 <th style="display: none;" >ID</th>
-                                <th style="widrh: auto; white-space: nowrap;">التاريخ</th>
-                                <th style="widrh: auto; white-space: nowrap;">اليوم</th>
+                                <th style="width: auto; white-space: nowrap;">التاريخ</th>
+                                <th style="width: auto; white-space: nowrap;">اليوم</th>
                                 <th style="display: none;">vendor_id</th>
                                 <th style="width: auto; white-space: nowrap;">المورد</th>
                                 <th style="width: auto; white-space: nowrap;">العدد</th>
@@ -73,14 +73,12 @@ async function fillAttendancetable() {
             tableHTML += `<tr>
                             <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
-                            <td style="widrh: auto; white-space: nowrap;">${row.datex}</td>
-                            <td style="widrh: auto; white-space: nowrap;">${day_name(row.datex)}</td>
+                            <td style="width: auto; white-space: nowrap;">${row.datex}</td>
+                            <td style="width: auto; white-space: nowrap;">${day_name(row.datex)}</td>
                             <td style="display: none;">${row.vendor_id}</td>
                             <td style="width: 100%">${row.vendore_name}</td>
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column1, row.amount)}</td>
                             <td style="width: auto; white-space: nowrap; opacity: 0.7;">${total_column(total_column2, row.wazn)}</td>
-                            
-                            
                           </tr>`;
         });
 

@@ -111,15 +111,28 @@ loadHeaderContents();
       الحسابات
     </a>
 
-    <a href="transaction_add_ar" target="_self" class="">
+    <a href="transaction_view_ar" target="_self" class="">
       <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
-      قيد محاسبى
+      القيود المحاسبية
+    </a>
+
+
+    <a href="transaction_add_ar" target="_self" class="">
+      <i class="fa-solid fa-tree fa-bounce" style="color: green;"></i>
+      التقارير
     </a>
 
     <a href="test_ar" target="_self" class="">
-    <i class="fa-solid fa-tree fa-bounce" style="color: red;"></i>
-    test
-  </a>
+      <i class="fa-solid fa-tree fa-bounce" style="color: red;"></i>
+      test
+    </a>
+
+    <a href="test_ar" target="_self" class="">
+       <i class="fa-solid fa-gear"></i>
+      الاعدادت
+    </a>
+
+
 
     <a id="Custmize_sidebar" href="#">
       <i class="fa-solid fa-gear"></i>
@@ -242,6 +255,7 @@ function show_User_options() {
 }
 
 function hide_User_options() {
+  const user_option = document.querySelector(`#user_option`);
   if (user_options !== null) {
     user_options.style.display = 'none'
   }
@@ -477,7 +491,7 @@ lang_btn.addEventListener('click', function (event) {
   event.preventDefault(); // منع السلوك الافتراضى لعنر ال ايه انه لان الهيرف هيعمل ريلود
   const currentLang = localStorage.getItem('currentLang');
   const X = sessionStorage.getItem('currentPage');
-  console.log(`${currentLang} -- ${currentLang === 'ar'} -- ${lang_btn.textContent.trim() === 'en'}`);
+  // console.log(`${currentLang} -- ${currentLang === 'ar'} -- ${lang_btn.textContent.trim() === 'en'}`);
   if (currentLang && currentLang === 'ar' && lang_btn.textContent.trim() === 'en') {
     const page_toggle = X.substring(0, X.length - 2) + 'en';
     window.location.href = `/${page_toggle}`; // window.location.href = '/home_en';
@@ -571,14 +585,16 @@ let total_column6 = { value: 0 };
 function total_column(totalVariable, rowData) {
   try {
 
-
     if (!isNaN(rowData)) {
+      rowData = parseFloat(rowData);
       totalVariable.value += rowData; // sum
-      if (parseFloat(rowData) < 0) {
+      if (rowData < 0) {
         return `<span style="color: red">${rowData}</span>`;
-      } else if (parseFloat(rowData) === 0) {
+      } else if (rowData === 0) {
         return '';
       } else {
+        // return parseFloat(rowData);
+        rowData = floatToString(false,rowData)
         return rowData;
       }
     } else {
@@ -603,6 +619,36 @@ function total_column(totalVariable, rowData) {
 //? document.getElementById("tfooter8").textContent = total_column2.value;
 
 //#endregion END - total column
+
+//#region Numbers Formating show seperator
+function floatToString(is_showZero,floatValue) {
+try {
+  if (parseFloat(floatValue) === 0){
+    if(is_showZero){
+      return ''
+    }
+   }
+  let formattedNum = parseFloat(floatValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  let formattedString = formattedNum.replace(/^(\d+)\.(\d{2})$/, '$1,$2'); // إعادة تنسيق الرقم بفواصل الآلاف
+  return formattedString;
+} catch (error) {
+  catch_error(error);
+}
+}
+
+// hiden seperator
+function stringToFloat (is_showZero,stringFloatValue) {
+let NewfloatValue = parseFloat(stringFloatValue.replace(/,/g, ''));
+if (parseFloat(stringFloatValue) === 0){
+  if(!is_showZero){
+    return ''
+  }
+}
+return NewfloatValue
+}
+
+//#endregion
+
 
 //#region dragable ( rows > drag and drop )
 function makeTableRowsDraggable(tableId) {
@@ -970,10 +1016,10 @@ async function khorogFawry() {
 //   logout()
 // })
 
-window.addEventListener('beforeunload', function () {
-  const url = '/Logout';
-  navigator.sendBeacon(url);
-});
+// window.addEventListener('beforeunload', function () {
+//   const url = '/Logout';
+//   navigator.sendBeacon(url);
+// });
 
 //#endregion End -- Logout
 
@@ -1033,18 +1079,18 @@ let inputErrors = false; // المتغير العالمي لتتبع وجود ا
 
 // دالة لفحص وتحديث حالة الأخطاء في جميع حقول الإدخال
 function updateInputErrors() {
-  const inputs = document.querySelectorAll('input'); // العثور على جميع الحقول النصية
+  // العثور على جميع العناصر التي تحتوي على الصنف 'input_error'
+  const errorElements = document.querySelectorAll('.input_error'); 
   let hasError = false; // متغير لتتبع وجود أخطاء
 
-  inputs.forEach(input => {
-    if (input.classList.contains('input_error')) {
-      hasError = true;
-    }
-  });
+  if (errorElements.length > 0) {
+    hasError = true;
+  }
 
   // تحديث قيمة inputErrors بناءً على وجود أخطاء
   inputErrors = hasError;
 }
+
 
 // دالة للتحقق من صحة القيمة في حقل الإدخال
 function check_parse(inputid, type) {
@@ -1078,7 +1124,7 @@ function check_parse(inputid, type) {
     } else {
       inputid.classList.add('hover_error', 'input_error');
       updateInputErrors(); // تحديث حالة الأخطاء
-      console.log(inputErrors);
+      // console.log(inputErrors);
     }
   }
 
@@ -1296,7 +1342,7 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
   const controller = new AbortController();
   const signal = controller.signal;
 
-  console.log(inputErrors);
+  // console.log(inputErrors);
   try {
     if (inputErrors) {
       showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');

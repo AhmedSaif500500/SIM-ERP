@@ -34,14 +34,14 @@ function addRows() {
 
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span>عدد</span>
+                      <span class="input_span">عدد</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
 
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span>كيلو</span>
+                      <span class="input_span">كيلو</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>

@@ -49,7 +49,6 @@ document.querySelector('#dialog_body_button_div').style.display = 'flex'
 document.querySelector('#new_user_dive').style.display = 'none'
 document.querySelector('#yesButton').style.display = 'none'
 "></i>
-    <i id="i_h2_header_new_user" class="fa-solid fa-arrow-left forward_icon"></i>
     مستخدم جديد
 </h2>
 <label for="user_name_input" class="lbl_sm">اسم المستخدم ( المستخدم فى الدخول )</label>
@@ -134,7 +133,7 @@ document.querySelector('#yesButton').style.display = 'none'
 </select>
 
 <!-- الشركات -->
-<div id="companies_div" class="column" style="display: none">
+<div id="companies_div" class="column x_start y_start w_full" style="display: none">
     <label for="div1" class="lbl_sm">شركات منضمه</label>
     <div id="div1" class="tags_div hover scroll">
         <!-- Buttons in div1 -->
@@ -355,6 +354,7 @@ async function company_login_btn(enter_button) {
     sessionStorage.setItem("production_permission", data[0].production_permission); // save username in seesionStorage to use it in index.html
     sessionStorage.setItem("bread_permission", data[0].bread_permission); // save username in seesionStorage to use it in index.html
     sessionStorage.setItem("accounts_permission", data[0].accounts_permission); // save username in seesionStorage to use it in index.html
+    sessionStorage.setItem("transaction_permission", data[0].transaction_permission); // save username in seesionStorage to use it in index.html
 
 
 
@@ -400,7 +400,7 @@ function showDialog_new_company() {
                   document.querySelector('#yesButton').style.display = 'none'
                   document.querySelector('#dialog_body_button_div1').style.display = 'flex'
                 "></i>
-                <i class="fa-solid fa-arrow-left forward_icon"></i>
+
               إنشاء عمل تجارى جديد
               </h2>
                     <label for="company_name_input" class="lbl_sm">اسم العمل التجارى الجديده</label>
@@ -812,7 +812,7 @@ async function fillAttendancetable2() {
         document.querySelector('#users_table_view').style.display = 'none'
         document.querySelector('#dialog5').style.display = 'block'
       "></i>
-      <i class="fa-solid fa-arrow-left forward_icon"></i>
+
       المستخدمين
     </h2>
 
@@ -975,7 +975,7 @@ async function table_update_btn_fn2(updateBtn) {
     const htmlCode = `
     <h2 id="h2_new_user_table_update" class="h2">
       <i class="fa-solid fa-arrow-right back_icon" onclick="show_table_update_current_user()"></i>
-      <i id="i_h2_header_table_update_user" class="fa-solid fa-arrow-left forward_icon"></i>
+
     تعديل مستخدم :  ${data.user_info[0].user_full_name} 
     </h2>
     <p id="p_stop_user_text" style="color: red; text-align: start; margin-block-end: 1rem; display:none">* هذا المستخدم تم ايقافه</p>
@@ -1047,7 +1047,7 @@ async function table_update_btn_fn2(updateBtn) {
 </select>
 
 <!-- الشركات -->
-<div id="companies_div" class="column" style="display: none">
+<div id="companies_div" class="column x_start y_start w_full" style="display: none">
     <label for="div1" class="lbl_sm">شركات منضمه</label>
     <div id="div1" class="tags_div hover scroll">
         <!-- Buttons in div1 -->

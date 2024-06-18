@@ -295,15 +295,58 @@ router.get('/accounts_view_ar', async (req, res) => {
 });
 
 
-router.get('/transaction_add_ar', async (req, res) => {
-    if (req.session.isLoggedIn) {  
-        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'transactions', 'transaction_add_ar.html'));
-    } else {
-        res.redirect('/login');
-    }
-});
+// router.get('/transaction_add_ar', async (req, res) => {
+//     if (req.session.isLoggedIn) {  
+//         res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'transactions', 'transaction_add_ar.html'));
+//     } else {
+//         res.redirect('/login');
+//     }
+// });
 //#endregion end - accounting
 
+
+//#region transaction
+
+router.get('/transaction_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'accounts', 'transactions' ,'transaction_view_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+
+router.get('/transaction_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.transaction_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'transactions', 'transaction_add_ar.html'));
+        }else{
+            res.redirect('/transaction_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/transaction_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.transaction_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'transactions', 'transaction_update_ar.html'));
+        }else{
+            res.redirect('/transaction_view_ar?reason=2');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+//#endregion
 //#region owners_and_companies
 router.get('/companies_ar', async (req, res) => {
     if (req.session.isLoggedIn) {  

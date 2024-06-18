@@ -199,6 +199,24 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
 
+                            <!-- transaction -->
+                            <tr>
+                              <td style="width: auto;">3</td>
+                              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                              <td style="width: auto; text-wrap: nowrap;">قيد محاسبى</td>
+                              <td style="width: auto;">
+                                <select class="permission_table_select" id="table_permission_transaction"
+                                  onchange="updatePermissionLevel(this)">
+                                  <option value="0" selected>0</option>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="4">4</option>
+                                </select>
+                              </td>
+                              <td style="width: 100%; text-wrap: nowrap;"></td>
+                            </tr>
+
             </tbody>
             <tfoot>
               <tr class="table_totals_row" ;>

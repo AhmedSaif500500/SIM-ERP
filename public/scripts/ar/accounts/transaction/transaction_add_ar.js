@@ -2,14 +2,29 @@ setActiveSidebar('bread_view_ar');
 const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 
 const date1 = document.querySelector('#date1');
-const vendore_select = document.querySelector('#vendore_select');
-
+const refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
+const refrence_input = document.querySelector(`#refrence_input`);
+const note_inpute = document.querySelector(`#note_inpute`);
 
 date1.value = today
 
 function update_input_table_total(input) {
   const column_index = input.closest("td").cellIndex
+}
 
+function is_checked_refrence_fn() {
+  if (refrence_input_checkbox.checked){
+    refrence_input.value = "تلقائى"
+    refrence_input.classList.remove(`refrence_input`)
+    refrence_input.classList.add(`refrence_input_auto_mode`)
+  }else{
+    refrence_input.value = ""
+    refrence_input.classList.remove(`refrence_input_auto_mode`)
+    refrence_input.classList.add(`refrence_input`)
+  }
+}
+refrence_input_checkbox.onchange = function(){
+  is_checked_refrence_fn()
 }
 
 
@@ -72,8 +87,8 @@ function addRows() {
 
 function deleteRow(btn) {
   //فى حالة اذا كان صف واحد فقط
-  const rows_length = parseInt(btn.closest("tbody").rows.length);
-  if (rows_length === 1 ){
+  const rows_length = parseInt(btn.closest("tbody").rows.length) || 0;
+  if (rows_length <= 2 ){
     showAlert('info','لايمكن حذف هذا الصف ,يمكنك حذف العمليه بالكامل بدلا من ذلك')
     return;
   }
@@ -113,71 +128,114 @@ function handle_input_event(input){
   // استدعاء الدالة وتمرير اسم الجدول كمعلمة
   makeTableRowsDraggable('myTable');
 
-async function add_new_bread() {
+async function add_new_transaction() {
 
+
+const difference_debet_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debet_cerdit`).textContent)
+if (difference_debet_cerdit !==0 ){
+  showAlert(`warning`,'القيد غير متوازن');
+  return
+}
+  
 // preparing bread_header data
+
 const datex = date1.value;
-const vendore_id = vendore_select.value
+const is_refrence = refrence_input_checkbox.checked
+let refrenc_value = 0
+if (!is_refrence){
+  refrenc_value = refrence_input.value
+}else{
+  refrenc_value = 0
+}
+
+
+const total = parseFloat(document.querySelector(`#myTable > tfoot .table_total_row #sumColumn3`).textContent)
+
+
+const general_note = note_inpute.value
 
   //preparing bread_body Data
-  const tableRows = document.querySelectorAll('#myTable tbody tr');
-  const posted_array = [];
-  
-  tableRows.forEach(row => {
-      const inputs = row.querySelectorAll('input[type="search"]');
-      
-      if (inputs.length >= 2) { // التحقق من وجود ما لا يقل عن اثنين من العناصر input
-          const amount = +inputs[0].value || 0; // في هذا السياق، علامة الجمع + تحول القيمة إلى عدد عائم. إذا كانت القيمة غير رقمية، فستعود إلى القيمة الافتراضية التي هي صفر
-          const wazn = +inputs[1].value || 0; // في هذا السياق، علامة الجمع + تحول القيمة إلى عدد عائم. إذا كانت القيمة غير رقمية، فستعود إلى القيمة الافتراضية التي هي صفر
-          const rowData = {
-              amount: amount,
-              wazn: wazn
-          };
-          posted_array.push(rowData);
-      }
-  });
+  const tableRows = document.querySelectorAll('#myTable > tbody > tr');
+ 
+  const posted_array = []; // انشاء مصفوفه جديده اضع فيها بيانات كل صف
+if (tableRows.length > 0){ // التأكد من وجود بيانات داخل المصفوفه اولا
 
 
+  for ( const row of tableRows){
+    const account_id = parseInt(row.children[1].querySelector('.id_hidden_input').value);
+        
+    if (isNaN(account_id)) {
+      showAlert(`warning`,'توجد صفوف لا تحتوى على حساب')
+      return;
+    }
 
-  await fetchData_post1(
-    "/api/bread_add",
-    {vendore_id,datex,posted_array},
-    'bread_permission','add',
-    'هل تريد حفظ البيانات ؟',
-    10,
-    'bread_add_ar',
-    'حدث خطأ اثناء حفظ البيانات'
-  )
+    const note_row = row.children[2].textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
+    const debt = parseFloat(row.children[3].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+    const credit = parseFloat(row.children[4].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+
+    if (debt < 0 || credit< 0){
+      showAlert(`warning`,`لا يمكن ادخل قيمه بالسالب فى القيد`);
+      return;
+    }
+    // انشاء اوبجيكت لوضع بيانات الخلايا فيه  ثم اضافة الاوبجيكت الى عناصر المصفوفه الفارغه
+    const rowData = {  
+      account_id: account_id,
+      note_row: note_row,
+      debt: debt,
+      credit: credit,
+    };
+    posted_array.push(rowData); // اضافة الاوبجيكت الى عناصر المصفوفه
+  }
+
+
+await fetchData_post1(
+  "/api/transaction_add",
+  {total,datex,is_refrence,refrenc_value,general_note,posted_array},
+  'transaction_permission','add',
+  'هل تريد حفظ البيانات ؟',
+  15,
+  'transaction_add_ar',
+  'حدث خطأ اثناء حفظ البيانات'
+)
+}else{
+  showAlert('fail','لا توجد بيانات')
+  return
+}
 }
 
 document.querySelector('#btn_save').addEventListener('click', async function (){
-  await add_new_bread();
+  await add_new_transaction();
 })
 
 
 document.addEventListener('DOMContentLoaded', async function(){
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
+  is_checked_refrence_fn()
  })
  
 
 
 
 //!------------------------------------------------------------------------
-//let data = [];
+let data = [];
 let array1 = [];
 let slice_Array1 = [];
 
 
 // تحضير البيانات من السيرفر
 async function getEmployeesData_fn() {
-    // if(!Authentication){
-    //     return;
-    // }
 
-  const response = await fetch("/getEmployeesData1");
-  data = await response.json();
 
-  // تحديث array1 بنتيجة الـ slice
+    data = await fetchData_postAndGet(
+      "/getAccountsData1",
+      {},
+      'transaction_permission','view',
+      15,
+      false,'',
+      'حدث خطأ اثناء معالجة البيانات',
+      true
+    )
+
   array1 = data.slice();
 };
 
@@ -207,7 +265,7 @@ async function fillAttendancetable(td) {
   slice_Array1.forEach(row => {
     tableHTML += `<tr onclick="selectedRow(this)">
                           <td style="display: none;" >${row.id}</td>
-                          <td style="width: auto;">${row.employee_name}</td>
+                          <td style="width: auto;">${row.account_name}</td>
                         </tr>`;
   });
 
@@ -270,9 +328,9 @@ async function performSearch(input) {
   array1 = data.filter(row => {
 
     // التحقق من أن employee.id و employee.name ليستان فارغتين
-    const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
-    const nameMatch = row.employee_name && row.employee_name.toString().toLowerCase().includes(searchValue);
-    return idMatch || nameMatch;
+    // const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
+    const nameMatch = row.account_name && row.account_name.toString().toLowerCase().includes(searchValue);
+    return nameMatch // || nameMatch;
   });
 
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
@@ -309,22 +367,22 @@ function selectedRow(row) {
 
 
 // إظهار/إخفاء القائمة
+
 async function toggleDropdown(dropdown) {
   const td = dropdown.closest("td");
-  const dropdown_menue = td.querySelector(`.dropdown_menue`)
+  const dropdown_menue = td.querySelector(`.dropdown_menue`);
   if (dropdown_menue.style.display === "none") {
-    await measureDistanceToBottom(td,dropdown_menue);
-    await showDropdown(td,dropdown_menue);
-
-   
-
-
+      measureDistanceToBottom(td, dropdown_menue);
+      await showDropdown(td, dropdown_menue);
   } else {
-    await measureDistanceToBottom(td,dropdown_menue);
-    hideDropdown();
+      measureDistanceToBottom(td, dropdown_menue);
+      hideDropdown();
   }
-}
 
+  // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
+  window.addEventListener('scroll', handleResizeOrScroll(td, dropdown_menue));
+  window.addEventListener('resize', handleResizeOrScroll(td, dropdown_menue));
+}
 // إظهار القائمة
 async function showDropdown(td,dropdown_menue) {
   await showFirst50RowAtTheBegening(td);
@@ -407,11 +465,9 @@ function updateFooter() {
 
 
 //#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
-function measureDistanceToBottom(td,dropdown_menue) {
-  
+function measureDistanceToBottom(td, dropdown_menue) {
   const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
-  const icon = dropdown_container.querySelector(`i`)
-
+  const icon = dropdown_container.querySelector('i'); // تعديل هذا السطر للتأكد من العثور على العنصر الصحيح
 
   // الحصول على معلومات الحجم والموقع النسبي للعنصر
   const rect = dropdown_container.getBoundingClientRect();
@@ -426,25 +482,27 @@ function measureDistanceToBottom(td,dropdown_menue) {
   // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
   const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
   const distanceToBottomRem = distanceToBottom / fontSize;
- 
-  if (distanceToBottomRem < 21) {  // 5aleh nafs rl hight beta3 el drop_menue + 1 
-    icon.classList.remove('fa-caret-down');
-    icon.classList.add('fa-caret-up');
-    dropdown_menue.classList.add("dropdown_menue_Open_top");
-    dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
+
+  if (distanceToBottomRem < 21) { // 5aleh nafs rl hight beta3 el drop_menue + 1
+      icon.classList.remove('fa-caret-down');
+      icon.classList.add('fa-caret-up');
+      dropdown_menue.classList.add("dropdown_menue_Open_top");
+      dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
   } else {
-    icon.classList.add('fa-caret-down');
-    icon.classList.remove('fa-caret-up');
-    dropdown_menue.classList.add("dropdown_menue_Open_bottom");
-    dropdown_menue.classList.remove("dropdown_menue_Open_top");
+      icon.classList.add('fa-caret-down');
+      icon.classList.remove('fa-caret-up');
+      dropdown_menue.classList.add("dropdown_menue_Open_bottom");
+      dropdown_menue.classList.remove("dropdown_menue_Open_top");
   }
-
-  // طباعة المسافة بوحدة REM إلى وحدة تحكم المتصفح
-
-  // يستدعي الدالة عند حدوث التمرير أو تغيير حجم الشاشة
-  window.addEventListener('scroll', measureDistanceToBottom);
-  window.addEventListener('resize', measureDistanceToBottom);
-
 }
 
+// دالة مغلفة لتمرير المعاملات الصحيحة عند حدوث التمرير أو تغيير حجم الشاشة
+function handleResizeOrScroll(td, dropdown_menue) {
+  return function() {
+      measureDistanceToBottom(td, dropdown_menue);
+  };
+}
+
+
 //!--------------------------------------------------------------------
+

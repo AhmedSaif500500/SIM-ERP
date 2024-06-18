@@ -72,6 +72,7 @@ if (!user_id) {
       document.querySelector('#table_permission_attendance').value = array1.attendance_permission;
       document.querySelector('#table_permission_production').value = array1.production_permission;
       document.querySelector('#table_permission_bread').value = array1.bread_permission;
+      document.querySelector('#table_permission_transaction').value = array1.transaction_permission;
     } catch (error) {
       catch_error('error in show_data', error.message_ar);
     };
@@ -196,6 +197,7 @@ if (!user_id) {
       let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value);
       let table_permission_production = parseInt(document.querySelector("#table_permission_production").value);
       let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value);
+      let table_permission_transaction = parseInt(document.querySelector("#table_permission_transaction").value);
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
       // const changePassword_div = document.querySelector('#changePassword_div');
 
@@ -239,6 +241,7 @@ if(!dialogAnswer){
         table_permission_attendance = 0;
         table_permission_production = 0;
         table_permission_bread = 0;
+        table_permission_transaction = 0;
         // add here all tables select permission id
       };
       console.log(user_id);
@@ -253,6 +256,7 @@ if(!dialogAnswer){
         table_permission_attendance,
         table_permission_production,
         table_permission_bread,
+        table_permission_transaction,
         today,
       };
 
@@ -308,7 +312,7 @@ if(!dialogAnswer){
       {user_id},
       'users_permission',
       'هل تريد حذف البيانات ؟',
-      10,
+      15,
       '/delete_User_from_user_update_ar',
       true,
       'users_ar'
