@@ -99,6 +99,15 @@ loadHeaderContents();
       العيش
     </a>
 
+    <a href="transaction_view_ar" target="_self" class="">
+      <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
+      اصناف المخزون 
+    </a>
+
+    <a href="transaction_view_ar" target="_self" class="">
+      <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
+      شطب المخزون 
+    </a>
 
     <!-- <a href="index2.html" target="_self"> -->
     <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
