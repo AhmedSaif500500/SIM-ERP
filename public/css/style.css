@@ -1896,6 +1896,7 @@ font-size: 2rem;
   position: absolute;
   inset-inline-end: 0.3rem;
   pointer-events: none;
+  font-size: 1.5rem;
   /* هنا تجعل الصورة غير قابلة للاستجابة للنقرات */
   color: var(--icon_btn_color);
   z-index: 3;

@@ -2388,6 +2388,7 @@ app.post("/getEmployeesData1", async (req, res) => {
       return;
     }
 
+    console.log(`start`);
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 

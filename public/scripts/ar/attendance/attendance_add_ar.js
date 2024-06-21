@@ -36,10 +36,15 @@ let slice_Array1 = [];
 
 // تحضير البيانات من السيرفر
 async function getEmployeesData_fn() {
-  const response = await fetch("/getEmployeesData1");
-  data = await response.json();
-
-  // تحديث array1 بنتيجة الـ slice
+  data = await fetchData_postAndGet(
+    '/getEmployeesData1',
+    {},
+    'attendance_permission','view',
+    15,
+    false,'',
+    'حدث خطأ اثناء معالجة البيانات',
+    false
+  )
   array1 = data.slice();
 };
 
