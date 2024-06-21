@@ -145,7 +145,7 @@
 .vakata-context,
 .vakata-context ul {
     margin: 0;
-    padding: 0.2rem;
+    padding: 0.5rem;
     position: absolute;
     width: fit-content;
     background: var(--input_text_background_color);
@@ -305,8 +305,12 @@
 }
 
 .vakata-context-rtl li>a>i {
-display: flex; flex-direction: row; justify-content: start; align-items: center;
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
 margin-inline-end: 0.8rem;
+font-size: 1.5rem;
 }
 
 .vakata-context-rtl li>a .vakata-contextmenu-sep {

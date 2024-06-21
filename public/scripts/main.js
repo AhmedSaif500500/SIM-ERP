@@ -24,17 +24,17 @@ function loadHeaderContents() {
   // الكود HTML كمتغير نصي
   const headerContent = `
       <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
-          <i class="fa-solid fa-bars"></i>
+          <i class="fa-duotone fa-bars"></i>
       </a>
       <div class="header_dark_lang_control">
           <a id="dark_toggle_btn" class="">
-              <i class="fa-solid fa-circle-half-stroke"></i>
+              <i class="fa-duotone fa-circle-half-stroke"></i>
           </a>
           <a href="" id="lang_btn" class=""> en </a>
       </div>
       <div class="header_menue">
           <a href="companies_ar">
-          <i class="fa-regular fa-address-book" style="font-size: 2rem"></i>
+          <i class="fa-duotone fa-address-book" style="font-size: 2rem"></i>
               الاعمال التجاريه
           </a>
       </div>
@@ -71,85 +71,85 @@ loadHeaderContents();
       // الكود HTML كمتغير نصي
       const sidebarContent = `
       <div id="closeMenueIcon" class="closeMenueIcon">
-      <i class="fa-solid fa-square-xmark"></i>
+      <i class="fa-duotone fa-square-xmark"></i>
     </div>
 
     <a href="home_ar" target="_self" class="">
-      <i class="fa-solid fa-display"></i>
+      <i class="fa-duotone fa-list"></i>
       الملخص
     </a>
 
     <a href="employees_ar" target="_self" class="">
-      <i class="fa-solid fa-user-tie"></i>
+      <i class="fa-duotone fa-user-tie"></i>
       الموظفين
     </a>
 
     <a href="attendance_ar" target="_self" class="">
-      <i class="fa-solid fa-person-circle-exclamation"></i>
+      <i class="fa-duotone fa-person-circle-exclamation"></i>
       المؤثرات
     </a>
 
     <a href="production_view_ar" target="_self" class="">
-      <i class="fa-solid fa-industry"></i>
+      <i class="fa-duotone fa-industry"></i>
       الانتاج
     </a>
 
     <a href="bread_view_ar" target="_self" class="">
-      <i class="fa-solid fa-bread-slice"></i>
+      <i class="fa-duotone fa-bread-slice"></i>
       العيش
     </a>
 
     <a href="transaction_view_ar" target="_self" class="">
-      <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
+      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       اصناف المخزون 
     </a>
 
     <a href="transaction_view_ar" target="_self" class="">
-      <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
+      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       شطب المخزون 
     </a>
 
     <!-- <a href="index2.html" target="_self"> -->
     <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
-      <i class="fa-solid fa-user"></i>
+      <i class="fa-duotone fa-user"></i>
       الصلاحيات
     </a>
 
     <a href="accounts_view_ar" target="_self" class="">
-      <i class="fa-solid fa-tree fa-bounce" style="color: #FFD43B;"></i>
+      <i class="fa-duotone fa-tree fa-bounce" style="color: #FFD43B;"></i>
       الحسابات
     </a>
 
     <a href="transaction_view_ar" target="_self" class="">
-      <i class="fa-solid fa-tree fa-bounce" style="color: blue;"></i>
+      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       القيود المحاسبية
     </a>
 
 
     <a href="transaction_add_ar" target="_self" class="">
-      <i class="fa-solid fa-tree fa-bounce" style="color: green;"></i>
+      <i class="fa-duotone fa-tree fa-bounce" style="color: green;"></i>
       التقارير
     </a>
 
     <a href="test_ar" target="_self" class="">
-      <i class="fa-solid fa-tree fa-bounce" style="color: red;"></i>
+      <i class="fa-duotone fa-tree fa-bounce" style="color: red;"></i>
       test
     </a>
 
     <a href="test_ar" target="_self" class="">
-       <i class="fa-solid fa-gear"></i>
+       <i class="fa-duotone fa-gear"></i>
       الاعدادت
     </a>
 
 
 
     <a id="Custmize_sidebar" href="#">
-      <i class="fa-solid fa-gear"></i>
+      <i class="fa-duotone fa-gear"></i>
       <p>تخصيص</p>
     </a>
 
     <a id="owner_sidebar" href="#">
-      <i class="fa-solid fa-gear"></i>
+      <i class="fa-duotone fa-gear"></i>
       <p>المالك</p>
     </a>
       `;
@@ -630,19 +630,17 @@ function total_column(totalVariable, rowData) {
 //#endregion END - total column
 
 //#region Numbers Formating show seperator
-function floatToString(is_showZero,floatValue) {
-try {
-  if (parseFloat(floatValue) === 0){
-    if(is_showZero){
-      return ''
-    }
-   }
-  let formattedNum = parseFloat(floatValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  let formattedString = formattedNum.replace(/^(\d+)\.(\d{2})$/, '$1,$2'); // إعادة تنسيق الرقم بفواصل الآلاف
-  return formattedString;
-} catch (error) {
-  catch_error(error);
-}
+function floatToString(is_showZero, floatValue) {
+  try {
+    let num = parseFloat(floatValue);
+    if (num === 0 && is_showZero) return '';
+    return num.toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  } catch (error) {
+    catch_error(error);
+  }
 }
 
 // hiden seperator

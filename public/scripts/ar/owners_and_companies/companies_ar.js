@@ -819,7 +819,7 @@ async function fillAttendancetable2() {
     <div class="flex_row w_full">
       <div class="input_with_icon_div w_full">
         <input type="search" name="searchInput2" id="searchInput2" placeholder="search" class="search_input w_full hover" onkeydown="performSearch2_Oninput(event)" onsearch="performSearch2_Onsearch(this)">
-        <i class="fa-solid fa-magnifying-glass left_icon"></i>
+        <i class="fa-duotone fa-magnifying-glass left_icon"></i>
       </div>
       <button id="searchBtn2" onclick="performSearch2()" class="btn_search hover">search</button>
     </div>

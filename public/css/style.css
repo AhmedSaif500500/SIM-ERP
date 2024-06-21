@@ -296,12 +296,11 @@ background-color: var(--bg_white_backcolor);
 /* عندما يكون الزر في حالة التحميل */
 .loading_icon::after {
   content: '\f110'; /* رمز دوران Font Awesome */
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'Font Awesome 6 pro';
   font-weight: 900;
   margin-inline-start: 0.8rem; /* المسافة بين الأيقونة والعنصر */
   animation: spin 1s linear infinite;
   color: var(--btn_color); /* لون الأيقونة - يمكنك تغييره إلى أي لون تريده */
-
 }
 
 /* الرسوم المتحركة لدوران الأيقونة */
@@ -338,7 +337,7 @@ i {
   color: var(--icon_btn_color);
   font-size: 1.7rem;
   transition: var(--transition);
-  opacity: 0.8;
+  /* opacity: 0.8; */
 }
 
 p,
@@ -1841,6 +1840,20 @@ font-size: 2rem;
   padding: 0.5rem;
 }
 
+.select{
+  min-width: 10rem;
+  width: fit-content;
+  max-width: 100%;
+  height: var(--input_height);
+  color: var(--Font_Color);
+  background-color: var(--input_text_background_color);
+  font-size: 1.4rem;
+  padding: 0.5rem;
+  transition: var(--transition);
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  text-align: start;
+}
 
 
 .dropdown_container {

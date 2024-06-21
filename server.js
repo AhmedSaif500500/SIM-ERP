@@ -2879,7 +2879,7 @@ app.get("/get_All_bread_Data", async (req, res) => {
     h.datex, 
     h.vendor_id, 
     v.vendore_name, 
-    SUM(b.wazn) AS total_wazn, 
+    SUM(b.wazn) / 1000 AS total_wazn, 
     SUM(b.amount) AS total_amount
 FROM bread_header AS h
 left JOIN vendors AS v ON h.vendor_id = v.id
@@ -3246,8 +3246,6 @@ app.get("/api/tree", async (req, res) => {
     h1.account_no AS account_no,
     h1.finance_statement AS finance_statement,
     h1.cashflow_statement AS cashflow_statement,
-    h1.starting_balance_value AS starting_balance_value,
-    h1.starting_balance_type AS starting_balance_type,
     h1.can_be_deleted AS can_be_deleted,
     h1.is_main_acc AS is_main_acc,
     h2.id AS parent_id,
@@ -3255,7 +3253,7 @@ app.get("/api/tree", async (req, res) => {
 FROM accounts_header h1
 LEFT JOIN accounts_body b ON h1.id = b.account_id
 LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
-WHERE h1.company_id = $1;;`;
+WHERE h1.company_id = $1;`;
 
     // استعلام SQL لجلب بيانات الشجرة
     let treeData = await db.any(query1, [req.session.company_id]);
@@ -3336,20 +3334,25 @@ app.post("/api/update-account", async (req, res) => {
           account_name = $1,
           account_no = $2,
           finance_statement = $3,
-          cashflow_statement = $4,
-          starting_balance_value = $5,
-          starting_balance_type = $6,
-          WHERE company_id = $7 AND id = $8`;
+          cashflow_statement = $4
+          WHERE company_id = $5 AND id = $6`;
       await tx.none(query1, [
         posted_elements.account_name,
         posted_elements.account_no,
         posted_elements.statment_type_value,
         posted_elements.cash_flow_statement_value,
-        posted_elements.starting_balance_value,
-        posted_elements.starting_balance_type,
         req.session.company_id,
         posted_elements.account_id,
       ]);
+
+      let query2 = `UPDATE accounts_body SET 
+      parent_id = $1
+      WHERE account_id = $2`;
+  await tx.none(query2, [
+    posted_elements.new_parent_account_id,
+    posted_elements.account_id
+  ]);
+
     });
 
     // إذا تم تنفيذ جميع الاستعلامات بنجاح

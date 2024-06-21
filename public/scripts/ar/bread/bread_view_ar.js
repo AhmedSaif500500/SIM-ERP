@@ -57,12 +57,12 @@ async function fillAttendancetable() {
                             <tr>
                                 <th></th>
                                 <th style="display: none;" >ID</th>
-                                <th style="width: auto; white-space: nowrap;">التاريخ</th>
-                                <th style="width: auto; white-space: nowrap;">اليوم</th>
+                                <th style="width: auto; white-space: nowrap;text-align: center">التاريخ</th>
+                                <th style="width: auto; white-space: nowrap;text-align: center">اليوم</th>
                                 <th style="display: none;">vendor_id</th>
                                 <th style="width: auto; white-space: nowrap;">المورد</th>
-                                <th style="width: auto; white-space: nowrap;">العدد</th>
-                                <th style="width: 100%; white-space: nowrap; opacity: 0.7;">الوزن</th> 
+                                <th style="width: auto; white-space: nowrap;text-align: center">العدد</th>
+                                <th style="width: 100%; white-space: nowrap;text-align: center">الوزن</th> 
                             </tr>
                             </thead>
                             <tbody>`;
@@ -73,12 +73,12 @@ async function fillAttendancetable() {
             tableHTML += `<tr>
                             <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
-                            <td style="width: auto; white-space: nowrap;">${row.datex}</td>
-                            <td style="width: auto; white-space: nowrap;">${day_name(row.datex)}</td>
+                            <td style="width: auto; white-space: nowrap;text-align: center">${row.datex}</td>
+                            <td style="width: auto; white-space: nowrap;text-align: center">${day_name(row.datex)}</td>
                             <td style="display: none;">${row.vendor_id}</td>
                             <td style="width: 100%">${row.vendore_name}</td>
-                            <td style="width: auto; white-space: nowrap;">${total_column(total_column1, row.amount)}</td>
-                            <td style="width: auto; white-space: nowrap; opacity: 0.7;">${total_column(total_column2, row.wazn)}</td>
+                            <td style="width: auto; white-space: nowrap;text-align: center">${total_column(total_column1, row.amount)}</td>
+                            <td style="width: auto; white-space: nowrap;text-align: center">${total_column(total_column2, row.wazn)}</td>
                           </tr>`;
         });
 
@@ -91,8 +91,8 @@ async function fillAttendancetable() {
                 <td id="tfooter4"></td>
                 <td id="tfooter5" style="display: none;"></td>
                 <td id="tfooter6" style="width: 100%"></td>
-                <td id="tfooter7" style="width: auto; white-space: nowrap;"></td>
-                <td id="tfooter8" style="width: auto; opacity: 0.7;"></td>
+                <td id="tfooter7" style="width: auto; white-space: nowrap; text-align: center"></td>
+                <td id="tfooter8" style="width: auto; white-space: nowrap; text-align: center"></td>
             </tr>
                         <tr id="table_fotter_buttons_row">
                             <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
@@ -112,8 +112,8 @@ async function fillAttendancetable() {
 
 
 document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-document.getElementById("tfooter7").textContent = total_column1.value;
-document.getElementById("tfooter8").textContent = total_column2.value;
+document.getElementById("tfooter7").textContent = floatToString(false,total_column1.value);
+document.getElementById("tfooter8").textContent = floatToString(false,total_column2.value);
 
 
 

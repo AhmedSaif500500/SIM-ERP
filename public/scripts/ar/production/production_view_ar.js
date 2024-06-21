@@ -200,18 +200,18 @@ searchInput.addEventListener('keydown', (event) => {
 async function tabble_update_btn_fn(updateBtn) {
   const row  = updateBtn.closest("tr")
 
+
   const production_data = {
      id_value : row.cells[1].textContent,
      date_value : row.cells[2].textContent,
-     note_value : row.cells[3].textContent,
-     procution_value : row.cells[4].textContent,
-     sales_value : row.cells[5].textContent,
+     note_value : row.cells[4].textContent,
+     procution_value :stringToFloat(false,row.cells[5].textContent) ,
+     sales_value : stringToFloat(false,row.cells[6].textContent),
   }
 
   sessionStorage.setItem('production_update_data',JSON.stringify(production_data))
   window.location.href = 'production_update_ar';
 };
-
 
 
 
