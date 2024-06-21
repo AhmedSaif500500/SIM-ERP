@@ -504,8 +504,19 @@ let slice_Array2 = [];
 // تحضير البيانات من السيرفر
 async function getEmployeesData_fn1() {
 
-    const response = await fetch("/getEmployeesData1");
-    data2 = await response.json();
+    // const response = await fetch("/getEmployeesData1");
+    // data2 = await response.json();
+
+
+    data2 = await fetchData_postAndGet(
+        '/getEmployeesData1',
+        {},
+        'attendance_permission','view',
+        15,
+        false,'',
+        'حدث خطأ اثناء معالجة البيانات',
+        false
+      )
 
     // تحديث array2 بنتيجة الـ slice
     array2 = data2.slice();
