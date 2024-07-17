@@ -13,17 +13,17 @@ function update_input_table_total(input) {
 }
 
 function is_checked_refrence_fn() {
-  if (refrence_input_checkbox.checked){
+  if (refrence_input_checkbox.checked) {
     refrence_input.value = "تلقائى"
     refrence_input.classList.remove(`refrence_input`)
     refrence_input.classList.add(`refrence_input_auto_mode`)
-  }else{
+  } else {
     refrence_input.value = ""
     refrence_input.classList.remove(`refrence_input_auto_mode`)
     refrence_input.classList.add(`refrence_input`)
   }
 }
-refrence_input_checkbox.onchange = function(){
+refrence_input_checkbox.onchange = function () {
   is_checked_refrence_fn()
 }
 
@@ -46,7 +46,7 @@ function addRows() {
                 </td>
 
                 <td>
-                  <select name="" id="" class="account_type select">${get_accounts_type_array}</select>
+                  <select name="" id="" class="account_type select" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
                 </td>
 
                 <!-- dropdown -->
@@ -90,8 +90,8 @@ function addRows() {
 function deleteRow(btn) {
   //فى حالة اذا كان صف واحد فقط
   const rows_length = parseInt(btn.closest("tbody").rows.length) || 0;
-  if (rows_length <= 2 ){
-    showAlert('info','لايمكن حذف هذا الصف ,يمكنك حذف العمليه بالكامل بدلا من ذلك')
+  if (rows_length <= 2) {
+    showAlert('info', 'لايمكن حذف هذا الصف ,يمكنك حذف العمليه بالكامل بدلا من ذلك')
     return;
   }
   const row = btn.closest("tr");
@@ -113,7 +113,7 @@ function copyRow(btn) {
 
 
 
-function handle_input_event(input){
+function handle_input_event(input) {
   const currentRow = input.closest("tr");
   const cellIndex = input.closest("td").cellIndex;
   if (cellIndex === 3) {
@@ -121,133 +121,170 @@ function handle_input_event(input){
   } else if (cellIndex === 4) {
     currentRow.children[3].textContent = "";
   }
-  
-  check_parse(input,'number');
+
+  check_parse(input, 'number');
   updateFooter()
 }
 
 
-  // استدعاء الدالة وتمرير اسم الجدول كمعلمة
-  makeTableRowsDraggable('myTable');
+// استدعاء الدالة وتمرير اسم الجدول كمعلمة
+makeTableRowsDraggable('myTable');
 
 async function add_new_transaction() {
 
 
-const difference_debet_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debet_cerdit`).textContent)
-if (difference_debet_cerdit !==0 ){
-  showAlert(`warning`,'القيد غير متوازن');
-  return
-}
-  
-// preparing bread_header data
+  const difference_debet_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debet_cerdit`).textContent)
+  if (difference_debet_cerdit !== 0) {
+    showAlert(`warning`, 'القيد غير متوازن');
+    return
+  }
 
-const datex = date1.value;
-const is_refrence = refrence_input_checkbox.checked
-let refrenc_value = 0
-if (!is_refrence){
-  refrenc_value = refrence_input.value
-}else{
-  refrenc_value = 0
-}
+  // preparing bread_header data
 
-
-const total = parseFloat(document.querySelector(`#myTable > tfoot .table_total_row #sumColumn3`).textContent)
-
-
-const general_note = note_inpute.value
-
-  //preparing bread_body Data
-  const tableRows = document.querySelectorAll('#myTable > tbody > tr');
- 
-  const posted_array = []; // انشاء مصفوفه جديده اضع فيها بيانات كل صف
-if (tableRows.length > 0){ // التأكد من وجود بيانات داخل المصفوفه اولا
-
-
-  for ( const row of tableRows){
-    const account_id = parseInt(row.children[1].querySelector('.id_hidden_input').value);
-        
-    if (isNaN(account_id)) {
-      showAlert(`warning`,'توجد صفوف لا تحتوى على حساب')
-      return;
-    }
-
-    const note_row = row.children[2].textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
-    const debt = parseFloat(row.children[3].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
-    const credit = parseFloat(row.children[4].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
-
-    if (debt < 0 || credit< 0){
-      showAlert(`warning`,`لا يمكن ادخل قيمه بالسالب فى القيد`);
-      return;
-    }
-    // انشاء اوبجيكت لوضع بيانات الخلايا فيه  ثم اضافة الاوبجيكت الى عناصر المصفوفه الفارغه
-    const rowData = {  
-      account_id: account_id,
-      note_row: note_row,
-      debt: debt,
-      credit: credit,
-    };
-    posted_array.push(rowData); // اضافة الاوبجيكت الى عناصر المصفوفه
+  const datex = date1.value;
+  const is_refrence = refrence_input_checkbox.checked
+  let refrenc_value = 0
+  if (!is_refrence) {
+    refrenc_value = refrence_input.value
+  } else {
+    refrenc_value = 0
   }
 
 
-await fetchData_post1(
-  "/api/transaction_add",
-  {total,datex,is_refrence,refrenc_value,general_note,posted_array},
-  'transaction_permission','add',
-  'هل تريد حفظ البيانات ؟',
-  15,
-  'transaction_add_ar',
-  'حدث خطأ اثناء حفظ البيانات'
-)
-}else{
-  showAlert('fail','لا توجد بيانات')
-  return
-}
+  const total = parseFloat(document.querySelector(`#myTable > tfoot .table_total_row #sumColumn3`).textContent)
+
+
+  const general_note = note_inpute.value
+
+  //preparing bread_body Data
+  const tableRows = document.querySelectorAll('#myTable > tbody > tr');
+
+  const posted_array = []; // انشاء مصفوفه جديده اضع فيها بيانات كل صف
+  if (tableRows.length > 0) { // التأكد من وجود بيانات داخل المصفوفه اولا
+
+
+    for (const row of tableRows) {
+      const account_id = parseInt(row.children[2].querySelector('.id_hidden_input').value);
+
+      if (isNaN(account_id)) {
+        showAlert(`warning`, 'توجد صفوف لا تحتوى على حساب')
+        return;
+      }
+
+      const note_row = row.children[3].textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
+      const debt = parseFloat(row.children[4].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+      const credit = parseFloat(row.children[5].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+
+      if (debt < 0 || credit < 0) {
+        showAlert(`warning`, `لا يمكن ادخل قيمه بالسالب فى القيد`);
+        return;
+      }
+      // انشاء اوبجيكت لوضع بيانات الخلايا فيه  ثم اضافة الاوبجيكت الى عناصر المصفوفه الفارغه
+      const rowData = {
+        account_id: account_id,
+        note_row: note_row,
+        debt: debt,
+        credit: credit,
+      };
+      posted_array.push(rowData); // اضافة الاوبجيكت الى عناصر المصفوفه
+    }
+
+
+    await fetchData_post1(
+      "/api/transaction_add",
+      { total, datex, is_refrence, refrenc_value, general_note, posted_array },
+      'transaction_permission', 'add',
+      'هل تريد حفظ البيانات ؟',
+      15,
+      'transaction_add_ar',
+      'حدث خطأ اثناء حفظ البيانات'
+    )
+  } else {
+    showAlert('fail', 'لا توجد بيانات')
+    return
+  }
 }
 
 
 let get_accounts_type_array = [];
-async function get_accounts_type(){
-try {
-  const data = await fetchData_postAndGet(
-  '/api/transaction_accounts_types',
-  {},
-  '','',
-  15,
-  false,
-  '',
-  'حدث خطأ اثناء معالجه البيانات',
-  true
-  )
+async function get_accounts_type() {
+  try {
+    const data = await fetchData_postAndGet(
+      '/api/transaction_accounts_types',
+      {},
+      '', '',
+      15,
+      false,
+      '',
+      'حدث خطأ اثناء معالجه البيانات',
+      true
+    )
 
-  for (const row of data) {
-    const option = `<option value="${row.id}" ${row.id === 1 ? 'selected' : ''}>${row.account_type_name}</option>`;
-    get_accounts_type_array.push(option);
+    for (const row of data) {
+      const option = `<option value="${row.id}" ${row.id === 1 ? 'selected' : ''}>${row.account_type_name}</option>`;
+      get_accounts_type_array.push(option);
+    }
+
+    const accounts_types_array = document.querySelectorAll(`.account_type`)
+    for (const item of accounts_types_array) {
+      item.innerHTML = get_accounts_type_array;
+    }
+
+  } catch (error) {
+    catch_error(error)
   }
-
-  document.querySelector(`.account_type`).innerHTML = get_accounts_type_array
-} catch (error) {
-  catch_error(error)
-}
 }
 
 
-document.querySelector('#btn_save').addEventListener('click', async function (){
+let get_items_locations_array = [];
+async function get_items_locations() {
+  try {
+    const data = await fetchData_postAndGet(
+      '/api/transaction_items_locations',
+      {},
+      '', '',
+      15,
+      false,
+      '',
+      'حدث خطأ اثناء معالجه البيانات',
+      true
+    )
+
+    for (const row of data) {
+      const option = `<option value="${row.id}">${row.account_name}</option>`;
+      get_items_locations_array.push(option);
+    }
+
+    const items_locations_array = document.querySelectorAll(`.items_locations_select`)
+    for (const item of items_locations_array) {
+      item.innerHTML = get_items_locations_array;
+    }
+
+  } catch (error) {
+    catch_error(error)
+  }
+}
+
+document.querySelector('#btn_save').addEventListener('click', async function () {
   await add_new_transaction();
 })
 
 
-document.addEventListener('DOMContentLoaded', async function(){
+document.addEventListener('DOMContentLoaded', async function () {
+  await getEmployeesData_fn() // *
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
-   is_checked_refrence_fn()
+  is_checked_refrence_fn()
   await get_accounts_type()
- })
- 
+  await get_items_locations()
+
+})
+
 
 
 
 //!------------------------------------------------------------------------
 let data = [];
+let data_filterd = []
 let array1 = [];
 let slice_Array1 = [];
 
@@ -255,23 +292,19 @@ let slice_Array1 = [];
 // تحضير البيانات من السيرفر
 async function getEmployeesData_fn() {
 
-
-    data = await fetchData_postAndGet(
-      "/getAccountsData1",
-      {},
-      'transaction_permission','view',
-      15,
-      false,'',
-      'حدث خطأ اثناء معالجة البيانات',
-      true
-    )
-
-  array1 = data.slice();
+  data = await fetchData_postAndGet(
+    "/getAccountsData1",
+    {},
+    'transaction_permission', 'view',
+    15,
+    false, '',
+    'حدث خطأ اثناء معالجة البيانات',
+    true
+  )
 };
 
 async function showFirst50RowAtTheBegening(td) {
-  await getEmployeesData_fn()
-  slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+  slice_Array1 = array1.slice(0, 50);
   fillAttendancetable(td)
 }
 
@@ -324,7 +357,7 @@ async function fillAttendancetable(td) {
   // تحديث محتوى الصفحة بناءً على البيانات
   td.querySelector('.inputTable_dropdown_table_container').innerHTML = await tableHTML;
 
-  
+
 
 
   //! get width of
@@ -355,7 +388,7 @@ async function performSearch(input) {
 
 
   // فلترة البيانات بناءً على قيمة البحث
-  array1 = data.filter(row => {
+  array1 = data_filterd.filter(row => {
 
     // التحقق من أن employee.id و employee.name ليستان فارغتين
     // const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
@@ -391,147 +424,175 @@ function selectedRow(row) {
 };
 
 
+function change_select_account_type(select) {
+  const tr = select.closest("tr");
+
+  const inputes = tr.querySelectorAll('.T');
+  for (const input of inputes) {
+    input.textContent = "";
+  }
+
+  tr.querySelector(`.items_div`).style.display = 'none'
+  const span = tr.querySelector(`.account_type_name`)
+  const val = parseInt(select.value)
+  if (val === 1) {
+    span.textContent = "حساب عام"
+  } else if (val === 2) {
+    span.textContent = "عميل"
+  } else if (val === 3) {
+    span.textContent = "مورد"
+  } else if (val === 4) {
+    span.textContent = "موظف"
+  } else if (val === 5) {
+    span.textContent = "صنف مخزون"
+    tr.querySelector(`.items_div`).style.display = 'flex'
+  } else if (val === 6) {
+    span.textContent = "اصل ثابت"
+  }
+}
+  //!--------------------------------------------------------------
 
 
-//!--------------------------------------------------------------
+  // إظهار/إخفاء القائمة
 
-
-// إظهار/إخفاء القائمة
-
-async function toggleDropdown(dropdown) {
-  const td = dropdown.closest("td");
-  const dropdown_menue = td.querySelector(`.dropdown_menue`);
-  if (dropdown_menue.style.display === "none") {
+  async function toggleDropdown(dropdown) {
+    const tr = dropdown.closest('tr')
+    const td = dropdown.closest("td");
+    const dropdown_menue = td.querySelector(`.dropdown_menue`);
+    if (dropdown_menue.style.display === "none") {
+      const account_type = parseInt(tr.querySelector(`.account_type`).value)
+      data_filterd = await data.filter(item => item.account_type === account_type);
+      array1 = data_filterd
       measureDistanceToBottom(td, dropdown_menue);
       await showDropdown(td, dropdown_menue);
-  } else {
+    } else {
       measureDistanceToBottom(td, dropdown_menue);
       hideDropdown();
-  }
-
-  // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
-  window.addEventListener('scroll', handleResizeOrScroll(td, dropdown_menue));
-  window.addEventListener('resize', handleResizeOrScroll(td, dropdown_menue));
-}
-// إظهار القائمة
-async function showDropdown(td,dropdown_menue) {
-  await showFirst50RowAtTheBegening(td);
-  
-  td.querySelector('.dropdown_search_input').value = ""
-  dropdown_menue.style.display = "block";
-}
-
-// إخفاء القائمة
-function hideDropdown() {
-  try {
-    const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
-    All_dropdown_menue.forEach(dropdown_menue => {
-      dropdown_menue.style.display = "none";
-      const icon = dropdown_menue.closest(`td`).querySelector(`i`)
-      icon.classList.add('fa-caret-down');
-      icon.classList.remove('fa-caret-up');
-    })
-  } catch (error) {
-    catch_error(error);
-  }
-}
-
-// إظهار/إخفاء القائمة
-
-// dropdown_select.addEventListener("click", toggleDropdown);
-
-// إخفاء القائمة عند فقدان التركيز
-document.addEventListener("click", (event) => {
-  // console.log('Clicked element:', event.target);
-  const classesToCheck = ['dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input'];
-
-  const clickedInside = classesToCheck.some(className => {
-    return event.target.classList.contains(className) || event.target.closest(`.${className}`);
-  });
-
-  if (!clickedInside) {
-    hideDropdown();
-  }
-});
-
-
-// إخفاء القائمة عند الضغط على مفتاح الهروب
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    hideDropdown();
-  }
-});
-
-
-function updateFooter() {
-
-  let sum1 = 0;
-  let sum2 = 0;
-  // const cells = document.querySelectorAll("#myTable tbody tr td div input");
-  const cells = document.querySelectorAll(`.inputTable_NumberTd.sum`);
-//  console.log(cells.length);
- 
-  cells.forEach(function (cell) {
-    let cellValue = parseFloat(cell.textContent);
-    if (isNaN(cellValue)) {
-      cellValue = 0;
     }
-    const cellIndex = cell.closest("td").cellIndex;
-    
-    // console.log(cellIndex);
-    if (cellIndex === 3) {
-      sum1 += cellValue;
-      document.getElementById("sumColumn3").textContent = sum1;
-    } else if (cellIndex === 4) {
-      sum2 += cellValue;
-      document.getElementById("sumColumn4").textContent = sum2;
+
+    // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
+    window.addEventListener('scroll', handleResizeOrScroll(td, dropdown_menue));
+    window.addEventListener('resize', handleResizeOrScroll(td, dropdown_menue));
+  }
+  // إظهار القائمة
+  async function showDropdown(td, dropdown_menue) {
+    await showFirst50RowAtTheBegening(td);
+
+    td.querySelector('.dropdown_search_input').value = ""
+    dropdown_menue.style.display = "block";
+  }
+
+  // إخفاء القائمة
+  function hideDropdown() {
+    try {
+      const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
+      All_dropdown_menue.forEach(dropdown_menue => {
+        dropdown_menue.style.display = "none";
+        const icon = dropdown_menue.closest(`td`).querySelector(`i`)
+        icon.classList.add('fa-caret-down');
+        icon.classList.remove('fa-caret-up');
+      })
+    } catch (error) {
+      catch_error(error);
+    }
+  }
+
+  // إظهار/إخفاء القائمة
+
+  // dropdown_select.addEventListener("click", toggleDropdown);
+
+  // إخفاء القائمة عند فقدان التركيز
+  document.addEventListener("click", (event) => {
+    // console.log('Clicked element:', event.target);
+    const classesToCheck = ['dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input'];
+
+    const clickedInside = classesToCheck.some(className => {
+      return event.target.classList.contains(className) || event.target.closest(`.${className}`);
+    });
+
+    if (!clickedInside) {
+      hideDropdown();
     }
   });
 
-  document.querySelector(`#difference_debet_cerdit`).textContent = sum1 - sum2
-  // difference_debet_cerdit
-}
+
+  // إخفاء القائمة عند الضغط على مفتاح الهروب
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      hideDropdown();
+    }
+  });
+
+
+  function updateFooter() {
+
+    let sum1 = 0;
+    let sum2 = 0;
+    // const cells = document.querySelectorAll("#myTable tbody tr td div input");
+    const cells = document.querySelectorAll(`.inputTable_NumberTd.sum`);
+    //  console.log(cells.length);
+
+    cells.forEach(function (cell) {
+      let cellValue = parseFloat(cell.textContent);
+      if (isNaN(cellValue)) {
+        cellValue = 0;
+      }
+      const cellIndex = cell.closest("td").cellIndex;
+
+      // console.log(cellIndex);
+      if (cellIndex === 4) {
+        sum1 += cellValue;
+        document.getElementById("sumColumn4").textContent = sum1;
+      } else if (cellIndex === 5) {
+        sum2 += cellValue;
+        document.getElementById("sumColumn5").textContent = sum2;
+      }
+    });
+
+    document.querySelector(`#difference_debet_cerdit`).textContent = sum1 - sum2
+    // difference_debet_cerdit
+  }
 
 
 
-//#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
-function measureDistanceToBottom(td, dropdown_menue) {
-  const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
-  const icon = dropdown_container.querySelector('i'); // تعديل هذا السطر للتأكد من العثور على العنصر الصحيح
+  //#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
+  function measureDistanceToBottom(td, dropdown_menue) {
+    const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
+    const icon = dropdown_container.querySelector('i'); // تعديل هذا السطر للتأكد من العثور على العنصر الصحيح
 
-  // الحصول على معلومات الحجم والموقع النسبي للعنصر
-  const rect = dropdown_container.getBoundingClientRect();
+    // الحصول على معلومات الحجم والموقع النسبي للعنصر
+    const rect = dropdown_container.getBoundingClientRect();
 
-  // الحصول على ارتفاع النافذة الرئيسية للمتصفح
-  const windowHeight = window.innerHeight;
+    // الحصول على ارتفاع النافذة الرئيسية للمتصفح
+    const windowHeight = window.innerHeight;
 
-  // حساب المسافة بين العنصر والحافة السفلية للشاشة
-  const distanceToBottom = windowHeight - rect.bottom;
+    // حساب المسافة بين العنصر والحافة السفلية للشاشة
+    const distanceToBottom = windowHeight - rect.bottom;
 
-  // حساب المسافة بوحدة REM
-  // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
-  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const distanceToBottomRem = distanceToBottom / fontSize;
+    // حساب المسافة بوحدة REM
+    // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const distanceToBottomRem = distanceToBottom / fontSize;
 
-  if (distanceToBottomRem < 21) { // 5aleh nafs rl hight beta3 el drop_menue + 1
+    if (distanceToBottomRem < 21) { // 5aleh nafs rl hight beta3 el drop_menue + 1
       icon.classList.remove('fa-caret-down');
       icon.classList.add('fa-caret-up');
       dropdown_menue.classList.add("dropdown_menue_Open_top");
       dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
-  } else {
+    } else {
       icon.classList.add('fa-caret-down');
       icon.classList.remove('fa-caret-up');
       dropdown_menue.classList.add("dropdown_menue_Open_bottom");
       dropdown_menue.classList.remove("dropdown_menue_Open_top");
+    }
   }
-}
 
-// دالة مغلفة لتمرير المعاملات الصحيحة عند حدوث التمرير أو تغيير حجم الشاشة
-function handleResizeOrScroll(td, dropdown_menue) {
-  return function() {
+  // دالة مغلفة لتمرير المعاملات الصحيحة عند حدوث التمرير أو تغيير حجم الشاشة
+  function handleResizeOrScroll(td, dropdown_menue) {
+    return function () {
       measureDistanceToBottom(td, dropdown_menue);
-  };
-}
+    };
+  }
 
 
 //!--------------------------------------------------------------------

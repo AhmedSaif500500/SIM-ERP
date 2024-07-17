@@ -73,7 +73,7 @@ app.set("view engine", "ejs"); // تعيين محرك العرض لـ EJS
 //! Database
 const pgp = require("pg-promise")();
 const dotenv = require("dotenv");
-const { log } = require("console");
+const { log, table } = require("console");
 dotenv.config();
 
 // قراءة قيمة DB_SSL من ملف .env وتحويلها إلى قيمة بوليانية
@@ -198,6 +198,11 @@ cron.schedule("*/5 * * * *", async () => {
 //#endregion end cron
 
 //#endregion end-cron
+
+//#region global variables
+const is_forbidden_adding_branches = [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
+const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
+//#endregion
 
 //#region Login
 
@@ -434,9 +439,9 @@ async function permissions(req, secendary_permission, perm_type) {
 }
 
 // get new id ( table foreign Key)
-async function newId_fn(tableName) {
+async function newId_fn(tableName_string,columnName_string) {
   // قم بتنفيذ الاستعلام للحصول على الحد الأقصى من القيم الموجودة
-  const query = await db.any(`SELECT MAX(id) AS id FROM ${tableName}`);
+  const query = await db.any(`SELECT MAX(${columnName_string}) AS id FROM ${tableName_string}`);
 
   // افتراض أن الحد الأقصى للقيمة الأولية هو 1 إذا لم يكن هناك أي سجلات
   let result = 1;
@@ -494,6 +499,8 @@ async function last_activity(req) {
 }
 
 // sql injection
+let sql_injection_message_ar = "تم الكشف عن مدخلات غير صالحة بسبب وجود رموز ممنوعة. يرجى مراجعة المدخلات والمحاولة مرة أخرى."
+let sql_injection_message_en =  "Invalid input detected due to prohibited characters. Please review your input and try again."
 function sql_anti_injection(values) {
   // تحقق من كل قيمة في المصفوفة
   for (let value of values) {
@@ -665,23 +672,81 @@ app.post("/api/add_new_company", async (req, res) => {
         message_ar: "اسم الشركه موجود بالفعل",
       });
     } else {
-      const newId = await newId_fn("companies");
 
-      let query = `
+
+      const newCompanyId = await newId_fn("companies",'id');
+
+      let query1 = `
       INSERT INTO companies (id, owner_id, company_name)
       VALUES ($1, $2, $3)
     `;
-      await db.none(query, [
-        newId,
-        req.session.owner_id,
-        posted_elements.company_name_input_value,
-      ]);
-      //4: send a response to frontend about success transaction
-      res.json({
-        success: true,
-        message_ar: " تم اضافه الشركه الجديده بنجاح : سيتم تحديث الصفحه الان",
-      });
+
+      const query1_parameters = [newCompanyId,req.session.owner_id,posted_elements.company_name_input_value,]
+
+
+      
+    await db.tx(async (tx) => {
+
+      // 1 : add company
+      await tx.none(query1,query1_parameters) 
+
+      // 2 : add global accounts  in accounts_header
+      let x = [];
+      let account_header_new_id = await newId_fn("accounts_header",'id');
+
+      const account_name = ['قائمة المركز المالى','قائمة الدخل','الاصول','الالتزمات','حقوق الملكيه','الايرادات','المصروفات','معلق','الاصول الثايتة','مجمع اهلاك الاصول الثابتة','النقدية وما فى حكمها','المخزون الحالى','العملاء','الموردين','حسابات رأس المال','الارياح المحتجزه','تكلفة المخزون','مصاريف اهلاك اصول ثابته','ايرادات المبيعات','الموظفين','مراكز التكلفه','مجموعة مراكز التكلفة 1']
+      const is_final_account = [null,null,null,null,null,null,null,true,null,null,null,null,null,null,null,true,true,true,true,null,null,null]
+      const finance_statement = [1,2,1,1,1,2,2,1,1,2,1,1,1,1,1,1,2,2,2,1,4,4,]
+      const cashflow_statement = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+      const account_type_id = [null,null,null,null,null,1,null,null,null,null,null,5,null,null,null,1,null,6,1,4,null,null]
+      const global_id = [1,2,3,4,5,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
+      const main_account_id = [null,null,null,null,null,null,null,3,1,2,1,1,1,2,3,3,5,5,4,2,null,null]
+  
+
+      for (let i = 0; i < account_name.length; i++) {
+       
+        let query = `
+          INSERT INTO accounts_header (id, company_id, account_name, is_final_account, finance_statement, cashflow_statement, global_id, main_account_id, account_type_id) 
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`;
+
+          let parameters = [account_header_new_id,newCompanyId,account_name[i],is_final_account[i],finance_statement[i],cashflow_statement[i],global_id[i],main_account_id[i],account_type_id[i]]
+    
+        await tx.none(query,parameters);
+        x[i+1] = parseInt(account_header_new_id);
+        account_header_new_id += 1;
+      }
+      // 3 : add global accounts in accouns_body
+      let ab_new_id = await newId_fn("accounts_body",'id');
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id},${x[1]},${x[3]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+1},${x[1]},${x[4]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+2},${x[1]},${x[5]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+3},${x[2]},${x[6]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+4},${x[2]},${x[7]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+5},${x[5]},${x[8]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+6},${x[3]},${x[9]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+7},${x[4]},${x[10]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+8},${x[3]},${x[11]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+9},${x[3]},${x[12]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+10},${x[3]},${x[13]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+11},${x[4]},${x[14]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+12},${x[5]},${x[15]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+13},${x[5]},${x[16]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+14},${x[7]},${x[17]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+15},${x[7]},${x[18]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+16},${x[6]},${x[19]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+17},${x[4]},${x[20]});`);
+        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+18},${x[21]},${x[22]});`);
+
+    })
+
+    return res.json({
+      success: true,
+      message_ar: "تم حفظ البيانات بنجاح",
+    });
+
     }
+
+
 
     //3: insert data into db
   } catch (error) {
@@ -726,9 +791,10 @@ app.post("/company_login", async (req, res) => {
       where id = $1 AND owner_id = $2`;
       rows = await db.any(query1, [posted_elements.c_id, req.session.owner_id]);
 
+      
       if (rows.length > 0) {
-        req.session.company_id = parseInt(posted_elements.c_id);
-
+        req.session.company_id = await parseInt(posted_elements.c_id);
+        
         const data = rows.map((row) => ({
           company_id: posted_elements.c_id,
           company_name: rows[0].company_name,
@@ -741,42 +807,98 @@ app.post("/company_login", async (req, res) => {
         });
       }
     } else {
-      query1 = `select 
+
+      // ----------------------- old
+  //     query1 = `select 
+  //   c.company_name,
+  //   uc.*
+
+  //   from user_company uc 
+  //   left join companies c on uc.company_id  = c.id
+  //   where uc.user_id = $1 and uc.company_id = $2
+  //   order BY c.company_name asc;
+  // `;
+  //     rows = await db.any(query1, [req.session.userId, posted_elements.c_id]);
+
+  //     if (rows.length > 0) {
+  //       // save user &  company Permissions in session
+  //       req.session.company_id = rows[0].company_id;
+  //       req.session.general_permission = rows[0].general_permission;
+  //       req.session.accounts_permission = rows[0].accounts_permission;
+  //       req.session.employees_permission = rows[0].employees_permission;
+  //       req.session.attendance_permission = rows[0].attendance_permission;
+  //       req.session.users_permission = rows[0].users_permission;
+  //       req.session.production_permission = rows[0].production_permission;
+  //       req.session.bread_permission = rows[0].bread_permission;
+  //       req.session.transaction_permission = rows[0].transaction_permission;
+
+  //       const data = rows.map((row) => ({
+  //         company_id: rows[0].company_id,
+  //         company_name: rows[0].company_name,
+  //         general_permission: rows[0].general_permission,
+  //         employees_permission: rows[0].employees_permission,
+  //         attendance_permission: rows[0].attendance_permission,
+  //         users_permission: rows[0].users_permission,
+  //         production_permission: rows[0].production_permission,
+  //         bread_permission: rows[0].bread_permission,
+  //         accounts_permission: rows[0].accounts_permission,
+  //         transaction_permission: rows[0].transaction_permission,
+  //       }));
+  //       res.json(data);
+
+  // end old
+  // Define an array of permissions
+const permissions = [
+  "general_permission",
+  "accounts_permission",
+  "employees_permission",
+  "attendance_permission",
+  "users_permission",
+  "production_permission",
+  "bread_permission",
+  "transaction_permission",
+  "items_permission",
+  // Add new permissions here
+];
+
+// The SQL query remains the same
+const query1 = `select 
     c.company_name,
     uc.*
-
     from user_company uc 
-    left join companies c on uc.company_id  = c.id
+    left join companies c on uc.company_id = c.id
     where uc.user_id = $1 and uc.company_id = $2
     order BY c.company_name asc;
   `;
-      rows = await db.any(query1, [req.session.userId, posted_elements.c_id]);
 
-      if (rows.length > 0) {
-        // save user &  company Permissions in session
-        req.session.company_id = rows[0].company_id;
-        req.session.general_permission = rows[0].general_permission;
-        req.session.accounts_permission = rows[0].accounts_permission;
-        req.session.employees_permission = rows[0].employees_permission;
-        req.session.attendance_permission = rows[0].attendance_permission;
-        req.session.users_permission = rows[0].users_permission;
-        req.session.production_permission = rows[0].production_permission;
-        req.session.bread_permission = rows[0].bread_permission;
-        req.session.transaction_permission = rows[0].transaction_permission;
+const rows = await db.any(query1, [req.session.userId, posted_elements.c_id]);
 
-        const data = rows.map((row) => ({
-          company_id: rows[0].company_id,
-          company_name: rows[0].company_name,
-          general_permission: rows[0].general_permission,
-          employees_permission: rows[0].employees_permission,
-          attendance_permission: rows[0].attendance_permission,
-          users_permission: rows[0].users_permission,
-          production_permission: rows[0].production_permission,
-          bread_permission: rows[0].bread_permission,
-          accounts_permission: rows[0].accounts_permission,
-          transaction_permission: rows[0].transaction_permission,
-        }));
-        res.json(data);
+if (rows.length > 0) {
+  // Save user & company Permissions in session
+  req.session.company_id = rows[0].company_id;
+
+  // Save all permissions dynamically
+  permissions.forEach(permission => {
+    req.session[permission] = rows[0][permission];
+  });
+
+  // Create data array dynamically
+  const data = rows.map(row => {
+    let rowData = {
+      company_id: row.company_id,
+      company_name: row.company_name,
+    };
+
+    // Add all permissions to rowData
+    permissions.forEach(permission => {
+      rowData[permission] = row[permission];
+    });
+
+    return rowData;
+  });
+
+  res.json(data);
+
       } else {
         res.json({
           success: false,
@@ -807,8 +929,8 @@ app.post("/api/get_companies_users", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
       });
     }
     //* Start--------------------------------------------------------------
@@ -879,8 +1001,8 @@ app.post("/api/save_new_user", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
       });
     }
 
@@ -933,7 +1055,7 @@ app.post("/api/save_new_user", async (req, res) => {
         //! تشفير كلمة المرور قبل إدخالها في قاعدة البيانات
         const pass_input1 = await bcrypt.hash(posted_elements.pass_input1, 12);
         //3: insert data into db
-        const newUserId = await newId_fn("users");
+        const newUserId = await newId_fn("users",'id');
         let query = `INSERT into users (id, user_name, user_password, user_full_name, is_active, owner_id, is_owner, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
         await tx.none(query, [
           newUserId,
@@ -1012,8 +1134,8 @@ app.post("/api/update_user_with_companies", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
       });
     }
     //* Start--------------------------------------------------------------
@@ -1247,8 +1369,8 @@ app.post("/get_info_for_updateUser", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
       });
     }
 
@@ -1293,7 +1415,6 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       where owner_id = $1`;
       rows3 = await tx.any(query3, [req.session.owner_id]);
 
-      // console.table(rows3);
 
       // قائمة لتخزين الـ company_id الموجودة في rows2
       const companyIds = rows2.map((row) => row.n1);
@@ -1391,7 +1512,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
   
   
       //3: insert data into db
-      const newId = await newId_fn("todo");
+      const newId = await newId_fn("todo",'id');
   
       let query = `
     INSERT INTO todo (id, user_id, datex, is_done, text, company_id)
@@ -1699,7 +1820,7 @@ app.get("/get_All_users_Data", async (req, res) => {
 //       const pass_input1 = await bcrypt.hash(posted_elements.pass_input1, 12);
 
 //       //3: insert data into db
-//       const newId = await newId_fn("users");
+//       const newId = await newId_fn("users",'id');
 
 //       let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, attendance_permission, production_permission, bread_permission, transaction_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 //       await db.none(query, [
@@ -2038,7 +2159,7 @@ app.post("/addNewEmployee", async (req, res) => {
     }
 
     //3: insert data into db
-    const newId = await newId_fn("employees");
+    const newId = await newId_fn("employees",'id');
 
     let query = `
   INSERT INTO employees (id, employee_name, datex, emp_job, emp_beta2a, emp_adress, emp_personal_phone, emp_emergency_phone, emp_start_date, emp_end_date, company_id)
@@ -2349,7 +2470,7 @@ app.post("/attendance_add", async (req, res) => {
     //* Start--------------------------------------------------------------
 
     //3: insert data into db
-    const newId = await newId_fn("attendance");
+    const newId = await newId_fn("attendance",'id');
 
     let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note, company_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
     await db.none(query1, [
@@ -2677,7 +2798,7 @@ app.post("/production_add_ar", async (req, res) => {
     //* Start--------------------------------------------------------------
 
     //3: insert data into db
-    const newId = await newId_fn("production");
+    const newId = await newId_fn("production",'id');
 
     let query = `
   INSERT INTO production (id, datex, procution_amount, sales_amount, note, company_id)
@@ -2878,7 +2999,8 @@ app.get("/get_All_bread_Data", async (req, res) => {
     h.id AS h_id, 
     h.datex, 
     h.vendor_id, 
-    v.vendore_name, 
+    v.vendore_name,
+    h.note,
     SUM(b.wazn) / 1000 AS total_wazn, 
     SUM(b.amount) AS total_amount
 FROM bread_header AS h
@@ -2895,6 +3017,7 @@ ORDER BY h.datex DESC, h.id DESC;
       datex: row.datex,
       vendor_id: row.vendor_id,
       vendore_name: row.vendore_name,
+      note: row.note,
       wazn: row.total_wazn,
       amount: row.total_amount,
     }));
@@ -2912,22 +3035,23 @@ app.post("/api/bread_add", async (req, res) => {
   const posted_elements = req.body;
 
   try {
-    const newId_bread_header = await newId_fn("bread_header");
+    const newId_bread_header = await newId_fn("bread_header",'id');
 
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       let query1 = `INSERT INTO bread_header
-                    (id, datex, vendor_id, company_id)
-                    VALUES($1, $2, $3, $4);`;
+                    (id, datex, vendor_id, note, company_id)
+                    VALUES($1, $2, $3, $4, $5);`;
 
       await tx.none(query1, [
         newId_bread_header,
         posted_elements.datex,
         posted_elements.vendore_id,
+        posted_elements.note_inpute_value,
         req.session.company_id,
       ]);
 
-      let newId_bread_body = await newId_fn("bread_body");
+      let newId_bread_body = await newId_fn("bread_body",'id');
 
       for (const element of posted_elements.posted_array) {
         const newId = parseInt(newId_bread_body);
@@ -2978,6 +3102,8 @@ app.post("/get_bread_Data_for_update_page", async (req, res) => {
     //* Start--------------------------------------------------------------
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+let query0 = `select note from bread_header where company_id = $1 AND id = $2`
+let rows0 = await db.oneOrNone(query0,[req.session.company_id,posted_elements.h_id])
 
     let query1 = `SELECT
     wazn, 
@@ -2986,11 +3112,12 @@ FROM bread_body
 WHERE bread_header_id = $1 ;`;
     let rows = await db.any(query1, [posted_elements.h_id]);
 
-    const data = rows.map((row) => ({
-      wazn: row.wazn,
-      amount: row.amount,
-    }));
+    // const data = rows.map((row) => ({
+    //   wazn: row.wazn,
+    //   amount: row.amount,
+    // }));
 
+  const data = {header:rows0 , body:rows}    
     res.json(data);
   } catch (err) {
     console.error("Error get_bread_Data_for_update_page:", err);
@@ -3014,22 +3141,23 @@ app.post("/api/bread_update", async (req, res) => {
       await tx.none(query0, [posted_elements.h_id]);
 
       // add data
-      const newId_bread_header = await newId_fn("bread_header");
+      const newId_bread_header = await newId_fn("bread_header",'id');
 
       // تنفيذ معاملة قاعدة البيانات
 
       let query1 = `INSERT INTO bread_header
-                    (id, datex, vendor_id, company_id)
-                    VALUES($1, $2, $3, $4);`;
+                    (id, datex, vendor_id, note, company_id)
+                    VALUES($1, $2, $3, $4, $5);`;
 
       await tx.none(query1, [
         newId_bread_header,
         posted_elements.datex,
         posted_elements.vendore_id,
+        posted_elements.note,
         req.session.company_id,
       ]);
 
-      let newId_bread_body = await newId_fn("bread_body");
+      let newId_bread_body = await newId_fn("bread_body",'id');
 
       for (const element of posted_elements.posted_array) {
         const newId = parseInt(newId_bread_body);
@@ -3239,6 +3367,7 @@ app.post("/report_attendance", async (req, res) => {
 
 app.get("/api/tree", async (req, res) => {
   try {
+    const accumulatedValues = is_accumulated_account.join(',');
     let query1 = `
     SELECT h1.id AS account_id,
     h1.account_name AS account_name,
@@ -3246,14 +3375,17 @@ app.get("/api/tree", async (req, res) => {
     h1.account_no AS account_no,
     h1.finance_statement AS finance_statement,
     h1.cashflow_statement AS cashflow_statement,
-    h1.can_be_deleted AS can_be_deleted,
-    h1.is_main_acc AS is_main_acc,
+    h1.global_id AS global_id,
     h2.id AS parent_id,
     h2.account_name AS parent_name
 FROM accounts_header h1
 LEFT JOIN accounts_body b ON h1.id = b.account_id
 LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
-WHERE h1.company_id = $1;`;
+WHERE h1.company_id = $1
+  AND h1.finance_statement IN (1, 2)
+  AND h1.global_id != 8
+  AND (b.parent_id IS NULL OR b.parent_id NOT IN (${accumulatedValues}))
+ORDER BY h1.id asc;`;  // in (1,2 ) ya3ny = 1 or 2 
 
     // استعلام SQL لجلب بيانات الشجرة
     let treeData = await db.any(query1, [req.session.company_id]);
@@ -3264,38 +3396,229 @@ WHERE h1.company_id = $1;`;
   }
 });
 
-// contextmenu / add new node
+
+app.post("/api/addGroup-account", async (req, res) => {
+  try {
+    const posted_elements = req.body;
+
+    // تحقق مما إذا كان يمكن حذف العقدة (قد تحتاج إلى التحقق من وجود عقد فرعية أولاً)
+
+    // تحقق من الصلاحيات
+    const hasPermission = await permissions(req, "accounts_permission", "add");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لاضافة هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.accountname,
+      posted_elements.accountParent,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    //* Start--------------------------------------------------------------
+    let result = [];
+    const query = `
+      SELECT
+        (SELECT finance_statement FROM accounts_header WHERE company_id = $1 AND id = $2) AS finance_statement,
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
+        (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_name,
+        (SELECT COUNT(main_account_id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
+    `;
+    
+    result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.accountParent,
+      posted_elements.accountname,
+    ]);
+    
+
+    if (result.is_final_account) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن مجموعه فرعية ضمن هذه المجموعه",
+      });
+    }
+
+
+    if (result.finance_statement === null) {
+      await block_user(req,'adac1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    
+    
+    if (result.global_id !== null && is_forbidden_adding_branches.includes(result.global_id)) {
+      return res.json({
+        success: false,
+        message_ar: "لا اضافة يمكن مجموعه فرعية ضمن هذه المجموعه",
+        message_en: "Cannot add group in this group",
+      });
+    }
+    
+    if (result.count_account_name > 0) {
+      return res.json({
+        success: false,
+        message_ar: "هذا الحساب موجود بالفعل",
+        message_en: "Account with this name already exists",
+      });
+    }
+    
+    // Additional logic here if needed
+    let new_account_header_id = await newId_fn('accounts_header','id');
+   
+    const query1 = `insert into accounts_header (id, account_name, is_final_account, finance_statement,company_id, main_account_id)
+                          values ($1,$2,$3,$4,$5,$6); `;
+    const query1_parameters = [new_account_header_id,posted_elements.accountname,false,result.finance_statement,req.session.company_id,result.main_account_id]
+
+    const new_account_body_id = await newId_fn("accounts_body",'id');
+
+    const query2 =`INSERT INTO accounts_body (id,parent_id,account_id)
+                                      values($1,$2,$3);`;
+    const query2_parameters = [new_account_body_id,posted_elements.accountParent,new_account_header_id];
+
+    await db.tx(async (tx) => {
+      await tx.none(query1,query1_parameters);
+      await tx.none(query2,query2_parameters);
+
+    })
+    // حذف العقدة من قاعدة البيانات
+
+    // إرسال استجابة نجاح إلى العميل
+    return res.json({
+      success: true,
+      message_ar: "تم اضافة المجموعه بنجاح",
+      message_en: "",
+    });
+  } catch (error) {
+    console.error("Error addGroup-account:", error);
+    // إرسال استجابة خطأ إلى العميل
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة المجموعه",
+      message_en: "An error occurred while deleting the account",
+    });
+  }
+});
+
 app.post("/api/add-account", async (req, res) => {
-  const posted_elements = req.body;
+  
 
   try {
+    const posted_elements = req.body;
+
+    const hasPermission = await permissions(req, "accounts_permission", "add");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لاضافة هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.account_no,
+      posted_elements.account_name,
+      posted_elements.account_parent_name_id,
+      posted_elements.cash_flow_statement_value,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
     //#region validation
+    let result = [];
+    const query = `
+      SELECT
+        (SELECT finance_statement FROM accounts_header WHERE company_id = $1 AND id = $2) AS finance_statement,
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
+        (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_name,
+        (SELECT COUNT(main_account_id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
+    `;
 
-    //check account
+    result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.account_parent_name_id,
+      posted_elements.account_name,
+    ]);
+    
 
+    if (result.is_final_account) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافة مجموعه فرعية ضمن هذه المجموعه",
+      });
+    }
+
+
+    if (result.finance_statement === null) {
+      await block_user(req,'ada1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+  
+    if (result.global_id !== null && is_forbidden_adding_branches.includes(result.global_id)) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافة حساب فرعى ضمن هذه المجموعه",
+        message_en: "Cannot add group in this group",
+      });
+    }
+    
+    if (result.count_account_name > 0) {
+      return res.json({
+        success: false,
+        message_ar: "هذا الحساب موجود بالفعل",
+        message_en: "Account with this name already exists",
+      });
+    }
     //#endregion end- validation
 
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       // أدخل into accounts_header
-      let new_account_id = await newId_fn("accounts_header");
-      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, cashflow_statement, starting_balance_value, starting_balance_type, can_be_deleted, company_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+      let new_account_id = await newId_fn("accounts_header",'id');
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, cashflow_statement, main_account_id, company_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7,$8)`;
       await tx.none(query1, [
         new_account_id,
         posted_elements.account_name,
         posted_elements.account_no,
-        posted_elements.is_final_account,
-        posted_elements.statment_type_value,
-        posted_elements.cash_flow_statement_value,
-        posted_elements.starting_balance_value,
-        posted_elements.starting_balance_type,
         true,
+        result.finance_statement,
+        posted_elements.cash_flow_statement_value,
+        result.main_account_id,
         req.session.company_id,
       ]);
 
       // أدخل into accounts_body
-      let new_id = await newId_fn("accounts_body");
+      let new_id = await newId_fn("accounts_body",'id');
       let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
                         VALUES ($1, $2, $3)`;
       await tx.none(query2, [
@@ -3322,43 +3645,168 @@ app.post("/api/add-account", async (req, res) => {
 
 // contextmenu / update new node
 app.post("/api/update-account", async (req, res) => {
-  const posted_elements = req.body;
+  
 
   try {
-    // تنفيذ معاملة قاعدة البيانات
-    await db.tx(async (tx) => {
-      // أدخل into accounts_header
-      // let new_account_id = await newId_fn('accounts_header');
+    const posted_elements = req.body;
+    
+    const hasPermission = await permissions(req, "accounts_permission", "update");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لتعديل هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
 
-      let query1 = `UPDATE accounts_header SET 
-          account_name = $1,
-          account_no = $2,
-          finance_statement = $3,
-          cashflow_statement = $4
-          WHERE company_id = $5 AND id = $6`;
-      await tx.none(query1, [
+
+    // التحقق من حقن SQL
+    if (posted_elements.is_group){
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_id,
+        posted_elements.account_name,
+        posted_elements.parent_id,
+        posted_elements.is_group,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+    }else{
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_name,
+        posted_elements.account_no,
+        posted_elements.statment_type_value,
+        posted_elements.account_id,
+        posted_elements.parent_id,
+        posted_elements.is_group,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+    }
+
+
+    let result = [];
+    const query = `
+      SELECT
+        (SELECT finance_statement FROM accounts_header WHERE company_id = $1 AND id = $2) AS finance_statement,
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
+        (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3 AND id != $4) AS count_account_name,
+        (SELECT COUNT(main_account_id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
+    `;
+
+    result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.parent_id,
+      posted_elements.account_name,
+      posted_elements.account_id,
+    ]);
+    
+    if (result.is_final_account) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافة مجموعه فرعية ضمن هذه المجموعه",
+      });
+    }
+
+    if (!posted_elements.is_group){
+      if (result.finance_statement === null) {
+        await block_user(req,'uda1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+    }
+
+    
+    if (result.global_id !== null && is_forbidden_adding_branches.includes(result.global_id)) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافة حساب فرعى ضمن هذه المجموعه",
+        message_en: "Cannot add group in this group",
+      });
+    }
+    
+    if (result.count_account_name > 0) {
+      return res.json({
+        success: false,
+        message_ar: "هذا الحساب موجود بالفعل",
+        message_en: "Account with this name already exists",
+      });
+    }
+
+    let query1;
+    let query1_parameters;
+    let query2;
+    let query2_parameters;
+    if (posted_elements.is_group){
+
+      query1 = `UPDATE accounts_header SET 
+      account_name = $1
+      WHERE company_id = $2 AND id = $3`;
+      query1_parameters = [
+        posted_elements.account_name,
+        req.session.company_id,
+        posted_elements.account_id,
+      ]
+
+      query2 = `UPDATE accounts_body SET 
+      parent_id = $1
+      WHERE account_id = $2`;
+      query2_parameters = [
+        posted_elements.parent_id,
+        posted_elements.account_id
+      ]
+
+
+    }else{
+      query1 = `UPDATE accounts_header SET 
+      account_name = $1,
+      account_no = $2,
+      finance_statement = $3,
+      cashflow_statement = $4
+      WHERE company_id = $5 AND id = $6`;
+      query1_parameters = [
         posted_elements.account_name,
         posted_elements.account_no,
         posted_elements.statment_type_value,
         posted_elements.cash_flow_statement_value,
         req.session.company_id,
         posted_elements.account_id,
-      ]);
+      ]
 
-      let query2 = `UPDATE accounts_body SET 
+      query2 = `UPDATE accounts_body SET 
       parent_id = $1
       WHERE account_id = $2`;
-  await tx.none(query2, [
-    posted_elements.new_parent_account_id,
-    posted_elements.account_id
-  ]);
+      query2_parameters = [
+        posted_elements.parent_id,
+        posted_elements.account_id
+      ]
+    }
 
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+      await tx.none(query1, query1_parameters);
+      await tx.none(query2, query2_parameters)
     });
 
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم تعديل الحساب بنجاح",
+      message_ar: "تم تعديل البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -3370,30 +3818,188 @@ app.post("/api/update-account", async (req, res) => {
   }
 });
 
+app.post("/api/rename-account", async (req, res) => {
+  try {
+    const posted_elements = req.body;
+
+    // تحقق مما إذا كان يمكن حذف العقدة (قد تحتاج إلى التحقق من وجود عقد فرعية أولاً)
+
+    // //! Permission
+
+    const hasPermission = await permissions(req, "accounts_permission", "update");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لتحديث هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.account_id,
+      posted_elements.account_rename_input
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: "تم الكشف عن مدخلات غير صالحة بسبب وجود رموز ممنوعة. يرجى مراجعة المدخلات والمحاولة مرة أخرى.",
+        message_ar: "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    // استعلام واحد لجلب كل البيانات المطلوبة
+    const query = `
+      SELECT 
+        (SELECT COUNT(*) FROM accounts_header WHERE company_id = $1 AND id = $2) AS account_exists,
+        (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
+        (SELECT COUNT(*) FROM accounts_header WHERE company_id = $1 AND id != $2 AND trim(account_name) = $3) AS account_name_exists
+    `;
+    const result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.account_id,
+      posted_elements.account_rename_input
+    ]);
+
+    // التحقق من أن الحساب موجود
+    if (result.account_exists === 0) {
+      await block_user(req,'arc01');
+      return res.json({
+        success: false,
+        message_ar: "تم حظر الحساب",
+        xx: true,
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+    // التحقق من أن الحساب لا يمكن حذفه
+    if (result.global_id !== null && global_id > 0) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اعادة تمسية الحساب المحدد لانه من الحسابات الافتراضية",
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+    // التحقق من أن الاسم الجديد غير موجود بالفعل
+    if (result.account_name_exists > 0) {
+      return res.json({
+        success: false,
+        message_ar: "هذا الاسم موجود بالفعل : تم الغاء العمليه",
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+    // تحديث الاسم
+    const updateQuery = `
+      UPDATE accounts_header 
+      SET account_name = $1 
+      WHERE company_id = $2 AND id = $3
+    `;
+    await db.none(updateQuery, [
+      posted_elements.account_rename_input,
+      req.session.company_id,
+      posted_elements.account_id
+    ]);
+
+    // إرسال استجابة نجاح إلى العميل
+    return res.json({
+      success: true,
+      message_ar: "تم تحديث اسم الحساب بنجاح",
+      message_en: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error rename account:", error);
+    // إرسال استجابة خطأ إلى العميل
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه",
+      message_en: "Can't delete this account with sub-accounts in it",
+    });
+  }
+});
+
+
+
+
+
 // مسار لمعالجة طلبات حذف الحساب
 app.post("/api/delete-account", async (req, res) => {
   try {
-    const { account_id } = req.body;
+    const posted_elements = req.body;
 
     // تحقق مما إذا كان يمكن حذف العقدة (قد تحتاج إلى التحقق من وجود عقد فرعية أولاً)
-    const query1 =
-      "SELECT COUNT(*) as count FROM accounts_body WHERE parent_id = $1";
-    const rows = await db.any(query1, [account_id]);
 
-    // تحقق من أن النتيجة ليست فارغة وأنها تحتوي على القيمة المطلوبة
-    if (rows.length > 0 && rows[0].count > 0) {
-      // لا يمكن حذف العقدة لأن لديها عقد فرعية
+    // تحقق من الصلاحيات
+    const hasPermission = await permissions(req, "accounts_permission", "delete");
+    if (!hasPermission) {
       return res.json({
         success: false,
-        message_ar: "لا يمكن حذف الحساب المحدد لوجود حسابات فرعيه بداخليه",
+        message_ar: "ليس لديك الصلاحيات اللازمة لحذف هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.account_id,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    //* Start--------------------------------------------------------------
+
+    const query = `
+      SELECT
+        (SELECT COUNT(*) FROM accounts_header WHERE company_id = $1 AND id = $2) AS account_exists,
+         (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
+        (SELECT COUNT(*) FROM accounts_body WHERE parent_id = $2) as parentId
+    `;
+
+    const result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.account_id
+    ]);
+
+
+    if (result.account_exists === 0){
+      await block_user(req,'adc01');
+      return res.json({
+        success: false,
+        message_ar: "تم حظر الحساب",
+        xx: true,
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+    if (result.global_id !== null && global_id > 0) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن حذف الحساب المحدد لأنه من الحسابات الافتراضية",
+        message_en: "Cannot delete account as it is a default account",
+      });
+    }
+
+    if (result.parentid > 0) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن حذف الحساب المحدد لوجود حسابات فرعية بداخله",
         message_en: "Cannot delete account with sub-accounts",
       });
     }
 
     // حذف العقدة من قاعدة البيانات
-    const deleteQuery =
-      "DELETE FROM accounts_header WHERE company_id = $1 AND id = $2";
-    await db.none(deleteQuery, [req.session.company_id, account_id]);
+    const deleteQuery = `
+      DELETE FROM accounts_header 
+      WHERE company_id = $1 AND id = $2
+    `;
+    await db.none(deleteQuery, [req.session.company_id, posted_elements.account_id]);
 
     // إرسال استجابة نجاح إلى العميل
     return res.json({
@@ -3406,16 +4012,109 @@ app.post("/api/delete-account", async (req, res) => {
     // إرسال استجابة خطأ إلى العميل
     return res.json({
       success: false,
-      message_ar: "لا يمكن حذف الحساب لوجود حسابات فرعيه بداخله",
-      message_en: "Can't delete this account with sub-accounts in it",
+      message_ar: "حدث خطأ أثناء حذف الحساب",
+      message_en: "An error occurred while deleting the account",
     });
   }
 });
 
+
 // dnd / drag and drop changes
 app.post("/api/update-account-parent", async (req, res) => {
   try {
-    const { account_id, new_parent_id } = req.body; // جلب معلومات العقدة المراد تعديلها
+    const { currentAccountId, newParentId } = req.body; // جلب معلومات العقدة المراد تعديلها
+
+    const hasPermission = await permissions(req, "accounts_permission", "update");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لتعديل هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      currentAccountId,
+      newParentId
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+  
+
+
+
+    const query = `
+    SELECT
+      (SELECT COUNT(*) FROM accounts_header WHERE company_id = $1 AND id = $2) as account_id,
+      (SELECT COUNT(*) FROM accounts_header WHERE company_id = $1 AND id = $3) as parent_id,
+      (SELECT finance_statement FROM accounts_header WHERE company_id = $1 AND id = $2) AS finance_statement
+  `;
+
+  const result = await db.oneOrNone(query, [
+    req.session.company_id,
+    currentAccountId,
+    newParentId
+  ]);
+
+
+
+
+
+    if (result.account_id === 0 || result.parent_id === 0){
+      await block_user(req,'udp01');
+      return res.json({
+        success: false,
+        message_ar: "تم حظر الحساب",
+        xx: true,
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+
+
+    const forbiddenValues = is_forbidden_adding_branches.join(','); // تحويل المصفوفه الى سلسه نصيه
+
+    console.log(is_forbidden_adding_branches);
+    console.log(forbiddenValues);
+    
+    const query0 = `select
+    id
+  from
+    accounts_header
+  where
+    company_id = $1
+    and id != $2
+    and finance_statement = $3
+    AND (is_final_account = false OR is_final_account IS NULL)
+    AND global_id NOT IN (${forbiddenValues})`
+  
+    const result0 = await db.any(query0,[
+      req.session.company_id,
+      currentAccountId,
+      result.finance_statement
+    ])
+
+ 
+    const ids_array = result0.map(row => row.id); // استخراج قيم الـ id من نتائج الاستعلام
+
+    if (!ids_array.includes(newParentId)) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافة مجموعه فرعيه ضمن الحساب المحدد",
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+
+
 
     // تحديث الأب الخاص بالعقدة في قاعدة البيانات
     const updateQuery = `
@@ -3423,10 +4122,13 @@ app.post("/api/update-account-parent", async (req, res) => {
           SET parent_id = $1
           WHERE account_id = $2;
       `;
-    await db.query(updateQuery, [new_parent_id, account_id]);
+    await db.query(updateQuery, [newParentId, currentAccountId]);
 
     // إرسال استجابة نجاح إلى العميل
-    res.status(200).send("Parent updated successfully");
+    return res.json({
+      success: true,
+      message_ar: "تم حفظ البيانات بنجاح",
+    });
   } catch (error) {
     console.error("Error updating parent:", error);
     // إرسال خطأ إلى العميل
@@ -3446,12 +4148,13 @@ app.post("/getAccountsData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT A.id, A.account_name FROM accounts_header A where A.company_id = $1 AND is_final_account = true`;
+    let query1 = `SELECT A.id, A.account_name, A.account_type_id FROM accounts_header A where A.company_id = $1 AND is_final_account = true and global_id != 8`;
     let rows = await db.any(query1, [req.session.company_id]);
 
     const data = rows.map((row) => ({
       id: row.id,
       account_name: row.account_name,
+      account_type: row.account_type_id
     }));
     res.json(data);
   } catch (error) {
@@ -3465,7 +4168,357 @@ app.post("/getAccountsData1", async (req, res) => {
 
 //#endregion
 
+//#region items
+ //#region 1 : view items - tree
+ app.get("/api/tree/items", async (req, res) => {
+  try {
+
+    // تحديد حساب المخزون الحالى للشركه لكى يتم استثناءه فى الاستعلام التالى
+    let query = `SELECT id FROM accounts_header WHERE global_id = 12 AND company_id = $1`;
+    let result = await db.one(query, [req.session.company_id]);
+
+    let stock_id = parseInt(result.id);
+
+
+    //! fe el est3lam da han5aly el parent_id eta3 7esap el stock = null >> lazem 3ashan el tree teshta8al 
+    let query1 = `
+     SELECT h1.id AS account_id,
+    h1.account_name AS account_name,
+    h1.is_final_account AS is_final_account,
+    h1.account_no AS account_no,
+    h1.finance_statement AS finance_statement,
+    h1.cashflow_statement AS cashflow_statement,
+    h1.global_id AS global_id,
+      CASE
+        WHEN h1.id = $2 THEN NULL
+        ELSE h2.id
+      END AS parent_id,
+    h2.account_name AS parent_name
+FROM accounts_header h1
+LEFT JOIN accounts_body b ON h1.id = b.account_id
+LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
+WHERE h1.company_id = $1
+    AND h1.account_type_id = 5
+ORDER BY h1.id asc;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+    // استعلام SQL لجلب بيانات الشجرة
+    let treeData = await db.any(query1, [req.session.company_id,stock_id]);
+    
+    res.json(treeData);
+  } catch (error) {
+    console.error("Error fetching tree data:", error);
+    res.status(500).send("Server Error");
+  }
+});
+ //#endregion
+
+//#region 2 : get revenue_account
+app.post("/api/get_revenue_accounts", async (req, res) => {
+  try {
+    console.log('start');
+    let query1 = `select id, account_name, global_id
+from accounts_header
+where company_id = $1 AND main_account_id = 4 AND is_final_account = true
+order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+    // استعلام SQL لجلب بيانات الشجرة
+    let data = await db.any(query1,[req.session.company_id]);
+    res.json(data);
+  } catch (error) {
+    console.error("api/get_revenue_accounts:", error);
+    res.status(500).send("Server Error");
+  }
+});
+//#endregion
+
+  //#region 2: add item group
+  app.post("/api/addGroup-item", async (req, res) => {
+    try {
+      const posted_elements = req.body;
+  
+      // تحقق مما إذا كان يمكن حذف العقدة (قد تحتاج إلى التحقق من وجود عقد فرعية أولاً)
+  
+      // تحقق من الصلاحيات
+      const hasPermission = await permissions(req,"items_permission", "add");
+      if (!hasPermission) {
+        return res.json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات اللازمة لاضافة هذا المجموعة",
+          message_en: "You do not have the necessary permissions to delete this account",
+        });
+      }
+  
+      // التحقق من حقن SQL
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.accountname,
+        posted_elements.accountParent,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+  
+      //* Start--------------------------------------------------------------
+      let result = [];
+      const query = `
+        SELECT
+          (SELECT COUNT(id) FROM accounts_header WHERE company_id = $1 AND id = $2) as parent_exist,
+          (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
+          (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_name
+      `;
+      
+      result = await db.oneOrNone(query, [
+        req.session.company_id,
+        posted_elements.accountParent,
+        posted_elements.accountname,
+      ]);
+      
+
+      if (parseInt(result.parent_exist) === 0) {
+        await block_user(req,'adai0')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.is_final_account) {
+        await block_user(req,'adai1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+  
+  
+
+      
+      if (result.count_account_name > 0) {
+        return res.json({
+          success: false,
+          message_ar: "هذا الاسم موجود بالفعل",
+          message_en: "Account with this name already exists",
+        });
+      }
+      
+      // Additional logic here if needed
+      let new_account_header_id = await newId_fn('accounts_header','id');
+     
+      const query1 = `insert into accounts_header (id, account_name, is_final_account, account_type_id,company_id)
+                            values ($1,$2,$3,$4,$5); `;
+      const query1_parameters = [new_account_header_id,posted_elements.accountname,false,5,req.session.company_id]
+  
+      const new_account_body_id = await newId_fn("accounts_body",'id');
+  
+      const query2 =`INSERT INTO accounts_body (id,parent_id,account_id)
+                                        values($1,$2,$3);`;
+      const query2_parameters = [new_account_body_id,posted_elements.accountParent,new_account_header_id];
+  
+      await db.tx(async (tx) => {
+        await tx.none(query1,query1_parameters);
+        await tx.none(query2,query2_parameters);
+  
+      })
+      // حذف العقدة من قاعدة البيانات
+  
+      // إرسال استجابة نجاح إلى العميل
+      return res.json({
+        success: true,
+        message_ar: "تم اضافة المجموعه بنجاح",
+        message_en: "",
+      });
+    } catch (error) {
+      console.error("Error addGroup-account:", error);
+      // إرسال استجابة خطأ إلى العميل
+      return res.json({
+        success: false,
+        message_ar: "حدث خطأ أثناء اضافة المجموعه",
+        message_en: "An error occurred while deleting the account",
+      });
+    }
+  });
+  
+  //#endregion
+
+//#region add new item
+app.post("/api/add-item", async (req, res) => {
+  
+
+  try {
+    const posted_elements = req.body;
+
+    const hasPermission = await permissions(req, "items_permission", "add");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لاضافة هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.account_no,
+      posted_elements.account_name,
+      posted_elements.item_unite_input,
+      posted_elements.account_parent_name_id,
+      posted_elements.revenue_account_select_value,
+      posted_elements.sales_price,
+      posted_elements.purchase_price,
+      posted_elements.reorder_point
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    //#region validation
+    let result = [];
+    const query = `
+      SELECT
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_parent,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_name,
+        (SELECT id FROM accounts_header WHERE company_id = $1 AND global_id = 17) AS cost_account_id
+    `;
+
+    result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.account_parent_name_id,
+      posted_elements.account_name,
+    ]);
+    
+
+    if (result.is_final_account) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافة مجموعه فرعية ضمن هذه المجموعه",
+      });
+    }
+
+
+    
+    if (result.count_account_parent === 0) {
+      await block_user(req,'aai1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    if (result.count_account_name > 0) {
+      return res.json({
+        success: false,
+        message_ar: "هذا الحساب موجود بالفعل",
+        message_en: "Account with this name already exists",
+      });
+    }
+
+    //#endregion end- validation
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+
+    
+
+      // أدخل into accounts_header
+      let new_account_id = await newId_fn("accounts_header",'id');
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, account_type_id, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, item_amount_reorder_point, item_unite, company_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+      await tx.none(query1, [
+        new_account_id,
+        posted_elements.account_name,
+        posted_elements.account_no,
+        true,
+        5,
+        posted_elements.revenue_account_select_value,
+        result.cost_account_id,
+        posted_elements.sales_price,
+        posted_elements.purchase_price,
+        posted_elements.reorder_point,
+        posted_elements.item_unite_input,
+        req.session.company_id
+      ]);
+
+      // أدخل into accounts_body
+      let new_id = await newId_fn("accounts_body",'id');
+      let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                        VALUES ($1, $2, $3)`;
+      await tx.none(query2, [
+        new_id,
+        posted_elements.account_parent_name_id,
+        new_account_id,
+      ]);
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم إضافة الحساب بنجاح",
+    });
+  } catch (error) {
+    console.error("Error adding account:", error);
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false, // العملية فشلت
+      message_ar: "حدث خطأ أثناء عملية الإضافة وتم إلغاء العملية",
+    });
+  }
+});
+
+//#endregion
+
+ //#endregion
+
 //#region  transaction
+
+//#region 
+app.post("/api/transaction_accounts_types", async (req, res) => {
+  try {
+    let query1 = `select id, account_type_name
+from account_type
+where id > 0
+order by id ASC ;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+    // استعلام SQL لجلب بيانات الشجرة
+    let data = await db.any(query1);
+    res.json(data);
+  } catch (error) {
+    console.error("/api/transaction_accounts_types:", error);
+    res.status(500).send("Server Error");
+  }
+});
+//#endregion
+
+
+//#region 
+app.post("/api/transaction_items_locations", async (req, res) => {
+  try {
+    let query1 = `select id, account_name
+from accounts_header
+where company_id = $1 AND account_type_id = 7 
+order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+    // استعلام SQL لجلب بيانات الشجرة
+    let data = await db.any(query1,[req.session.company_id]);
+    res.json(data);
+  } catch (error) {
+    console.error("/api/transaction_items_locations:", error);
+    res.status(500).send("Server Error");
+  }
+});
+//#endregion
 
 //#region 1: transaction_review
 app.post("/get_All_transaction_Data", async (req, res) => {
@@ -3509,7 +4562,7 @@ ORDER BY datex DESC, refrence desc;
 //#endregion
 
 
-//#region 1: add transaction
+//#region 2: add transaction
 app.post("/api/transaction_add", async (req, res) => {
   try {
   const posted_elements = req.body;
@@ -3540,8 +4593,8 @@ app.post("/api/transaction_add", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
       });
     }
 
@@ -3561,12 +4614,12 @@ app.post("/api/transaction_add", async (req, res) => {
       }
 
     //! check refrence
-    // console.log(typeof(posted_elements.is_refrence) , posted_elements.is_refrence);
+
     
     if (!posted_elements.is_refrence){
          
       if (posted_elements.refrenc_value <= 0){
-        console.log(typeof(posted_elements.refrenc_value) , posted_elements.refrenc_value);
+   
         return res.json({
           success: false,
           message_ar: 'رجاء ادخال مرجع صحيح او تفعيل الوضع التلقائى',
@@ -3592,7 +4645,6 @@ app.post("/api/transaction_add", async (req, res) => {
         let rows02 = await db.any(query02, [
           req.session.company_id
         ]);
-        // console.table(rows02)
     
         const deafult_accountsId_array = rows02.map((row) => parseInt(row.id));
         const dataArray = posted_elements.posted_array.map((item) => parseInt(item.account_id));
@@ -3614,7 +4666,7 @@ app.post("/api/transaction_add", async (req, res) => {
 
   
    
-    const newId_transaction_header = await newId_fn("transaction_header");
+    const newId_transaction_header = await newId_fn("transaction_header",'id');
 
     const newRefrence = await newRefrence_fn(req,transaction_type)
     // تنفيذ معاملة قاعدة البيانات
@@ -3634,7 +4686,7 @@ app.post("/api/transaction_add", async (req, res) => {
       ]);
 
 
-      let newId_transaction_body = await newId_fn("transaction_body");
+      let newId_transaction_body = await newId_fn("transaction_body",'id');
 
       for (const element of posted_elements.posted_array) {
         const newId = parseInt(newId_transaction_body);

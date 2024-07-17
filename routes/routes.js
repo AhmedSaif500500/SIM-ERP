@@ -287,7 +287,7 @@ router.get('/attendance_report_ar', (req, res) => {
 //#region accounting
 
 router.get('/accounts_view_ar', async (req, res) => {
-    if (req.session.isLoggedIn) {  
+    if (req.session.isLoggedIn || req.session.general_permission > 1 ||  req.session.accounts_permission > 0) {  
         res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'accounts_view_ar.html'));
     } else {
         res.redirect('/login');
@@ -304,6 +304,15 @@ router.get('/accounts_view_ar', async (req, res) => {
 // });
 //#endregion end - accounting
 
+//#region items
+router.get('/items_view_ar', async (req, res) => {
+    if (req.session.isLoggedIn || req.session.general_permission > 1 ||  req.session.items_permission > 0) {  
+        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_view_ar.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
+//#endregion end - items
 
 //#region transaction
 

@@ -12,6 +12,7 @@ if (!bread_data) {
 const date1 = document.querySelector('#date1');
 const vendore_id = parseInt(bread_data.vendor_id);
 const vendore_select = document.querySelector('#vendore_select');
+const note_input = document.querySelector('#note_inpute');
 myTable = document.querySelector('#myTable')
 
 date1.value = bread_data.datex;
@@ -34,7 +35,7 @@ async function geteProductionData_fn() {
     "/get_bread_Data_for_update_page",
     {h_id},
     'bread_permission','update',
-    10,
+    15,
     false,
     '',
     'حدث خطأ اثناء معاجله البيانات',
@@ -42,7 +43,7 @@ async function geteProductionData_fn() {
   )
 
 
- 
+  note_input.value = data.header.note ? data.header.note.trim() : '';
 
  //! fill data
 
@@ -59,7 +60,7 @@ async function geteProductionData_fn() {
 
         // إضافة صفوف الجدول بناءً على البيانات
         // slice_Array1 = ""; // تفريغ المصفوفه
-        data.forEach(row => {
+        data.body.forEach(row => {
             tableHTML += `<tr class="">
             <td style="width: auto;" class="">
               <div class="dragbutton_table">
@@ -70,13 +71,13 @@ async function geteProductionData_fn() {
             </td>
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
-                <span class="input_span">عدد</span>
+                <span class="input_span_start">عدد</span>
                 <input value="${row.amount}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
-                <span class="input_span">كيلو</span>
+                <span class="input_span_start">كيلو</span>
                 <input value="${row.wazn}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
@@ -184,13 +185,13 @@ function addRows() {
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span">عدد</span>
+                      <span class="input_span_start">عدد</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span">كيلو</span>
+                      <span class="input_span_start">كيلو</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
@@ -215,6 +216,7 @@ function handle_input_event(input){
 async function update_bread() {
   const datex = date1.value;
   const vendore_id = vendore_select.value
+  const note = note_inpute.value.trim();
   const h_id = parseInt(bread_data.h_id);
 
   //preparing bread_body Data
@@ -238,10 +240,10 @@ async function update_bread() {
 
   await fetchData_post1(
     "/api/bread_update",
-    {h_id,vendore_id,datex,posted_array},
+    {h_id,vendore_id,datex,note,posted_array},
     'bread_permission','update',
     'هل تريد تعديل البيانات البيانات ؟',
-    10,
+    15,
     'bread_view_ar',
     'حدث خطأ اثناء تعديل البيانات'
   )
@@ -256,7 +258,7 @@ async function delete_bread() {
     {h_id},
     'bread_permission','delete',
     'هل تريد حذف البيانات ؟',
-    10,
+    15,
     'bread_view_ar',
     'حدث خطأ اثناء حذف البيانات'
   )

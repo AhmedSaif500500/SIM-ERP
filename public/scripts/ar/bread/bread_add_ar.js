@@ -4,6 +4,7 @@ const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm
 
 const date1 = document.querySelector('#date1');
 const vendore_select = document.querySelector('#vendore_select');
+const note_inpute = document.querySelector('#note_inpute');
 
 
 date1.value = today
@@ -34,14 +35,14 @@ function addRows() {
 
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span">عدد</span>
+                      <span class="input_span_start">عدد</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
 
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span">كيلو</span>
+                      <span class="input_span_start">كيلو</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>
@@ -117,6 +118,7 @@ async function add_new_bread() {
 // preparing bread_header data
 const datex = date1.value;
 const vendore_id = vendore_select.value
+const note_inpute_value = note_inpute.value.trim();
 
   //preparing bread_body Data
   const tableRows = document.querySelectorAll('#myTable tbody tr');
@@ -140,7 +142,7 @@ const vendore_id = vendore_select.value
 
   await fetchData_post1(
     "/api/bread_add",
-    {vendore_id,datex,posted_array},
+    {vendore_id,datex,note_inpute_value,posted_array},
     'bread_permission','add',
     'هل تريد حفظ البيانات ؟',
     10,

@@ -76,7 +76,7 @@ loadHeaderContents();
 
     <a href="home_ar" target="_self" class="">
       <i class="fa-duotone fa-list"></i>
-      الملخص
+      الملاحظات
     </a>
 
     <a href="employees_ar" target="_self" class="">
@@ -99,14 +99,14 @@ loadHeaderContents();
       العيش
     </a>
 
-    <a href="transaction_view_ar" target="_self" class="">
+    <a href="items_view_ar" target="_self" class="">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
-      اصناف المخزون 
+      اصناف المخزون
     </a>
 
     <a href="transaction_view_ar" target="_self" class="">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
-      شطب المخزون 
+      شطب المخزون
     </a>
 
     <!-- <a href="index2.html" target="_self"> -->
@@ -417,6 +417,26 @@ async function closeDialog() {
 }
 }
 
+
+// noButton.onclick = function () {
+//   try {
+//       dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
+//       setTimeout(() => {
+//           dialogOverlay_input.style.display = 'none'
+//           closeDialog()
+//           clear_todo()
+//           dialogOverlay_input.style.animation = 'none';
+//         }, 300);
+        
+//   } catch (error) {
+//       dialogOverlay_input.style.display = 'none'
+//       closeDialog()
+//       clear_todo()
+//       catch_error(error)
+//       dialogOverlay_input.style.animation = 'none';
+//   }
+// };
+
 async function closeDialog_input() {
   const dialogOverlay_input = document.getElementById('dialogOverlay_input');
 
@@ -428,10 +448,11 @@ async function closeDialog_input() {
     // إخفاء التراكب بعد انتهاء التحريك
 
 
-    dialogOverlay_input.remove();
+    // dialogOverlay_input.remove(); // old
 
-    // overlay.style.display = 'none';
-    // overlay.style.animation = ''; // إعادة ضبط الأنماط بعد الإخفاء
+
+    dialogOverlay_input.style.display = 'none';
+    dialogOverlay_input.style.animation = 'none'; // إعادة ضبط الأنماط بعد الإخفاء
 
     // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
     // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
@@ -548,8 +569,6 @@ scrollToTopBtn.addEventListener("click", function () {
 });
 
 }
-
-
 
 
 //#endregion end - scroll Button Top
@@ -1105,9 +1124,9 @@ function check_parse(inputid, type) {
 
   const elementType = inputid.tagName.toLowerCase();
   // console.log(elementType);
-  if (elementType === 'td'){
+  if (elementType === 'td' || elementType === 'div'){
     value = inputid.textContent;
-  }else{
+  }else if(elementType === 'input' || elementType === 'textarea'){
       value = inputid.value;   
   }
   
@@ -1125,7 +1144,8 @@ function check_parse(inputid, type) {
   // تحقق من نوع القيمة بناءً على نوع البيانات المطلوب
   if (type === 'string') {
     // تحقق من وجود أي من الرموز الخاصة في القيمة
-    if (isNaN(value) && !specialCharRegex.test(value)) {
+    // if (isNaN(value) && !specialCharRegex.test(value)) {  //  old
+    if (!specialCharRegex.test(value)) {
       inputid.classList.remove('hover_error', 'input_error');
       updateInputErrors(); // تحديث حالة الأخطاء
     } else {
@@ -1456,7 +1476,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     // تعيين حد زمني للطلب
     const timeout = setTimeout(() => {
       controller.abort(); // إلغاء الطلب
-    }, ResponseTimeBySecends * 1000); // 10 ثواني
+    }, ResponseTimeBySecends * 1000); //
 
     // إرسال الطلب إلى الخادم
     const response = await fetch(FetchURL, {
@@ -1474,7 +1494,11 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     if (response.ok) {
       if (is_close_dialog === true){closeDialog();}
       const data = await response.json();
-      return data; // إرجاع البيانات لاستخدامها خارج الدالة
+      if (data.xx && data.xx === true) {
+        redirection('login','fail', data.message_ar)
+      }else{
+        return data; // إرجاع البيانات لاستخدامها خارج الدالة
+      }
     } else {
       if (is_close_dialog === true){closeDialog();}
       showAlert('fail', `Request failed with status code: ${response.status}`);
@@ -1498,7 +1522,9 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
   document.onkeydown = function (event){
     if (event.key === 'Escape') {  
         // هنا يمكنك وضع الإجراءات التي تريدها عند الضغط على "esc"
+        hideMenue();
         closeDialog();
+        closeDialog_input()
         hide_User_options();
     }
 }

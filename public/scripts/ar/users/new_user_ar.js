@@ -15,12 +15,31 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
       const pass_input1 = document.querySelector("#pass_input1").value.trim();
       const pass_input2 = document.querySelector("#pass_input2").value.trim();
       let general_permission_select = parseInt(document.querySelector("#general_permission_select").value); // 5aleha let msh const
-      let table_permission_users = parseInt(document.querySelector("#table_permission_users").value); // 5aleha let msh const
-      let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value); // 5aleha let msh const
-      let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value); // 5aleha let msh const
-      let table_permission_production = parseInt(document.querySelector("#table_permission_production").value); // 5aleha let msh const
-      let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value); // 5aleha let msh const
-      let table_permission_transaction = parseInt(document.querySelector("#table_permission_transaction").value); // 5aleha let msh const
+      // let table_permission_users = parseInt(document.querySelector("#table_permission_users").value); // 5aleha let msh const
+      // let table_permission_employee = parseInt(document.querySelector("#table_permission_employee").value); // 5aleha let msh const
+      // let table_permission_attendance = parseInt(document.querySelector("#table_permission_attendance").value); // 5aleha let msh const
+      // let table_permission_production = parseInt(document.querySelector("#table_permission_production").value); // 5aleha let msh const
+      // let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value); // 5aleha let msh const
+      // let table_permission_transaction = parseInt(document.querySelector("#table_permission_transaction").value); // 5aleha let msh const
+      const permissions = [
+        "users",
+        "employee",
+        "attendance",
+        "production",
+        "bread",
+        "transaction",
+        "items",
+        // Add new permissions here
+      ];
+
+      // Initialize an object to store permissions
+let permissionsValues = {};
+
+// Get the values of all permissions dynamically
+permissions.forEach(permission => {
+  permissionsValues[`table_permission_${permission}`] = parseInt(document.querySelector(`#table_permission_${permission}`).value);
+});
+
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
 
       // التحقق من صحة البيانات هنا
@@ -37,33 +56,25 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
 
        
       // ضبط قيم الصلاحيات
-      if (general_permission_select !== 1 || general_permission_select === 0) {
-        table_permission_users = 0;
-        table_permission_employee = 0;
-        table_permission_attendance = 0;
-        table_permission_production = 0;
-        table_permission_bread = 0;
-        table_permission_transaction = 0;
-        // add here all tables select permission id
-      };
-
+// Adjust the permissions based on the value of general_permission_select
+if (general_permission_select !== 1 || general_permission_select === 0) {
+  permissions.forEach(permission => {
+    permissionsValues[`table_permission_${permission}`] = 0;
+  });
+}
       await showDialog('','هل تريد حفظ البيانات ؟','');
       if (!dialogAnswer){
         return
       }
       // تجهيز البيانات للإرسال إلى الخادم
-      const posted_elements = {
-        user_name_input,
-        pass_input1,
-        general_permission_select,
-        table_permission_users,
-        table_permission_employee,
-        table_permission_attendance,
-        table_permission_production,
-        table_permission_bread,
-        table_permission_transaction,
-        today,
-      };
+// Create the posted_elements object dynamically
+const posted_elements = {
+  user_name_input,
+  pass_input1,
+  general_permission_select,
+  today,
+  ...permissionsValues // الثلاث نقط دول لنشر عناصر الاوبجيكت
+};
 
       // إرسال البيانات إلى الخادم
       const response = await fetch("/addNewuser", {

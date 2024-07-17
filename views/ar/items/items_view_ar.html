@@ -38,7 +38,7 @@
         <!-- content -->
         <div id="content_space" class="scroll">
           <h2 class="h2" style="gap: 1rem;">
-            الموظفين
+            الاصناف
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
@@ -88,7 +88,7 @@
         <h2 id="h2_header" class="h3">general address</h2>
 
         <div id="tree_rename_div" class="dialog_partition_div">
-          <label for="account_rename_input" class="lbl_sm">ادخل الاسم الجديد للحساب</label>
+          <label for="account_rename_input" class="lbl_sm">ادخل الاسم الجديد للصنف</label>
           <input type="search" id="account_rename_input" class="input_text_xl w_full hover" oninput="check_parse(this,'string')">
           
           <div id="" class="dialog_footer">
@@ -104,21 +104,25 @@
           <!-- <h2 id="h2_header" class="h2">asfasf</h2> -->
 
 
-          <!-- معرف الحساب -->
+          <!-- معرف الصنف -->
           <div id="acc_no_div" class="flex_column">
-            <label for="account_no_input" class="lbl_sm">معرف الحساب</label>
-            <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختيارى" autocomplete="off">
+            <label for="account_no_input" class="lbl_sm">معرف الصنف</label>
+            <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختيارى" autocomplete="off" oninput="check_parse(this,'string')">
             <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
           </div>
-          <!-- اسم الحساب -->
-          <label for="account_name_input" id="lbl_acc_name" class="lbl_sm">اسم الحساب</label>
-          <input type="search" id="account_name_input" class="input_text_md hover" autocomplete="off">
+          <!-- اسم الصنف -->
+          <label for="account_name_input" id="lbl_acc_name" class="lbl_sm">اسم الصنف</label>
+          <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
           <input type="hidden" id="account_id_hidden">
 
+          <!-- اسم الصنف -->
+          <label for="item_unite_input" id="lbl_acc_name" class="lbl_sm">وحدة قياس الكميه</label>
+          <input type="search" id="item_unite_input" class="input_text_sm hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
+          
           <!--   القائمة والمجموعه-->
           <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
           <div class="flex_row x_start y_center mb_10">
-            <span id="statment_type_span" class="span">المركز المالى</span>
+            <span id="statment_type_span" class="span">مجموعات الاصناف</span>
             <input type="hidden" id="statment_type_span_hidden_value">
             <select id="parents_group_select" class="select"></select>
           </div>
@@ -126,14 +130,30 @@
 
           <div id="final_account_information_div" class="flex_column">
             <!-- قائمة التدفقات النقدية -->
-            <label for="cash_flow_statement" class="lbl_sm">التدفقات النقدية</label>
-            <select name="cash_flow_statement" id="cash_flow_statement" class="select mb_10" style="border-start-start-radius: none;">
-              <option value="1">الانشطه التشغيلية</option>
-              <option value="2">الانشطه الاستثمارية</option>
-              <option value="3">الانشطه التمويليه</option>
-              <option value="4">النقد وما فى حكمه</option>
+            <label for="revenue_account_select" class="lbl_sm">حساب الدخل</label>
+            <select name="revenue_account_select" id="revenue_account_select" class="select mb_10" style="border-start-start-radius: none;">
             </select>
           </div>
+
+
+          <div id="final_account_information_div" class="flex_column">
+            <!-- قائمة التدفقات النقدية -->
+            <label for="expens_account_select" class="lbl_sm">حساب المصروفات</label>
+            <select name="expens_account_select" id="expens_account_select" class="select mb_10" style="border-start-start-radius: none;">
+              <option value="1" selected>تكلفة المخزون</option>
+            </select>
+          </div>
+
+
+          <label for="sales_price" id="lbl_acc_name" class="lbl_sm">سعر البيع الافتراضى</label>
+          <input type="search" id="sales_price" class="input_text_sm hover" placeholder="اختيارى" oninput="check_parse(this,'number')" autocomplete="off">
+
+          <label for="purchase_price" id="lbl_acc_name" class="lbl_sm">سعر الشراء الافتراضى</label>
+          <input type="search" id="purchase_price" class="input_text_sm hover" placeholder="اختيارى" oninput="check_parse(this,'number')" autocomplete="off">
+
+          
+          <label for="reorder_point" id="lbl_acc_name" class="lbl_sm">نقطة اعادة الطلب</label>
+          <input type="search" id="reorder_point" class="input_text_sm hover" placeholder="اختيارى" oninput="check_parse(this,'number')" autocomplete="off">
 
           <div id="dialog_footer" class="dialog_footer">
             <button id="btn_save" class="btn_save" style="display: none;">حفظ</button>
@@ -147,15 +167,15 @@
  
         <div id="tree_group_div" class="dialog_partition_div">
 
-                    <!-- اسم الحساب -->
-                    <label for="account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم الحساب</label>
+                    <!-- اسم الصنف -->
+                    <label for="account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم الصنف</label>
                     <input type="search" id="account_name_input_tree_group_div" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')">
                     <input type="hidden" id="account_id_hidden_tree_group_div">
           
                     <!--   القائمة والمجموعه-->
                     <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
                     <div class="flex_row x_start y_center mb_10">
-                      <span id="statment_type_span_tree_group_div" class="span">المركز المالى</span>
+                      <span id="statment_type_span_tree_group_div" class="span">مجموعات الاصناف</span>
                       <input type="hidden" id="statment_type_span_hidden_value">
                       <select  id="parent_gruop_name_tree_goup_div" class="select"></select>
                     </div>
@@ -179,7 +199,7 @@
     <script src="/public/socket/socket.io.min.js"></script>
     <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
     <script src="/public/jstree/dist/jstree.min.js"></script>
-    <script src="/public/scripts/ar/accounts/accounts_view_ar.js"></script>
+    <script src="/public/scripts/ar/items/items_view_ar.js"></script>
     <!-- <script src="/public/scripts/ar/accounts/accounts_view_ar copy.js"></script> -->
 
 

@@ -9,7 +9,7 @@ const account_name_input = document.querySelector(`#account_name_input`);
 const account_id_hidden = document.querySelector(`#account_id_hidden`);
 const statment_type_span = document.querySelector(`#statment_type_span`);
 const statment_type_span_tree_group_div = document.querySelector(`#statment_type_span_tree_group_div`);
-const cash_flow_statement = document.querySelector(`#cash_flow_statement`);
+const revenue_account_select = document.querySelector(`#revenue_account_select`);
 const statment_type_span_hidden_value = document.querySelector(`#statment_type_span_hidden_value`);
 const parents_group_select = document.querySelector(`#parents_group_select`);
 const parent_gruop_name_tree_goup_div = document.querySelector(`#parent_gruop_name_tree_goup_div`);
@@ -32,16 +32,46 @@ const btn_delete_tree_group_div = document.querySelector(`#btn_delete_tree_group
 
 
 const is_forbidden_deletion = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
-const is_forbidden_adding_branches = [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
-const is_main_account = [1, 2, 3, 4, 5, 6, 7];
-const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
+const is_forbidden_adding_branches = [];
+const is_main_account = [12];
+const is_accumulated_account = [];
+
+let filterd_revenue_options_array = [];
+async function get_revenue_accounts_fn(){
+    try {
+        const data = await fetchData_postAndGet(
+            "/api/get_revenue_accounts",
+            {},
+            'pass', 'pass',
+            20,
+            false,
+            '',
+            'حدث خطأ اثناء معالجة البيانات',
+            false
+          )
+
+
+
+
+        for (const row of data) {
+            const option = `<option value="${row.account_id}" ${row.global_id === 19 ? 'selected' : ''}>${row.account_name}</option>`;
+            filterd_revenue_options_array.push(option);
+          }
+        
+    revenue_account_select.innerHTML = filterd_revenue_options_array
+    } catch (error) {
+        catch_error(error)
+    }
+}
+
+
 
 
 let data = [];
 let filterd_statement_options_array = [];
 async function fetchTreeData() {
     try {
-        const response = await fetch('/api/tree');
+        const response = await fetch('/api/tree/items');
         data = await response.json();
         const tree = document.getElementById('tree');
 
@@ -55,14 +85,12 @@ async function fetchTreeData() {
             data: { // البيانات الإضافية المخصصة للعقدة
                 final_account: row.is_final_account,
                 account_no: row.account_no,
-                finance_statement: row.finance_statement,
-                cashflow_statement: row.cashflow_statement,
                 global_id: row.global_id,
 
                 // يمكنك إضافة المزيد من البيانات هنا
             }
         }));
-
+        
         // تهيئة شجرة jstree على عنصر HTML المحدد
         $(tree).jstree({
             'core': {
@@ -102,20 +130,10 @@ async function fetchTreeData() {
                                     account_no_input.value = node.data.account_no ?? '';
                                     account_name_input.value = node.text;
                                     account_id_hidden.value = node.id;
-                                    get_statemenet_options_fn(parents_group_select, node.id, node.data.finance_statement, false);
+                                    get_items_groups_options_fn(parents_group_select, node.id, false);
                                     changeSelect('parents_group_select', node.parent)
                                     // parents_group_select.value = parentNode.id;
-                                    statment_type_span_hidden_value.value = parentNode.data.finance_statement;
-                                    statment_type_span.textContent = (function () {
-                                        if (parseInt(parentNode.data.finance_statement) === 1) {
-                                            return 'قائمة المركز المالي';
-                                        } else {
-                                            return 'قائمة الدخل';
-                                        }
-                                    })();
 
-                                    cash_flow_statement
-                                    changeSelect('cash_flow_statement', node.data.cashflow_statement);
 
                                     btn_save.style.display = 'none'
                                     btn_update.style.display = 'flex'
@@ -132,19 +150,9 @@ async function fetchTreeData() {
                                     account_name_input_tree_group_div.value = node.text;
                                     account_id_hidden_tree_group_div.value = node.id;
 
-                                    get_statemenet_options_fn(parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, false);
+                                    get_items_groups_options_fn(parent_gruop_name_tree_goup_div, node.id, false);
                                     changeSelect('parent_gruop_name_tree_goup_div', node.parent)
 
-
-
-                                    statment_type_span_hidden_value.value = parentNode.data.finance_statement;
-                                    statment_type_span.textContent = (function () {
-                                        if (parseInt(parentNode.data.finance_statement) === 1) {
-                                            return 'قائمة المركز المالي';
-                                        } else {
-                                            return 'قائمة الدخل';
-                                        }
-                                    })();
 
                                     btn_save_tree_group_div.style.display = 'none';
                                     btn_update_tree_group_div.style.display = 'flex';
@@ -164,32 +172,17 @@ async function fetchTreeData() {
 
 
                                 if (node.data.is_final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
-                                    showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الحساب المحدد`)
+                                    showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن المجموعة المجددة`)
                                     return;
                                 }
                                 account_name_input_tree_group_div.value = ''
-                                get_statemenet_options_fn(parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, true);
-                                changeSelect('parent_gruop_name_tree_goup_div', node.parent)
+                                get_items_groups_options_fn(parent_gruop_name_tree_goup_div, node.id, true);
+
+                                changeSelect('parent_gruop_name_tree_goup_div', node.id)
 
                                 // h2
                                 h2_header.textContent = `اضافه مجموعه فرعيه داخل : ${node.text}`;
                                 lbl_acc_name.textContent = 'اسم المجموعه';
-
-
-                                // final statement
-                                // statment_type_span_hidden_value.value = node.data.finance_statement
-                                statment_type_span_tree_group_div.textContent = (function () {
-                                    if (parseInt(node.data.finance_statement) === 1) {
-                                        return 'قائمة المركز المالي';
-                                    } else {
-                                        return 'قائمة الدخل';
-                                    }
-                                })();
-                                // account_parent_name_span.textContent = node.text;
-                                // parent_gruop_name_tree_goup_div.value = node.id;
-
-
-
 
 
                                 btn_save_tree_group_div.style.display = 'flex';
@@ -215,27 +208,15 @@ async function fetchTreeData() {
                                     return;
                                 }
 
-                                get_statemenet_options_fn(parents_group_select, node.id, node.data.finance_statement, true);
+                                get_revenue_accounts_fn()
+                                
+                                get_items_groups_options_fn(parents_group_select, node.id,true);
                                 changeSelect('parents_group_select', node.id)
 
 
                                 // h2
                                 h2_header.textContent = `اضافه حساب فرعى داخل  ${node.text}`;
-                                lbl_acc_name.textContent = 'اسم الحساب';
-
-
-
-                                // final statement
-                                statment_type_span_hidden_value.value = node.data.finance_statement
-                                statment_type_span.textContent = (function () {
-                                    if (parseInt(node.data.finance_statement) === 1) {
-                                        return 'قائمة المركز المالي';
-                                    } else {
-                                        return 'قائمة الدخل';
-                                    }
-                                })();
-
-
+                         
 
                                 // buttons
                                 btn_save.style.display = 'flex'
@@ -348,15 +329,12 @@ async function fetchTreeData() {
 
 
 
-function get_statemenet_options_fn(selectVariableName, accountId, financeStatmentId, is_AllowToshowTheSameAccountInOptions) {
+function get_items_groups_options_fn(selectVariableName, accountId, is_AllowToshowTheSameAccountInOptions) {
     try {
 
         const statement_options_array = data.filter(item =>
             (is_AllowToshowTheSameAccountInOptions ? true : item.account_id !== accountId) &&
-            item.is_final_account !== true &&
-            item.finance_statement === parseInt(financeStatmentId) &&
-        item.is_forbidden_adding_branches !== true &&
-            !is_forbidden_adding_branches.includes(item.global_id)    
+            item.is_final_account !== true
         );
 
         filterd_statement_options_array = statement_options_array.map(item => `
@@ -379,12 +357,12 @@ async function addnewaccountGroup() {
         const accountParent = parent_gruop_name_tree_goup_div.value;
 
         await fetchData_post1(
-            '/api/addGroup-account',
+            '/api/addGroup-item',
             { accountname, accountParent },
-            'accounts_permission', 'add',
+            'items_permission', 'add',
             'هل تريد حفظ البيانات ؟',
             15,
-            'accounts_view_ar',
+            'items_view_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
     } catch (error) {
@@ -400,24 +378,38 @@ async function addNewAccount() {
     try {
 
         // prepare data
+        const item_unite_input = document.querySelector(`#item_unite_input`).value.trim();
+        const account_name = account_name_input.value.trim();
+
+        if (!item_unite_input || !account_name) {
+           showAlert('warning','تأكد من ادخال قيمه فى الحقول المطلوبه');
+           return;
+        }
+        
 
         const account_no = account_no_input.value.trim();
-        const account_name = account_name_input.value.trim();
+        
         const account_parent_name_id = parseInt(parents_group_select.value);
-        const cash_flow_statement_value = parseInt(cash_flow_statement.value);
-
+        const revenue_account_select_value = parseInt(revenue_account_select.value);
+        const sales_price = document.querySelector(`#sales_price`).value;
+        const purchase_price = document.querySelector(`#purchase_price`).value;
+        const reorder_point = document.querySelector(`#reorder_point`).value;
 
         await fetchData_post1(
-            '/api/add-account',
+            '/api/add-item',
             {
                 account_no,
                 account_name,
+                item_unite_input,
                 account_parent_name_id,
-                cash_flow_statement_value,
+                revenue_account_select_value,
+                sales_price,
+                purchase_price,
+                reorder_point
             },
             'accounts_permission', 'add',
             'هل تريد حفظ البيانات ؟',
-            15,
+            20,
             'accounts_view_ar',
             'حدث خطأ اثناء اضافه البيانات'
         )
@@ -521,6 +513,8 @@ async function deleteNode() {
             'accounts_view_ar',
             'حدث خطأ اثناء حذف الحساب المحدد'
         )
+
+
     } catch (error) {
         catch_error(error)
     }
@@ -531,7 +525,6 @@ async function getParentNodesForDragAndDrop(currentNodeId, currentNodeFinanceSta
     const filteredParentAccountsArray = data.filter(item =>
         item.account_id !== currentNodeId &&
         item.is_final_account !== true &&
-        item.finance_statement === parseInt(currentNodeFinanceStatmentId) &&
         !is_forbidden_adding_branches.includes(item.global_id)
     );
     return filteredParentAccountsArray;
@@ -548,15 +541,12 @@ $(tree).on('move_node.jstree', async function (e, data) {
 
         const nodeData = data.node.data;
         const currentAccountId = data.node.id
-        const currentAccountFinanceStatement = data.node.data.finance_statement
+   
 
         // بيانات العقدة الجديدة التي تمت إضافتها (العقدة الوجهة)
         const newParentNodeId = data.parent;
         const newParentNodeData = $(tree).jstree().get_node(newParentNodeId);
         const newParentId = newParentNodeData.id
-        // const newParentGlobalId = newParentNodeData.data.global_id
-        // const newParentFinalAccount = newParentNodeData.data.final_account
-
 
         const array1 = await getParentNodesForDragAndDrop(currentAccountId, currentAccountFinanceStatement);
 

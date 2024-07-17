@@ -61,8 +61,9 @@ async function fillAttendancetable() {
                                 <th style="width: auto; white-space: nowrap;text-align: center">اليوم</th>
                                 <th style="display: none;">vendor_id</th>
                                 <th style="width: auto; white-space: nowrap;">المورد</th>
+                                <th style="width: 100%; white-space: wrap;">البيان</th>
                                 <th style="width: auto; white-space: nowrap;text-align: center">العدد</th>
-                                <th style="width: 100%; white-space: nowrap;text-align: center">الوزن</th> 
+                                <th style="width: auto; white-space: nowrap;text-align: center">الوزن</th> 
                             </tr>
                             </thead>
                             <tbody>`;
@@ -76,7 +77,8 @@ async function fillAttendancetable() {
                             <td style="width: auto; white-space: nowrap;text-align: center">${row.datex}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${day_name(row.datex)}</td>
                             <td style="display: none;">${row.vendor_id}</td>
-                            <td style="width: 100%">${row.vendore_name}</td>
+                            <td style="width: auto; white-space: nowrap">${row.vendore_name}</td>
+                            <td style="width: 100%"; white-space: wrap>${row.note ? row.note : ''}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${total_column(total_column1, row.amount)}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${total_column(total_column2, row.wazn)}</td>
                           </tr>`;
@@ -90,12 +92,13 @@ async function fillAttendancetable() {
                 <td id="tfooter3"></td>
                 <td id="tfooter4"></td>
                 <td id="tfooter5" style="display: none;"></td>
-                <td id="tfooter6" style="width: 100%"></td>
-                <td id="tfooter7" style="width: auto; white-space: nowrap; text-align: center"></td>
+                <td id="tfooter6" style="width: auto"></td>
+                <td id="tfooter7" style="width: 100%"></td>
                 <td id="tfooter8" style="width: auto; white-space: nowrap; text-align: center"></td>
+                <td id="tfooter9" style="width: auto; white-space: nowrap; text-align: center"></td>
             </tr>
                         <tr id="table_fotter_buttons_row">
-                            <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                            <td colspan="9">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
                                  <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                                  <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -112,8 +115,8 @@ async function fillAttendancetable() {
 
 
 document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-document.getElementById("tfooter7").textContent = floatToString(false,total_column1.value);
-document.getElementById("tfooter8").textContent = floatToString(false,total_column2.value);
+document.getElementById("tfooter8").textContent = floatToString(false,total_column1.value);
+document.getElementById("tfooter9").textContent = floatToString(false,total_column2.value);
 
 
 
@@ -125,7 +128,7 @@ document.getElementById("tfooter8").textContent = floatToString(false,total_colu
 if (array1.length > 0 && array1.length <= 50) {
     document.querySelector('#table_fotter_buttons_row').style.display = "none";
 } else if (array1.length < 1) {
-    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='7' class="td_no_result">لا نتائج</td>`;
+    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='9' class="td_no_result">لا نتائج</td>`;
 };
 
 
@@ -142,8 +145,9 @@ async function performSearch() {
         const datex = row.datex && row.datex.toString().toLowerCase().includes(searchValue);
         const vendore_name = row.vendore_name && row.vendore_name.toString().toLowerCase().includes(searchValue);
         const total_wazn = row.total_wazn && row.total_wazn.toString().toLowerCase().includes(searchValue);
-        const total_amount = row.sales_amount && row.total_amount.toString().toLowerCase().includes(searchValue);
-        return datex || vendore_name || total_wazn || total_amount;
+        const total_amount = row.total_amount && row.total_amount.toString().toLowerCase().includes(searchValue);
+        const note = row.note && row.note.toString().toLowerCase().includes(searchValue);
+        return datex || vendore_name || total_wazn || total_amount || note;
     });
 
     // تحديد جزء البيانات للعرض (أول 50 صف فقط)
@@ -211,8 +215,9 @@ async function tabble_update_btn_fn(updateBtn) {
      day : row.cells[3].textContent,
      vendor_id : row.cells[4].textContent,
      vendore_name : row.cells[5].textContent,
-     total_wazn : row.cells[6].textContent,
-     total_amount : row.cells[6].textContent,
+     note : row.cells[6].textContent,
+     total_wazn : row.cells[7].textContent,
+     total_amount : row.cells[8].textContent,
   }
 
   sessionStorage.setItem('bread_update_data',JSON.stringify(production_data))

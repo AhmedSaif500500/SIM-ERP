@@ -330,7 +330,7 @@ async function company_login_btn(enter_button) {
       "/company_login",
       { c_id },
       'pass', 'pass',
-      10,
+      20,
       false,
       '',
       'حدث خطأ اثناء الدخول الى العمل التجارى المحدد',
@@ -345,17 +345,44 @@ async function company_login_btn(enter_button) {
     }
 
 
-    sessionStorage.setItem("company_id", data[0].company_id); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("company_name", data[0].company_name); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("general_permission", data[0].general_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("employees_permission", data[0].employees_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("attendance_permission", data[0].attendance_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("users_permission", data[0].users_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("production_permission", data[0].production_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("bread_permission", data[0].bread_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("accounts_permission", data[0].accounts_permission); // save username in seesionStorage to use it in index.html
-    sessionStorage.setItem("transaction_permission", data[0].transaction_permission); // save username in seesionStorage to use it in index.html
+   // sessionStorage.setItem('forbidden_deletion_array', JSON.stringify([1,2,3,4,5,6,7,8,8,10,11,12,13,14,15,16,17,8,19,20,21,22,23]));
 
+
+
+
+    // sessionStorage.setItem("company_id", data[0].company_id); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("company_name", data[0].company_name); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("general_permission", data[0].general_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("employees_permission", data[0].employees_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("attendance_permission", data[0].attendance_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("users_permission", data[0].users_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("production_permission", data[0].production_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("bread_permission", data[0].bread_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("accounts_permission", data[0].accounts_permission); // save username in seesionStorage to use it in index.html
+    // sessionStorage.setItem("transaction_permission", data[0].transaction_permission); // save username in seesionStorage to use it in index.html
+
+    // Define an array of permissions
+const permissions = [
+  "general_permission",
+  "accounts_permission",
+  "employees_permission",
+  "attendance_permission",
+  "users_permission",
+  "production_permission",
+  "bread_permission",
+  "transaction_permission",
+  "items_permission",
+  // Add new permissions here
+];
+
+// Save company_id and company_name
+sessionStorage.setItem("company_id", data[0].company_id); 
+sessionStorage.setItem("company_name", data[0].company_name); 
+
+// Save all permissions dynamically
+permissions.forEach(permission => {
+  sessionStorage.setItem(permission, data[0][permission]);
+});
 
 
     hideLoadingIcon(enter_button)
@@ -503,10 +530,7 @@ function showDialog_new_company() {
           // تعيين حد زمني للطلب
           const timeout = setTimeout(() => {
             controller.abort(); // إلغاء الطلب
-          }, 10 * 1000); // 10 ثواني
-
-          // showLoadingIcon(this);
-          // body_content.style.pointerEvents = 'none';
+          }, 50 * 1000); 
 
           // إرسال الطلب إلى الخادم
           const response = await fetch("/api/add_new_company", {
@@ -730,7 +754,7 @@ async function save_new_user() {
     // تعيين حد زمني للطلب
     const timeout = setTimeout(() => {
       controller.abort(); // إلغاء الطلب
-    }, 15 * 1000); // 10 ثواني
+    }, 20 * 1000); // 10 ثواني
 
     const posted_elements = {
       user_name_input,
@@ -964,7 +988,7 @@ async function table_update_btn_fn2(updateBtn) {
         "get_info_for_updateUser",
         { selectedUser },
         'pass', 'pass',
-        15,
+        20,
         false, '',
         'حدث خطأ اثناء معاجله البيانات',
         false

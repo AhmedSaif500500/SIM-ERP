@@ -92,7 +92,8 @@
           <table id="myTable" class="input_table">
             <thead class="">
               <tr>
-                <th></th>
+                <th style="width: auto;"></th>
+                <th style="width: auto;">النوع</th>
                 <th style="width: auto;">الحساب</th>
                 <th style="width: 100%;">البيان</th>
                 <th style="width: auto; text-align: center;">مدين</th>
@@ -111,14 +112,35 @@
                   </div>
                 </td>
 
+                <td>
+                  <select name="" id="" class="account_type select" onchange="change_select_account_type(this)"></select>
+                </td>
                                 <!-- dropdown -->
                 <td style="width: auto; height: var(--input_height);">
                   <div class="dropdown_container_input_table" id="">
-                    <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-                      <div id="" class="dropdown_select_input hover"></div>
+                    <div class="row">
+                      <span class="input_span_start account_type_name T">حساب عام</span>
+                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
+                      <div id="" class="dropdown_select_input T hover"></div>
                       <i class="fa-solid fa-caret-down left_icon"></i>
-                      <input type="hidden" class="id_hidden_input x1" id="" readonly>
-                    </div>
+                      <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                      </div>
+                      
+                      <!-- items -->
+                       <div class="row items_div" style="gap:0.2rem; display:none">
+                          <div class="row">
+                            <span class="input_span_start">الكمية</span>
+                            <div class="div_input_sm hover scroll T" contenteditable="true" oninput="check_parse(this,'number')"></div>
+                          </div>
+                          <div class="row">
+                            <span class="input_span_start">موقع المخزون</span>
+                            <select name="" id="" class="select items_locations_select"></select>
+                            <div class="div_input_sm hover scroll T" contenteditable="true"></div> 
+                          </div>
+                       </div>
+
+
+                  </div>
                     <div class="dropdown_menue hover scroll" id="" style="display: none;">
                       <div class="dropdown_search">
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
@@ -132,7 +154,73 @@
                   </div>
                 </td>
 
-                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" ></td>
+                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" oninput="check_parse(this,'string')"></td>
+                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
+                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
+
+
+                <td style="width: auto;" class="">
+                  <div class="table_buttons_div">
+                    <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
+                  </div>
+                </td>
+
+              </tr>
+
+              <tr class="">
+
+                <td style="width: auto;" class="">
+                  <div class="dragbutton_table">
+                    <button class="drag-handle">
+                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                    </button>
+                  </div>
+                </td>
+
+                <td>
+                  <select name="" id="" class="account_type select" onchange="change_select_account_type(this)"></select>
+                </td>
+                                <!-- dropdown -->
+                <td style="width: auto; height: var(--input_height);">
+                  <div class="dropdown_container_input_table" id="">
+                    <div class="row">
+                      <span class="input_span_start account_type_name T">حساب عام</span>
+                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
+                      <div id="" class="dropdown_select_input T hover"></div>
+                      <i class="fa-solid fa-caret-down left_icon"></i>
+                      <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                      </div>
+                      
+                      <!-- items -->
+                       <div class="row items_div" style="gap:0.2rem; display:none">
+                          <div class="row">
+                            <span class="input_span_start">الكمية</span>
+                            <div class="div_input_sm hover scroll T" contenteditable="true" oninput="check_parse(this,'number')"></div>
+                          </div>
+                          <div class="row">
+                            <span class="input_span_start">موقع المخزون</span>
+                            <select name="" id="" class="select items_locations_select"></select>
+                            <div class="div_input_sm hover scroll T" contenteditable="true"></div> 
+                          </div>
+                       </div>
+
+
+                  </div>
+                    <div class="dropdown_menue hover scroll" id="" style="display: none;">
+                      <div class="dropdown_search">
+                        <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
+                          oninput="performSearch(this)" autocomplete="off">
+                      </div>
+                      <div class="inputTable_dropdown_table_container" id="">
+                        <!-- قائمة الخيارات تظهر هنا -->
+  
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" oninput="check_parse(this,'string')"></td>
                 <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
                 <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
 
@@ -152,15 +240,17 @@
 
               <tr class="table_total_row">
                 <td id="lengthColumn1"></td>
-                <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
+                <td id="sumColumn1"></td>
                 <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
-                <td id="sumColumn3" style="text-align: center">0</td>
+                <td id="sumColumn3" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
                 <td id="sumColumn4" style="text-align: center">0</td>
-                <td id="sumColumn5"></td>
+                <td id="sumColumn5" style="text-align: center">0</td>
+                <td id="sumColumn6"></td>
+                <td id="sumColumn7"></td>
               </tr>
 
               <tr>
-                <td colspan="3" class="">
+                <td colspan="4" class="">
                   <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
                     <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
                     <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
@@ -172,11 +262,11 @@
                   </div>
                 </td>
 
-                <td id="difference_debet_cerdit" colspan="2" class="" style="text-align: center; opacity: 0.5; color: var(--Font_Color); transition: var(--transition);">
-                  0
-                </td>
+                <td id="difference_debet_cerdit" colspan="2" class="" style="text-align: center; opacity: 0.5; color: var(--Font_Color); transition: var(--transition);">0</td>
 
                 <td></td>
+                <td></td>
+                
               </tr>
 
             </tfoot>
@@ -200,7 +290,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/accounts/transaction/transaction_add_ar.js"></script>
+  <script src="/public/scripts/ar/accounts/transaction/transaction_add_ar copy.js"></script>
 
 
 </body>
