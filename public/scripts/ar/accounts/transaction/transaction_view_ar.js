@@ -80,7 +80,7 @@ async function fillMaintable() {
                             <td style="display: none">${row.id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.refrence}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
-                            <td style="width: 100%;">${row.note}</td>
+                            <td style="min-width: 15rem; width: 100%; white-space: wrap">${row.note}</td>
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column1, row.valuex)}</td>
                           </tr>`;
         });

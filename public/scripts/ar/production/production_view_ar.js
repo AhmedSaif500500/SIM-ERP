@@ -75,7 +75,7 @@ async function fillAttendancetable() {
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;text-align: center;">${row.datex}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;">${day_name(row.datex)}</td>
-                            <td style="width: 100%">${row.note}</td>
+                            <td style="min-width: 20rem;width: 100%; white-space: wrap">${row.note}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;">${total_column(total_column1,row.procution_amount)}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;">${total_column(total_column2,row.sales_amount)}</td>
                             <td style="width: auto; white-space: nowrap; font-weight: bold;text-align: center;">${floatToString(false,row.cumulative_balance)}</td>

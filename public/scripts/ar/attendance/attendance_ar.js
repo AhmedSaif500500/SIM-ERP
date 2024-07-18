@@ -91,7 +91,7 @@ async function fillAttendancetable() {
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column1,row.days)}</td>
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column2,row.hours)}</td>
                             <td style="width: auto; white-space: nowrap;">${total_column(total_column3,row.values)}</td>
-                            <td style="width: 100%; white-space: wrap;">${row.note}</td>
+                            <td style="min-width: 20rem; width: 100%; white-space: wrap;">${row.note}</td>
                           </tr>`;
     });
 

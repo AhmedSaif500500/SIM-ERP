@@ -45,7 +45,7 @@ async function fillAttendancetable() {
     // el properties hya :
     // 1 : display: none; > fe 7alt enak ardt e5fa2 el 3amod -- display: ; hatspha fadya fe7alt enak ardt tezhr el 3amod
     // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
-    // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
+    // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- min-width: 15rem;width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
     // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
     //* Prepare GLOBAL variables Befor sum functions
@@ -61,7 +61,7 @@ async function fillAttendancetable() {
                                 <th style="width: auto; white-space: nowrap;text-align: center">اليوم</th>
                                 <th style="display: none;">vendor_id</th>
                                 <th style="width: auto; white-space: nowrap;">المورد</th>
-                                <th style="width: 100%; white-space: wrap;">البيان</th>
+                                <th style="min-width: 20rem; width: 100%; white-space: nowrap;">البيان</th>
                                 <th style="width: auto; white-space: nowrap;text-align: center">العدد</th>
                                 <th style="width: auto; white-space: nowrap;text-align: center">الوزن</th> 
                             </tr>
@@ -78,7 +78,7 @@ async function fillAttendancetable() {
                             <td style="width: auto; white-space: nowrap;text-align: center">${day_name(row.datex)}</td>
                             <td style="display: none;">${row.vendor_id}</td>
                             <td style="width: auto; white-space: nowrap">${row.vendore_name}</td>
-                            <td style="width: 100%"; white-space: nowrap>${row.note ? row.note : ''}</td>
+                            <td style="min-width: 20rem; width: 100%"; white-space: nowrap>${row.note ? row.note : ''}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${total_column(total_column1, row.amount)}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${total_column(total_column2, row.wazn)}</td>
                           </tr>`;
