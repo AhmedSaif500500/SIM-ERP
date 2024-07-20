@@ -1,5 +1,5 @@
 
-setActiveSidebar('accounts_view_ar');
+setActiveSidebar('items_view_ar');
 // alertify.alert('هذه رسالة تنبيه.');
 //#region variables
 const tree_add_account = document.querySelector(`#tree_add_account`);
@@ -170,8 +170,8 @@ async function fetchTreeData() {
                             'action': async function () {
 
 
-
-                                if (node.data.is_final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
+                              
+                                if (node.data.final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
                                     showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن المجموعة المجددة`)
                                     return;
                                 }
@@ -203,7 +203,7 @@ async function fetchTreeData() {
                             'action': async function () {
 
 
-                                if (node.data.is_final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
+                                if (node.data.final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
                                     showAlert(`warning`, `لا يمكن اضافة حساب فرعى ضمن الحساب المحدد`)
                                     return;
                                 }
@@ -230,7 +230,6 @@ async function fetchTreeData() {
                                 //---------------------------------------------
                             }
                         },
-                        // إضافة خيارات إضافية إلى القائمة السياقية
                         'rename': {
                             'label': 'إعادة تسمية',
                             'icon': 'fa-duotone fa-pen-to-square',

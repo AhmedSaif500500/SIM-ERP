@@ -3388,7 +3388,9 @@ WHERE h1.company_id = $1
 ORDER BY h1.id asc;`;  // in (1,2 ) ya3ny = 1 or 2 
 
     // استعلام SQL لجلب بيانات الشجرة
+    
     let treeData = await db.any(query1, [req.session.company_id]);
+    console.table(treeData)
     res.json(treeData);
   } catch (error) {
     console.error("Error fetching tree data:", error);

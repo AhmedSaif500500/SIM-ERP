@@ -264,6 +264,9 @@ background-color: var(--bg_white_backcolor);
 }
 
 /*scrol--------------------------------------*/
+.scroll{
+  transition: var(--transition);
+}
 .scroll::-webkit-scrollbar {
   /* control scrollbar width */
   width: 0.8rem;
