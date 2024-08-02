@@ -42,8 +42,10 @@ async function getEmployeesData_fn() {
     'attendance_permission','view',
     15,
     false,'',
-    'حدث خطأ اثناء معالجة البيانات',
-    false
+    false,
+    false,'',
+    false,'',
+    'حدث خطأ اثناء معالجة البيانات'
   )
   array1 = data.slice();
 };

@@ -29,8 +29,6 @@ const btn_save_tree_group_div = document.querySelector(`#btn_save_tree_group_div
 const account_id_hidden_tree_group_div = document.querySelector(`#account_id_hidden_tree_group_div`);
 const btn_update_tree_group_div = document.querySelector(`#btn_update_tree_group_div`);
 const btn_delete_tree_group_div = document.querySelector(`#btn_delete_tree_group_div`);
-
-
 const is_forbidden_deletion = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
 const is_forbidden_adding_branches = [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
 const is_main_account = [1, 2, 3, 4, 5, 6, 7];
@@ -169,7 +167,7 @@ async function fetchTreeData() {
                                 }
                                 account_name_input_tree_group_div.value = ''
                                 get_statemenet_options_fn(parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, true);
-                                changeSelect('parent_gruop_name_tree_goup_div', node.parent)
+                                changeSelect('parent_gruop_name_tree_goup_div', node.id)
 
                                 // h2
                                 h2_header.textContent = `اضافه مجموعه فرعيه داخل : ${node.text}`;
@@ -187,10 +185,6 @@ async function fetchTreeData() {
                                 })();
                                 // account_parent_name_span.textContent = node.text;
                                 // parent_gruop_name_tree_goup_div.value = node.id;
-
-
-
-
 
                                 btn_save_tree_group_div.style.display = 'flex';
                                 btn_update_tree_group_div.style.display = 'none';
@@ -223,8 +217,6 @@ async function fetchTreeData() {
                                 h2_header.textContent = `اضافه حساب فرعى داخل  ${node.text}`;
                                 lbl_acc_name.textContent = 'اسم الحساب';
 
-
-
                                 // final statement
                                 statment_type_span_hidden_value.value = node.data.finance_statement
                                 statment_type_span.textContent = (function () {
@@ -234,9 +226,6 @@ async function fetchTreeData() {
                                         return 'قائمة الدخل';
                                     }
                                 })();
-
-
-
                                 // buttons
                                 btn_save.style.display = 'flex'
                                 btn_update.style.display = 'none'
@@ -256,13 +245,10 @@ async function fetchTreeData() {
                             'action': async function () {
                                 try {
 
-
                                     if (is_forbidden_deletion.includes(node.data.global_id)) {
                                         showAlert('warning', 'لا يمكن اعادة تمسية الحساب المحدد لانه من الحسابات الافتراضية')
                                         return;
                                     }
-
-
                                     h2_header.textContent = `إعادة تسمية : ${node.text}`;
                                     tree_add_account.style.display = 'none';
                                     tree_group_div.style.display = 'none'
@@ -347,15 +333,48 @@ async function fetchTreeData() {
 }
 
 
+// get all nodes into the node
+function getChildIds(tree, nodeId) {
+    const childIds = [];
+    const node = $(tree).jstree(true).get_node(nodeId);
+
+    if (!node) {
+        return childIds;
+    }
+
+    // دالة استرجاعية لتجميع المعرفات
+    function collectIds(node) {
+        if (!node.data.final_account) {
+            childIds.push(node.id);
+            node.children.forEach(childId => {
+                const childNode = $(tree).jstree(true).get_node(childId);
+                collectIds(childNode);
+            });
+        }
+    }
+
+    collectIds(node);
+
+    // إزالة nodeId من childIds
+    const filteredChildIds = childIds.filter(id => id !== nodeId);
+
+
+
+    return filteredChildIds;
+}
+
+
 
 function get_statemenet_options_fn(selectVariableName, accountId, financeStatmentId, is_AllowToshowTheSameAccountInOptions) {
     try {
 
+        allChildIds = getChildIds(tree, accountId);    
         const statement_options_array = data.filter(item =>
             (is_AllowToshowTheSameAccountInOptions ? true : item.account_id !== accountId) &&
             item.is_final_account !== true &&
+            !allChildIds.includes(item.account_id)&&
             item.finance_statement === parseInt(financeStatmentId) &&
-        item.is_forbidden_adding_branches !== true &&
+            item.is_forbidden_adding_branches !== true &&
             !is_forbidden_adding_branches.includes(item.global_id)    
         );
 
@@ -366,7 +385,6 @@ function get_statemenet_options_fn(selectVariableName, accountId, financeStatmen
     } catch (error) {
         catch_error(error)
     }
-
 }
 
 
@@ -437,6 +455,7 @@ async function updateGroup() {
         const account_id = parseInt(account_id_hidden_tree_group_div.value);
         const account_name = account_name_input_tree_group_div.value.trim();
         const parent_id = parseInt(parent_gruop_name_tree_goup_div.value);
+
 
         await fetchData_post1(
             '/api/update-account',
@@ -542,6 +561,7 @@ $(tree).on('move_node.jstree', async function (e, data) {
 
     try {
         if (!data || !data.node || !data.node.id || !data.parent) {
+            $(tree).jstree(true).refresh();
             return; // التأكد من وجود بيانات صالحة
         }
         // بيانات العقدة التي تم نقلها (العقدة الأصلية)
@@ -557,6 +577,14 @@ $(tree).on('move_node.jstree', async function (e, data) {
         // const newParentGlobalId = newParentNodeData.data.global_id
         // const newParentFinalAccount = newParentNodeData.data.final_account
 
+       const allChildIds = getChildIds(tree, currentAccountId);
+
+       if (allChildIds.includes(newParentId)){
+        showAlert('warning','لا يمكن نقل الحساب الى المجموعه المحدده')
+        $(tree).jstree(true).refresh();
+        return
+       }
+        
 
         const array1 = await getParentNodesForDragAndDrop(currentAccountId, currentAccountFinanceStatement);
 

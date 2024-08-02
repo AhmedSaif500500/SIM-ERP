@@ -183,6 +183,44 @@
                 </td>
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
+
+                            <!-- items -->
+                            <tr>
+                              <td style="width: auto;">3</td>
+                              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                              <td style="width: auto; text-wrap: nowrap;">الاصناف</td>
+                              <td style="width: auto;">
+                                <select class="permission_table_select" id="table_permission_items"
+                                  onchange="updatePermissionLevel(this)">
+                                  <option value="0" selected>0</option>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="4">4</option>
+                                </select>
+                              </td>
+                              <td style="width: 100%; text-wrap: nowrap;"></td>
+                            </tr>
+              
+              
+                            <!-- customers -->
+                            <tr>
+                              <td style="width: auto;">3</td>
+                              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                              <td style="width: auto; text-wrap: nowrap;">العملاء</td>
+                              <td style="width: auto;">
+                                <select class="permission_table_select" id="table_permission_customers"
+                                  onchange="updatePermissionLevel(this)">
+                                  <option value="0" selected>0</option>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="4">4</option>
+                                </select>
+                              </td>
+                              <td style="width: 100%; text-wrap: nowrap;"></td>
+                            </tr>
+                            
             </tbody>
             <tfoot>
               <tr class="table_totals_row" ;>
@@ -223,7 +261,7 @@
                     <div class="search_div">
                         <input type="text" name="searchInput" id="searchInput" placeholder="search" class="hover">
                         <div class="clearArrow" id="clearArrow1" title="clear search">✗</div>
-                        <i class="fa-duotone fa-magnifying-glass left_icon"></i>
+                        <i class="fa-light fa-magnifying-glass left_icon"></i>
                     </div>
                     <button id="searchBtn" name="searchBtn" class="searchBtn">search</button>
                 </div> -->

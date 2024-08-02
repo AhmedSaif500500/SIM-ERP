@@ -12,7 +12,7 @@ const searchInput = document.getElementById('searchInput');
 
 //#region  ( baynat el employees mn el database )
 // get data from db and store it in array1
-// let data = [];
+let data = [];
 let array1 = [];
 let slice_Array1 = [];
 

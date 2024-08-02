@@ -858,6 +858,7 @@ const permissions = [
   "bread_permission",
   "transaction_permission",
   "items_permission",
+  "cutomers_permission",
   // Add new permissions here
 ];
 
@@ -1973,6 +1974,8 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       posted_elements.table_permission_attendance,
       posted_elements.table_permission_production,
       posted_elements.table_permission_transaction,
+      posted_elements.table_permission_items,
+      posted_elements.table_permission_customers,
       posted_elements.today,
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
@@ -2016,8 +2019,10 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
      
         // فى حالة تعديل البيانات شامله  كلمة مرور جديده
        
-        let query1 = `Update user_company set general_permission = $1, users_permission = $2, employees_permission = $3, attendance_permission = $4, production_permission = $5, bread_permission = $6, transaction_permission = $7 WHERE user_id = $8 AND company_id = $9`;
+        let query1 = `Update user_company set general_permission = $3, users_permission = $4, employees_permission = $5, attendance_permission = $6, production_permission = $7, bread_permission = $8, transaction_permission = $9, items_permission = $10, cutomers_permission = $11 WHERE user_id = $1 AND company_id = $2`;
         await db.any(query1, [
+          posted_elements.user_id,
+          req.session.company_id,
           posted_elements.general_permission_select,
           posted_elements.table_permission_users,
           posted_elements.table_permission_employee,
@@ -2025,8 +2030,8 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_production,
           posted_elements.table_permission_bread,
           posted_elements.table_permission_transaction,
-          posted_elements.user_id,
-          req.session.company_id
+          posted_elements.table_permission_items,
+          posted_elements.table_permission_customers
         ]);
 
         return res.json({
@@ -2434,6 +2439,146 @@ app.get("/get_All_Employees_Data", async (req, res) => {
     res.status(500).send("Error: getEmployeesData");
   }
 });
+
+//#endregion
+
+//#region cutomers
+
+//#region get customers data
+app.get("/get_All_customers_Data", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "customers_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    // console.log(req.session.company_id);
+    let query1 = `SELECT id, account_name, account_no, credit_limit, email, tasgel_darepy, legal_info, contact_info, delivery_adress, banking_info
+                  FROM 
+                    accounts_header
+                  WHERE
+                    company_id = $1 AND
+                    account_type_id = 2`;
+    let data = await db.any(query1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching data:", err.message);
+    res.status(500).send("Error: getEmployeesData");
+  }
+});
+
+//#endregion
+
+  //#region add customers
+  app.post("/addNewCustomer", async (req, res) => {
+    try {
+          // // إرسال رسالة إلى العميل عبر WebSocket
+          // io.emit('blockUser', { userId: req.session.userId });
+          
+      const posted_elements = req.body;
+  
+      //! Permission
+      await permissions(req, "cutomers_permission", "add");
+      if (!permissions) {
+        return;
+      }
+  
+      //! sql injection check
+      // const hasBadSymbols = sql_anti_injection([
+      //   posted_elements.employee_name_input,
+      //   posted_elements.today,
+      //   posted_elements.employee_job_input,
+      //   posted_elements.employee_beta2a_input,
+      //   posted_elements.employee_adress_input,
+      //   posted_elements.employee_phone_input,
+      //   posted_elements.employee_emergency_phone_input,
+      //   posted_elements.employee_start_date_input,
+      //   posted_elements.employee_leave_date_input,
+      //   // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      // ]);
+
+      // سرد كل القيم مره واحده 
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
+        return res.json({ success: false, message: "ادخل اسم العميل" });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //2: validation data befor inserting to db
+      // const rows = await db.any(
+      //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+      //   [posted_elements.employee_name_input]
+      // );
+  
+      let query0 = `SELECT TRIM(account_name) FROM accounts_header 
+                WHERE company_id = $1 AND TRIM(account_name) = $2
+                `;
+      let rows = await db.any(query0, [
+        req.session.company_id,
+        posted_elements.account_name_input_value,
+      ]);
+  
+      if (rows.length > 0) {
+        // اذا حصل على نتائج
+        return res.json({ success: false, message: "اسم العميل موجود بالفعل" });
+      }
+  
+      //3: insert data into db
+      const newId = await newId_fn("accounts_header",'id');
+  
+      let query = `
+    INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, credit_limit, email, tasgel_darepy, legal_info, contact_info, delivery_adress, banking_info)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+  `;
+      await db.none(query, [
+        newId,
+        posted_elements.account_name_input_value,
+        true,
+        posted_elements.acc_no_div_value,
+        1,
+        req.session.company_id,
+        2,
+        1,
+        posted_elements.credit_limit_value,
+        posted_elements.email_input_value,
+        posted_elements.tasgel_darepy_input_value,
+        posted_elements.legal_info_input_value,
+        posted_elements.contact_info_input_value,
+        posted_elements.delivery_adress_input_value,
+        posted_elements.banking_info_input_value,
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم حفظ بيانات العميل بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding customers:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ أثناء اضافة العميل",
+      });
+    }
+  });
+  //#endregion
 
 //#endregion
 
@@ -3383,14 +3528,13 @@ LEFT JOIN accounts_body b ON h1.id = b.account_id
 LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
 WHERE h1.company_id = $1
   AND h1.finance_statement IN (1, 2)
-  AND h1.global_id != 8
+  AND (h1.global_id IS NULL OR h1.global_id != 8)
   AND (b.parent_id IS NULL OR b.parent_id NOT IN (${accumulatedValues}))
 ORDER BY h1.id asc;`;  // in (1,2 ) ya3ny = 1 or 2 
 
     // استعلام SQL لجلب بيانات الشجرة
     
     let treeData = await db.any(query1, [req.session.company_id]);
-    console.table(treeData)
     res.json(treeData);
   } catch (error) {
     console.error("Error fetching tree data:", error);
@@ -4171,6 +4315,9 @@ app.post("/getAccountsData1", async (req, res) => {
 //#endregion
 
 //#region items
+
+  //#region tree
+
  //#region 1 : view items - tree
  app.get("/api/tree/items", async (req, res) => {
   try {
@@ -4191,6 +4338,12 @@ app.post("/getAccountsData1", async (req, res) => {
     h1.finance_statement AS finance_statement,
     h1.cashflow_statement AS cashflow_statement,
     h1.global_id AS global_id,
+    h1.item_revenue_account AS item_revenue_account,
+    h1.item_expense_account AS item_expense_account,
+    h1.item_sales_price AS item_sales_price,
+    h1.item_purshas_price AS item_purshas_price,
+    h1.item_amount_reorder_point AS item_amount_reorder_point,
+    h1.item_unite AS item_unite,
       CASE
         WHEN h1.id = $2 THEN NULL
         ELSE h2.id
@@ -4479,6 +4632,518 @@ app.post("/api/add-item", async (req, res) => {
   }
 });
 
+//#endregion
+
+//#region update Group
+app.post("/api/update-group_items", async (req, res) => {
+  
+
+  try {
+    const posted_elements = req.body;
+    
+    const hasPermission = await permissions(req, "items_permission", "update");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لتعديل هذه المجموعة",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+
+    // التحقق من حقن SQL
+
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_id,
+        posted_elements.account_name,
+        posted_elements.parent_id,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+
+
+    let result = [];
+    const query = `
+      SELECT
+
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $4) AS is_final_account_item,
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account_parent,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3 AND id != $4) AS count_account_name
+    `;
+
+    result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.parent_id,
+      posted_elements.account_name,
+      posted_elements.account_id,
+    ]);
+    
+
+
+      if (result.is_final_account_item || result.is_final_account_parent) {
+        await block_user(req,'uda1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+
+    
+    if (result.count_account_name > 0) {
+      return res.json({
+        success: false,
+        message_ar: "هذا الحساب موجود بالفعل",
+        message_en: "Account with this name already exists",
+      });
+    }
+
+    let query1;
+    let query1_parameters;
+    let query2;
+    let query2_parameters;
+
+
+      query1 = `UPDATE accounts_header SET 
+      account_name = $1
+      WHERE company_id = $2 AND id = $3`;
+      query1_parameters = [
+        posted_elements.account_name,
+        req.session.company_id,
+        posted_elements.account_id,
+      ]
+
+      query2 = `UPDATE accounts_body SET 
+      parent_id = $1
+      WHERE account_id = $2`;
+      query2_parameters = [
+        posted_elements.parent_id,
+        posted_elements.account_id
+      ]
+
+
+ 
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+      await tx.none(query1, query1_parameters);
+      await tx.none(query2, query2_parameters)
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم تعديل البيانات بنجاح",
+    });
+  } catch (error) {
+    console.error("Error adding account:", error);
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false, // العملية فشلت
+      message_ar: "حدث خطأ أثناء عملية التعديل وتم إلغاء العملية",
+    });
+  }
+});
+
+//#endregion
+
+//#region drag and drop
+app.post("/api/items_tree_drag_and_drop", async (req, res) => {
+  try {
+ 
+    const { currentAccountId, newParentId } = req.body; // جلب معلومات العقدة المراد تعديلها
+
+    const hasPermission = await permissions(req, "items_permission", "update");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لتعديل هذا الصنف",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      currentAccountId,
+      newParentId
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+  
+
+
+
+    const query = `
+    SELECT
+      (SELECT COUNT(id) FROM accounts_header WHERE company_id = $1 AND id = $2) as account_id,
+      (SELECT COUNT(id) FROM accounts_header WHERE company_id = $1 AND id = $3) as parent_id,
+      (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $3) as is_parent_group
+  `;
+
+  const result = await db.oneOrNone(query, [
+    req.session.company_id,
+    currentAccountId,
+    newParentId
+  ]);
+
+
+    if (result.account_id === 0 || result.parent_id === 0){
+      await block_user(req,'udp01');
+      return res.json({
+        success: false,
+        message_ar: "تم حظر الحساب",
+        xx: true,
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+
+    
+    if (result.is_parent_group) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن اضافه الصنف الحالى داخل المجموعه المحدد",
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+
+  //   const forbiddenValues = is_forbidden_adding_branches.join(','); // تحويل المصفوفه الى سلسه نصيه
+
+    
+  //   const query0 = `select
+  //   id
+  // from
+  //   accounts_header
+  // where
+  //   company_id = $1
+  //   and id != $2
+  //   and finance_statement = $3
+  //   AND (is_final_account = false OR is_final_account IS NULL)
+  //   AND global_id NOT IN (${forbiddenValues})`
+  
+  //   const result0 = await db.any(query0,[
+  //     req.session.company_id,
+  //     currentAccountId,
+  //     result.finance_statement
+  //   ])
+
+ 
+  //   const ids_array = result0.map(row => row.id); // استخراج قيم الـ id من نتائج الاستعلام
+
+  //   if (!ids_array.includes(newParentId)) {
+  //     return res.json({
+  //       success: false,
+  //       message_ar: "لا يمكن اضافة مجموعه فرعيه ضمن الحساب المحدد",
+  //       message_en: "Cannot delete account with sub-accounts",
+  //     });
+  //   }
+
+
+
+
+    // تحديث الأب الخاص بالعقدة في قاعدة البيانات
+    const updateQuery = `
+          UPDATE accounts_body
+          SET parent_id = $1
+          WHERE account_id = $2;
+      `;
+    await db.query(updateQuery, [newParentId, currentAccountId]);
+
+    // إرسال استجابة نجاح إلى العميل
+    return res.json({
+      success: true,
+      message_ar: "تم حفظ البيانات بنجاح",
+    });
+  } catch (error) {
+    console.error("Error updating parent:", error);
+    // إرسال خطأ إلى العميل
+    res.status(500).send("Failed to update parent");
+  }
+});
+//#endregion
+
+//#endregion end tree
+app.get("/get_All_items_Data_for_table", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "items_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `SELECT h1.id AS account_id,
+    h1.account_name AS account_name,
+    h1.item_unite as item_unite,
+    h2.account_name AS parent_name,
+    h2.id AS parent_id,
+    h1.is_final_account AS is_final_account,
+    h1.account_no AS account_no,
+    h1.item_revenue_account AS item_revenue_account,
+    h1.item_expense_account AS item_expense_account,
+    h1.item_sales_price AS item_sales_price,
+    h1.item_purshas_price AS item_purshas_price,
+    h1.item_amount_reorder_point AS item_amount_reorder_point
+FROM accounts_header h1
+LEFT JOIN accounts_body b ON h1.id = b.account_id
+LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
+WHERE h1.company_id = $1
+  AND h1.account_type_id = 5
+  AND h1.is_final_account = true
+ORDER BY h1.id asc;;
+`;
+    let data = await db.any(query1, [req.session.company_id]);
+    res.json(data);
+  } catch (err) {
+    console.error("Error get_All_bread_Data:", err);
+    res.status(500).send("Error:");
+  }
+});
+
+//#region table 
+
+//#region 1: get data for items table-view
+
+//#endregion
+//#region update item 
+app.post("/api/update-item", async (req, res) => {
+  
+
+  try {
+    const posted_elements = req.body;
+    
+    const hasPermission = await permissions(req, "accounts_permission", "update");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لتعديل هذا الحساب",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+
+    // التحقق من حقن SQL
+
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_no,
+        posted_elements.item_id,
+        posted_elements.account_name,
+        posted_elements.item_unite_input,
+        posted_elements.account_parent_id,
+        posted_elements.revenue_account_select_value,
+        posted_elements.sales_price,
+        posted_elements.purchase_price,
+        posted_elements.reorder_point
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+   
+
+
+    let result = [];
+    const query = `
+      SELECT
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account_for_parent,
+        (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $4) AS is_final_account,
+        (SELECT COUNT(id) FROM accounts_header WHERE company_id = $1 AND id = $4) AS count_account_id,
+        (SELECT COUNT(id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS count_account_parent,
+        (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3 AND id != $4) AS count_account_name
+    `;
+
+    result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.account_parent_id,
+      posted_elements.account_name,
+      posted_elements.item_id,
+    ]);
+    
+
+
+    if (result.is_final_account_for_parent || !result.is_final_account || result.count_account_id === 0 || result.count_account_parent === 0){
+      if (result.finance_statement === null) {
+        await block_user(req,'udi1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+    }
+
+    
+    
+    if (result.count_account_name > 0) {
+      return res.json({
+        success: false,
+        message_ar: "اسم الصنف موجود بالفعل",
+        message_en: "Account with this name already exists",
+      });
+    }
+
+    let query1;
+    let query1_parameters;
+    let query2;
+    let query2_parameters;
+
+
+      query1 = `UPDATE accounts_header SET 
+      account_name = $1, account_no = $2, item_revenue_account = $3, item_sales_price = $4, item_purshas_price = $5, item_amount_reorder_point = $6 , item_unite = $7
+      WHERE company_id = $8 AND id = $9`;
+      query1_parameters = [
+        posted_elements.account_name,
+        posted_elements.account_no,
+        posted_elements.revenue_account_select_value,
+        posted_elements.sales_price,
+        posted_elements.purchase_price,
+        posted_elements.reorder_point,
+        posted_elements.item_unite_input,
+        req.session.company_id,
+        posted_elements.item_id,
+      ]
+
+      query2 = `UPDATE accounts_body SET 
+      parent_id = $1
+      WHERE account_id = $2`;
+      query2_parameters = [
+        posted_elements.account_parent_id,
+        posted_elements.item_id
+      ]
+
+
+   
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+      await tx.none(query1, query1_parameters);
+      await tx.none(query2, query2_parameters)
+    });
+
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: "تم تعديل البيانات بنجاح",
+    });
+  } catch (error) {
+    console.error("Error adding account:", error);
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false, // العملية فشلت
+      message_ar: "حدث خطأ أثناء عملية التعديل وتم إلغاء العملية",
+    });
+  }
+});
+//#endregion
+
+//#region delete item
+app.post("/api/delete-item", async (req, res) => {
+  try {
+    const posted_elements = req.body;
+
+    // تحقق مما إذا كان يمكن حذف العقدة (قد تحتاج إلى التحقق من وجود عقد فرعية أولاً)
+
+    // تحقق من الصلاحيات
+    const hasPermission = await permissions(req, "items_permission", "delete");
+    if (!hasPermission) {
+      return res.json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات اللازمة لحذف هذا الصنف",
+        message_en: "You do not have the necessary permissions to delete this account",
+      });
+    }
+
+    // التحقق من حقن SQL
+    const hasBadSymbols = sql_anti_injection([
+      posted_elements.account_id,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    //* Start--------------------------------------------------------------
+
+    const query = `
+      SELECT
+        (SELECT COUNT(id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS account_exists,
+        (SELECT COUNT(id) FROM accounts_body WHERE parent_id = $2) as parentId
+    `;
+
+    const result = await db.oneOrNone(query, [
+      req.session.company_id,
+      posted_elements.account_id
+    ]);
+
+
+    if (result.account_exists === 0){
+      await block_user(req,'adc01');
+      return res.json({
+        success: false,
+        message_ar: "تم حظر الحساب",
+        xx: true,
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+
+    if (result.parentid > 0) {
+      return res.json({
+        success: false,
+        message_ar: "لا يمكن حذف الحساب المحدد لوجود حسابات فرعية بداخله",
+        message_en: "Cannot delete account with sub-accounts",
+      });
+    }
+
+    // حذف العقدة من قاعدة البيانات
+    const deleteQuery = `
+      DELETE FROM accounts_header 
+      WHERE company_id = $1 AND id = $2
+    `;
+    await db.none(deleteQuery, [req.session.company_id, posted_elements.account_id]);
+
+    // إرسال استجابة نجاح إلى العميل
+    return res.json({
+      success: true,
+      message_ar: "تم حذف الصنف بنجاح",
+      message_en: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    // إرسال استجابة خطأ إلى العميل
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء حذف الصنف",
+      message_en: "An error occurred while deleting the account",
+    });
+  }
+});
 //#endregion
 
  //#endregion

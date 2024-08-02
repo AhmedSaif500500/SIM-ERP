@@ -10,17 +10,17 @@ let currentLang = currentPage.substring(currentPage.length - 2); // فصل اخ�
 
 //#region add templetes
 
-    //#region add header
-      
+//#region add header
+
 // في ملف JavaScript
 function loadHeaderContents() {
   const headerDiv = document.querySelector('#header_div');
-  const excludedPages = ['login','companies_ar']
+  const excludedPages = ['login', 'companies_ar']
 
-      if (excludedPages.includes(currentPage)) {
-      
-        return;
-    }
+  if (excludedPages.includes(currentPage)) {
+
+    return;
+  }
   // الكود HTML كمتغير نصي
   const headerContent = `
       <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
@@ -34,7 +34,7 @@ function loadHeaderContents() {
       </div>
       <div class="header_menue">
           <a href="companies_ar">
-          <i class="fa-duotone fa-address-book" style="font-size: 2rem"></i>
+          <i class="fa-light fa-address-book" style="font-size: 2rem"></i>
               الاعمال التجاريه
           </a>
       </div>
@@ -56,20 +56,20 @@ function loadHeaderContents() {
 loadHeaderContents();
 
 
-    //#endregion
+//#endregion
 
 
-    //#region add sidebar
-    function loadSidebarContents() {
-      const sidebar = document.querySelector('#sidebar');
-      const excludedPages = ['login','companies_ar']
-    
-          if (excludedPages.includes(currentPage)) {
-          
-            return;
-        }
-      // الكود HTML كمتغير نصي
-      const sidebarContent = `
+//#region add sidebar
+function loadSidebarContents() {
+  const sidebar = document.querySelector('#sidebar');
+  const excludedPages = ['login', 'companies_ar']
+
+  if (excludedPages.includes(currentPage)) {
+
+    return;
+  }
+  // الكود HTML كمتغير نصي
+  const sidebarContent = `
       <div id="closeMenueIcon" class="closeMenueIcon">
       <i class="fa-duotone fa-square-xmark"></i>
     </div>
@@ -97,6 +97,11 @@ loadHeaderContents();
     <a href="bread_view_ar" target="_self" class="">
       <i class="fa-duotone fa-bread-slice"></i>
       العيش
+    </a>
+
+    <a href="cutomers_view_ar" target="_self" class="">
+      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+      العملاء
     </a>
 
     <a href="items_view_ar" target="_self" class="">
@@ -153,28 +158,28 @@ loadHeaderContents();
       <p>المالك</p>
     </a>
       `;
-    
-      // إضافة المحتويات إلى الـ header_div
-      sidebar.innerHTML = sidebarContent;
-    }
-    
-    // لا تنس تنفيذ الدالة
-    loadSidebarContents();
+
+  // إضافة المحتويات إلى الـ header_div
+  sidebar.innerHTML = sidebarContent;
+}
+
+// لا تنس تنفيذ الدالة
+loadSidebarContents();
 
 
-    function setActiveSidebar(pageName) {
-      // احصل على العنصر الذي تحتوي قيمة الـ href فيه على اسم الصفحة المعطاة
-      const link = document.querySelector(`a[href="${pageName}"]`);
-  
-      // تأكد من وجود العنصر قبل إضافة الكلاس
-      if (link) {
-          link.classList.add('sidebar-active');
-      }
+function setActiveSidebar(pageName) {
+  // احصل على العنصر الذي تحتوي قيمة الـ href فيه على اسم الصفحة المعطاة
+  const link = document.querySelector(`a[href="${pageName}"]`);
+
+  // تأكد من وجود العنصر قبل إضافة الكلاس
+  if (link) {
+    link.classList.add('sidebar-active');
   }
-  
-  // لاستدعاء الدالة وتمرير اسم الصفحة كمعلمة
- 
-    //#endregion 
+}
+
+// لاستدعاء الدالة وتمرير اسم الصفحة كمعلمة
+
+//#endregion 
 //#endregion
 
 //#region fixed information
@@ -183,27 +188,27 @@ async function fixed_information() {
   try {
     const user_name_session = sessionStorage.getItem('userFullName');
     const user_company_session = sessionStorage.getItem('company_name');
-const header_user_name = document.querySelector('#header_user_name');
-const header_company_name = document.querySelector('#header_company_name');
-const user_setting_btn = document.querySelector('#user_setting_btn');
+    const header_user_name = document.querySelector('#header_user_name');
+    const header_company_name = document.querySelector('#header_company_name');
+    const user_setting_btn = document.querySelector('#user_setting_btn');
 
-    const excludedPages1 = ['/','login']
+    const excludedPages1 = ['/', 'login']
     if (excludedPages1.includes(currentPage)) {
       return;
-  }else{
-    if (!user_name_session) {
-      window.location.href = "/login";
-      return;
-    }else{
-      header_user_name.textContent = user_name_session
-    }
-  }
-
-  const excludedPages = ['companies_ar','/','login']
-
-      if (excludedPages.includes(currentPage)) {
+    } else {
+      if (!user_name_session) {
+        window.location.href = "/login";
         return;
-    }else{
+      } else {
+        header_user_name.textContent = user_name_session
+      }
+    }
+
+    const excludedPages = ['companies_ar', '/', 'login']
+
+    if (excludedPages.includes(currentPage)) {
+      return;
+    } else {
       if (!user_name_session || !user_company_session) {
         window.location.href = "/login";
         return;
@@ -259,7 +264,7 @@ document.addEventListener('click', function (event) {
 function show_User_options() {
   if (user_options !== null) {
     user_options.style.display = 'flex'
-  user_options.focus();
+    user_options.focus();
   }
 }
 
@@ -268,7 +273,7 @@ function hide_User_options() {
   if (user_options !== null) {
     user_options.style.display = 'none'
   }
-  
+
 }
 
 
@@ -285,56 +290,56 @@ function hide_User_options() {
 
 function showAlert(type, message) {
   try {
-      const alertHTML = `
+    const alertHTML = `
           <div class="alert alert-${type}">
               ${message}
           </div>
       `;
 
-      // إضافة العنصر إلى الـ DOM
-      const alertContainer = document.getElementById('alert-container');
-      alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+    // إضافة العنصر إلى الـ DOM
+    const alertContainer = document.getElementById('alert-container');
+    alertContainer.insertAdjacentHTML('beforeend', alertHTML);
 
-      // إنشاء العنصر الصوتي
-      const audioHTML = `
+    // إنشاء العنصر الصوتي
+    const audioHTML = `
           <audio id="${type}">
               <source src="/public/sounds/${type}.mp3" type="audio/mpeg">
           </audio>
       `;
-      document.body.insertAdjacentHTML('beforeend', audioHTML);
+    document.body.insertAdjacentHTML('beforeend', audioHTML);
 
-      const alertDiv = alertContainer.lastElementChild;
-      const audioElement = document.getElementById(type);
+    const alertDiv = alertContainer.lastElementChild;
+    const audioElement = document.getElementById(type);
 
-      // عند اكتمال تحميل الملف الصوتي، قم بتشغيله
-      audioElement.addEventListener("canplay", function () {
-          audioElement.play();
-      });
+    // عند اكتمال تحميل الملف الصوتي، قم بتشغيله
+    audioElement.addEventListener("canplay", function () {
+      audioElement.play();
+    });
 
-      // إضافة فئة .show لعرض التنبيه مع الرسوم المتحركة
+    // إضافة فئة .show لعرض التنبيه مع الرسوم المتحركة
+    setTimeout(function () {
+      alertDiv.classList.add('show');
+    }, 100);
+
+    // عند النقر، ابدأ في إخفاء التنبيه باستخدام الرسوم المتحركة
+    alertDiv.addEventListener('click', function () {
+      alertDiv.classList.add('hide');
+      // إزالة التنبيه بعد اكتمال الرسوم المتحركة
       setTimeout(function () {
-          alertDiv.classList.add('show');
-      }, 100);
+        alertDiv.remove();
+      }, 500);
+    });
 
-      // عند النقر، ابدأ في إخفاء التنبيه باستخدام الرسوم المتحركة
-      alertDiv.addEventListener('click', function () {
-          alertDiv.classList.add('hide');
-          // إزالة التنبيه بعد اكتمال الرسوم المتحركة
-          setTimeout(function () {
-              alertDiv.remove();
-          }, 500);
-      });
-
-      // بعد فترة زمنية معينة، ابدأ في إخفاء التنبيه
+    // بعد فترة زمنية معينة، ابدأ في إخفاء التنبيه
+    setTimeout(function () {
+      alertDiv.classList.add('hide');
+      // إزالة التنبيه بعد اكتمال الرسوم المتحركة
       setTimeout(function () {
-          alertDiv.classList.add('hide');
-          // إزالة التنبيه بعد اكتمال الرسوم المتحركة
-          setTimeout(function () {
-              alertDiv.remove();
-          }, 500);
-      }, 10000);
+        alertDiv.remove();
+      }, 500);
+    }, 10000);
   } catch (error) {
-      console.error('Error showing alert:', error.message);
+    console.error('Error showing alert:', error.message);
   }
 }
 
@@ -347,10 +352,10 @@ let dialogAnswer = false; // متغير عالمي
 
 function showDialog(title, message, icon) {
 
-    return new Promise((resolve) => {
-        dialogAnswer = false;
+  return new Promise((resolve) => {
+    dialogAnswer = false;
 
-        const dialogHTML = `
+    const dialogHTML = `
             <div id="dialogOverlay" class="dialogOverlay" style="display: none;">
                 <div id="dialog" class="dialog">
                     <div class="dialog_header">
@@ -368,37 +373,37 @@ function showDialog(title, message, icon) {
             </div>
         `;
 
-        // إضافة القالب إلى الـ DOM
-        document.body.insertAdjacentHTML('beforeend', dialogHTML);
+    // إضافة القالب إلى الـ DOM
+    document.body.insertAdjacentHTML('beforeend', dialogHTML);
 
-        // تحديث محتوى العناصر
-        document.getElementById('dialogTitle').textContent = title;
-        document.getElementById('dialogMessage').textContent = message;
-        document.getElementById('dialogIcon').className = icon;
+    // تحديث محتوى العناصر
+    document.getElementById('dialogTitle').textContent = title;
+    document.getElementById('dialogMessage').textContent = message;
+    document.getElementById('dialogIcon').className = icon;
 
-        const overlay = document.getElementById('dialogOverlay');
-        const dialog = document.getElementById('dialog');
+    const overlay = document.getElementById('dialogOverlay');
+    const dialog = document.getElementById('dialog');
 
-        const yesButton = document.querySelector(`#dialogOverlay`).querySelector(`#yesButton`);
-        const noButton = document.querySelector(`#dialogOverlay`).querySelector(`#noButton`);
-        // عرض النافذة
-        overlay.style.display = 'flex';
+    const yesButton = document.querySelector(`#dialogOverlay`).querySelector(`#yesButton`);
+    const noButton = document.querySelector(`#dialogOverlay`).querySelector(`#noButton`);
+    // عرض النافذة
+    overlay.style.display = 'flex';
 
-        // التحكم في زر "نعم"
-        yesButton.onclick = function () {
-            showLoadingIcon(this);
-            body.style.pointerEvents = 'none';
-            dialogAnswer = true;
-            resolve(true);
-        };
+    // التحكم في زر "نعم"
+    yesButton.onclick = function () {
+      showLoadingIcon(this);
+      body.style.pointerEvents = 'none';
+      dialogAnswer = true;
+      resolve(true);
+    };
 
-        // التحكم في زر "لا"
-        noButton.onclick = function () {
-            dialogAnswer = false;
-            closeDialog();
-            resolve(false);
-        };
-    });
+    // التحكم في زر "لا"
+    noButton.onclick = function () {
+      dialogAnswer = false;
+      closeDialog();
+      resolve(false);
+    };
+  });
 }
 
 
@@ -407,14 +412,14 @@ async function closeDialog() {
   const overlay = document.getElementById('dialogOverlay');
 
   if (overlay !== null) {
-      // إضافة التحريك للإغلاق
-  overlay.style.animation = 'fadeOut 0.3s forwards';
+    // إضافة التحريك للإغلاق
+    overlay.style.animation = 'fadeOut 0.3s forwards';
 
-  setTimeout(() => {
-    // إخفاء التراكب بعد انتهاء التحريك
-    overlay.remove();
-  }, 300);
-}
+    setTimeout(() => {
+      // إخفاء التراكب بعد انتهاء التحريك
+      overlay.remove();
+    }, 300);
+  }
 }
 
 
@@ -427,7 +432,7 @@ async function closeDialog() {
 //           clear_todo()
 //           dialogOverlay_input.style.animation = 'none';
 //         }, 300);
-        
+
 //   } catch (error) {
 //       dialogOverlay_input.style.display = 'none'
 //       closeDialog()
@@ -441,27 +446,27 @@ async function closeDialog_input() {
   const dialogOverlay_input = document.getElementById('dialogOverlay_input');
 
   if (dialogOverlay_input !== null) {
-      // إضافة التحريك للإغلاق
-      dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
+    // إضافة التحريك للإغلاق
+    dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
 
-  setTimeout(() => {
-    // إخفاء التراكب بعد انتهاء التحريك
-
-
-    // dialogOverlay_input.remove(); // old
+    setTimeout(() => {
+      // إخفاء التراكب بعد انتهاء التحريك
 
 
-    dialogOverlay_input.style.display = 'none';
-    dialogOverlay_input.style.animation = 'none'; // إعادة ضبط الأنماط بعد الإخفاء
+      // dialogOverlay_input.remove(); // old
 
-    // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
-    // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
-    // const dialog = document.getElementById('dialog');
-    // const yesButton = document.getElementById('yesButton');
-    // hideLoadingIcon(yesButton);
-    // dialog.style.pointerEvents = 'auto';
-  }, 300);
-}
+
+      dialogOverlay_input.style.display = 'none';
+      dialogOverlay_input.style.animation = 'none'; // إعادة ضبط الأنماط بعد الإخفاء
+
+      // إعادة تعيين الحالة بعد إغلاق النافذة الحوارية
+      // هذا الجزء يتعامل مع إعادة تعيين `hideLoadingIcon`
+      // const dialog = document.getElementById('dialog');
+      // const yesButton = document.getElementById('yesButton');
+      // hideLoadingIcon(yesButton);
+      // dialog.style.pointerEvents = 'auto';
+    }, 300);
+  }
 }
 
 // * HOW TO USE 
@@ -492,7 +497,7 @@ document.querySelector('#dark_toggle_btn').addEventListener('click', function (e
   try {
 
     event.preventDefault; // stop <a> herf
-    
+
     const darkMode = localStorage.getItem('darkmode')
     if (darkMode && darkMode === 'dark') {
       body.classList.remove('dark');
@@ -509,7 +514,7 @@ document.querySelector('#dark_toggle_btn').addEventListener('click', function (e
 
 //#region  langauge toggle ar - en
 //! save current page in sessionstorage and ar - en toggle
- 
+
 sessionStorage.setItem('currentPage', currentPage);
 localStorage.setItem('currentLang', currentLang);
 
@@ -550,23 +555,23 @@ if (content_space !== null) {
       scrollToTopBtn.style.display = "none";
     }
   });
-  
-// Scroll to top when button is clicked
-// const rootElement = document.documentElement;
 
-function scrollToTop() {
-  // Scroll to top logic
-  // rootElement.scrollTo({
+  // Scroll to top when button is clicked
+  // const rootElement = document.documentElement;
+
+  function scrollToTop() {
+    // Scroll to top logic
+    // rootElement.scrollTo({
     content_space.scrollTo({
-    top: 0,
-    behavior: "smooth" /* هنا هيطلع لفوق فى خلال 0.3 ثانيه  دى القيمه الافتراضيه مهما كان طول الصفحه هيطلع فى خلال 0.3 ثانيه*/
+      top: 0,
+      behavior: "smooth" /* هنا هيطلع لفوق فى خلال 0.3 ثانيه  دى القيمه الافتراضيه مهما كان طول الصفحه هيطلع فى خلال 0.3 ثانيه*/
 
+    });
+  }
+
+  scrollToTopBtn.addEventListener("click", function () {
+    scrollToTop();
   });
-}
-
-scrollToTopBtn.addEventListener("click", function () {
-  scrollToTop();
-});
 
 }
 
@@ -622,7 +627,7 @@ function total_column(totalVariable, rowData) {
         return '';
       } else {
         // return parseFloat(rowData);
-        rowData = floatToString(false,rowData)
+        rowData = floatToString(false, rowData)
         return rowData;
       }
     } else {
@@ -653,9 +658,9 @@ function floatToString(is_showZero, floatValue) {
   try {
     let num = parseFloat(floatValue);
     if (num === 0 && is_showZero) return '';
-    return num.toLocaleString('en-US', { 
-      minimumFractionDigits: 2, 
-      maximumFractionDigits: 2 
+    return num.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
   } catch (error) {
     catch_error(error);
@@ -663,14 +668,14 @@ function floatToString(is_showZero, floatValue) {
 }
 
 // hiden seperator
-function stringToFloat (is_showZero,stringFloatValue) {
-let NewfloatValue = parseFloat(stringFloatValue.replace(/,/g, ''));
-if (parseFloat(stringFloatValue) === 0){
-  if(!is_showZero){
-    return ''
+function stringToFloat(is_showZero, stringFloatValue) {
+  let NewfloatValue = parseFloat(stringFloatValue.replace(/,/g, ''));
+  if (parseFloat(stringFloatValue) === 0) {
+    if (!is_showZero) {
+      return ''
+    }
   }
-}
-return NewfloatValue
+  return NewfloatValue
 }
 
 //#endregion
@@ -852,52 +857,52 @@ function show_redirection_Reason() {
 
 
 //!#region Open Menue -- sidbar
-  const sidebar = document.querySelector('#sidebar');
-  const MenueIcon = document.querySelector('#MenueIcon');
-  const closeMenueIcon = document.querySelector('#closeMenueIcon');
-  
+const sidebar = document.querySelector('#sidebar');
+const MenueIcon = document.querySelector('#MenueIcon');
+const closeMenueIcon = document.querySelector('#closeMenueIcon');
 
-  // اظهار واخفاء القائمة   عند الضغط على زرار القائمة
-  MenueIcon.addEventListener('click', function (event) {
-    event.preventDefault(); // stop a deafult herf 
-    hide_User_options(); // el ta2ked 3ala en el user_options_div is hidden
-    const sidebar_status = sidebar.classList.contains("sidebar_Media_Show"); // check if sidbar have this class or no
-    if (!sidebar_status) {
-      showMenue();
-    } else {
-      hideMenue();
-    }
-  })
 
-  // ازالة كلاس الشاشه الصغيره اذا كان موجود وتم تغيير حجم الشاشه لاكبر من 750 بيكسيل
-  window.addEventListener('resize', function () {
-    if (window.innerWidth > 750) {
-      // إزالة الفئة المحددة إذا كان عنصر الشاشة أصغر من 750 بكسل
-      // sidebar.classList.remove("sidebar_Media_Show");
-      hideMenue();
-    }
-  });
-  // اخفاء القائمة عند الضغط على زر الاغلاق الموجود فى اعلى القائمة
-  closeMenueIcon.addEventListener('click', function () {
+// اظهار واخفاء القائمة   عند الضغط على زرار القائمة
+MenueIcon.addEventListener('click', function (event) {
+  event.preventDefault(); // stop a deafult herf 
+  hide_User_options(); // el ta2ked 3ala en el user_options_div is hidden
+  const sidebar_status = sidebar.classList.contains("sidebar_Media_Show"); // check if sidbar have this class or no
+  if (!sidebar_status) {
+    showMenue();
+  } else {
+    hideMenue();
+  }
+})
+
+// ازالة كلاس الشاشه الصغيره اذا كان موجود وتم تغيير حجم الشاشه لاكبر من 750 بيكسيل
+window.addEventListener('resize', function () {
+  if (window.innerWidth > 750) {
+    // إزالة الفئة المحددة إذا كان عنصر الشاشة أصغر من 750 بكسل
     // sidebar.classList.remove("sidebar_Media_Show");
     hideMenue();
-  })
-
-  function showMenue() {
-    sidebar.classList.add("sidebar_Media_Show");
-    sidebar.classList.add("show");
-    body.classList.add('no_scroll');
-  };
-
-  function hideMenue() {
-    sidebar.classList.remove("show");
-    sidebar.classList.add("hide");
-    setTimeout(() => {
-      sidebar.classList.remove("sidebar_Media_Show");
-      sidebar.classList.remove("hide");
-    }, 300); /* تأكد من إزالة الفئات بعد انتهاء الرسوم المتحركة */
-    body.classList.remove('no_scroll');
   }
+});
+// اخفاء القائمة عند الضغط على زر الاغلاق الموجود فى اعلى القائمة
+closeMenueIcon.addEventListener('click', function () {
+  // sidebar.classList.remove("sidebar_Media_Show");
+  hideMenue();
+})
+
+function showMenue() {
+  sidebar.classList.add("sidebar_Media_Show");
+  sidebar.classList.add("show");
+  body.classList.add('no_scroll');
+};
+
+function hideMenue() {
+  sidebar.classList.remove("show");
+  sidebar.classList.add("hide");
+  setTimeout(() => {
+    sidebar.classList.remove("sidebar_Media_Show");
+    sidebar.classList.remove("hide");
+  }, 300); /* تأكد من إزالة الفئات بعد انتهاء الرسوم المتحركة */
+  body.classList.remove('no_scroll');
+}
 
 //#endregion Open Menue
 
@@ -1057,7 +1062,7 @@ let owner = sessionStorage.getItem('owner');
 
 // console.log(owner);
 if (owner === 'true' || !isNaN(general_permission) && general_permission === 6) {
-  document.querySelector(`#users_control_a`).style.display = 'block';  
+  document.querySelector(`#users_control_a`).style.display = 'block';
 } else {
   document.querySelector(`#users_control_a`).style.display = 'none';
 }
@@ -1106,7 +1111,7 @@ let inputErrors = false; // المتغير العالمي لتتبع وجود ا
 // دالة لفحص وتحديث حالة الأخطاء في جميع حقول الإدخال
 function updateInputErrors() {
   // العثور على جميع العناصر التي تحتوي على الصنف 'input_error'
-  const errorElements = document.querySelectorAll('.input_error'); 
+  const errorElements = document.querySelectorAll('.input_error');
   let hasError = false; // متغير لتتبع وجود أخطاء
 
   if (errorElements.length > 0) {
@@ -1124,14 +1129,14 @@ function check_parse(inputid, type) {
 
   const elementType = inputid.tagName.toLowerCase();
   // console.log(elementType);
-  if (elementType === 'td' || elementType === 'div'){
+  if (elementType === 'td' || elementType === 'div') {
     value = inputid.textContent;
-  }else if(elementType === 'input' || elementType === 'textarea'){
-      value = inputid.value;   
+  } else if (elementType === 'input' || elementType === 'textarea') {
+    value = inputid.value;
   }
-  
 
-   // احصل على قيمة حقل الإدخال
+
+  // احصل على قيمة حقل الإدخال
   const specialCharRegex = /['";$%&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة
 
   // إذا كان حقل الإدخال فارغًا، أعد null
@@ -1173,7 +1178,7 @@ function check_parse(inputid, type) {
 //#region  loading
 function showLoadingIcon(element) {
   try {
-   
+
     element.classList.add('loading_icon');
     // element.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
     // body_content.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
@@ -1199,10 +1204,10 @@ nfs el amr fe el hideen loading
 
 function hideLoadingIcon(element) {
   try {
-    if (!element){
+    if (!element) {
       return;
     }
-   
+
     // element.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
     // body_content.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
     body.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
@@ -1382,7 +1387,7 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
       return;
     };
 
-    
+
     // // تجهيز البيانات للإرسال إلى الخادم
     // const posted_elements = {
     //     user_id,
@@ -1420,11 +1425,11 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
       } else {
         body_content.style.pointerEvents = 'auto';
         if (data.xx && data.xx === true) {
-          redirection('login','fail', data.message_ar)
-        }else{
+          redirection('login', 'fail', data.message_ar)
+        } else {
           showAlert('fail', data.message_ar);
         }
-        
+
       }
     } else {
       closeDialog();
@@ -1443,23 +1448,30 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
 
 
 // let data = [];
-async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, error_message,is_close_dialog) {
+async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, error_message) {
   const controller = new AbortController();
   const signal = controller.signal;
 
   try {
-    if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
-      return;
+
+    if (is_showLoadingIcon) {
+      showLoadingIcon(Element_showLoadingIcon_as_avariable)
     }
 
 
-      const permission = await btn_permission(permission_name, permission_type);
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      return false;
+    }
 
-      if (!permission) {
-        return;
-      };
-   
+    const permission = await btn_permission(permission_name, permission_type);
+
+    if (!permission) {
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      return false;
+    };
+
     // // تجهيز البيانات للإرسال إلى الخادم
     // const posted_elements = {
     //     user_id,
@@ -1468,7 +1480,8 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
       if (is_confirm_dialog === true)
         await showDialog('', dialogMessage, '');
       if (!dialogAnswer) {
-        return;
+        hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+        return false;
       }
     }
 
@@ -1492,24 +1505,47 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     clearTimeout(timeout);
 
     if (response.ok) {
-      if (is_close_dialog === true){closeDialog();}
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      if (is_close_dialog === true) { closeDialog(); }
+      
+
       const data = await response.json();
       if (data.xx && data.xx === true) {
-        redirection('login','fail', data.message_ar)
-      }else{
-        return data; // إرجاع البيانات لاستخدامها خارج الدالة
+        redirection('login', 'fail', data.message_ar)
+        return false
+      } else {
+        if (data.success && is_redirection_page) {
+          body_content.style.pointerEvents = 'none';
+          redirection(redirection_page, 'success', data.message_ar);
+          return true
+        }else if (is_confirm_dialog){
+          if (data.success) {
+            showAlert('success',data.message)
+            return true
+          } else {
+            showAlert('fail',data.message)
+            return false
+          } 
+        } else {
+          return data; // إرجاع البيانات لاستخدامها خارج الدالة
+        }
+
       }
     } else {
-      if (is_close_dialog === true){closeDialog();}
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      if (is_close_dialog === true) { closeDialog(); }
       showAlert('fail', `Request failed with status code: ${response.status}`);
     }
   } catch (error) {
+    hideLoadingIcon(Element_showLoadingIcon_as_avariable)
     closeDialog();
     if (error.name === 'AbortError') {
       showAlert('fail', 'Request timed out. Please try again.');
+      return false;
     } else {
       showAlert('fail', error_message);
       catch_error(error);
+      return false
     }
   }
 }
@@ -1518,18 +1554,18 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 //#region document EVENTS
 
-  //#region escape btn
-  document.onkeydown = function (event){
-    if (event.key === 'Escape') {  
-        // هنا يمكنك وضع الإجراءات التي تريدها عند الضغط على "esc"
-        hideMenue();
-        closeDialog();
-        closeDialog_input()
-        hide_User_options();
-    }
+//#region escape btn
+document.onkeydown = function (event) {
+  if (event.key === 'Escape') {
+    // هنا يمكنك وضع الإجراءات التي تريدها عند الضغط على "esc"
+    hideMenue();
+    closeDialog();
+    closeDialog_input()
+    hide_User_options();
+  }
 }
 
-  //#endregion
+//#endregion
 //#endregion end- document events
 
 //#region socket
@@ -1537,19 +1573,19 @@ const socket = io();
 socket.on('khorogFawry', (data) => {
   const x1 = parseInt(sessionStorage.getItem(`current_id`))
   // console.log(`this is x1 = ${x1} ${typeof(x1)} and this is ${data.x1} ${typeof(data.x1)}`);
-  if (x1 && x1 === data.x1){
+  if (x1 && x1 === data.x1) {
     khorogFawry()
   }
 });
 
-socket.on('ozkrAllah', (data) => {  
+socket.on('ozkrAllah', (data) => {
   const x1 = sessionStorage.getItem(`userFullName`)
   if (x1) {
-    showAlert('warning',`${data.Alzekr} اخى الحبيب ${x1}`)
-  }else{
-    showAlert('warning',`${data.Alzekr} اخى الحبيب`)
+    showAlert('warning', `${data.Alzekr} اخى الحبيب ${x1}`)
+  } else {
+    showAlert('warning', `${data.Alzekr} اخى الحبيب`)
   }
-  
+
 });
 //#endregion
 

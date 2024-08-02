@@ -73,6 +73,8 @@ if (!user_id) {
       document.querySelector('#table_permission_production').value = array1.production_permission;
       document.querySelector('#table_permission_bread').value = array1.bread_permission;
       document.querySelector('#table_permission_transaction').value = array1.transaction_permission;
+      document.querySelector('#table_permission_items').value = array1.transaction_permission;
+      document.querySelector('#table_permission_cutomers').value = array1.transaction_permission;
     } catch (error) {
       catch_error('error in show_data', error.message_ar);
     };
@@ -198,6 +200,8 @@ if (!user_id) {
       let table_permission_production = parseInt(document.querySelector("#table_permission_production").value);
       let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value);
       let table_permission_transaction = parseInt(document.querySelector("#table_permission_transaction").value);
+      let table_permission_items = parseInt(document.querySelector("#table_permission_items").value);
+      let table_permission_customers = parseInt(document.querySelector("#table_permission_customers").value);
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
       // const changePassword_div = document.querySelector('#changePassword_div');
 
@@ -242,6 +246,8 @@ if(!dialogAnswer){
         table_permission_production = 0;
         table_permission_bread = 0;
         table_permission_transaction = 0;
+        table_permission_items = 0;
+        table_permission_customers = 0;
         // add here all tables select permission id
       };
       console.log(user_id);
@@ -257,6 +263,8 @@ if(!dialogAnswer){
         table_permission_production,
         table_permission_bread,
         table_permission_transaction,
+        table_permission_items,
+        table_permission_customers,
         today,
       };
 

@@ -144,6 +144,20 @@ router.get('/update_employee_ar', (req, res) => {
 });
 //#endregion employees
 
+//#region cutomers 
+router.get('/cutomers_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.cutomers_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'cutomers' ,'cutomers_view_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion
+
 //#region  Attendance
 router.get('/attendance_ar', (req, res) => {
     if (req.session.isLoggedIn) {
@@ -225,7 +239,6 @@ router.get('/production_update_ar', (req, res) => {
     }
 });
 //#endregion end production
-
 
 //#region bread
 
@@ -356,6 +369,7 @@ router.get('/transaction_update_ar', (req, res) => {
 });
 
 //#endregion
+
 //#region owners_and_companies
 router.get('/companies_ar', async (req, res) => {
     if (req.session.isLoggedIn) {  

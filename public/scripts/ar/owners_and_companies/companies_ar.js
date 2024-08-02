@@ -167,8 +167,10 @@ document.querySelector('#yesButton').style.display = 'none'
       20,
       false,
       '',
-      'حدث خطأ اثناء معالجة البيانات',
-      false
+      false,
+      false,'',
+      false,'',
+      'حدث خطأ اثناء معالجة البيانات'
     )
 
     const dataLength = data.length
@@ -333,8 +335,10 @@ async function company_login_btn(enter_button) {
       20,
       false,
       '',
-      'حدث خطأ اثناء الدخول الى العمل التجارى المحدد',
-      false
+      false,
+      false,'',
+      false,'',
+      'حدث خطأ اثناء الدخول الى العمل التجارى المحدد'
     )
 
     const dataLength = data.length
@@ -372,6 +376,7 @@ const permissions = [
   "bread_permission",
   "transaction_permission",
   "items_permission",
+  "cutomers_permission",
   // Add new permissions here
 ];
 
@@ -843,7 +848,7 @@ async function fillAttendancetable2() {
     <div class="flex_row w_full">
       <div class="input_with_icon_div w_full">
         <input type="search" name="searchInput2" id="searchInput2" placeholder="search" class="search_input w_full hover" onkeydown="performSearch2_Oninput(event)" onsearch="performSearch2_Onsearch(this)">
-        <i class="fa-duotone fa-magnifying-glass left_icon"></i>
+        <i class="fa-light fa-magnifying-glass left_icon"></i>
       </div>
       <button id="searchBtn2" onclick="performSearch2()" class="btn_search hover">search</button>
     </div>
@@ -991,7 +996,10 @@ async function table_update_btn_fn2(updateBtn) {
         20,
         false, '',
         'حدث خطأ اثناء معاجله البيانات',
-        false
+        false,
+        false,'',
+        false,'',
+        'حدث خطأ اثناء الدخول الى العمل التجارى المحدد'
       )
 
     

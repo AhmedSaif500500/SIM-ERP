@@ -11,12 +11,12 @@
 
 
 
-<style>
-   /* .jstree-leaf > .jstree-anchor > .jstree-themeicon { background:red !important; }
+  <style>
+    /* .jstree-leaf > .jstree-anchor > .jstree-themeicon { background:red !important; }
    .jstree-container-ul li a{
     color: red;
    } */
-</style>
+  </style>
 </head>
 
 <body class="body">
@@ -42,43 +42,40 @@
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-          <!-- 
-          <div class="btn_container">
-            <a href="/new_employee_ar" class="btn_new" id="newBtn">جديد</a>
-          </div> -->
-
-
-          <!-- search in table -->
-
-          <!-- <div class="flex_row">
-            <div class="input_with_icon_div">
-              <input type="search" name="searchInput" id="searchInput" placeholder="search" class="search_input hover">
-              <i class="fa-duotone fa-magnifying-glass left_icon"></i>
-            </div>
-            <button id="searchBtn" class="btn_search hover">search</button>
-          </div> -->
-
-          <!-- table container filled by js -->
-          <!-- <div id="table-container"></div> -->
 
           <div class="btn_container">
-            
-            <button id="accounts_view_tree_btn" class="btn_new">عرض شجرى</button>
-            <button id="accounts_view_table_btn" class="btn_new">عرض جدولى</button>
+            <button id="accounts_view_tree_btn" class="link">عرض شجرى</button>
+            <button id="accounts_view_table_btn" class="link">عرض جدولى</button>
           </div>
 
           <div id="tree_2div_container" class="tree_2div_container" style="display: none;">
-            <i id="collapse_tree" class="fa-sharp fa-solid fa-chevrons-up ps_15" style="cursor: pointer;" title="انكماش الفروع"></i>
-            <div id="tree" class="tree"></div> <!-- 5as be el tree viewer it's fill from javascript -->
+            <i id="collapse_tree" class="fa-sharp fa-solid fa-chevrons-up ps_15" style="cursor: pointer;"
+              title="انكماش الفروع"></i>
+            <div id="tree" class="tree"></div> 
           </div>
 
-                  <!-- table container filled by js -->
-        <div id="table-container" class="table_container scroll"></div>
+          <div class="table_div flex_column" style='display: none;'>
 
+            <div class="btn_container">
+              <button id="newGroupBtn_table" class="btn_new">مجموعه جديده</button>
+              <button id="newItemBtn_table" class="btn_new">صنف جديد</button>
+            </div>
+
+            <div class="flex_row gap_05">
+              <div class="input_with_icon_div">
+                <input type="search" name="searchInput" id="searchInput" placeholder="search"
+                  class="search_input hover">
+                <i class="fa-light fa-magnifying-glass left_icon"></i>
+              </div>
+              <button id="searchBtn" class="btn_search hover">search</button>
+            </div>
+
+            <div id="table-container" class="table_container scroll"></div>
+          </div>
         </div>
       </div>
 
-    </div> <!-- end body content -->
+    </div>
 
 
 
@@ -88,18 +85,19 @@
         <h2 id="h2_header" class="h3">general address</h2>
 
         <div id="tree_rename_div" class="dialog_partition_div">
-          <label for="account_rename_input" class="lbl_sm">ادخل الاسم الجديد للصنف</label>
-          <input type="search" id="account_rename_input" class="input_text_xl w_full hover" oninput="check_parse(this,'string')">
-          
+          <label for="account_rename_input" class="lbl_sm">ادخل الاسم الجديد</label>
+          <input type="search" id="account_rename_input" class="input_text_xl w_full hover"
+            oninput="check_parse(this,'string')">
+
           <div id="" class="dialog_footer">
             <button id="btn_update_rename" class="btn_update">تعديل</button>
             <button id="" class="noButton btn_cancel">إنهاء</button>
-          </div> 
+          </div>
         </div>
 
-        
 
-      
+
+
         <div id="tree_add_account" class="dialog_partition_div">
           <!-- <h2 id="h2_header" class="h2">asfasf</h2> -->
 
@@ -107,18 +105,21 @@
           <!-- معرف الصنف -->
           <div id="acc_no_div" class="flex_column">
             <label for="account_no_input" class="lbl_sm">معرف الصنف</label>
-            <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختيارى" autocomplete="off" oninput="check_parse(this,'string')">
+            <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختيارى"
+              autocomplete="off" oninput="check_parse(this,'string')">
             <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
           </div>
           <!-- اسم الصنف -->
           <label for="account_name_input" id="lbl_acc_name" class="lbl_sm">اسم الصنف</label>
-          <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
+          <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب"
+            autocomplete="off" oninput="check_parse(this,'string')">
           <input type="hidden" id="account_id_hidden">
 
           <!-- اسم الصنف -->
           <label for="item_unite_input" id="lbl_acc_name" class="lbl_sm">وحدة قياس الكميه</label>
-          <input type="search" id="item_unite_input" class="input_text_sm hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
-          
+          <input type="search" id="item_unite_input" class="input_text_sm hover" placeholder="مطلوب" autocomplete="off"
+            oninput="check_parse(this,'string')">
+
           <!--   القائمة والمجموعه-->
           <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
           <div class="flex_row x_start y_center mb_10">
@@ -131,7 +132,8 @@
           <div id="final_account_information_div" class="flex_column">
             <!-- قائمة التدفقات النقدية -->
             <label for="revenue_account_select" class="lbl_sm">حساب الدخل</label>
-            <select name="revenue_account_select" id="revenue_account_select" class="select mb_10" style="border-start-start-radius: none;">
+            <select name="revenue_account_select" id="revenue_account_select" class="select mb_10"
+              style="border-start-start-radius: none;">
             </select>
           </div>
 
@@ -139,21 +141,25 @@
           <div id="final_account_information_div" class="flex_column">
             <!-- قائمة التدفقات النقدية -->
             <label for="expens_account_select" class="lbl_sm">حساب المصروفات</label>
-            <select name="expens_account_select" id="expens_account_select" class="select mb_10" style="border-start-start-radius: none;">
+            <select name="expens_account_select" id="expens_account_select" class="select mb_10"
+              style="border-start-start-radius: none;">
               <option value="1" selected>تكلفة المخزون</option>
             </select>
           </div>
 
 
           <label for="sales_price" id="lbl_acc_name" class="lbl_sm">سعر البيع الافتراضى</label>
-          <input type="search" id="sales_price" class="input_text_sm hover" placeholder="اختيارى" oninput="check_parse(this,'number')" autocomplete="off">
+          <input type="search" id="sales_price" class="input_text_sm hover" placeholder="اختيارى"
+            oninput="check_parse(this,'number')" autocomplete="off">
 
           <label for="purchase_price" id="lbl_acc_name" class="lbl_sm">سعر الشراء الافتراضى</label>
-          <input type="search" id="purchase_price" class="input_text_sm hover" placeholder="اختيارى" oninput="check_parse(this,'number')" autocomplete="off">
+          <input type="search" id="purchase_price" class="input_text_sm hover" placeholder="اختيارى"
+            oninput="check_parse(this,'number')" autocomplete="off">
 
-          
+
           <label for="reorder_point" id="lbl_acc_name" class="lbl_sm">نقطة اعادة الطلب</label>
-          <input type="search" id="reorder_point" class="input_text_sm hover" placeholder="اختيارى" oninput="check_parse(this,'number')" autocomplete="off">
+          <input type="search" id="reorder_point" class="input_text_sm hover" placeholder="اختيارى"
+            oninput="check_parse(this,'number')" autocomplete="off">
 
           <div id="dialog_footer" class="dialog_footer">
             <button id="btn_save" class="btn_save" style="display: none;">حفظ</button>
@@ -164,22 +170,23 @@
 
         </div>
 
- 
+
         <div id="tree_group_div" class="dialog_partition_div">
 
-                    <!-- اسم الصنف -->
-                    <label for="account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم الصنف</label>
-                    <input type="search" id="account_name_input_tree_group_div" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')">
-                    <input type="hidden" id="account_id_hidden_tree_group_div">
-          
-                    <!--   القائمة والمجموعه-->
-                    <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
-                    <div class="flex_row x_start y_center mb_10">
-                      <span id="statment_type_span_tree_group_div" class="span">مجموعات الاصناف</span>
-                      <input type="hidden" id="statment_type_span_hidden_value">
-                      <select  id="parent_gruop_name_tree_goup_div" class="select"></select>
-                    </div>
-                    
+          <!-- اسم الصنف -->
+          <label for="account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم المجموعة</label>
+          <input type="search" id="account_name_input_tree_group_div" class="input_text_md hover" autocomplete="off"
+            oninput="check_parse(this,'string')">
+          <input type="hidden" id="account_id_hidden_tree_group_div">
+
+          <!--   القائمة والمجموعه-->
+          <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
+          <div class="flex_row x_start y_center mb_10">
+            <span id="statment_type_span_tree_group_div" class="span">مجموعات الاصناف</span>
+            <input type="hidden" id="statment_type_span_hidden_value">
+            <select id="parent_gruop_name_tree_goup_div" class="select"></select>
+          </div>
+
           <div id="dialog_footer" class="dialog_footer">
             <button id="btn_save_tree_group_div" class="btn_save">حفظ</button>
             <button id="btn_update_tree_group_div" class="btn_update">تعديل</button>
@@ -188,19 +195,19 @@
           </div>
         </div>
 
-    </div> <!-- end div1-->
+      </div> <!-- end div1-->
     </div>
-    </div>
-   
+  </div>
 
-    <!-- scripts------------------------------------------------------------------------------ -->
-    <script src="/public/scripts/jquery/jquery.min.js"></script>
-    <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
-    <script src="/public/socket/socket.io.min.js"></script>
-    <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-    <script src="/public/jstree/dist/jstree.min.js"></script>
-    <script src="/public/scripts/ar/items/items_view_ar.js"></script>
-    <!-- <script src="/public/scripts/ar/accounts/accounts_view_ar copy.js"></script> -->
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/scripts/jquery/jquery.min.js"></script>
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/jstree/dist/jstree.min.js"></script>
+  <script src="/public/scripts/ar/items/items_view_ar.js"></script>
+  <!-- <script src="/public/scripts/ar/accounts/accounts_view_ar copy.js"></script> -->
 
 
 

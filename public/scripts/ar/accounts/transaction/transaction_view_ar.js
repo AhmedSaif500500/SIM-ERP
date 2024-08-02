@@ -25,8 +25,10 @@ async function geteMainData_fn() {
         'transaction_permission','view',
         15,
         false,'',
-        'حدث خطأ اثناء معالجة البيانات',
-        true
+        true,
+        false,'',
+        false,'',
+        'حدث خطأ اثناء معالجة البيانات'
     )
     // تحديث array1 بنتيجة الـ slice
     array1 = data.slice();

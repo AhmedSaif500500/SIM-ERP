@@ -29,6 +29,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         "bread",
         "transaction",
         "items",
+        "cutomers",
         // Add new permissions here
       ];
 

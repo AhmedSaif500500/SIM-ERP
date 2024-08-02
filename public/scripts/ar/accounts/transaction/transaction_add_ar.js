@@ -216,8 +216,10 @@ try {
   15,
   false,
   '',
-  'حدث خطأ اثناء معالجه البيانات',
-  true
+  true,
+  false,'',
+  false,'',
+  'حدث خطأ اثناء معالجه البيانات'
   )
 
   for (const row of data) {
@@ -262,8 +264,10 @@ async function getEmployeesData_fn() {
       'transaction_permission','view',
       15,
       false,'',
-      'حدث خطأ اثناء معالجة البيانات',
-      true
+      true,
+      false,'',
+      false,'',
+      'حدث خطأ اثناء معالجة البيانات'
     )
 
   array1 = data.slice();

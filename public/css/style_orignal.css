@@ -886,21 +886,6 @@ width: 100% !important;
   background-color: var(--input_text_background_color);
 }
 
-.text_area2{
-  position: relative;
-  border: var(--border_normal);
-  border-radius: 0.3rem;
-  transition: var(--transition);
-  padding: 0.5rem;
-  width: 30rem;
-  max-width: 100%;
-  height: 10rem;
-  resize: none;
-  margin-block-end: 1rem;
-  color: var(--Font_Color);
-  background-color: var(--input_text_background_color);
-}
-
 @media screen and (max-width: 750px) {
   .input_text_md,
   .input_text_lg,

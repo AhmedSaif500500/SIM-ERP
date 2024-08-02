@@ -266,18 +266,33 @@ new_todo_btn.addEventListener('click', function (){
   save_btn.addEventListener('click', async function(){
     datex = date_input.value;
     note = note_textarea.value;
-    await fetchData_post1(
+    // await fetchData_post1(
+    //     "/api/todo_add",
+    //     {datex,note},
+    //     'pass','pass',
+    //     'هل تريد حفظ البيانات ؟',
+    //     15,
+    //     'home_ar',
+    //     'حدث خطأ اثناء حفظ البيانات'
+    //   )
+
+    await fetchData_postAndGet(
         "/api/todo_add",
         {datex,note},
         'pass','pass',
-        'هل تريد حفظ البيانات ؟',
         15,
+        false,'',
+        false,
+        true,save_btn,
+        true,
         'home_ar',
-        'حدث خطأ اثناء حفظ البيانات'
-      )
-      
-    })
+        'حدث خطأ اثناء معالجة البيانات'
+    )
     
+    })
+
+
+
   
     async function tabble_update_btn_fn(updateBtn) {
         const row  = updateBtn.closest("tr")
@@ -301,17 +316,29 @@ new_todo_btn.addEventListener('click', function (){
         const is_checked = checked_input.checked
         
 
-        await fetchData_post1(
+        // await fetchData_post1(
+        //     "/api/todo_update",
+        //     {id_value,
+        //     datex,
+        //     note,
+        //     is_checked},
+        //     'pass','pass',
+        //     'هل تريد تعديل البيانات ؟',
+        //     15,
+        //     'home_ar',
+        //     'حدث خطأ اثناء تعديل البيانات'
+        //   )
+
+          await fetchData_postAndGet(
             "/api/todo_update",
-            {id_value,
-            datex,
-            note,
-            is_checked},
+            {id_value,datex,note,is_checked},
             'pass','pass',
-            'هل تريد تعديل البيانات ؟',
             15,
-            'home_ar',
-            'حدث خطأ اثناء تعديل البيانات'
+            false,'',
+            true,
+            true,update_btn,
+            true,'home_ar',
+            'حدث خطأ اثناء معالجة البيانات'
           )
         })
 
@@ -320,15 +347,27 @@ async function deleteRow(button){
     const row  = button.closest("tr")
     const id_value = row.cells[1].textContent
 
-    await fetchData_post1(
-        "/api/todo_delete",
-        {id_value},
-        'pass','pass',
-        'هل تريد حذف هذه الملاحظه ؟',
-        15,
-        'home_ar',
-        'حدث خطأ اثناء معالجة البيانات'
-      )
+    // await fetchData_post1(
+    //     "/api/todo_delete",
+    //     {id_value},
+    //     'pass','pass',
+    //     'هل تريد حذف هذه الملاحظه ؟',
+    //     15,
+    //     'home_ar',
+    //     'حدث خطأ اثناء معالجة البيانات'
+    //   )
+
+        await fetchData_postAndGet(
+            "/api/todo_delete",
+            {id_value},
+            'pass','pass',
+            15,
+            true,'هل تريد حذف الملاحظه الحالية ؟',
+            true,
+            false,'',
+            true,'home_ar',
+            'حدث خطأ اثناء معالجة البيانات'
+        )
 
 }
 

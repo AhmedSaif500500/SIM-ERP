@@ -515,7 +515,10 @@ async function getEmployeesData_fn1() {
         15,
         false,'',
         'حدث خطأ اثناء معالجة البيانات',
-        false
+        false,
+        false,'',
+        false,'',
+        'حدث خطأ اثناء الدخول الى العمل التجارى المحدد'
       )
 
     // تحديث array2 بنتيجة الـ slice
