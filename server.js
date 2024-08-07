@@ -224,7 +224,7 @@ app.post("/Login", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -339,7 +339,7 @@ app.get("/Logout", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -349,7 +349,7 @@ app.get("/Logout", async (req, res) => {
     // if (!req.session.userId) {
     //   return res.status(400).json({
     //     success: false,
-    //     message: "User not logged in"
+    //     message_ar: "User not logged in"
     //   });
     // }
 
@@ -362,14 +362,14 @@ app.get("/Logout", async (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error("Logout Error:", err.message);
-        res.status(500).json({ success: false, message: "Logout Error" });
+        res.status(500).json({ success: false, message_ar: "Logout Error" });
       } else {
-        res.json({ success: true, message: "Logout successful" });
+        res.json({ success: true, message_ar: "Logout successful" });
       }
     });
   } catch (error) {
     console.error("Logout Error:", error);
-    res.status(500).json({ success: false, message: "Logout Error" });
+    res.status(500).json({ success: false, message_ar: "Logout Error" });
   }
 });
 
@@ -396,7 +396,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message: "عفوًا لا تملك صلاحية العرض",
+              message_ar: "عفوًا لا تملك صلاحية العرض",
             });
             return false;
           }
@@ -406,7 +406,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message: "عفوًا لا تملك صلاحية الاضافة",
+              message_ar: "عفوًا لا تملك صلاحية الاضافة",
             });
             return false;
           }
@@ -416,7 +416,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message: "عفوًا لا تملك صلاحية التعديل",
+              message_ar: "عفوًا لا تملك صلاحية التعديل",
             });
             return false;
           }
@@ -426,7 +426,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message: "عفوًا لا تملك صلاحية الحذف",
+              message_ar: "عفوًا لا تملك صلاحية الحذف",
             });
             return false;
           }
@@ -649,7 +649,7 @@ app.post("/api/add_new_company", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -776,7 +776,7 @@ app.post("/company_login", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -803,7 +803,7 @@ app.post("/company_login", async (req, res) => {
       } else {
         res.json({
           success: false,
-          message: "حدث خطأ اثناء معالجه البيانات ",
+          message_ar: "حدث خطأ اثناء معالجه البيانات ",
         });
       }
     } else {
@@ -903,7 +903,7 @@ if (rows.length > 0) {
       } else {
         res.json({
           success: false,
-          message: "حدث خطأ اثناء معالجه البيانات ",
+          message_ar: "حدث خطأ اثناء معالجه البيانات ",
         });
       }
     }
@@ -959,7 +959,7 @@ app.post("/api/get_companies_users", async (req, res) => {
       } else {
         res.json({
           success_ar: false,
-          message: "حدث خطأ اثناء معالجه البيانات ",
+          message_ar: "حدث خطأ اثناء معالجه البيانات ",
         });
       }
     }
@@ -1338,7 +1338,7 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
     console.error("Error get_All_users_Data ", err.message);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
+      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
     });
   }
 });
@@ -1434,7 +1434,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
     console.error("Error get users data:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ معالجة البيانات",
+      message_ar: "حدث خطأ معالجة البيانات",
     });
   }
 });
@@ -1505,7 +1505,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       if (hasBadSymbols) {
         return res.json({
           success: false,
-          message:
+          message_ar:
             "Invalid input detected due to prohibited characters. Please review your input and try again.",
         });
       }
@@ -1565,7 +1565,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       if (hasBadSymbols) {
         return res.json({
           success: false,
-          message:
+          message_ar:
             "Invalid input detected due to prohibited characters. Please review your input and try again.",
         });
       }
@@ -1637,7 +1637,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       if (hasBadSymbols) {
         return res.json({
           success: false,
-          message:
+          message_ar:
             "Invalid input detected due to prohibited characters. Please review your input and try again.",
         });
       }
@@ -1706,7 +1706,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
       if (hasBadSymbols) {
         return res.json({
           success: false,
-          message:
+          message_ar:
             "Invalid input detected due to prohibited characters. Please review your input and try again.",
         });
       }
@@ -1790,7 +1790,7 @@ app.get("/get_All_users_Data", async (req, res) => {
     console.error("Error get_All_users_Data ", err.message);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
+      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
     });
   }
 });
@@ -1814,7 +1814,7 @@ app.get("/get_All_users_Data", async (req, res) => {
 //       // اذا حصل على نتائج
 //       return res.json({
 //         success: false,
-//         message: "اسم المستخدم موجود بالفعل",
+//         message_ar: "اسم المستخدم موجود بالفعل",
 //       });
 //     } else {
 //       //! تشفير كلمة المرور قبل إدخالها في قاعدة البيانات
@@ -1841,7 +1841,7 @@ app.get("/get_All_users_Data", async (req, res) => {
 //       //4: send a response to frontend about success transaction
 //       res.json({
 //         success: true,
-//         message: "تم حفظ المستخدم بنجاح",
+//         message_ar: "تم حفظ المستخدم بنجاح",
 //       });
 //       last_activity(req);
 //     }
@@ -1850,7 +1850,7 @@ app.get("/get_All_users_Data", async (req, res) => {
 //     // send a response to frontend about fail transaction
 //     res.status(500).json({
 //       success: false,
-//       message: "حدث خطأ أثناء اضافة المستخدم",
+//       message_ar: "حدث خطأ أثناء اضافة المستخدم",
 //     });
 //   }
 // });
@@ -1961,7 +1961,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
     // if (!general_permission || general_permission !== 6) {
     //   return res.json({
     //     success: false,
-    //     message: "Sorry,you  can't use this featue",
+    //     message_ar: "Sorry,you  can't use this featue",
     //   });
     // }
 
@@ -1982,7 +1982,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -1992,7 +1992,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
     if (parseInt(posted_elements.user_id) === 1) {
       return res.json({
         success: false,
-        message: "لا يمكن التعديل على هذا المستخدم",
+        message_ar: "لا يمكن التعديل على هذا المستخدم",
       });
     }
 
@@ -2064,7 +2064,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
     if (!general_permission || general_permission !== 6) {
       return res.json({
         success: false,
-        message: "Sorry,you  can't use this featue",
+        message_ar: "Sorry,you  can't use this featue",
       });
     }
 
@@ -2076,7 +2076,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2093,14 +2093,14 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
 
     return res.json({
       success: true,
-      message:
+      message_ar:
         "تم حذف بيانات المستخدم بنجاح : سيتم توجيهك الى صفحه المستخدمين الرئيسية",
     });
   } catch (error) {
     console.error("Error Deleting user data:", error);
     res.status(500).json({
       success: false,
-      message: "توجد عمليات فى التطبيق مرتبطه بهذا المستخدم ولا يمكن حذفه",
+      message_ar: "توجد عمليات فى التطبيق مرتبطه بهذا المستخدم ولا يمكن حذفه",
     });
   }
 });
@@ -2138,7 +2138,7 @@ app.post("/addNewEmployee", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2160,7 +2160,7 @@ app.post("/addNewEmployee", async (req, res) => {
 
     if (rows.length > 0) {
       // اذا حصل على نتائج
-      return res.json({ success: false, message: "اسم الموظف موجود بالفعل" });
+      return res.json({ success: false, message_ar: "اسم الموظف موجود بالفعل" });
     }
 
     //3: insert data into db
@@ -2194,7 +2194,7 @@ app.post("/addNewEmployee", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
     });
   }
 });
@@ -2218,7 +2218,7 @@ app.post("/updateEmployee", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2241,20 +2241,20 @@ app.post("/updateEmployee", async (req, res) => {
       // اذا حصل على نتائج
       return res.json({
         success: true,
-        message: "data get success",
+        message_ar: "data get success",
         rows: rows,
       });
     } else {
       return res.json({
         success: false,
-        message: "Faild to get employee data from server",
+        message_ar: "Faild to get employee data from server",
       });
     }
   } catch (error) {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء معالجة البيانات",
+      message_ar: "حدث خطأ أثناء معالجة البيانات",
     });
   }
 });
@@ -2279,7 +2279,7 @@ app.post("/update_employee", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2307,7 +2307,7 @@ app.post("/update_employee", async (req, res) => {
       // اذا حصل على نتائج
       return res.json({
         success: false,
-        message: "اسم الموظف موجود بالفعل",
+        message_ar: "اسم الموظف موجود بالفعل",
       });
     } else {
       //3: insert data into db
@@ -2344,7 +2344,7 @@ app.post("/update_employee", async (req, res) => {
 
       return res.json({
         success: true,
-        message:
+        message_ar:
           "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
       });
     }
@@ -2352,7 +2352,7 @@ app.post("/update_employee", async (req, res) => {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء اضافة  الموظف",
+      message_ar: "حدث خطأ أثناء اضافة  الموظف",
     });
   }
 });
@@ -2375,7 +2375,7 @@ app.post("/delete_employee", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2395,14 +2395,14 @@ app.post("/delete_employee", async (req, res) => {
 
     return res.json({
       success: true,
-      message:
+      message_ar:
         "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
     });
   } catch (error) {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message:
+      message_ar:
         "لا يمكن حذف الموظف : قد تكون هناك عمليات مرتبطه بالموظف يجب حذفها اولا",
     });
   }
@@ -2458,12 +2458,37 @@ app.get("/get_All_customers_Data", async (req, res) => {
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
     // console.log(req.session.company_id);
-    let query1 = `SELECT id, account_name, account_no, credit_limit, email, tasgel_darepy, legal_info, contact_info, delivery_adress, banking_info
-                  FROM 
-                    accounts_header
-                  WHERE
-                    company_id = $1 AND
-                    account_type_id = 2`;
+    let query1 = `SELECT 
+    A.id, 
+    A.account_name, 
+    A.account_no, 
+    A.credit_limit, 
+    A.email, 
+    A.tasgel_darepy, 
+    A.legal_info, 
+    A.contact_info, 
+    A.delivery_adress, 
+    A.banking_info,
+    COALESCE(SUM(T.debit) - SUM(T.credit), 0) AS balance
+FROM 
+    accounts_header A
+LEFT JOIN 
+    transaction_body T ON A.id = T.account_id
+WHERE
+    A.company_id = $1
+    AND A.account_type_id = 2
+GROUP BY
+    A.id, 
+    A.account_name, 
+    A.account_no, 
+    A.credit_limit, 
+    A.email, 
+    A.tasgel_darepy, 
+    A.legal_info, 
+    A.contact_info, 
+    A.delivery_adress, 
+    A.banking_info;
+`;
     let data = await db.any(query1, [req.session.company_id]);
 
     res.json(data);
@@ -2509,14 +2534,14 @@ app.get("/get_All_customers_Data", async (req, res) => {
       if (hasBadSymbols) {
         return res.json({
           success: false,
-          message:
+          message_ar:
             "Invalid input detected due to prohibited characters. Please review your input and try again.",
         });
       }
 
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
-        return res.json({ success: false, message: "ادخل اسم العميل" });
+        return res.json({ success: false, message_ar: "ادخل اسم العميل" });
       }
       //* Start--------------------------------------------------------------
   
@@ -2536,7 +2561,7 @@ app.get("/get_All_customers_Data", async (req, res) => {
   
       if (rows.length > 0) {
         // اذا حصل على نتائج
-        return res.json({ success: false, message: "اسم العميل موجود بالفعل" });
+        return res.json({ success: false, message_ar: "اسم العميل موجود بالفعل" });
       }
   
       //3: insert data into db
@@ -2574,7 +2599,202 @@ app.get("/get_All_customers_Data", async (req, res) => {
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message: "حدث خطأ أثناء اضافة العميل",
+        message_ar: "حدث خطأ أثناء اضافة العميل",
+      });
+    }
+  });
+  //#endregion
+
+  //#region update cutomer
+  app.post("/updateCustomer", async (req, res) => {
+    try {
+          // // إرسال رسالة إلى العميل عبر WebSocket
+          // io.emit('blockUser', { userId: req.session.userId });
+          
+      const posted_elements = req.body;
+  
+      //! Permission
+      await permissions(req, "cutomers_permission", "add");
+      if (!permissions) {
+        return;
+      }
+  
+      //! sql injection check
+      // const hasBadSymbols = sql_anti_injection([
+      //   posted_elements.employee_name_input,
+      //   posted_elements.today,
+      //   posted_elements.employee_job_input,
+      //   posted_elements.employee_beta2a_input,
+      //   posted_elements.employee_adress_input,
+      //   posted_elements.employee_phone_input,
+      //   posted_elements.employee_emergency_phone_input,
+      //   posted_elements.employee_start_date_input,
+      //   posted_elements.employee_leave_date_input,
+      //   // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      // ]);
+
+      console.log(posted_elements);
+      
+      // سرد كل القيم مره واحده 
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '' || !posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value) ) {
+        return res.json({ success: false, message_ar: "ادخل اسم العميل" });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //2: validation data befor inserting to db
+      // const rows = await db.any(
+      //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+      //   [posted_elements.employee_name_input]
+      // );
+  
+
+      let query0 = ` select
+                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 2 AND account_name = $3 AND id != $2) as count_account_name_exist,
+                      (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 2) as count_id
+      `
+      let result = await db.oneOrNone(query0, [
+        req.session.company_id,
+        posted_elements.account_id_hidden_value,
+        posted_elements.account_name_input_value,
+      ]);
+  
+      if (result.count_id === 0) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.count_account_name_exist > 0) {
+        return res.json({
+          success: false,
+          message_ar: "اسم العميل موجود بالفعل"
+        });
+      }
+  
+      let query = `
+    UPDATE accounts_header set account_name = $1, account_no = $2, credit_limit = $3, email = $4, tasgel_darepy = $5, legal_info = $6, contact_info = $7, delivery_adress = $8, banking_info = $9
+    WHERE company_id = $10 AND account_type_id = 2 AND id = $11
+  `;
+      await db.none(query, [
+        posted_elements.account_name_input_value,
+        posted_elements.acc_no_div_value,
+        posted_elements.credit_limit_value,
+        posted_elements.email_input_value,
+        posted_elements.tasgel_darepy_input_value,
+        posted_elements.legal_info_input_value,
+        posted_elements.contact_info_input_value,
+        posted_elements.delivery_adress_input_value,
+        posted_elements.banking_info_input_value,
+        req.session.company_id,
+        posted_elements.account_id_hidden_value
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم تحديث بيانات العميل بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding customers:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء تحديث بيانات العميل",
+      });
+    }
+  });
+  //#endregion
+
+  //#region delete customers
+  app.post("/delete_customer", async (req, res) => {
+    try {
+      //! Permission
+      await permissions(req, "customers_permission", "delete");
+      if (!permissions) {
+        return;
+      }
+  
+      const posted_elements = req.body;
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_id_hidden_value,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      //* Start--------------------------------------------------------------
+  
+      if (!posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value)) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+  
+      let query0 = `
+              select
+              (select count(account_id) from transaction_body where account_id = $1) as count_account_id,
+              (select count(id) from accounts_header where company_id = $2 AND account_type_id = 2) as count_id
+      `
+
+      let result = await db.oneOrNone(query0,[
+        posted_elements.account_id_hidden_value,
+        req.session.company_id
+      ])
+
+
+      if (result.count_id === 0) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.count_account_id > 0) {
+        return res.json({
+          success: false,
+          message_ar: 'يوجد حركات على الحساب : تم الغاء الحذف',
+        });
+      }
+
+      let query1 = `DELETE FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 2`;
+      await db.none(query1, [
+        req.session.company_id,
+        posted_elements.account_id_hidden_value,
+      ]);
+  
+      return res.json({
+        success: true,
+        message_ar:
+          "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
+      });
+    } catch (error) {
+      console.error("Error get employee data:", error);
+      res.status(500).json({
+        success: false,
+        message_ar:
+          "لا يمكن حذف الموظف : قد تكون هناك عمليات مرتبطه بالموظف يجب حذفها اولا",
       });
     }
   });
@@ -2608,7 +2828,7 @@ app.post("/attendance_add", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2632,14 +2852,14 @@ app.post("/attendance_add", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message: "تم حفظ البيانات بنجاح",
+      message_ar: "تم حفظ البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding attendance:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء الاضافه",
+      message_ar: "حدث خطأ أثناء الاضافه",
     });
   }
 });
@@ -2670,7 +2890,7 @@ app.post("/getEmployeesData1", async (req, res) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message: "Error while get Employees Data" });
+      .json({ success: false, message_ar: "Error while get Employees Data" });
   }
 });
 //#endregion
@@ -2714,7 +2934,7 @@ app.get("/get_All_attendance_Data", async (req, res) => {
     console.error("Error getEmployeesData1:", error);
     res
       .status(500)
-      .json({ success: false, message: "حدث خطأ أثناء عرض البيانات" });
+      .json({ success: false, message_ar: "حدث خطأ أثناء عرض البيانات" });
   }
 });
 //#endregion
@@ -2738,7 +2958,7 @@ app.post("/updateattendance", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2768,20 +2988,20 @@ app.post("/updateattendance", async (req, res) => {
       // اذا حصل على نتائج
       return res.json({
         success: true,
-        message: "data get success",
+        message_ar: "data get success",
         rows: rows,
       });
     } else {
       return res.json({
         success: false,
-        message: "Faild to get data from server",
+        message_ar: "Faild to get data from server",
       });
     }
   } catch (error) {
     console.error("Error updateattendance:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء تحميل البيانات",
+      message_ar: "حدث خطأ أثناء تحميل البيانات",
     });
   }
 });
@@ -2811,7 +3031,7 @@ app.post("/attendance_update", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2845,7 +3065,7 @@ app.post("/attendance_update", async (req, res) => {
 
     return res.json({
       success: true,
-      message:
+      message_ar:
         "تم تعديل البيانات : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
     });
     // }
@@ -2853,7 +3073,7 @@ app.post("/attendance_update", async (req, res) => {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء تعديل البيانات",
+      message_ar: "حدث خطأ أثناء تعديل البيانات",
     });
   }
 });
@@ -2877,7 +3097,7 @@ app.post("/attendance_delete", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2897,14 +3117,14 @@ app.post("/attendance_delete", async (req, res) => {
 
     return res.json({
       success: true,
-      message:
+      message_ar:
         "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
     });
   } catch (error) {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء حذف ",
+      message_ar: "حدث خطأ أثناء حذف ",
     });
   }
 });
@@ -2936,7 +3156,7 @@ app.post("/production_add_ar", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -2961,14 +3181,14 @@ app.post("/production_add_ar", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message: "تم حفظ البيانات بنجاح",
+      message_ar: "تم حفظ البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding production:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء اضافة البيانات",
+      message_ar: "حدث خطأ أثناء اضافة البيانات",
     });
   }
 });
@@ -3042,7 +3262,7 @@ app.post("/production_update_ar", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -3066,13 +3286,13 @@ app.post("/production_update_ar", async (req, res) => {
 
     return res.json({
       success: true,
-      message: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الجرد الرئيسيه",
+      message_ar: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الجرد الرئيسيه",
     });
   } catch (error) {
     console.error("Error production_update_ar", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء تعديل البيانات",
+      message_ar: "حدث خطأ أثناء تعديل البيانات",
     });
   }
 });
@@ -3095,7 +3315,7 @@ app.post("/delete_production", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -3112,14 +3332,14 @@ app.post("/delete_production", async (req, res) => {
 
     return res.json({
       success: true,
-      message:
+      message_ar:
         "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه الجرد والانتاج الرئيسيه",
     });
   } catch (error) {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ اثناء حذف البيانات",
+      message_ar: "حدث خطأ اثناء حذف البيانات",
     });
   }
 });
@@ -3406,7 +3626,7 @@ app.post("/report_attendance", async (req, res) => {
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message:
+        message_ar:
           "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
@@ -3447,7 +3667,7 @@ app.post("/report_attendance", async (req, res) => {
       } else {
         return res.json({
           success: false,
-          message: "لا نتائج",
+          message_ar: "لا نتائج",
         });
       }
     } else {
@@ -3493,7 +3713,7 @@ app.post("/report_attendance", async (req, res) => {
       } else {
         return res.json({
           success: false,
-          message: "لا نتائج",
+          message_ar: "لا نتائج",
         });
       }
     }
@@ -3501,7 +3721,7 @@ app.post("/report_attendance", async (req, res) => {
     console.error("Error report_attendance:", error);
     res.status(500).json({
       success: false,
-      message: "حدث خطأ أثناء تحميل البيانات",
+      message_ar: "حدث خطأ أثناء تحميل البيانات",
     });
   }
 });
@@ -4294,7 +4514,7 @@ app.post("/getAccountsData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT A.id, A.account_name, A.account_type_id FROM accounts_header A where A.company_id = $1 AND is_final_account = true and global_id != 8`;
+    let query1 = `SELECT A.id, A.account_name, A.account_type_id FROM accounts_header A where A.company_id = 1 AND is_final_account = true AND (global_id != 8 OR global_id IS NULL)`;
     let rows = await db.any(query1, [req.session.company_id]);
 
     const data = rows.map((row) => ({
@@ -4308,7 +4528,7 @@ app.post("/getAccountsData1", async (req, res) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message: "Error while get accounts Data" });
+      .json({ success: false, message_ar: "Error while get accounts Data" });
   }
 });
 
@@ -5205,7 +5425,7 @@ app.post("/get_All_transaction_Data", async (req, res) => {
 	refrence,
 	datex,	
 	general_note,
-	total_value
+	COALESCE(total_value, 0) AS total_value
 from transaction_header
 where company_id = $1 and transaction_type = 2
 ORDER BY datex DESC, refrence desc;
@@ -5293,6 +5513,9 @@ app.post("/api/transaction_add", async (req, res) => {
         });
       }
 
+
+      
+
       let query01 = `SELECT refrence from transaction_header where company_id = $1 AND transaction_type = $2`;
       let rows01 = await db.any(query01, [
         req.session.company_id,
@@ -5352,21 +5575,20 @@ app.post("/api/transaction_add", async (req, res) => {
         posted_elements.general_note,
       ]);
 
-
       let newId_transaction_body = await newId_fn("transaction_body",'id');
-
       for (const element of posted_elements.posted_array) {
         const newId = parseInt(newId_transaction_body);
         let query2 = `INSERT INTO transaction_body
-                      (id, transaction_header_id, debit, credit, row_note)
-                      VALUES($1, $2, $3, $4, $5);`;
+                      (id, transaction_header_id, account_id, debit, credit, row_note)
+                      VALUES($1, $2, $3, $4, $5, $6);`;
 
         await tx.none(query2, [
           newId,
           newId_transaction_header,
+          element.account_id,
           element.debt,
           element.credit,
-          element.note_row,
+          element.note_row
         ]);
 
         newId_transaction_body = parseInt(newId_transaction_body) + 1;

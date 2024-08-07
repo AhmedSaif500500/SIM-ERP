@@ -5,9 +5,7 @@ const date1 = document.querySelector('#date1');
 const refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
 const refrence_input = document.querySelector(`#refrence_input`);
 const note_inpute = document.querySelector(`#note_inpute`);
-
 date1.value = today
-
 function update_input_table_total(input) {
   const column_index = input.closest("td").cellIndex
 }
@@ -26,9 +24,6 @@ function is_checked_refrence_fn() {
 refrence_input_checkbox.onchange = function () {
   is_checked_refrence_fn()
 }
-
-
-
 function addRows() {
   var table = document.getElementById("myTable");
   var numRows = parseInt(document.getElementById("columnSelect").value);
@@ -48,15 +43,29 @@ function addRows() {
                 <td>
                   <select name="" id="" class="account_type select" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
                 </td>
-
-                <!-- dropdown -->
+                                <!-- dropdown -->
                 <td style="width: auto; height: var(--input_height);">
                   <div class="dropdown_container_input_table" id="">
-                    <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-                      <div id="" class="dropdown_select_input hover"></div>
+                    <div class="row">
+                      <span class="input_span_start account_type_name T">حساب عام</span>
+                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
+                      <div id="" class="dropdown_select_input T hover"></div>
                       <i class="fa-solid fa-caret-down left_icon"></i>
-                      <input type="hidden" class="id_hidden_input" id="" readonly>
-                    </div>
+                      <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                      </div>
+                      <!-- items -->
+                       <div class="row items_div" style="gap:0.2rem; display:none">
+                          <div class="row">
+                            <span class="input_span_start">الكمية</span>
+                            <div class="div_input_sm hover scroll T" contenteditable="true" oninput="check_parse(this,'number')"></div>
+                          </div>
+                          <div class="row">
+                            <span class="input_span_start">موقع المخزون</span>
+                            <select name="" id="" class="select items_locations_select"></select>
+                            <div class="div_input_sm hover scroll T" contenteditable="true"></div> 
+                          </div>
+                       </div>
+                  </div>
                     <div class="dropdown_menue hover scroll" id="" style="display: none;">
                       <div class="dropdown_search">
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
@@ -139,7 +148,6 @@ async function add_new_transaction() {
     return
   }
 
-  // preparing bread_header data
 
   const datex = date1.value;
   const is_refrence = refrence_input_checkbox.checked
@@ -217,8 +225,8 @@ async function get_accounts_type() {
       false,
       '',
       true,
-      false,'',
-      false,'',
+      false, '',
+      false, '',
       'حدث خطأ اثناء معالجه البيانات'
     )
 
@@ -249,8 +257,8 @@ async function get_items_locations() {
       false,
       '',
       true,
-      false,'',
-      false,'',
+      false, '',
+      false, '',
       'حدث خطأ اثناء معالجه البيانات'
     )
 
@@ -303,11 +311,12 @@ async function getEmployeesData_fn() {
     15,
     false, '',
     true,
-    false,'',
-    false,'',
+    false, '',
+    false, '',
     'حدث خطأ اثناء معالجة البيانات'
-  )
+  )  
 };
+
 
 async function showFirst50RowAtTheBegening(td) {
   slice_Array1 = array1.slice(0, 50);
@@ -403,8 +412,14 @@ async function performSearch(input) {
   });
 
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable(td)
+  await fillAttendancetable(td)
+  if (slice_Array1.length > 0) {
+    handle_dropdown_row_selection(td);
+  }
 }
+
+
+
 
 async function ShowAllDataInAttendanceTable(button) {
   const td = button.closest("td");
@@ -456,149 +471,217 @@ function change_select_account_type(select) {
     span.textContent = "اصل ثابت"
   }
 }
-  //!--------------------------------------------------------------
+//!--------------------------------------------------------------
 
 
-  // إظهار/إخفاء القائمة
+// إظهار/إخفاء القائمة
 
-  async function toggleDropdown(dropdown) {
-    const tr = dropdown.closest('tr')
-    const td = dropdown.closest("td");
-    const dropdown_menue = td.querySelector(`.dropdown_menue`);
-    if (dropdown_menue.style.display === "none") {
-      const account_type = parseInt(tr.querySelector(`.account_type`).value)
-      data_filterd = await data.filter(item => item.account_type === account_type);
-      array1 = data_filterd
-      measureDistanceToBottom(td, dropdown_menue);
-      await showDropdown(td, dropdown_menue);
-    } else {
-      measureDistanceToBottom(td, dropdown_menue);
-      hideDropdown();
-    }
-
-    // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
-    window.addEventListener('scroll', handleResizeOrScroll(td, dropdown_menue));
-    window.addEventListener('resize', handleResizeOrScroll(td, dropdown_menue));
+async function toggleDropdown(dropdown) {
+  const tr = dropdown.closest('tr')
+  const td = dropdown.closest("td");
+  const dropdown_menue = td.querySelector(`.dropdown_menue`);
+  if (dropdown_menue.style.display === "none") {
+    const account_type = parseInt(tr.querySelector(`.account_type`).value)    
+    data_filterd = await data.filter(item => item.account_type === account_type);
+    array1 = data_filterd
+    measureDistanceToBottom(td, dropdown_menue);
+    await showDropdown(td, dropdown_menue);
+  } else {
+    measureDistanceToBottom(td, dropdown_menue);
+    hideDropdown();
   }
-  // إظهار القائمة
-  async function showDropdown(td, dropdown_menue) {
-    await showFirst50RowAtTheBegening(td);
-
-    td.querySelector('.dropdown_search_input').value = ""
-    dropdown_menue.style.display = "block";
-  }
-
-  // إخفاء القائمة
-  function hideDropdown() {
-    try {
-      const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
-      All_dropdown_menue.forEach(dropdown_menue => {
-        dropdown_menue.style.display = "none";
-        const icon = dropdown_menue.closest(`td`).querySelector(`i`)
-        icon.classList.add('fa-caret-down');
-        icon.classList.remove('fa-caret-up');
-      })
-    } catch (error) {
-      catch_error(error);
-    }
-  }
-
-  // إظهار/إخفاء القائمة
-
-  // dropdown_select.addEventListener("click", toggleDropdown);
-
-  // إخفاء القائمة عند فقدان التركيز
-  document.addEventListener("click", (event) => {
-    // console.log('Clicked element:', event.target);
-    const classesToCheck = ['dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input'];
-
-    const clickedInside = classesToCheck.some(className => {
-      return event.target.classList.contains(className) || event.target.closest(`.${className}`);
-    });
-
-    if (!clickedInside) {
-      hideDropdown();
-    }
-  });
+  // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
+  window.addEventListener('scroll', handleResizeOrScroll(td, dropdown_menue));
+  window.addEventListener('resize', handleResizeOrScroll(td, dropdown_menue));
+}
 
 
-  // إخفاء القائمة عند الضغط على مفتاح الهروب
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      hideDropdown();
-    }
-  });
+// إظهار القائمة
+async function showDropdown(td, dropdown_menue) {
+  hideDropdown()
+  await showFirst50RowAtTheBegening(td);
+  const dropdown_search_input = td.querySelector('.dropdown_search_input')
+  dropdown_search_input.value = ""
+  dropdown_menue.style.display = "block";
+  handle_dropdown_row_selection(td)
+}
 
-
-  function updateFooter() {
-
-    let sum1 = 0;
-    let sum2 = 0;
-    // const cells = document.querySelectorAll("#myTable tbody tr td div input");
-    const cells = document.querySelectorAll(`.inputTable_NumberTd.sum`);
-    //  console.log(cells.length);
-
-    cells.forEach(function (cell) {
-      let cellValue = parseFloat(cell.textContent);
-      if (isNaN(cellValue)) {
-        cellValue = 0;
-      }
-      const cellIndex = cell.closest("td").cellIndex;
-
-      // console.log(cellIndex);
-      if (cellIndex === 4) {
-        sum1 += cellValue;
-        document.getElementById("sumColumn4").textContent = sum1;
-      } else if (cellIndex === 5) {
-        sum2 += cellValue;
-        document.getElementById("sumColumn5").textContent = sum2;
-      }
-    });
-
-    document.querySelector(`#difference_debet_cerdit`).textContent = sum1 - sum2
-    // difference_debet_cerdit
-  }
-
-
-
-  //#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
-  function measureDistanceToBottom(td, dropdown_menue) {
-    const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
-    const icon = dropdown_container.querySelector('i'); // تعديل هذا السطر للتأكد من العثور على العنصر الصحيح
-
-    // الحصول على معلومات الحجم والموقع النسبي للعنصر
-    const rect = dropdown_container.getBoundingClientRect();
-
-    // الحصول على ارتفاع النافذة الرئيسية للمتصفح
-    const windowHeight = window.innerHeight;
-
-    // حساب المسافة بين العنصر والحافة السفلية للشاشة
-    const distanceToBottom = windowHeight - rect.bottom;
-
-    // حساب المسافة بوحدة REM
-    // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
-    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const distanceToBottomRem = distanceToBottom / fontSize;
-
-    if (distanceToBottomRem < 21) { // 5aleh nafs rl hight beta3 el drop_menue + 1
-      icon.classList.remove('fa-caret-down');
-      icon.classList.add('fa-caret-up');
-      dropdown_menue.classList.add("dropdown_menue_Open_top");
-      dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
-    } else {
+// إخفاء القائمة
+function hideDropdown() {
+  try {
+    const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
+    All_dropdown_menue.forEach(dropdown_menue => {
+      dropdown_menue.style.display = "none";
+      const icon = dropdown_menue.closest(`td`).querySelector(`i`)
       icon.classList.add('fa-caret-down');
       icon.classList.remove('fa-caret-up');
-      dropdown_menue.classList.add("dropdown_menue_Open_bottom");
-      dropdown_menue.classList.remove("dropdown_menue_Open_top");
-    }
+    })
+  } catch (error) {
+    catch_error(error);
   }
+}
 
-  // دالة مغلفة لتمرير المعاملات الصحيحة عند حدوث التمرير أو تغيير حجم الشاشة
-  function handleResizeOrScroll(td, dropdown_menue) {
-    return function () {
-      measureDistanceToBottom(td, dropdown_menue);
-    };
+let keydownHandler = null;
+
+function handle_dropdown_row_selection(td) {
+  try {
+    const dropdown_search_input = td.querySelector('.dropdown_search_input');
+    dropdown_search_input.focus();
+
+    const rows = td.querySelectorAll(`.inputTable_dropdown_table_container table > tbody > tr`);
+    if (rows.length > 0) {
+      let currentIndex = 0;
+
+      rows[currentIndex].classList.add('custom_tr_hover');
+
+      function updateHighlight(newIndex) {
+        if (newIndex >= 0 && newIndex < rows.length) {
+          rows.forEach(row => row.classList.remove('custom_tr_hover'));
+          currentIndex = newIndex;
+          rows[currentIndex].classList.add('custom_tr_hover');
+        }
+      }
+
+      // تعريف مستمع الحدث الجديد
+      const newKeydownHandler = (event) => {
+        switch (event.key) {
+          case 'ArrowDown':
+            updateHighlight(currentIndex + 1);
+            event.preventDefault(); // Prevent the input cursor from moving
+            break;
+          case 'ArrowUp':
+            updateHighlight(currentIndex - 1);
+            event.preventDefault(); // Prevent the input cursor from moving
+            break;
+          case 'Enter':            
+            if (slice_Array1.length > 0) {
+              const currentRow = rows[currentIndex];
+              td.querySelector('.id_hidden_input').value = currentRow.cells[0].textContent;
+              td.querySelector('.dropdown_select_input').textContent = currentRow.cells[1].textContent;
+              hideDropdown();
+            }
+            break;
+        }
+      };
+
+      // إزالة المستمع القديم إذا كان موجودًا
+      if (keydownHandler) {
+        dropdown_search_input.removeEventListener('keydown', keydownHandler);
+      }
+
+      // إضافة المستمع الجديد
+      dropdown_search_input.addEventListener('keydown', newKeydownHandler);
+
+      // تحديث المتغير لمستمع الحدث
+      keydownHandler = newKeydownHandler;
+    }
+  } catch (error) {
+    catch_error(error);
   }
+}
+
+
+
+
+
+
+
+// إظهار/إخفاء القائمة
+
+// dropdown_select.addEventListener("click", toggleDropdown);
+
+// إخفاء القائمة عند فقدان التركيز
+document.addEventListener("click", (event) => {
+  // console.log('Clicked element:', event.target);
+  const classesToCheck = ['dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input'];
+
+  const clickedInside = classesToCheck.some(className => {
+    return event.target.classList.contains(className) || event.target.closest(`.${className}`);
+  });
+
+  if (!clickedInside) {
+    hideDropdown();
+  }
+});
+
+
+// إخفاء القائمة عند الضغط على مفتاح الهروب
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    hideDropdown();
+  }
+});
+
+
+function updateFooter() {
+
+  let sum1 = 0;
+  let sum2 = 0;
+  // const cells = document.querySelectorAll("#myTable tbody tr td div input");
+  const cells = document.querySelectorAll(`.inputTable_NumberTd.sum`);
+  //  console.log(cells.length);
+
+  cells.forEach(function (cell) {
+    let cellValue = parseFloat(cell.textContent);
+    if (isNaN(cellValue)) {
+      cellValue = 0;
+    }
+    const cellIndex = cell.closest("td").cellIndex;
+
+    // console.log(cellIndex);
+    if (cellIndex === 4) {
+      sum1 += cellValue;
+      document.getElementById("sumColumn4").textContent = sum1;
+    } else if (cellIndex === 5) {
+      sum2 += cellValue;
+      document.getElementById("sumColumn5").textContent = sum2;
+    }
+  });
+
+  document.querySelector(`#difference_debet_cerdit`).textContent = sum1 - sum2
+  // difference_debet_cerdit
+}
+
+
+
+//#region  جعل القائمه تفتح الى اعلى او لاسفل حسب الافضل
+function measureDistanceToBottom(td, dropdown_menue) {
+  const dropdown_container = td.querySelector('.dropdown_container_input_table'); // el main container
+  const icon = dropdown_container.querySelector('i'); // تعديل هذا السطر للتأكد من العثور على العنصر الصحيح
+
+  // الحصول على معلومات الحجم والموقع النسبي للعنصر
+  const rect = dropdown_container.getBoundingClientRect();
+
+  // الحصول على ارتفاع النافذة الرئيسية للمتصفح
+  const windowHeight = window.innerHeight;
+
+  // حساب المسافة بين العنصر والحافة السفلية للشاشة
+  const distanceToBottom = windowHeight - rect.bottom;
+
+  // حساب المسافة بوحدة REM
+  // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const distanceToBottomRem = distanceToBottom / fontSize;
+
+  if (distanceToBottomRem < 21) { // 5aleh nafs rl hight beta3 el drop_menue + 1
+    icon.classList.remove('fa-caret-down');
+    icon.classList.add('fa-caret-up');
+    dropdown_menue.classList.add("dropdown_menue_Open_top");
+    dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
+  } else {
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
+    dropdown_menue.classList.add("dropdown_menue_Open_bottom");
+    dropdown_menue.classList.remove("dropdown_menue_Open_top");
+  }
+}
+
+// دالة مغلفة لتمرير المعاملات الصحيحة عند حدوث التمرير أو تغيير حجم الشاشة
+function handleResizeOrScroll(td, dropdown_menue) {
+  return function () {
+    measureDistanceToBottom(td, dropdown_menue);
+  };
+}
 
 
 //!--------------------------------------------------------------------

@@ -1,225 +1,88 @@
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>عيش</title>
-  <link rel="stylesheet" href="/public/css/style.css" />
-  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
-  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
-  <style>
-    .unit {
-      /* padding: 0.2rem; */
-      border-radius: 3px;
-      pointer-events: none;
-      background-color: var(--btn_search_backcolor);
-      height: 100%;
-      width: fit-content;
-      padding: .5rem;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-    }
-
-.myTable{
-  width: auto;
-}
-
-.myTable td{
-  width: auto; /* يضمن أن العرض تلقائي بناءً على المحتوى */
-}
-    
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigate Table Rows</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
 </head>
+<body>
+  <input type="text" id="input">
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Header 1</th>
+                <th>Header 2</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td>Row 1, Cell 1</td>
+                <td>Row 1, Cell 2</td>
+            </tr>
+            <tr>
+                <td>Row 2, Cell 1</td>
+                <td>Row 2, Cell 2</td>
+            </tr>
+            <tr>
+                <td>Row 3, Cell 1</td>
+                <td>Row 3, Cell 2</td>
+            </tr>
+        </tbody>
+    </table>
 
-<body class="body">
-  <script src="/public/scripts/darkmode.js"></script>
-  <div id="alert-container" class="alert-container"></div>
-  <div id="body_content">
-    <script src="/public/scripts/ar/Authentication_ar.js"></script>
-    <button id="scrollToTopBtn">&#9650;</button>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            let tableBody = document.getElementById('tableBody');
+            let rows = tableBody.getElementsByTagName('tr');
+            let currentIndex = 0;
+            let input = document.getElementById('input');
 
-    <!-- start ------------------------------------------------------------------------------------------>
-    <div class="header" id="header_div"></div>
+            // Highlight the first row initially
+            rows[currentIndex].classList.add('highlight');
 
-    <div class="sub_container">
-      <div id="sidebar" class="sidebar scroll"></div>
-      
-      <div id="white_backcolor" class="white_backcolor">
-        <!-- content -->
-        <div id="content_space" class="scroll">
-          <h2 class="h2">
-            <a href="bread_view_ar">
-              <i class="fa-solid fa-arrow-right back_icon"></i>
-            </a>
-     
-            العيش / جديد
-          </h2>
-          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+            // Function to update the highlighted row
+            function updateHighlight(newIndex) {
+                if (newIndex >= 0 && newIndex < rows.length) {
+                    rows[currentIndex].classList.remove('highlight');
+                    currentIndex = newIndex;
+                    rows[currentIndex].classList.add('highlight');
+                }
+            }
 
-          <table class="input_table">
-            <thead>
-              <th>1</th>
-              <th>2</th>
-            </thead>
-            <tbody>
-              <td>1</td>
-              <td>
+            // Function to get data of the current row
+            function getCurrentRowData() {
+                let cells = rows[currentIndex].getElementsByTagName('td');
+                let data = [];
+                for (let cell of cells) {
+                    data.push(cell.textContent);
+                }
+                return data;
+            }
 
-              </td>
-            </tbody>
-            <tfoot>
-              <td></td>
-              <td></td>
-            </tfoot>
-          </table>
+            // Event listener for keydown events
+            document.addEventListener('keydown', (event) => {
+                if (document.activeElement === input) {
+                    if (event.key === 'ArrowDown') {
+                        updateHighlight(currentIndex + 1);
+                        event.preventDefault(); // Prevent the input cursor from moving
+                    } else if (event.key === 'ArrowUp') {
+                        updateHighlight(currentIndex - 1);
+                        event.preventDefault(); // Prevent the input cursor from moving
+                    } else if (event.key === 'Enter') {
+                        let rowData = getCurrentRowData();
+                        console.log(rowData); // يمكنك استبدال هذا بالوظيفة التي تريد تنفيذها
+                    }
+                }
+            });
 
-
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <!-- date -->
-          <div class="input_with_icon_div">
-            <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
-              autocomplete="off">
-            <i class="fa-regular fa-calendar"></i>
-          </div>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <select name="" id="vendore_select" class="select_year" style="width: fit-content;">
-            <option value="1">حسين مرزوق</option>
-            <option value="2">ابراهيم ملش</option>
-            <option value="3">فرن منطى</option>
-            <option value="4">احمد رضوان</option>
-          </select>
-          <!-- table -->
-     
-            <table id="myTable" class="input_table">
-              <thead class="">
-                <tr>
-                  <th></th>
-                  <th style="width: auto;">الكمية</th>
-                  <th style="width: auto;">الوزن</th>
-                  <th style="width: auto;"></th>
-                  <th style="width: auto;"></th>
-                </tr>
-              </thead>
-              <tbody class="">
-                <tr class="">
-                  <td style="width: auto;" class="">
-                    <div class="dragbutton_table">
-                      <button class="drag-handle">
-                        <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
-                        </button>
-                    </div>
-                  </td>
-                  <td style="width: auto;" class="">
-                    <div class="input_table_input_div">
-                      <span>عدد</span>
-                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
-                    </div>
-                  </td>
-                  <td style="width: auto;" class="">
-                    <div class="input_table_input_div">
-                      <span>كيلو</span>
-                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
-                    </div>
-                  </td>
-
-                  <td style="width: auto;">
-                                                                          <!-- dropdown -->
-<div class="dropdown_container_input_table" id="dropdown_container">
-  <div class="dropdown_select_input_table" id="dropdown_select" onclick="toggleDropdown(this)">
-    <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة"
-      class="dropdown_select_input hover" readonly autocomplete="off" style="width: 15rem;">
-    <i class="fa-solid fa-caret-down left_icon"></i>
-    <input type="hidden" id="id_hidden_input" readonly>
-  </div>
-  <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none; width: auto;">
-    <div class="dropdown_search">
-      <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
-        oninput="performSearch()" autocomplete="off">
-    </div>
-    <div class="inputTable_dropdown_table_container" id="dropdownItems">
-      <!-- قائمة الخيارات تظهر هنا -->
-    </div>
-  </div>
-</div>
-        </td>
-
-                  <td style="width: 100%;" class="">
-                    <div class="table_buttons_div">
-                      <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
-                      <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
-                    </div>
-                  </td>
-
-                </tr>
-              </tbody>
-              <tfoot class="">
-
-
-
-                <tr class="table_total_row">
-                  <td id="lengthColumn1"></td>
-                  <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
-                  <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
-                  <td id="sumColumn3"></td>
-                </tr>
-
-                <tr>
-                  <td colspan="5" class="">
-                    <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
-                    <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
-                    <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                    </select>
-                  </div>
-                  </td>
-                </tr>
-
-              </tfoot>
-            </table>
-  
-          <div class="btn_container_top_border">
-            <button class="btn_save" id="btn_save">حفظ</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  </div>
-  <script>
-
-  </script>
-
-  <!-- scripts------------------------------------------------------------------------------ -->
-  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
-  <script src="/public/socket/socket.io.min.js"></script>
-  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/test.js"></script>
-
-
+            // Focus the input initially
+            input.focus();
+        });
+    </script>
 </body>
-
 </html>

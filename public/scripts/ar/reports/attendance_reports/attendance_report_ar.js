@@ -180,9 +180,9 @@ async function fillAttendancetable() {
             <td> <button class="tabble_view_btn" onclick="tabble_view_btn_fn(this)">عرض</button> </td>
             <td style="display: none;">${row.employee_id}</td>
             <td style="display: ;width: 100%;">${row.employee_name}</td>
-            <td style="width: auto; white-space: nowrap; text-align: center;">${total_column(total_column1,row.total_days)}</td>
-            <td style="width: auto; white-space: nowrap; text-align: center;">${total_column(total_column2,row.total_hours)}</td>
-            <td style="width: auto; white-space: nowrap; text-align: center;">${total_column(total_column3,row.total_values)}</td>
+            <td style="width: auto; white-space: nowrap; text-align: center;" class="table_number">${total_column(total_column1,row.total_days)}</td>
+            <td style="width: auto; white-space: nowrap; text-align: center;" class="table_number">${total_column(total_column2,row.total_hours)}</td>
+            <td style="width: auto; white-space: nowrap; text-align: center;" class="table_number">${total_column(total_column3,row.total_values)}</td>
           </tr>`;
         });
 

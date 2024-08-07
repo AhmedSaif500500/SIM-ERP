@@ -99,7 +99,7 @@ function loadSidebarContents() {
       العيش
     </a>
 
-    <a href="cutomers_view_ar" target="_self" class="">
+    <a href="customers_view_ar" target="_self" class="">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       العملاء
     </a>
@@ -624,14 +624,14 @@ function total_column(totalVariable, rowData) {
       if (rowData < 0) {
         return `<span style="color: red">${rowData}</span>`;
       } else if (rowData === 0) {
-        return '';
+        return 0.00;
       } else {
         // return parseFloat(rowData);
         rowData = floatToString(false, rowData)
         return rowData;
       }
     } else {
-      return '';
+      return 0.00;
     }
   } catch (error) {
     catch_error(error);
@@ -1520,10 +1520,10 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
           return true
         }else if (is_confirm_dialog){
           if (data.success) {
-            showAlert('success',data.message)
+            showAlert('success',data.message_ar)
             return true
           } else {
-            showAlert('fail',data.message)
+            showAlert('fail',data.message_ar)
             return false
           } 
         } else {

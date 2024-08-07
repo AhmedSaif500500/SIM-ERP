@@ -9,6 +9,7 @@
   /** fonts - colors  */
   --Font_normal: normal normal normal 1.4rem/1.4rem Lateef,Amiri,Droid Arabic Naskh,Segoe UI,Helvetica Neue, Helvetica,Arial, sans-serif;
   --Font_Color: rgb(51, 51, 51);
+  --font_number_color: rgb(33, 140, 240);
   --special_font_color: rgb(1, 1, 192);
 
   /** icons*/
@@ -104,6 +105,7 @@
 
   /*! fonts - colors  */
   --Font_Color: #f1f1f1;
+  --font_number_color: rgb(102, 200, 255);
   --special_font_color: rgb(176, 196, 255);
 
   /*! icons*/
@@ -1011,7 +1013,7 @@ width: 100% !important;
   width: fit-content;
   margin-inline-start: 0.5rem;
   margin-block-end: 0.8rem;
-  margin-block-start: 0.5rem;
+  margin-block-start: 0.7rem;
   color: var(--Font_Color);
   transition: var(--transition);
 }
@@ -1488,6 +1490,7 @@ gap: 1.3rem;
   border-radius: 0.3rem;
   background-color: var(--bg_sidebar);
   color: var(--Font_Color);
+  /* color: var(--font_number_color); */
   cursor: pointer;
   transition: var(--transition);
   /* border: 0.1rem solid rgb(230, 230, 230); */
@@ -2114,7 +2117,7 @@ font-size: 2rem;
 .review_table th {
   border: var(--table_border);
   padding: 0.5rem;
-  cursor: pointer;
+  /* cursor: pointer; */
   transition: var(--transition);
 }
 
@@ -2344,6 +2347,10 @@ font-size: 2rem;
   color: var(--table_row_main_color_while_hover);
 }
 
+.custom_tr_hover{
+  background-color: var(--table_row_main_background_color_while_hover) !important ;
+  color: var(--table_row_main_color_while_hover) !important;
+}
 
 /* todo alternative row*/
 .inputTable_dropdown_table tbody tr:nth-child(even) {
@@ -2560,7 +2567,7 @@ color: var(--Font_Color);
   border-radius: 0.3rem;
   border: var(--border_normal);
   padding: 0.5rem;
-  min-width: 7rem;
+  min-width: 8rem;
   max-width: 15rem;
   width: auto;
   height: var(--input_height);
@@ -2895,5 +2902,40 @@ color: var(--Font_Color);
 
 /* الخصائص عند النقر على الرابط */
 .link:active {
+  color: var(--btn_save_backcolor); /* تغيير لون النص عند النقر على الرابط */
+}
+
+
+
+
+
+.table_number {
+  color: var(--font_number_color); /* لون النص الأساسي */
+  text-decoration: none; /* إزالة التسطير */
+  cursor: pointer;
+  /* font-weight: bold; */
+  font-size: var(--Font_normal);
+  /* background-color: var(--btn_search_backcolor); */
+  padding: 1rem;
+  /* opacity: 0.8; */
+  transition: var(--transition);
+}
+
+/* الخصائص عند زيارة الرابط */
+.table_number:visited {
+  color: var(--btn_update_backcolor); /* لون النص بعد زيارة الرابط */
+}
+
+/* الخصائص عند الوقوف على الرابط */
+.table_number:hover {
+  /* color: var(--btn_cancel_backcolor); تغيير لون النص عند الوقوف على الرابط */
+  /* opacity: 0.8;
+  scale: 1; */
+  text-decoration: underline; /* إضافة تسطير عند الوقوف */
+  
+}
+
+/* الخصائص عند النقر على الرابط */
+.table_number:active {
   color: var(--btn_save_backcolor); /* تغيير لون النص عند النقر على الرابط */
 }

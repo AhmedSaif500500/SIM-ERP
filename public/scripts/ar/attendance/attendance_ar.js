@@ -88,9 +88,9 @@ async function fillAttendancetable() {
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
                             <td style="width: auto; white-space: nowrap;">${day_name(row.datex)}</td>
                             <td style="width: auto; white-space: nowrap;">${row.employee_name}</td>
-                            <td style="width: auto; white-space: nowrap;">${total_column(total_column1,row.days)}</td>
-                            <td style="width: auto; white-space: nowrap;">${total_column(total_column2,row.hours)}</td>
-                            <td style="width: auto; white-space: nowrap;">${total_column(total_column3,row.values)}</td>
+                            <td style="width: auto; white-space: nowrap;" class="table_number">${total_column(total_column1,row.days)}</td>
+                            <td style="width: auto; white-space: nowrap;" class="table_number">${total_column(total_column2,row.hours)}</td>
+                            <td style="width: auto; white-space: nowrap;" class="table_number">${total_column(total_column3,row.values)}</td>
                             <td style="min-width: 20rem; width: 100%; white-space: wrap;">${row.note}</td>
                           </tr>`;
     });
