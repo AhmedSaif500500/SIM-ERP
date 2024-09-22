@@ -4,7 +4,8 @@ pagePermission('transaction_permission','view');
 
 
 // إعلان المتغير على مستوى الـ script  
-const tableContainer = document.getElementById('table-container');
+
+const tableContainer = document.getElementById('tableContainer');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
 
@@ -26,7 +27,7 @@ async function geteMainData_fn() {
         15,
         false,'',
         true,
-        false,'',
+        true,content_space,
         false,'',
         'حدث خطأ اثناء معالجة البيانات'
     )
@@ -100,8 +101,8 @@ async function fillMaintable() {
                         <tr id="table_fotter_buttons_row">
                             <td colspan="6">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
-                                 <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -112,6 +113,7 @@ async function fillMaintable() {
 
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = await tableHTML;
+        page_content.style.display = 'flex'
 
 
 document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف

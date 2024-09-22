@@ -3,8 +3,9 @@ setActiveSidebar('production_view_ar');
 pagePermission('production_permission','view');
 
 
-// إعلان المتغير على مستوى الـ script  
-const tableContainer = document.getElementById('table-container');
+// إعلان المتغير على مستوى الـ script
+
+const tableContainer = document.getElementById('tableContainer');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
 
@@ -18,8 +19,19 @@ let slice_Array1 = [];
 
 
 async function geteProductionData_fn() {
-    const response = await fetch('/get_All_production_Data');
-     data = await response.json();
+    data = await fetchData_postAndGet(
+        '/get_All_production_Data',
+        {},
+        'production_permission','view',
+        15,
+        false,'',
+        false,
+        true,content_space,
+        false,'',
+        'حدث خطأ اثناء معالجة البيانات'
+    )
+    // const response = await fetch('/get_All_production_Data');
+    //  data = await response.json();
 
     // تحديث array1 بنتيجة الـ slice
     array1 = data.slice();
@@ -97,8 +109,8 @@ async function fillAttendancetable() {
                         <tr id="table_fotter_buttons_row">
                             <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
-                                 <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -109,6 +121,7 @@ async function fillAttendancetable() {
 
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
+        page_content.style.display = 'flex'
 
 
 // عرض نتائج الجمع

@@ -21,11 +21,11 @@
 
     <div class="sub_container">
       <div id="sidebar" class="sidebar scroll"></div>
-
-
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="scroll">
+                <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
           <h2 class="h2" id="">
             <a href="home_ar" id="back_icon_to_home">
               <i class="fa-solid fa-arrow-right back_icon"></i>
@@ -35,13 +35,13 @@
             <div id="page_adress_h2">العملاء</div>
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
-
+         <div id="page_content" style="display: none;"> 
           <div class="flex_column" id="table_div">
             <div class="btn_container">
               <button id="btn_new" class="btn_new">جديد</button>
             </div>
             <!-- search in table -->
-            <div class="flex_row gap_05">
+            <div class="search_in_table_div">
               <div class="input_with_icon_div">
                 <input type="search" name="searchInput" id="searchInput" placeholder="search"
                   class="search_input hover">
@@ -51,7 +51,7 @@
             </div>
 
             <!-- table container filled by js -->
-            <div id="table-container" class="table_container"></div>
+            <div id="tableContainer" class="tableContainer"></div>
           </div>
 
           <!-- new cutomers -------------------------------------------------------------------------------------------- -->
@@ -89,22 +89,22 @@
 
             <!-- بيانات قانونية اخرى -->
             <label for="legal_info_input" class="lbl_sm">بيانات قانونية اخرى</label>
-            <textarea name="" id="legal_info_input" class="text_area2 hover" oninput="check_parse(this,'string')" placeholder="اختياري"
+            <textarea name="" id="legal_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
               style="margin-block-end: 1rem;"></textarea>
 
 
             <!-- بيانات التواصل الاخرى -->
             <label for="contact_info_input" class="lbl_sm">بيانات التواصل الاخرى</label>
-            <textarea name="" id="contact_info_input" class="text_area2 hover" oninput="check_parse(this,'string')"  placeholder="اختياري"
+            <textarea name="" id="contact_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')"  placeholder="اختياري"
               style="margin-block-end: 1rem;"></textarea>
 
             <!-- بيانات التواصل الاخرى -->
             <label for="banking_info_input" class="lbl_sm">بيانات بنكية</label>
-            <textarea name="" id="banking_info_input" class="text_area2 hover" oninput="check_parse(this,'string')" placeholder="اختياري"
+            <textarea name="" id="banking_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
               style="margin-block-end: 1rem;"></textarea>
 
             <label for="delivery_adress_input" class="lbl_sm">عنوان التسليم</label>
-            <textarea name="" id="delivery_adress_input" class="text_area2 hover" oninput="check_parse(this,'string')" placeholder="اختياري"
+            <textarea name="" id="delivery_adress_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
               style="margin-block-end: 1rem;"></textarea>
 
             <!-- <div id="checked_div" class="column x_start y_start" style="display: none">
@@ -118,7 +118,7 @@
               <button id="btn_cancel" class="btn_cancel">حذف</button>
             </div>
           </div> <!-- end new cutomer div-->
-
+        </div>
 
 
         </div> <!-- end content space -->

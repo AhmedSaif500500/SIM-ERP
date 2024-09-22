@@ -8,24 +8,10 @@
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
-  <style>
-    .unit {
-      /* padding: 0.2rem; */
-      border-radius: 3px;
-      pointer-events: none;
-      background-color: var(--btn_search_backcolor);
-      height: 100%;
-      width: fit-content;
-      padding: .5rem;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-    }
-  </style>
+
 </head>
 
-<body class="body">
+<body class="body scroll">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -37,48 +23,62 @@
 
     <div class="sub_container">
       <div id="sidebar" class="sidebar scroll"></div>
-      
+
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
         <div id="content_space" class="scroll">
-          <h2 class="h2">
-            <a href="bread_view_ar">
+
+          <div id="fn_container_div" class="fn_container_div"></div>
+
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="bread_view_ar" title="العيش">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-        
-            العيش / جديد
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="bread_view_ar" title="اعادة تحميل الصفحة">العيش / تعديل</a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <!-- date -->
-          <div class="input_with_icon_div">
-            <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
-              autocomplete="off">
-            <i class="fa-regular fa-calendar left_icon"></i>
-          </div>
-          
-          <label for="date1" class="lbl_sm">اسم المورد</label>
-          <select name="" id="vendore_select" class="select_year" style="width: fit-content;">
-            <option value="1">حسين مرزوق</option>
-            <option value="2">ابراهيم ملش</option>
-            <option value="3">فرن منطى</option>
-            <option value="4">احمد رضوان</option>
-            <option value="5">صابر الخشاب</option>
-            <option value="6">ابو فارس</option>
-          </select>
 
-          <label for="note_inpute" class="lbl_sm">البيان</label>
-          <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off" oninput="check_parse(this,'string')">
+          <div id="page_content" style="display: none;">
 
-          <!-- table -->
-  
+            <label for="date1" class="lbl_sm">التاريخ</label>
+            <!-- date -->
+            <div class="input_with_icon_div">
+              <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+                autocomplete="off">
+              <i class="fa-regular fa-calendar left_icon"></i>
+            </div>
+
+            <label for="date1" class="lbl_sm">اسم المورد</label>
+            <select name="" id="vendore_select" class="select" style="width: fit-content;">
+              <option value="1">حسين مرزوق</option>
+              <option value="2">ابراهيم ملش</option>
+              <option value="3">فرن منطى</option>
+              <option value="4">احمد رضوان</option>
+              <option value="5">صابر الخشاب</option>
+              <option value="6">ابو فارس</option>
+              <option value="7">فرن زينهم</option>
+            </select>
+
+            <label for="note_inpute" class="lbl_sm">البيان</label>
+            <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off"
+              oninput="check_parse(this,'string')">
+
+
+            <!-- table -->
+
 
             <table id="myTable" class="input_table"></table>
-          
-     
-          <div class="btn_container_top_border">
-            <button class="btn_update" id="btn_update">تعديل</button>
-            <button class="btn_cancel" id="btn_delete">حذف</button>
+
+
+            <div class="btn_container_top_border">
+              <button class="btn_update" id="btn_update">تعديل</button>
+              <button class="btn_cancel" id="btn_delete">حذف</button>
+            </div>
+
           </div>
         </div>
       </div>

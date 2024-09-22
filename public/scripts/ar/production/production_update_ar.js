@@ -18,7 +18,7 @@ document.querySelector(`#sales_amount_input`).value = production_data.sales_valu
 
 console.log(document.querySelector(`#date1`).value);
 
-const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+
 
     //#region  save function
     document.querySelector('#btn_update').addEventListener('click',async function () {
@@ -83,3 +83,6 @@ redirection('production_view_ar','warning','من  سيتم توجيهك الى �
       
       
       
+          document.addEventListener("DOMContentLoaded", async function () {
+            page_content.style.display = "flex";
+          })

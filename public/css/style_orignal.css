@@ -85,8 +85,8 @@
 
   --table_footer_row_background_color: rgb(51, 51, 51);
   --table_footer_row_color: rgb(51, 51, 51);
-  --table_footer_btn_color: rgb(51, 51, 51);
-  --table_footer_btn_background_color: rgb(229, 229, 229);
+  --table_footer_show_data_color: rgb(51, 51, 51);
+  --table_footer_show_data_background_color: rgb(229, 229, 229);
 
   /** others*/
   --input_height: 3rem;
@@ -179,8 +179,8 @@
 
   --table_footer_row_background_color: rgb(51, 51, 51);
   --table_footer_row_color: rgb(51, 51, 51);
-  --table_footer_btn_color: rgb(241, 241, 241);
-  --table_footer_btn_background_color: rgb(67, 67, 67);
+  --table_footer_show_data_color: rgb(241, 241, 241);
+  --table_footer_show_data_background_color: rgb(67, 67, 67);
 }
 
 /* END - dark mode -------------------------------------------------- */
@@ -2070,7 +2070,7 @@ font-size: 2rem;
 /* tables */
 
 /* table containesr */
-.table_container{
+.tableContainer{
   display: flex; flex-direction: column;
   /* overflow: auto; */
 }
@@ -2184,7 +2184,7 @@ font-size: 2rem;
   opacity: 0.9;
 }
 
-.table_footer_btn{
+.table_footer_show_data{
   border: none;
   width: 8rem;
   /* height: 3rem; */
@@ -2196,20 +2196,20 @@ font-size: 2rem;
   margin-inline-end: 0.5rem;
   border-radius: 0.2rem;
   cursor: pointer;
-  background-color: var(--table_footer_btn_background_color);
-  color: var(--table_footer_btn_color);
+  background-color: var(--table_footer_show_data_background_color);
+  color: var(--table_footer_show_data_color);
   border: var(--border_normal);
   transition: var(--transition);
 }
 
 
-.table_footer_btn:hover {
+.table_footer_show_data:hover {
   opacity: var(--btn_hover_opacity);
 }
 /****************************************************************/
 /** input table */
 
-.input_table_container{
+.input_tableContainer{
   width: auto; max-width: 100%;
 }
 
@@ -2284,7 +2284,7 @@ font-size: 2rem;
 
 /** inputTable_dropdown_table*/
 
-.inputTable_dropdown_table_container{
+.inputTable_dropdown_tableContainer{
   display: flex; flex-direction: column; justify-content: start; align-items: start; width: 100%;
 }
 

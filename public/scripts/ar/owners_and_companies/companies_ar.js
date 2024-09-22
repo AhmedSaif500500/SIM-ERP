@@ -13,7 +13,7 @@ if (is_owner && is_owner === 'true') {
 
 //#region Companies_ar Page itself
 // إعلان المتغير على مستوى الـ script  
-const tableContainer = document.getElementById('table-container');
+const tableContainer = document.getElementById('tableContainer');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
 
@@ -251,8 +251,8 @@ async function fillAttendancetable() {
                         <tr id="table_fotter_buttons_row" style="height: 3.7rem;">
                             <td colspan="3">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class="flex_H">
-                                 <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -377,6 +377,7 @@ const permissions = [
   "transaction_permission",
   "items_permission",
   "cutomers_permission",
+  "vendors_permission",
   // Add new permissions here
 ];
 
@@ -853,7 +854,7 @@ async function fillAttendancetable2() {
       <button id="searchBtn2" onclick="performSearch2()" class="btn_search hover">search</button>
     </div>
 
-    <div id="table-container" class="table_container w_full" style="height: auto;"></div>
+    <div id="tableContainer" class="tableContainer w_full" style="height: auto;"></div>
     
     <div class="dialog_footer">
       <button id="noButton2" class="btn_cancel" onclick="noButton()">إنهاء</button>
@@ -904,8 +905,8 @@ async function fillAttendancetable2() {
 <tr id="table_fotter_buttons_row2">
     <td colspan="3">
         <div class='flex_H'>
-            <button class="table_footer_btn" onclick="ShowAllDataInAttendanceTable2()">All</button>
-            <button class="table_footer_btn" onclick="showFirst50RowInAttendanceTable2()">50</button>
+            <button class="table_footer_show_data" onclick="ShowAllDataInAttendanceTable2()">All</button>
+            <button class="table_footer_show_data" onclick="showFirst50RowInAttendanceTable2()">50</button>
         </div>
     </td>
 </tr>
@@ -916,10 +917,10 @@ async function fillAttendancetable2() {
   // إغلاق الجدول
   tableHTML2 += "</table>";
  
-  const table_container = users_table_view.querySelector('#table-container');
+  const tableContainer = users_table_view.querySelector('#tableContainer');
 
   // تحديث محتوى الصفحة بناءً على البيانات
-  table_container.innerHTML = tableHTML2;
+  tableContainer.innerHTML = tableHTML2;
   dialog5.style.display = 'none';
   users_table_view.style.display = 'block';
   //  عمليات صف الاجمالى

@@ -30,6 +30,7 @@ document.querySelector("#btn_save").addEventListener("click", async function () 
         "transaction",
         "items",
         "cutomers",
+        "vendors",
         // Add new permissions here
       ];
 

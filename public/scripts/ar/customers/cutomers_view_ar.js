@@ -1,7 +1,7 @@
 
-setActiveSidebar('cutomers_view_ar');
+setActiveSidebar('customers_view_ar');
 //check permissions
-pagePermission('cutomers_permission','view');
+pagePermission('customers_permission','view');
 
 
 const btn_new = document.querySelector(`#btn_new`);
@@ -26,22 +26,35 @@ const account_id_hidden = document.querySelector(`#account_id_hidden`);
 
 
 // إعلان المتغير على مستوى الـ script  
-const tableContainer = document.getElementById('table-container');
+
+const tableContainer = document.getElementById('tableContainer');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
 
 
 
-//#region  ( baynat el cutomers mn el database )
+//#region  ( baynat el customers mn el database )
 // get data from db and store it in array1
 let data = [];
 let array1 = [];
 let slice_Array1 = [];
 
 
-async function getcutomersData_fn() {
-    const response = await fetch('/get_All_customers_Data');
-     data = await response.json();
+async function getcustomersData_fn() {
+
+    data = await fetchData_postAndGet(
+        '/get_All_customers_Data',
+        {},
+        'customers_permission','view',
+        15,
+        false,'',
+        false,
+        true,content_space,
+        false,'',
+        'حدث خطأ اثناء معالجة البيانات'
+    )
+    // const response = await fetch('/get_All_customers_Data');
+    //  data = await response.json();
 
     // تحديث array1 بنتيجة الـ slice
     array1 = data.slice();
@@ -49,7 +62,7 @@ async function getcutomersData_fn() {
 }
 
 async function showFirst50RowAtTheBegening() {
-    await getcutomersData_fn()
+    await getcustomersData_fn()
     slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     fillAttendancetable()
 }
@@ -71,7 +84,7 @@ async function fillAttendancetable() {
         //* Prepare GLOBAL variables Befor sum functions
         total_column1.value = 0
         // إعداد رأس الجدول
-        let tableHTML = `<table id="cutomers_table" class="review_table">
+        let tableHTML = `<table id="customers_table" class="review_table">
                         <thead>
                             <tr>
                                 <th></th>
@@ -127,8 +140,8 @@ async function fillAttendancetable() {
                         <tr id="table_fotter_buttons_row">
                             <td colspan="12">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
-                                 <button class="table_footer_btn"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_btn"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -138,7 +151,8 @@ async function fillAttendancetable() {
         tableHTML += '</table>';
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = tableHTML;
+        tableContainer.innerHTML = await tableHTML;
+        page_content.style.display = 'flex'
           //  عمليات صف الاجمالى 
           // جمع القيم في العمود رقم 6
           
@@ -227,7 +241,7 @@ back_icon_to_table_view.onclick = function (){
 
 async function tabble_update_btn_fn(updateBtn) {
     try {
-    const permission = btn_permission('cutomers_permission','update');
+    const permission = btn_permission('customers_permission','update');
 
     if (!permission){ // if false
         return;
@@ -269,7 +283,7 @@ try {
 
     const acc_no_div_value = account_no_input.value.trim();
     const account_name_input_value = account_name_input.value.trim();
-    const credit_limit_value = credit_limit.value.trim();
+    const credit_limit_value = parseFloat(credit_limit.value);
     const email_input_value = email_input.value.trim();
     const tasgel_darepy_input_value = tasgel_darepy_input.value.trim();
     const legal_info_input_value = legal_info_input.value.trim();
@@ -295,7 +309,7 @@ try {
             banking_info_input_value,
             delivery_adress_input_value
         },
-        'cutomers_permission','add',
+        'customers_permission','add',
         15,
         true,'هل تريد حفظ البيانات ؟',
         true,
@@ -322,7 +336,7 @@ update_btn.onclick = async function () {
         const account_id_hidden_value = account_id_hidden.value;
         const acc_no_div_value = account_no_input.value.trim();
         const account_name_input_value = account_name_input.value.trim();
-        const credit_limit_value = credit_limit.value.trim();
+        const credit_limit_value = parseFloat(credit_limit.value);
         const email_input_value = email_input.value.trim();
         const tasgel_darepy_input_value = tasgel_darepy_input.value.trim();
         const legal_info_input_value = legal_info_input.value.trim();
@@ -354,7 +368,7 @@ update_btn.onclick = async function () {
                 banking_info_input_value,
                 delivery_adress_input_value
             },
-            'cutomers_permission','update',
+            'customers_permission','update',
             15,
             true,'هل تريد تعديل البيانات ؟',
             true,
@@ -384,7 +398,7 @@ btn_cancel.onclick = async function () {
             {   
                 account_id_hidden_value
             },
-            'cutomers_permission','delete',
+            'customers_permission','delete',
             15,
             true,'هل تريد حذف البيانات ؟',
             true,
@@ -412,6 +426,9 @@ function clear_inputs (){
         catch_error(error)
     }
 }
+
+
+
 
 //#region new cutsomer
 

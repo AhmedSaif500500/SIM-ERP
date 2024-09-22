@@ -1,6 +1,4 @@
 setActiveSidebar('bread_view_ar');
-const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-
 
 const date1 = document.querySelector('#date1');
 const vendore_select = document.querySelector('#vendore_select');
@@ -42,7 +40,7 @@ function addRows() {
 
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span_start">كيلو</span>
+                      <span class="input_span_start">جرام</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>

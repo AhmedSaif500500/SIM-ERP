@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
 </head>
 
-<body class="body">
+<body class="body scroll">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -19,8 +19,7 @@
 
     <!-- start ------------------------------------------------------------------------------------------>
 
-    <div class="header" id="header_div">
-    </div>
+    <div class="header" id="header_div"></div>
 
 
     <div class="sub_container">
@@ -28,16 +27,18 @@
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="scroll">
-          <h2 class="h2">
-            <a href="users_ar">
+                <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+          <h2 id="h2" class="h2">
+             <a id="back_href" class="back_href" href="users_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
     
             الرئيسيه
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
-      
+         <div id="page_content" style="display: none;"> 
           <div class="btn_container">
             <button id="new_todo_btn" class="btn_new">ملاحظة جديده</button>
           </div>
@@ -54,8 +55,8 @@
                   </div>
           
                   <!-- table container filled by js -->
-                  <div id="table-container" class="table_container"></div>
-        
+                  <div id="tableContainer" class="tableContainer"></div>
+                </div>
         </div>
       </div>
     </div>

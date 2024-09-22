@@ -1,10 +1,61 @@
 
 //#region Main Global Variables
-let body_content = document.querySelector('#body_content');
 let body = document.querySelector('body');
+let body_content = document.querySelector('#body_content');
+let content_space = document.querySelector('#content_space');
+let page_content = document.querySelector(`#page_content`)
 let currentPage = new URL(window.location.href).pathname.split('/').pop(); // get name page like home
 let currentLang = currentPage.substring(currentPage.length - 2); // فصل اخر حرفين الى هما ar - en 
+let today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+let currentYear = new Date().getFullYear();
+let firstDayOfYear = new Date(currentYear, 0, 1).toLocaleDateString('en-CA');
+let lastDayOfYear = new Date(currentYear, 11, 31).toLocaleDateString('en-CA');
+let refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
+let refrence_input = document.querySelector(`#refrence_input`);
 
+
+
+  if (refrence_input_checkbox && refrence_input) {
+    function is_checked_refrence_fn() {
+    if (refrence_input_checkbox.checked){
+      refrence_input.value = "تلقائى"
+      refrence_input.classList.remove(`refrence_input`)
+      refrence_input.classList.add(`refrence_input_auto_mode`)
+    }else{
+      refrence_input.value = ""
+      refrence_input.classList.remove(`refrence_input_auto_mode`)
+      refrence_input.classList.add(`refrence_input`)
+    }
+  }
+
+  refrence_input_checkbox.onchange = function(){
+    is_checked_refrence_fn()
+  }
+  
+  document.addEventListener('DOMContentLoaded', async function(){
+     is_checked_refrence_fn()
+   })
+  
+}
+
+
+function reverseDateFormatting(dateValue) {
+  // افصل التاريخ بناءً على الشرطات "-"
+  const parts = dateValue.split('-');
+  
+  // تحقق من أن التاريخ يتألف من 3 أجزاء (السنة، الشهر، اليوم)
+  if (parts.length === 3) {
+      const year = parts[0];
+      const month = parts[1];
+      const day = parts[2];
+      
+      // قم بإعادة ترتيب الأجزاء إلى dd-mm-yyyy
+      return `${day}-${month}-${year}`;
+  } else {
+      // في حال كان التاريخ غير صالح
+      return dateValue; // أو قم بإرجاع رسالة خطأ مثلاً
+  }
+}
 
 //#region 
 
@@ -39,6 +90,7 @@ function loadHeaderContents() {
           </a>
       </div>
       <div class="header_user_div" style="gap: 0.7rem;">
+          <button id="header_user_today" class="header_user_name" style="display: none;">${today}</button>
           <button id="header_user_name" class="header_user_name"></button>
           <div id="user_options" class="user_options" style="display: none;">
               <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
@@ -55,9 +107,7 @@ function loadHeaderContents() {
 // لا تنس تنفيذ الدالة
 loadHeaderContents();
 
-
 //#endregion
-
 
 //#region add sidebar
 function loadSidebarContents() {
@@ -79,15 +129,11 @@ function loadSidebarContents() {
       الملاحظات
     </a>
 
-    <a href="employees_ar" target="_self" class="">
+    <a href="hr_ar" target="_self" class="">
       <i class="fa-duotone fa-user-tie"></i>
-      الموظفين
+      الموارد البشريه
     </a>
 
-    <a href="attendance_ar" target="_self" class="">
-      <i class="fa-duotone fa-person-circle-exclamation"></i>
-      المؤثرات
-    </a>
 
     <a href="production_view_ar" target="_self" class="">
       <i class="fa-duotone fa-industry"></i>
@@ -102,6 +148,11 @@ function loadSidebarContents() {
     <a href="customers_view_ar" target="_self" class="">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       العملاء
+    </a>
+
+    <a href="vendors_view_ar" target="_self" class="">
+      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+      الموردين
     </a>
 
     <a href="items_view_ar" target="_self" class="">
@@ -165,6 +216,33 @@ function loadSidebarContents() {
 
 // لا تنس تنفيذ الدالة
 loadSidebarContents();
+
+
+const fn_container_div = document.querySelector(`#fn_container_div`)
+if (fn_container_div) {
+  const fn_innerHTML = `
+            <i id="fn_icon" class="fa-light fa-ellipsis"></i>
+            <div id="fn_options_div" class="fn_options_div hidden_height">
+              <i class="fa-sharp-duotone fa-solid fa-print" title="طباعه" onclick = "window.print();"></i>
+            </div>
+`
+
+fn_container_div.innerHTML = fn_innerHTML
+
+
+
+content_space.addEventListener("scroll", () => {
+  let currentScroll = content_space.scrollTop || document.documentElement.scrollTop;
+
+  if (currentScroll > 50) {  // إذا كان التمرير أكبر من 50 بكسل
+    fn_container_div.style.display = "none";
+  } else {
+    fn_container_div.style.display = "block";
+  }
+})
+}
+
+
 
 
 function setActiveSidebar(pageName) {
@@ -406,7 +484,6 @@ function showDialog(title, message, icon) {
   });
 }
 
-
 async function closeDialog() {
   body.style.pointerEvents = 'auto';
   const overlay = document.getElementById('dialogOverlay');
@@ -454,8 +531,6 @@ async function closeDialog_input() {
 
 
       // dialogOverlay_input.remove(); // old
-
-
       dialogOverlay_input.style.display = 'none';
       dialogOverlay_input.style.animation = 'none'; // إعادة ضبط الأنماط بعد الإخفاء
 
@@ -482,9 +557,10 @@ function catch_error(error) {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     // في بيئة التطوير المحلية، يعرض معلومات الخطأ في وحدة التحكم
     console.error('Error details:', error);
+    showAlert('fail', 'An error occurred. Please check the cosole');
   } else {
     // في بيئة الإنتاج، يعرض رسالة عامة للمستخدمين
-    showAlert('fail', 'An error occurred. Please try again later.');
+    showAlert('fail', 'An error occurred. Please contact the administrators for assistance.');
   }
 }
 
@@ -543,7 +619,6 @@ lang_btn.addEventListener('click', function (event) {
 
 //#region scroll Button Top
 
-const content_space = document.querySelector(`#content_space`);
 
 // Show button when user scrolls down
 if (content_space !== null) {
@@ -622,9 +697,9 @@ function total_column(totalVariable, rowData) {
       rowData = parseFloat(rowData);
       totalVariable.value += rowData; // sum
       if (rowData < 0) {
-        return `<span style="color: red">${rowData}</span>`;
+        return `<span style="color: red">${floatToString(true, rowData)}</span>`;
       } else if (rowData === 0) {
-        return 0.00;
+        return `0.00`;
       } else {
         // return parseFloat(rowData);
         rowData = floatToString(false, rowData)
@@ -653,11 +728,439 @@ function total_column(totalVariable, rowData) {
 
 //#endregion END - total column
 
+
+function tdNumber(is_link,is_bold,is_showZero,number,style_class,var_total_column,string_eventWithFunction,){
+  try {
+    let num = +number;
+    let fontweight;
+    let classX;
+
+    if (num === 0) {
+      num = is_showZero ? '0.00' : '';
+  }
+  
+    
+    fontweight = is_bold ? 'bold' : 'normal'
+    
+    if (is_link){
+      if (+num < 0){
+        classX = `td_link_number td_negative_number`
+      }else {
+        classX = `td_link_number`
+      }
+    }else{
+      if (+num < 0){
+        classX = `td_negative_number`
+      }else {
+        classX = `td_normal_number`
+      }
+    }
+    
+
+let value;
+if (!var_total_column || !var_total_column) {
+   value = floatToString(true,num)
+} else{
+  value = total_column(var_total_column,num)
+}
+
+    return `<td style="min-width: 1rem; width: auto; font-weight: ${fontweight}; ${style_class}" class="${classX}" ${string_eventWithFunction}>${value}</td>`;
+
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+//#region  table_filter
+
+function performSearch_Row(var_checkbox_or_emptyValue, string_fieldName, var_searchValue, row) {
+  try {
+    // إذا تم تمرير الـ checkbox وكان فارغًا أو كان محددًا
+    if (var_checkbox_or_emptyValue === "" || var_checkbox_or_emptyValue.checked) {
+      // تنفيذ الفلتر
+      return row[string_fieldName] && row[string_fieldName].toString().toLowerCase().includes(var_searchValue);
+    } else {
+      // تجاوز الفلتر لهذا الحقل
+      return false;
+    }
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+
+function filterData_string_column_without_showAndHiddenCheckbox(var_selectType, var_searchInput, string_row_columnName, row) {
+  try {
+
+  let var_select = String(var_selectType.value || '');
+  let input_anotherInfoValue = String(var_searchInput.value || '').trim().toLowerCase();
+  
+  // تحويل قيمة row.columnName إلى نصوص بشكل آمن
+  const anotherInfo = String(row[string_row_columnName] || '').trim().toLowerCase();
+
+  // تحقق من شرط الفلترة بناءً على حالة الـ Checkbox
+ 
+      if (var_select == 0) {
+          // إرجاع true للحصول على كل القيم بلا استثناء
+          return true;
+      } else if (var_select == 1) {
+          // البحث الجزئي داخل النصوص
+          return anotherInfo.includes(input_anotherInfoValue);
+      } else if (var_select == 2) {
+          return !anotherInfo.includes(input_anotherInfoValue);
+      } else if (var_select == 3) {
+          return anotherInfo === '';
+      } else if (var_select == 4) {
+          return anotherInfo !== '';
+      }
+      
+} catch (error) {
+  catch_error(error)
+}
+}
+
+
+function filterData_string_column_with_showAndHiddenCheckbox(var_checkbox, var_selectType, var_searchInput, string_row_columnName, row) {
+  try {
+
+  let var_select = String(var_selectType.value || '');
+  let searchValue = String(var_searchInput.value || '').trim().toLowerCase();
+  
+  // تحويل قيمة row.columnName إلى نصوص بشكل آمن
+  const rowValue = String(row[string_row_columnName] || '').trim().toLowerCase();
+
+  // تحقق من شرط الفلترة بناءً على حالة الـ Checkbox
+  if (var_checkbox.checked) {
+      if (var_select == 0) {
+          // إرجاع true للحصول على كل القيم بلا استثناء
+          return true;
+      } else if (var_select == 1) {
+          // البحث الجزئي داخل النصوص
+          return rowValue.includes(searchValue);
+      } else if (var_select == 2) {
+          return !rowValue.includes(searchValue);
+      } else if (var_select == 3) {
+          return rowValue === '';
+      } else if (var_select == 4) {
+          return rowValue !== '';
+      }
+  } else {
+      return true;
+  }
+          
+} catch (error) {
+  catch_error(error)
+}
+}
+
+
+function filterData_string_column_with_showAndHiddenCheckbox_with_only_select(var_checkbox, var_selectType, string_row_columnName, row) {
+  try {
+
+    let var_select = String(var_selectType.value || '');
+    let searchValue = String(var_selectType.options[var_selectType.selectedIndex].text || '').trim().toLowerCase();
+  
+
+    // تحويل قيمة row.columnName إلى نصوص بشكل آمن
+    const rowData = String(row[string_row_columnName] || '').trim().toLowerCase();
+
+    // تحقق من شرط الفلترة بناءً على حالة الـ Checkbox
+    if (var_checkbox.checked) {
+        if (var_select == 0) {
+            // إرجاع true للحصول على كل القيم بلا استثناء
+            return true;
+        } else {
+            // التحقق من التطابق التام
+            return rowData === searchValue;
+        }
+    } else {
+        return true;
+    }
+
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+
+
+function filterData_number_column_with_showAndHiddenCheckbox(var_checkbox, var_selectType, var_searchInput, string_row_columnName, row) {
+  try {
+
+    let var_select = String(var_selectType.value || '');
+    let input_number = parseFloat(var_searchInput.value || ''); // تحويل قيمة الإدخال إلى رقم
+
+    // تحويل قيمة row.columnName إلى رقم بشكل آمن
+    const rowNumber = parseFloat(row[string_row_columnName] || 0); // تأكد من أن القيمة رقمية
+
+    // تحقق من شرط الفلترة بناءً على حالة الـ Checkbox
+    if (var_checkbox.checked) {
+        if (var_select == 0) {
+            // إرجاع true للحصول على كل القيم بلا استثناء
+            return true;
+        } else if (var_select == 1) {
+            // إرجاع القيم الأكبر من input_anotherInfoValue
+            return rowNumber > input_number;
+        } else if (var_select == 2) {
+            // إرجاع القيم الأصغر من input_anotherInfoValue
+            return rowNumber < input_number;
+        } else if (var_select == 3) {
+            // إرجاع القيم التي تساوي input_anotherInfoValue
+            return rowNumber === input_number;
+        } else if (var_select == 4) {
+            // إرجاع القيم التي تساوي 0
+            return rowNumber === 0;
+        } else if (var_select == 5) {
+            // إرجاع القيم التي لا تساوي 0
+            return rowNumber !== 0;
+        }
+    } else {
+        return true; // إذا لم يكن الـ Checkbox مفعلاً، إرجاع true
+    }
+
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+
+function filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(var_checkbox, var_selectType, var_dateInputStart, var_dateInputEnd, string_row_columnName, row) {
+  try {
+
+    
+    let var_select = String(var_selectType.value || '');
+    let startDate = new Date(var_dateInputStart.value).toISOString().split('T')[0];
+    let endDate = new Date(var_dateInputEnd.value).toISOString().split('T')[0];
+  
+    // تحويل قيمة row.columnName إلى نصوص بشكل آمن والتأكد من أنها بصيغة صحيحة
+    let rowDate = String(row[string_row_columnName] || '').trim();
+
+
+    // تحقق من شرط الفلترة بناءً على حالة الـ Checkbox
+    if (var_checkbox.checked) {
+        if (var_select == 0) {
+            // إرجاع true للحصول على كل القيم بلا استثناء
+            return true;
+        } else if (var_select == 1) {
+              // التحقق من أن التاريخ غير فارغ وأنه بصيغة صحيحة (YYYY-MM-DD)
+    const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(rowDate);
+
+    if (!isValidDate) {
+        // استبعد الصف إذا كان التاريخ فارغًا أو بصيغة غير صحيحة
+        return false;
+    }
+
+            // البحث عن الصفوف التي تقع تواريخها بين التاريخين المدخلين
+            return rowDate >= startDate && rowDate <= endDate;
+        }
+    } else {
+        return true;
+    }
+          
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+function filterData_Qkey(QKey, string_row_columnName, row) {
+  try {
+
+    if (!QKey || isNaN(+QKey)) {
+      return true
+    }else{
+    
+    // تحويل قيمة row.columnName إلى نصوص بشكل آمن
+    const rowData = String(row[string_row_columnName] || '').trim().toLowerCase();
+    return rowData == QKey;
+  }
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+
+function filter_outsideCheckbox_string_column_with_select_and_input(var_checkbox) {
+  // البحث عن العنصر الأب الذي يحتوي على select_and_input_div
+  const filter_div_sub = var_checkbox.closest('.filter_div_sub');
+  const select_and_input_div = filter_div_sub.querySelector('.select_and_input_div');
+  const select = select_and_input_div.querySelector(`select`)
+  const input = select_and_input_div.querySelector(`input`)
+
+    select.value = 0
+    if (input) {
+        input.style.display = 'none'
+        input.value = ''
+    }
+
+
+  // تعديل الظهور بناءً على حالة الـ checkbox
+  if (var_checkbox.checked) {
+    select_and_input_div.classList.remove('hidden_select_and_input_div');
+  } else {
+    select_and_input_div.classList.add('hidden_select_and_input_div');
+  }
+}
+
+function filter_outsideCheckbox_date_column_with_select_and_two_inputs(var_checkbox) {
+  // البحث عن العنصر الأب الذي يحتوي على select_and_input_div
+  const filter_div_sub = var_checkbox.closest('.filter_div_sub');
+  const select_and_input_div = filter_div_sub.querySelector('.select_and_input_div');
+
+  // const input = select_and_input_div.querySelector(`input`)
+
+   
+  //   input.style.display = 'none'
+  //   input.value = ''
+
+  // تعديل الظهور بناءً على حالة الـ checkbox
+  if (var_checkbox.checked) {
+    select_and_input_div.classList.remove('hidden_select_and_input_div');
+  } else {
+    select_and_input_div.classList.add('hidden_select_and_input_div');
+  }
+}
+
+function filter_insideSelect_string_column_with_input(select_element) {
+  try {
+    const select_and_input_div = select_element.closest(`.select_and_input_div`);
+    const input = select_and_input_div.querySelector(`input`)
+    
+    input.value =''
+    const array = [1,2];
+    if (array.includes(+select_element.value)){
+      input.style.display = 'flex'
+    }else{
+      input.style.display = 'none'
+    }
+  } catch (error) {
+    catch_error(error)
+  }
+}
+
+
+
+function filter_insideSelect_number_column_with_input(select_element) {
+  try {
+    const select_and_input_div = select_element.closest(`.select_and_input_div`);
+    const input = select_and_input_div.querySelector(`input`)
+    
+    input.value =''
+    const array = [1,2,3];
+    if (array.includes(+select_element.value)){
+      input.style.display = 'flex'
+    }else{
+      input.style.display = 'none'
+    }
+  } catch (error) {
+    catch_error(error)
+  }
+}
+
+
+function filter_insideSelect_date_column_with_two_input(select_element) {
+  try {
+    const select_and_input_div = select_element.closest(`.select_and_input_div`);
+    const two_date_div = select_and_input_div.querySelector(`.two_date_div`)
+    const inputs = two_date_div.querySelectorAll(`input`)
+    
+    for (const input of inputs){
+      input.value = today
+    }
+
+    const array = [1];
+    if (array.includes(+select_element.value)){
+      two_date_div.style.display = 'flex'
+    }else{
+      two_date_div.style.display = 'none'
+    }
+  } catch (error) {
+    catch_error(error)
+  }
+}
+
+
+
+function beforeprint_reviewTable(str_tableName, ...hideColumnIndices) {
+  try {
+    const table = document.querySelector(`#${str_tableName}`);
+    const headerCells = table.querySelectorAll('thead th');
+    const numberOfColumns = headerCells.length;
+    const countValue = table.querySelector(`#tfooter0`).textContent;
+
+    // التعامل مع الأعمدة المخفية أولاً
+    if (Array.isArray(hideColumnIndices) && hideColumnIndices.length > 0) {
+      for (const index of hideColumnIndices) {
+        if (typeof index === 'number' && index >= 0) {
+          // إضافة الكلاس لإخفاء الأعمدة أثناء الطباعة
+          const cells = table.querySelectorAll(`tr td:nth-child(${index + 1}), tr th:nth-child(${index + 1})`);
+          for (const cell of cells) {
+            cell.classList.add('hide-print');
+          }
+        }
+      }
+    }
+
+    // التعامل مع خلايا التذييل
+    
+    for (let i = 0; i <= numberOfColumns -1; i++) { // تغيير < إلى <= لتغطية كل الأعمدة
+      const tfoot = table.querySelector(`#tfooter${i}`);
+      if (tfoot && getComputedStyle(tfoot).display !== 'none' && !tfoot.classList.contains('hide-print')) { // استخدام getComputedStyle للتحقق من الظهور
+        if (!tfoot.textContent || tfoot.textContent.trim() === '') { // تحقق من كون النص فارغًا
+          tfoot.textContent = countValue;
+        }
+        break; // إنهاء الحلقة بعد العثور على أول عنصر غير مخفي
+      }
+    }
+
+  } catch (error) {
+    console.error('Error in beforeprint_reviewTable:', error);
+  }
+
+  // مثال على كيفية الاستخدام
+//window.addEventListener('beforeprint', function() {
+  //beforeprint_reviewTable('employees_table', 0, 1, 2); // سيخفي الأعمدة 1 و 2 و 3 أثناء الطباعة
+//});
+
+}
+
+
+
+
+
+
+//#endregion
+
+
 //#region Numbers Formating show seperator
+// function floatToString(is_showZero, floatValue) {
+//   try {
+//     let num = parseFloat(floatValue);
+//     if (num === 0 && is_showZero) return '';
+//     return num.toLocaleString('en-US', {
+//       minimumFractionDigits: 2,
+//       maximumFractionDigits: 2
+//     });
+//   } catch (error) {
+//     catch_error(error);
+//   }
+// }
+
+
 function floatToString(is_showZero, floatValue) {
   try {
     let num = parseFloat(floatValue);
-    if (num === 0 && is_showZero) return '';
+    
+    if (num === 0) {
+      if (is_showZero) return '0.00';
+      return '';
+    }
+    
     return num.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -679,6 +1182,153 @@ function stringToFloat(is_showZero, stringFloatValue) {
 }
 
 //#endregion
+
+//#region table-sorting
+// دالة لتطبيق الترتيب على جدول
+// tableSort.js
+
+function copyTableToClipboard(copyBtn,tableNameID) {
+  try {
+    showLoadingIcon(copyBtn)
+    let table = document.getElementById(tableNameID);
+    let rows = table.querySelectorAll('tr');
+    let dataToCopy = '';
+
+    // Loop through each row to collect visible data
+    for (const row of rows) {
+        let cells = Array.from(row.querySelectorAll('th, td')).slice(1); // Skip the first column
+        let rowText = '';
+
+        for (const cell of cells) {
+            // Skip hidden columns
+            if (window.getComputedStyle(cell).display !== 'none') {
+                rowText += cell.innerText + '\t'; // Tab delimited
+            }
+        }
+
+        dataToCopy += rowText.trim() + '\n'; // Newline for each row
+    }
+
+    // Copy the collected data to the clipboard
+    navigator.clipboard.writeText(dataToCopy).then(() => {
+      showAlert('info','تم نسخ البيانات بنجاح!')
+       
+    }).catch(err => {
+        console.error('فشل في نسخ البيانات: ', err);
+    });
+    hideLoadingIcon(copyBtn)
+  } catch (error) {
+    hideLoadingIcon(copyBtn)
+    showAlert('fail','حدث خطأ اثناء نسخ البيانات')
+    catch_error(error);
+  }
+}
+
+
+
+// دالة لتطبيق الترتيب على جدول
+function applySorting(tableId, columnIndex, sortOrder = 'asc') {
+  try {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // افترض أن صف الإجمالي هو آخر صف في tbody
+    const totalRow = rows.pop();
+
+    // فرز الصفوف المتبقية
+    rows.sort((a, b) => {
+      const aText = a.children[columnIndex].textContent.trim();
+      const bText = b.children[columnIndex].textContent.trim();
+
+      if (sortOrder === 'asc') {
+        return aText.localeCompare(bText, undefined, { numeric: true });
+      } else {
+        return bText.localeCompare(aText, undefined, { numeric: true });
+      }
+    });
+
+    // إعادة إضافة الصفوف إلى الجدول
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+
+    // إضافة صف الإجمالي مرة أخرى
+    tbody.appendChild(totalRow);
+
+    // تحديث أيقونات الترتيب
+    updateSortIcons(tableId, columnIndex, sortOrder);
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+// دالة لتحديث أيقونات الترتيب في رؤوس الأعمدة
+function updateSortIcons(tableId, activeColumnIndex, sortOrder) {
+  try {
+    
+  const table = document.getElementById(tableId);
+  const headers = table.querySelectorAll('thead th');
+
+  headers.forEach((header, index) => {
+    const icon = header.querySelector('.sort-icon');
+    if (index === activeColumnIndex) {
+      if (icon) {
+        icon.classList.remove('fa-sort', 'fa-sort-up', 'fa-sort-down');
+        icon.classList.add(sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+      } else {
+        header.innerHTML += ` <i class="sort-icon fas ${sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'}"></i>`;
+      }
+    } else {
+      if (icon) {
+        icon.classList.remove('fa-sort-up', 'fa-sort-down');
+        icon.classList.add('fa-sort');
+      }
+    }
+  });
+} catch (error) {
+    catch_error(error)
+}
+}
+
+// إضافة مستمعي الأحداث لرؤوس الأعمدة لتفعيل الترتيب عند النقر
+function setupColumnSorting(tableId) {
+try {
+  
+  const table = document.getElementById(tableId);
+  const headers = table.querySelectorAll('thead th');
+
+  // if (!table || !headers) {
+  //   return
+  // }
+
+  
+  headers.forEach((header, index) => {
+    header.addEventListener('click', () => {
+      const currentOrder = header.getAttribute('data-sort-order') || 'asc';
+      const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+
+      header.setAttribute('data-sort-order', newOrder);
+      applySorting(tableId, index, newOrder);
+    });
+  });
+} catch (error) {
+ catch_error(error) 
+}
+}
+
+// تأكد من أن الدالة setupColumnSorting يمكن استدعاؤها بعد تحميل الصفحة
+// document.addEventListener('DOMContentLoaded', () => {
+//   setupColumnSorting('employees_table'); // يمكنك تغيير 'employees_table' إلى معرّف الجدول المناسب
+// });
+
+
+// تأكد من أن الدالة setupColumnSorting يمكن استدعاؤها بعد تحميل الصفحة
+//document.addEventListener('DOMContentLoaded', () => {
+  //setupColumnSorting('employees_table'); // يمكنك تغيير 'employees_table' إلى معرّف الجدول المناسب
+//});
+//#endregion
+
 
 
 //#region dragable ( rows > drag and drop )
@@ -1179,7 +1829,17 @@ function check_parse(inputid, type) {
 function showLoadingIcon(element) {
   try {
 
-    element.classList.add('loading_icon');
+    if (element === content_space){      
+      if (page_content) {
+
+        page_content.style.display = 'none'
+      }
+      content_space.classList.add('loading_icon_content_space');
+    }else{
+      element.classList.add('loading_icon_btns');
+    }
+    
+    
     // element.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
     // body_content.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
     body.style.pointerEvents = 'none'; // تعطيل التفاعل مع العنصر
@@ -1208,10 +1868,19 @@ function hideLoadingIcon(element) {
       return;
     }
 
+    if (element === content_space){
+      if (page_content) {
+        page_content.style.display = 'flex'
+      }
+      content_space.classList.remove('loading_icon_content_space');
+    }else{
+      element.classList.remove('loading_icon_btns');
+    }
+
     // element.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
     // body_content.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
     body.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر
-    element.classList.remove('loading_icon');
+    element.classList.remove('loading_icon_btns', 'loading_icon_content_space');
     // element.disabled = false; // تشغيل العنصر
     element.title = ''  // تعطيل ال التلميح
   } catch (error) {
@@ -1456,6 +2125,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
     if (is_showLoadingIcon) {
       showLoadingIcon(Element_showLoadingIcon_as_avariable)
+
     }
 
 
@@ -1511,14 +2181,17 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
       const data = await response.json();
       if (data.xx && data.xx === true) {
+        closeDialog();
         redirection('login', 'fail', data.message_ar)
         return false
       } else {
         if (data.success && is_redirection_page) {
+          closeDialog();
           body_content.style.pointerEvents = 'none';
           redirection(redirection_page, 'success', data.message_ar);
           return true
         }else if (is_confirm_dialog){
+          closeDialog();
           if (data.success) {
             showAlert('success',data.message_ar)
             return true
@@ -1555,6 +2228,30 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 //#region document EVENTS
 
 //#region escape btn
+
+function hideOnDocumentClick(event, FN, ...classes) {
+  try {
+    const clickedInside = classes.some(className => {
+      return event.target.classList.contains(className) || event.target.closest(`.${className}`);
+    });
+  
+    if (!clickedInside) {
+      FN();
+    }
+  } catch (error) {
+    catch_error
+  }
+
+}
+
+
+document.addEventListener("click", (event) => {  
+  // hideOnDocumentClick(event, hideDropdown, 'dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input');
+  hideOnDocumentClick(event, hide_fn_options_div, 'fn_container_div', 'fn_options_div');
+});
+
+
+
 document.onkeydown = function (event) {
   if (event.key === 'Escape') {
     // هنا يمكنك وضع الإجراءات التي تريدها عند الضغط على "esc"
@@ -1562,6 +2259,7 @@ document.onkeydown = function (event) {
     closeDialog();
     closeDialog_input()
     hide_User_options();
+    hide_fn_options_div();
   }
 }
 
@@ -1590,9 +2288,108 @@ socket.on('ozkrAllah', (data) => {
 //#endregion
 
 
+const filter_icon = document.querySelector(`#filter_icon`);
+const filter_icon_cancel = document.querySelector(`#filter_icon_cancel`);
+const filter_div = document.querySelector(`#filter_div`)
+
+function show_filter_div() {
+  try {
+    if (filter_div !== null) {
+      filter_div.classList.remove(`hidden_height`)
+      filter_icon.style.display = 'none'
+      filter_icon_cancel.style.display = 'flex'
+    }
+  } catch (error) {
+    catch_error(error)
+  }
+}
+
+function hidden_filter_div() {
+  try {
+    if (filter_div !== null) {
+      filter_div.classList.add(`hidden_height`)
+      filter_icon_cancel.style.display = 'none'
+      filter_icon.style.display = 'flex'
+    }
+  } catch (error) {
+    catch_error(error)
+  }
+}
 
 
 
+
+function getURLData(paramName, string_redirectPageOnError, string_redirectionErrorMessage) {
+  try {
+    // الحصول على سلسلة الاستعلام من الـ URL
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const encodedData = urlParams.get(paramName);
+
+    // التحقق مما إذا كانت البيانات موجودة
+    if (encodedData) {
+        return JSON.parse(decodeURIComponent(encodedData));
+    } else {
+      return 'noParams';
+    }
+  } catch (error) {
+    // catch_error(error)
+    redirection(string_redirectPageOnError,'fail',string_redirectionErrorMessage)
+
+    // window.location.href = string_redirectPageOnError;
+    return false;
+  }
+}
+
+
+/*
+// استخدام الدالة
+const department_data = getDecodedDataFromURL('data');
+if (department_data) {
+    console.log('x:', department_data.id);
+}
+*/
+
+
+function showHeight(var_element){
+  if(var_element !== null){
+    var_element.classList.remove(`hidden_height`)
+  }
+}
+
+function hideHeight(var_element){
+  if(var_element !== null){
+    var_element.classList.add(`hidden_height`)
+  }
+}
+
+
+const fn_icon = document.querySelector(`#fn_icon`)
+const fn_options_div = document.querySelector(`#fn_options_div`)
+
+function hide_fn_options_div(){
+  if (fn_options_div){
+    hideHeight(fn_options_div)
+  }
+}
+
+function show_fn_options_div (){
+  if (fn_options_div){
+    showHeight(fn_options_div)
+   }
+}
+
+
+
+if (fn_icon && fn_options_div){
+  fn_icon.onclick = () =>{
+    if (fn_options_div.classList.contains(`hidden_height`)){
+      showHeight(fn_options_div)
+    }else{
+      hideHeight(fn_options_div)
+    }
+  }
+}
 
 
 

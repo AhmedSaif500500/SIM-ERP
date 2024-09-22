@@ -43,7 +43,7 @@
 
 </head>
 
-<body class="body">
+<body class="body scroll">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -58,9 +58,11 @@
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="scroll">
-          <h2 class="h2">
-            <a href="bread_view_ar">
+                <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+          <h2 id="h2" class="h2">
+             <a id="back_href" class="back_href" href="bread_view_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
 
@@ -68,7 +70,7 @@
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-          <div class="row x_start x_center w_fit h_fit gap_10">
+          <div class="reference_and_date_div">
 
             <div class="column x_start y_start w_fit">
           <!-- date -->
@@ -80,7 +82,7 @@
           </div>
           </div>
               
-          <div class="column x_start y_start w_fit">
+        <div class="column x_start y_start w_fit">
             <label for="refrence_input" class="lbl_sm">المرجع</label>
           <div class="input_with_icon_div">
             <span class="refrence_input_checkbox"><input type="checkbox" id="refrence_input_checkbox" checked></span>
@@ -153,7 +155,7 @@
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_table_container" id="">
+                      <div class="inputTable_dropdown_tableContainer" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
   
                       </div>
@@ -219,7 +221,7 @@
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_table_container" id="">
+                      <div class="inputTable_dropdown_tableContainer" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
   
                       </div>

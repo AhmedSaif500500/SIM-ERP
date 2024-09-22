@@ -25,7 +25,7 @@
   </style>
 </head>
 
-<body class="body">
+<body class="body scroll">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -40,12 +40,13 @@
       
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="scroll">
-          <h2 class="h2">
-            <a href="bread_view_ar">
+                <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+          <h2 id="h2" class="h2">
+             <a id="back_href" class="back_href" href="bread_view_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-       
             العيش / جديد
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
@@ -64,6 +65,7 @@
             <option value="4">احمد رضوان</option>
             <option value="5">صابر الخشاب</option>
             <option value="6">ابو فارس</option>
+            <option value="7">فرن زينهم</option>
           </select>
 
           <label for="note_inpute" class="lbl_sm">البيان</label>
@@ -97,7 +99,7 @@
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span_start">كيلو</span>
+                      <span class="input_span_start">جرام</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>

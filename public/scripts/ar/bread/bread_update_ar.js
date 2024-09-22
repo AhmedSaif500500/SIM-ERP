@@ -26,8 +26,9 @@ let data = [];
 // let slice_Array1 = [];
 
 async function geteProductionData_fn() {
-
-  //preparing data
+try {
+  
+  page_content.style.display = "none";
   const h_id = parseInt(bread_data.h_id);
 
   //! send id and recwive data
@@ -39,7 +40,7 @@ async function geteProductionData_fn() {
     false,
     '',
     true,
-    false,'',
+    true,content_space,
     false,'',
     'حدث خطأ اثناء معاجله البيانات'
   )
@@ -79,7 +80,7 @@ async function geteProductionData_fn() {
             </td>
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
-                <span class="input_span_start">كيلو</span>
+                <span class="input_span_start">جرام</span>
                 <input value="${row.wazn}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
@@ -119,6 +120,11 @@ async function geteProductionData_fn() {
 
         // تحديث محتوى الصفحة بناءً على البيانات
         myTable.innerHTML = await tableHTML;
+
+        page_content.style.display = "flex";
+      } catch (error) {
+        catch_error(error)
+      }
 }
 
 
@@ -193,7 +199,7 @@ function addRows() {
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span_start">كيلو</span>
+                      <span class="input_span_start">جرام</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>

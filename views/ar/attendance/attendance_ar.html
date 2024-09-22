@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
 </head>
 
-<body class="body">
+<body class="body scroll">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -25,9 +25,11 @@
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="scroll">
-          <h2 class="h2">
-            <a href="home_ar">
+                <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+          <h2 id="h2" class="h2">
+             <a id="back_href" class="back_href" href="home_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
      
@@ -35,15 +37,15 @@
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-
+         <div id="page_content" style="display: none;"> 
           <div class="btn_container">
             <a href="/attendance_add_ar" class="btn_new" id="newBtn">جديد</a>
             <a href="/attendance_report_ar" class="btn_update" id="newBtn">تقارير</a>
           </div>
 
 
-          <!-- search in table -->
-          <div class="flex_row gap_05">
+            <!-- search in table -->
+            <div class="search_in_table_div">
             <div class="input_with_icon_div">
               <input type="search" name="searchInput" id="searchInput" placeholder="search" class="search_input hover">
               <i class="fa-light fa-magnifying-glass left_icon"></i>
@@ -59,8 +61,8 @@
 
 
           <!-- table container filled by js -->
-          <div id="table-container" class="table_container"></div>
-
+          <div id="tableContainer" class="tableContainer"></div>
+        </div>
         </div>
       </div>
     </div>

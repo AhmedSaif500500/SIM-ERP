@@ -1,5 +1,5 @@
 setActiveSidebar('bread_view_ar');
-const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
+
 
 const date1 = document.querySelector('#date1');
 const refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
@@ -71,7 +71,7 @@ function addRows() {
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_table_container" id="">
+                      <div class="inputTable_dropdown_tableContainer" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
   
                       </div>
@@ -358,8 +358,8 @@ async function fillAttendancetable(td) {
           <tr id="table_fotter_buttons_row">
               <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                   <div class='flex_H'>
-                      <button class="table_footer_btn"  id="w1" onclick="ShowAllDataInAttendanceTable(this)">All</button>
-                      <button class="table_footer_btn"  id="w2" onclick="showFirst50RowInAttendanceTable(this)">50</button>
+                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataInAttendanceTable(this)">All</button>
+                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowInAttendanceTable(this)">50</button>
                   </div>
               </td>
           </tr>
@@ -370,7 +370,7 @@ async function fillAttendancetable(td) {
   tableHTML += '</table>';
 
   // تحديث محتوى الصفحة بناءً على البيانات
-  td.querySelector('.inputTable_dropdown_table_container').innerHTML = await tableHTML;
+  td.querySelector('.inputTable_dropdown_tableContainer').innerHTML = await tableHTML;
 
 
 
@@ -528,7 +528,7 @@ function handle_dropdown_row_selection(td) {
     const dropdown_search_input = td.querySelector('.dropdown_search_input');
     dropdown_search_input.focus();
 
-    const rows = td.querySelectorAll(`.inputTable_dropdown_table_container table > tbody > tr`);
+    const rows = td.querySelectorAll(`.inputTable_dropdown_tableContainer table > tbody > tr`);
     if (rows.length > 0) {
       let currentIndex = 0;
 

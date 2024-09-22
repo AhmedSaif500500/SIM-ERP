@@ -26,8 +26,8 @@
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
         <div id="content_space">
-          <h2 class="h2">
-            <a href="users_ar">
+          <h2 id="h2" class="h2">
+             <a id="back_href" class="back_href" href="users_ar">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
    
@@ -220,7 +220,26 @@
                               </td>
                               <td style="width: 100%; text-wrap: nowrap;"></td>
                             </tr>
-                            
+                     
+                                          <!-- vendors -->
+              <tr>
+                <td style="width: auto;">3</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الموردين</td>
+                <td style="width: auto;">
+                  <select class="permission_table_select" id="table_permission_vendors"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              
             </tbody>
             <tfoot>
               <tr class="table_totals_row" ;>
@@ -267,7 +286,7 @@
                 </div> -->
 
           <!-- table container filled by js -->
-          <!-- <div id="table-container"></div> -->
+          <!-- <div id="tableContainer"></div> -->
 
         </div>
       </div>

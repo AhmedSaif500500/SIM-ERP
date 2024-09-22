@@ -9,7 +9,7 @@
   /** fonts - colors  */
   --Font_normal: normal normal normal 1.4rem/1.4rem Lateef,Amiri,Droid Arabic Naskh,Segoe UI,Helvetica Neue, Helvetica,Arial, sans-serif;
   --Font_Color: rgb(51, 51, 51);
-  --font_number_color: rgb(33, 140, 240);
+  --font_link_number_color: rgb(33, 140, 240);
   --special_font_color: rgb(1, 1, 192);
 
   /** icons*/
@@ -86,8 +86,8 @@
 
   --table_footer_row_background_color: rgb(51, 51, 51);
   --table_footer_row_color: rgb(51, 51, 51);
-  --table_footer_btn_color: rgb(51, 51, 51);
-  --table_footer_btn_background_color: rgb(229, 229, 229);
+  --table_footer_show_data_color: rgb(51, 51, 51);
+  --table_footer_show_data_background_color: rgb(229, 229, 229);
 
   /** others*/
   --input_height: 3rem;
@@ -105,7 +105,7 @@
 
   /*! fonts - colors  */
   --Font_Color: #f1f1f1;
-  --font_number_color: rgb(102, 200, 255);
+  --font_link_number_color: rgb(102, 200, 255);
   --special_font_color: rgb(176, 196, 255);
 
   /*! icons*/
@@ -181,8 +181,8 @@
 
   --table_footer_row_background_color: rgb(51, 51, 51);
   --table_footer_row_color: rgb(51, 51, 51);
-  --table_footer_btn_color: rgb(241, 241, 241);
-  --table_footer_btn_background_color: rgb(67, 67, 67);
+  --table_footer_show_data_color: rgb(241, 241, 241);
+  --table_footer_show_data_background_color: rgb(67, 67, 67);
 }
 
 /* END - dark mode -------------------------------------------------- */
@@ -206,13 +206,71 @@ html {
 body {
   display: flex;
   flex-direction: column;
-  /* height: 100vh; */
   font: var(--Font_normal);
   border: none;
   height: 100vh;
   /* مهم جدا لضمان ان يكون الاسكرول بار فقط فى ال بودى */
   /* overflow: auto; */
   background-color: var(--bg_white_backcolor);
+}
+
+@media print{
+
+  @page {
+    size: A4; /* تحديد حجم الصفحة للطباعة */
+    margin: 10mm; /* ضبط الهوامش حسب حاجتك */
+}
+
+.hide-print {
+  display: none !important;
+}
+
+  body {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+}
+
+  body *{
+    color: #000 !important;
+    background-color: white !important;
+    border: none;
+    overflow: visible; /* التأكد من ظهور كل المحتوى */
+    box-shadow: none !important;
+    font-size: 12px !important;
+  }
+
+
+
+  select {
+    -webkit-appearance: none; /* لأجل متصفحات كروم وسفاري */
+    -moz-appearance: none;    /* لأجل متصفح فايرفوكس */
+    appearance: none;         /* لأجل المتصفحات الحديثة */
+    background: url('') no-repeat right center; /* إخفاء السهم */
+    padding-inline-end: 10px; /* إضافة مسافة لتجنب التداخل بين النص والسهم المخفي */
+  }
+
+
+  i{
+    display: none !important;
+  }
+
+  input, textarea, select, label{
+    border: none !important;
+    outline: none !important;
+ 
+
+  }
+
+  label{
+    margin-block-start: 20px !important;
+  }
+  textarea{
+    width: auto !important;
+    max-width: 100%;
+    height: auto !important;
+  }
 }
 
 #body_content{
@@ -222,7 +280,16 @@ width: 100vw;
 height: 100vh;
 /* margin: 0; padding: 0; outline: none; border: none; box-sizing: border-box; */
 background-color: var(--bg_white_backcolor);
+}
 
+
+@media print {
+  #body_content {
+    position: relative;
+    height: auto; /* إلغاء الارتفاع الثابت للطباعة */
+    width: 100%;
+    border: none;
+  }
 }
 
 /* containers */
@@ -232,28 +299,33 @@ background-color: var(--bg_white_backcolor);
 }
 @media screen and (max-width: 750px) {
   .flex_row {
-    width: 100%;
+    width: 100% !important;
   }
 }
 
 .flex_column {
   display: flex;
-  flex-direction: column;
+  flex-direction: column !important;
 }
 
 #scrollToTopBtn {
   position: fixed;
-  bottom: 20px;
-  inset-inline-end: 20px;
+  /* bottom: 20px; */
+  inset-block-end: 2rem;
+  /* inset-inline-end: 20px; */
+  inset-inline-end: 2rem;
   display: none;
   /* background-color: #007bff; */
   background-color: #712cf9;
   color: white;
   border: none;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  font-size: 24px;
+  /* width: 50px; */
+  width: 5rem;
+  /* height: 50px; */
+  height: 5rem;
+  /* font-size: 24px; */
+  font-size: 2.4rem;
   cursor: pointer;
   z-index: 1000;
   opacity: 1;
@@ -265,6 +337,12 @@ background-color: var(--bg_white_backcolor);
   opacity: 0.8;
 }
 
+
+@media print{
+  #scrollToTopBtn {
+    display: none !important;
+  }
+}
 /*scrol--------------------------------------*/
 .scroll{
   transition: var(--transition);
@@ -298,8 +376,23 @@ background-color: var(--bg_white_backcolor);
 
 /** loading*/
 
+.loading_icon_content_space::after {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 50%;
+  transform: translate(-50%, -50%);
+  content: '\f110'; /* رمز دوران Font Awesome */
+  font-family: 'Font Awesome 6 pro';
+  font-weight: 900;
+  animation: spin 1s linear infinite;
+  font-size: 2rem;
+  color: var(--Font_Color); /* لون الأيقونة - يمكنك تغييره إلى أي لون تريده */
+}
+
 /* عندما يكون الزر في حالة التحميل */
-.loading_icon::after {
+.loading_icon_btns::after {
+  /* position: relative;
+  z-index: 999; */
   content: '\f110'; /* رمز دوران Font Awesome */
   font-family: 'Font Awesome 6 pro';
   font-weight: 900;
@@ -314,8 +407,9 @@ background-color: var(--bg_white_backcolor);
   to { transform: rotate(360deg); }
 }
 
-/** end - loading ------------------------------------------------*/
 
+
+/** end - loading ------------------------------------------------*/
 
 .back_icon {
   position: relative;
@@ -401,45 +495,45 @@ input[type="checkbox"]:hover {
 
 /*todo Flex*/
 .row{
-  display: flex; flex-direction: row;
+  display: flex !important; flex-direction: row !important;
 }
 .row_R{
-  display: flex; flex-direction:row-reverse;
+  display: flex !important; flex-direction:row-reverse !important;
 }
 
 .column{
-  display: flex; flex-direction: column;
+  display: flex !important; flex-direction: column !important;
 }
 
 .column_R{
-  display: flex; flex-direction:column-reverse;
+  display: flex !important; flex-direction:column-reverse !important;
 }
 .wrap{
-  flex-wrap: wrap;
+  flex-wrap: wrap !important;
 }
 .x_center{
-  justify-content: center;
+  justify-content: center !important;
 }
 .x_start{
-  justify-content: start;
+  justify-content: start !important;
 }
 .x_end{
-  justify-content: end;
+  justify-content: end !important;
 }
 .x-around{
-  justify-content: space-around;
+  justify-content: space-around !important;
 }
 .x_between{
-  justify-content: space-between;
+  justify-content: space-between !important;
 }
 .y_start{
-  align-items: start;
+  align-items: start !important;
 }
 .y_end{
-  align-items: end;
+  align-items: end !important;
 }
 .y_center{
-  align-items: center;
+  align-items: center !important;
 }
 .grow_1{
   flex-grow: 1;
@@ -654,10 +748,24 @@ width: 100% !important;
 
 
 /* ? start - H */
+
+.h2_main_text_div{
+  position: relative;
+  display: flex; flex-direction: column; justify-content: start; align-items: start;
+}
+
+.h2_text_div{
+  cursor: pointer;
+  color: inherit;
+}
+
+.sub_h2_header{
+  padding-inline-start: 1rem;
+  font-size: 1.4rem;
+}
+
 .h2 {
-
   line-height: 3.2rem;
-
 }
 
 .h3 {
@@ -667,21 +775,50 @@ width: 100% !important;
 
 .h2, .h3{
   position: relative;
-  display: flex; flex-direction: row; justify-content: start; align-items: center;
+  display: flex; flex-direction: row; justify-content: start; align-items: start;
   background-color: var(--h2_background_color);
   padding-block-end: 1rem;
   margin-block-start: 1.5rem;
   margin-block-end: 1.5rem;
-  /* padding-bottom */
+  /* padding-block-end */
   border-block-end: var(--h2_border_bottom);
-  width: 100%;
-  max-width: 30rem;
+  min-width: 30rem;
+  width: fit-content;
+  max-width: 100%;
   color: var(--h2_color);
   box-shadow: var(--h2_box_shadow);
   transition: var(--transition);
 }
 
+@media print{
 
+  .h2, .h2 *{
+    border: none !important;
+    outline: none !important;
+    font-size: 17px !important;
+  }
+
+  .back_href{
+    display: none;
+  }
+}
+
+
+#page_content{
+  display: flex; flex-direction: column;
+}
+
+@media print{
+  #page_content{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    border: none !important;
+    overflow: visible;
+  }
+}
 /* ? end - H */
 
 /* ! start -- Input-text*/
@@ -941,11 +1078,25 @@ width: 100% !important;
   border-block-start: var(--h2_border_bottom);
 }
 
+@media print{
+  .btn_container, .btn_container_top_border{
+    display: none !important;
+    border: none !important;
+    
+  }
+}
+
+
 .btn_container a,
 .btn_container button,
 .btn_container_top_border a,
 .btn_container_top_border button {
   margin-inline-end: 1rem;
+}
+
+.btn_do {
+  background-color: teal;
+  /* background-color: #712cf9; */
 }
 
 .btn_save {
@@ -964,6 +1115,7 @@ width: 100% !important;
   background-color: var(--btn_cancel_backcolor);
 }
 
+.btn_do,
 .btn_save,
 .btn_new,
 .btn_update,
@@ -984,6 +1136,7 @@ width: 100% !important;
   transition: var(--transition);
 }
 
+.btn_do:hover,
 .btn_save:hover,
 .btn_new:hover,
 .btn_update:hover,
@@ -992,6 +1145,7 @@ width: 100% !important;
   opacity: var(--btn_hover_opacity);
 }
 
+.btn_do:active,
 .btn_save:active,
 .btn_new:active,
 .btn_update:active,
@@ -1200,6 +1354,8 @@ width: 100% !important;
   word-break: break-word;
 }
 
+
+
 .header_dark_lang_control {
   position: relative;
   display: flex;
@@ -1212,6 +1368,12 @@ width: 100% !important;
   margin-inline-start: 1rem;
   margin-inline-end: 1rem;
   height: var(--header_element_height); /* all header elements must take this value */
+}
+
+@media print{
+  .header_dark_lang_control{
+    display: none;
+  }
 }
 
 .header_dark_lang_control a {
@@ -1236,6 +1398,12 @@ width: 100% !important;
   transition: var(--transition);
 }
 
+@media print{
+  .header_menue{
+    display: none;
+  }
+}
+
 .header_menue a{
   transition: var(--transition);
 }
@@ -1249,6 +1417,29 @@ width: 100% !important;
   transition: var(--transition);
   height: var(--header_element_height); /* all header elements must take this value */
 }
+
+@media print{
+  .header_user_div{
+    justify-content: start; align-items: end;
+    width: 100%;
+  }
+
+
+  #header_user_today{
+    display: block !important;
+    font-size: 20px;
+  }
+
+  #header_user_name{
+    display: none;
+  }
+
+  #header_company_name{
+    display: block;
+    font-size: 20px !important;
+  }
+}
+
 .header_user_name{
   position: relative;
   font-weight: bold;
@@ -1257,6 +1448,7 @@ width: 100% !important;
   color: var(--Font_Color);
   transition: var(--transition);
 }
+
 
 .user_options{
   position: absolute;
@@ -1312,21 +1504,6 @@ cursor: pointer;
 /* start main============================================== */
 
 /* start container ----------------------------------- */
-.container {
-  display: flex;
-  flex-direction: column;
-  /**/
-
-  /**/
-  flex: 1;
-  box-sizing: border-box;
-  width: 100%;
-  height: auto;
-  border-radius: 0.8rem;
-  border: var(--border_normal);
-  box-shadow: 0 0.1rem 0.5rem var(--icon_btn_color);
-  overflow: hidden;
-}
 
 /* start sub_header--------------------------- */
 
@@ -1343,6 +1520,24 @@ cursor: pointer;
   width: 100%;
   overflow: hidden;
   /* مهم جدا لضمان ان يكون الاسكرول بار فقط فى ال بودى */
+}
+
+
+@media print {
+  .sub_container {
+    position: relative; /* إلغاء التأثيرات المتعلقة بالموضع */
+    width: 100%; /* التأكد من أن العرض يتكيف مع المحتوى */
+    height: auto;
+    border: none;
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sub_container * {
+    overflow: visible; /* إلغاء التمرير المخفي في جميع العناصر */
+  }
+
 }
 
 /* end# sub_container============================ */
@@ -1402,6 +1597,11 @@ html[dir="rtl"] {
   overflow: auto;
 }
 
+@media print{
+  .sidebar{
+    display: none;
+  }
+}
 /* hide side_parent if screen < 750 */
 @media screen and (max-width: 750px) {
   .sidebar {
@@ -1426,6 +1626,7 @@ html[dir="rtl"] {
   animation-duration: 0.3s; /* يمكنك تغيير مدة الرسوم المتحركة حسب الحاجة */
   animation-fill-mode: forwards; /* يحافظ على الحالة النهائية للرسوم المتحركة */
 }
+
 
 /* تطبيق الرسوم المتحركة عند ظهور الشريط الجانبي */
 .sidebar_Media_Show.show {
@@ -1490,7 +1691,7 @@ gap: 1.3rem;
   border-radius: 0.3rem;
   background-color: var(--bg_sidebar);
   color: var(--Font_Color);
-  /* color: var(--font_number_color); */
+  /* color: var(--font_link_number_color); */
   cursor: pointer;
   transition: var(--transition);
   /* border: 0.1rem solid rgb(230, 230, 230); */
@@ -1579,6 +1780,17 @@ font-size: 2rem;
   }
 }
 
+@media print {
+  .white_backcolor {
+    position: relative; /* إلغاء التأثيرات المتعلقة بالموضع */
+    width: 100%; /* التأكد من أن العرض يتكيف مع المحتوى */
+    height: auto;
+    border: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+  }
+}
 /* start localspace ====================== */
 #content_space {
   position: relative;
@@ -1604,6 +1816,18 @@ font-size: 2rem;
 
 }
 
+
+@media print {
+  #content_space {
+    position: relative; /* إلغاء التأثيرات المتعلقة بالموضع */
+    width: 100%; /* التأكد من أن العرض يتكيف مع المحتوى */
+    height: auto;
+    border: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+  }
+}
 /* End# localspace================================ */
 
 /* #end white_backcolor=========================== */
@@ -1619,7 +1843,7 @@ font-size: 2rem;
   margin: 0 auto;
   align-items: center;
   text-align: center;
-  bottom: 0;
+  inset-block-end: 0;
 }
 
 /* End# footer============================ */
@@ -1699,6 +1923,14 @@ font-size: 2rem;
   height: var(--input_height);
   transition: 0.2s ease;
   text-align: start;
+}
+
+.reference_and_date_div{
+  position: relative;
+  display: flex; flex-direction: row; justify-content: start; align-items: center;
+  width: fit-content;
+  height: fit-content;
+  gap: 1rem;
 }
 
 .reference_text {
@@ -1860,7 +2092,7 @@ font-size: 2rem;
 }
 
 .select{
-  min-width: 10rem;
+  /* min-width: 10rem; */
   width: fit-content;
   max-width: 100%;
   height: var(--input_height);
@@ -1868,11 +2100,15 @@ font-size: 2rem;
   background-color: var(--input_text_background_color);
   font-size: 1.4rem;
   padding: 0.5rem;
+  /* margin-block-end: 1rem; */
   transition: var(--transition);
   border: var(--border_normal);
   border-radius: 0.3rem;
   text-align: start;
 }
+
+
+
 
 
 .dropdown_container {
@@ -2087,22 +2323,62 @@ font-size: 2rem;
 
 /* tables */
 
+.search_in_table_div{
+  position: relative;
+  display: flex; flex-direction: row; flex-wrap: wrap; 
+  gap: 0.5rem;
+  max-width: 100%;
+  width: auto;
+}
+
+@media print{
+  .search_in_table_div{
+    display: none;
+  }
+}
+
 /* table containesr */
-.table_container{
+.tableContainer{
   display: flex; flex-direction: column;
   /* overflow: auto; */
 }
+
+@media print{
+  .tableContainer {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+}
+
+
 .review_table {
   border-collapse: collapse;
-  border-radius: 0.3rem;
   width: 100%;
   margin: 0 auto;
   overflow: auto;
 }
 
-.review_table th {
+
+@media print{
+  .review_table {
+    width: 100%; /* اجعل الجدول يملأ عرض الصفحة */
+    border-collapse: collapse;
+    border-radius: 3px;
+    page-break-inside: auto;
+    padding: 0;
+    margin: 0;
+    table-layout: auto; /* يسمح للجدول بتعديل العرض */
+}
+}
+
+
+.review_table th{
   position: sticky;
-  top: -1px;
+  cursor: pointer;
+  inset-block-start: -1px;
   z-index: 2;
   align-items: center;
   text-align: start;
@@ -2113,13 +2389,59 @@ font-size: 2rem;
   transition: var(--transition);
 }
 
+.review_table th i{
+  /* font-size: 1.5rem; */
+  padding-inline-start: 0.5rem;
+}
+
+
 .review_table td,
 .review_table th {
   border: var(--table_border);
   padding: 0.5rem;
+  line-height: 1.5; /* المسافة بين السطور داخل الخلية */
   /* cursor: pointer; */
   transition: var(--transition);
 }
+
+
+
+@media print{
+
+
+  .review_table th, .review_table td {
+    position: static; /*! لو غيرتها الحدود مش هتبان */
+    border: 1px solid #999 !important; 
+    padding: 3px 5px !important;
+
+    page-break-inside: avoid !important; /* يمنع انقسام الصف الى جزىئين فى حاله ان الصفحه مكفتش لعرض الصف */
+    box-sizing: border-box !important; /* تأكد من احتساب الحدود ضمن حجم الخلية */
+  }
+
+  .review_table tr {
+    page-break-inside: avoid;
+  }
+  
+  .review_table tr {
+    page-break-inside: avoid;
+  }
+  
+  .review_table thead {
+    display: table-header-group; /* تثبيت الرأس عند الطباعة */
+  }
+
+  /* .review_table thead th {
+    background-color: red !important;
+  }
+   */
+  .review_table tfoot {
+    display: table-footer-group; /* تثبيت التذييل عند الطباعة إذا كان موجودًا */
+  }
+  
+  
+}
+
+
 
 /* todo main row */
 .review_table tbody tr:nth-child(odd) {
@@ -2190,6 +2512,17 @@ font-size: 2rem;
   transition: var(--transition);
 }
 
+.table_green_condition{
+  color:var(--btn_save_backcolor);
+}
+
+.table_orange_condition{
+  color: var(--btn_update_backcolor);
+}
+
+.table_red_condition{
+  color: var(--btn_cancel_backcolor);
+}
 
 .tabble_update_btn:hover, .tabble_view_btn:hover {
   opacity: var(--btn_hover_opacity);
@@ -2197,37 +2530,73 @@ font-size: 2rem;
 }
 
 .table_totals_row {
-  color: var(--Font_Color);
-  font-weight: bold;
-  opacity: 0.9;
+  background-color: var(--table_header_background_color) !important;
+  color: var(--table_header_color) !important;
+  font-weight: bold !important;
+  opacity: 0.9 !important;
 }
 
-.table_footer_btn{
+@media print{
+  .table_totals_row{
+    opacity: 1 !important;
+  }
+}
+
+.table_fotter_buttons_row_div{
+  display: flex; flex-direction: row;
+  margin-block-start: 1rem;
+}
+
+@media print{
+  .table_fotter_buttons_row_div{
+    display: none;
+  }
+}
+
+.table_footer_options_btn{
+  width: auto;
+  height: var(--input_height);
+  padding-inline-start: 0.7rem;
+  padding-inline-end: 0.7rem;
+  background-color: var(--btn_search_backcolor);
+  color: var(--btn_search_color);
+  border: var(--border_normal);
+  cursor: pointer;
+  text-align: center;
+  border-radius: 0.3rem;
+  transition: var(--transition);
+}
+
+.table_footer_show_data{
+  text-wrap: nowrap;
   border: none;
-  width: 8rem;
+  width: auto;
   /* height: 3rem; */
-  padding-block-start: 1rem;
-  padding-inline-start: 1.8rem;
-  padding-block-end: 1rem;
-  padding-inline-end: 1.8rem;
+  padding-block-start: 0.5rem;
+  padding-inline-start: 0.5rem;
+  padding-block-end: 0.5rem;
+  padding-inline-end: 0.5rem;
   margin-inline-start: 0.5rem;
   margin-inline-end: 0.5rem;
   border-radius: 0.2rem;
   cursor: pointer;
-  background-color: var(--table_footer_btn_background_color);
-  color: var(--table_footer_btn_color);
+  background-color: var(--table_footer_show_data_background_color);
+  color: var(--table_footer_show_data_color);
   border: var(--border_normal);
   transition: var(--transition);
 }
 
-
-.table_footer_btn:hover {
+.table_footer_show_data:hover, .table_footer_options_btn:hover{
   opacity: var(--btn_hover_opacity);
+}
+
+.table_footer_show_data:active, .table_footer_options_btn:active {
+  transform: scale(1.1); /* زيادة حجم العنصر بنسبة 10% */
 }
 /****************************************************************/
 /** input table */
 
-.input_table_container{
+.input_tableContainer{
   width: auto; max-width: 100%;
 }
 
@@ -2302,7 +2671,7 @@ font-size: 2rem;
 
 /** inputTable_dropdown_table*/
 
-.inputTable_dropdown_table_container{
+.inputTable_dropdown_tableContainer{
   display: flex; flex-direction: column; justify-content: start; align-items: start; width: 100%;
 }
 
@@ -2316,7 +2685,7 @@ font-size: 2rem;
 
 .inputTable_dropdown_table th {
   position: sticky;
-  top: -1px;
+  inset-block-start: -1px;
   z-index: 2;
   align-items: center;
   text-align: start;
@@ -2452,6 +2821,8 @@ height: 100%;
   text-align: center;
 }
 
+
+
 .refrence_input_auto_mode{
   position: relative;
   height: var(--input_height);
@@ -2475,6 +2846,24 @@ height: 100%;
   border: var(--border_normal);
   border-inline-end: none;
   padding: 0.5rem 0.5rem;
+  transition: var(--transition);
+}
+
+.checkbox_label{
+  position: relative;
+  display: flex; flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  height: var(--input_height);
+  width :auto;
+  background-color: var(--btn_search_backcolor);
+  color: var(--btn_search_color);
+  padding: .8rem;
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-radius: 0.3rem;
   transition: var(--transition);
 }
 
@@ -2674,6 +3063,11 @@ color: var(--Font_Color);
   /*align-items: flex-end; /* تحديد محور الضبط إلى اليسار */
 }
 
+@media print{
+  .alert-container{
+    display: none;
+  }
+}
 .alert {
   margin-block-end: 1rem;
   padding: 2rem;
@@ -2908,9 +3302,38 @@ color: var(--Font_Color);
 
 
 
+.td_link_number{
+  color: var(--font_link_number_color); /* لون النص الأساسي */
+  cursor: pointer;
+}
+
+.td_link_number:hover{
+  text-decoration: underline; /* إضافة تسطير عند الوقوف */
+}
+
+.td_link_number:active{
+  transform: scale(1.1); /* زيادة حجم العنصر بنسبة 10% */
+}
+
+
+.td_normal_number{
+  color: var(--Font_Color); /* لون النص الأساسي */
+}
+
+.td_negative_number{
+  color: var(--btn_cancel_backcolor) !important;
+}
+
+.td_link_number, .td_normal_number , .td_negative_number{
+  font-size: var(--Font_normal);
+  padding: 1rem;
+  transition: var(--transition);
+}
+
+
 
 .table_number {
-  color: var(--font_number_color); /* لون النص الأساسي */
+  color: var(--font_link_number_color); /* لون النص الأساسي */
   text-decoration: none; /* إزالة التسطير */
   cursor: pointer;
   /* font-weight: bold; */
@@ -2939,3 +3362,211 @@ color: var(--Font_Color);
 .table_number:active {
   color: var(--btn_save_backcolor); /* تغيير لون النص عند النقر على الرابط */
 }
+
+
+.inactive_color{
+  background-color: var(--btn_cancel_backcolor)!important;
+  color: var(--btn_color);
+}
+
+.filer_icon{
+  position: relative;
+  cursor: pointer;
+  font-size: 1.8rem;
+  margin-block-start: 0.7rem;
+  margin-inline-start: 0.3rem;
+}
+
+.filer_icon_cancel{
+  position: relative;
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-block-start: 0.7rem;
+  margin-inline-start: 0.3rem;
+}
+
+.filer_div{
+  position: relative;
+  display: flex; flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  height: auto;
+  padding: 1rem;
+  margin-block-end: 1rem;
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  transition: var(--transition);
+}
+
+
+.filter_div {
+  position: relative;
+  margin-block-end: 1rem;
+  /* gap: 3rem; */
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem;  /* الحفاظ على الحشو */
+  /* border: var(--border_normal); */
+  height: auto;
+  max-height: 100%;  /* ارتفاع ابتدائي */
+  transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out, background-color 0.5s ease 0s, color 0.5s ease 0s, box-shadow 0.5s ease 0s, border 0.5s ease 0s, opacity 0.5s ease, transform 0.5s ease;
+  overflow: hidden;
+}
+
+@media print{
+  .filter_div{
+    display: none;
+  }
+}
+
+
+.filter_div_sub{
+  position: relative;
+  display: flex; flex-direction: row; flex-wrap: wrap;
+  justify-content: start; align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  padding: 0.5rem;
+  padding-block-end: 1rem;
+  margin-block-end: 1rem;
+  border-block-end: var(--border_normal);
+  transition: var(--transition);
+}
+
+.filter_div_sub:hover{
+  border-block-end: var(--border_normal_hover);
+}
+
+/* 
+.aggregation{
+  position: relative;
+  display: flex; flex-direction: column !important; justify-content: start !important; align-items: start !important;
+}
+
+ */
+
+.select_and_input_div {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: start;
+  align-items: center;
+  max-height: 100%;
+  max-width: 100%; /* عرض العنصر الافتراضي */
+  opacity: 1; /* شفافية العنصر الافتراضية */
+  overflow: hidden; /* لإخفاء المحتوى الذي يتجاوز الحدود */
+  transition: max-width 0.5s ease-in-out, max-height 0.5s ease-in-out, opacity 0.5s ease-in-out; /* تحولات العرض والشفافية */
+}
+
+.hidden_select_and_input_div {
+  max-width: 0; /* إخفاء العنصر */
+  max-height: 0;
+  opacity: 0; /* جعل العنصر شفافًا */
+  overflow: hidden; /* إخفاء المحتوى الذي يتجاوز الحدود */
+}
+.select_and_input_div select{
+      /* min-width: 10rem; */
+      width: auto;
+      max-width: 100%;
+      height: var(--input_height);
+      color: var(--Font_Color);
+      background-color: var(--btn_search_backcolor);
+      font-size: 1.4rem;
+      padding: 0.5rem;
+      transition: var(--transition);
+      border: var(--border_normal);
+      border-radius: 0.3rem;
+      text-align: start;
+}
+
+.select_and_input_div input{
+margin-block-end: 0 !important;
+}
+
+
+.hidden_height {
+  max-height: 0 !important;
+  padding: 0 !important;
+  border: none;
+  overflow: hidden !important
+}
+
+.hidden_width {
+  max-width: 0;
+  padding: 0 !important;
+  border: none;
+  overflow: hidden !important
+}
+
+.two_date_div{
+  position: relative;
+  display: flex; flex-direction: column; flex-wrap: wrap; justify-content: start; align-items: start;
+  width: auto;
+  max-width: 100%;
+  padding: 0.5rem;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.fn_container_div{
+  position: fixed;
+  z-index: 99;
+  display: flex; flex-direction: column; justify-content: start; align-items: center;
+  inset-block-start: 9rem;
+  inset-inline-end: 4rem; 
+}
+
+@media screen and (max-width: 750px) {
+  .fn_container_div {
+    inset-block-start: 7.5rem;
+    inset-inline-end: 2rem; 
+  }
+}
+@media print{
+  .fn_container_div{
+    display: none;
+  }
+}
+
+#fn_icon{
+  /* color: orange; */
+  font-size: 1.7rem;
+  font-weight: bold;
+}
+
+#fn_icon, .fn_options_div i{
+cursor: pointer;
+}
+
+#fn_icon:hover, .fn_options_div i:hover{
+  opacity: var(--btn_hover_opacity);
+}
+
+#fn_icon:active, .fn_options_div i:active{
+  transform: scale(1.1); /* زيادة حجم العنصر بنسبة 10% */
+
+}
+
+.fn_main_button{
+  position: relative;
+  border-radius: 50%;
+}
+
+.fn_options_div {
+position: relative;
+width: 100%;
+max-width: 100%;
+height: auto;
+max-height: 100%;
+padding: 0.5rem;
+/* border: var(--border_normal); */
+/* background-color: var(--input_text_background_color); */
+color: var(--Font_Color);
+transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out, background-color 0.5s ease 0s, color 0.5s ease 0s, box-shadow 0.5s ease 0s, border 0.5s ease 0s, opacity 0.5s ease, transform 0.5s ease;
+overflow: hidden;
+}
+

@@ -94,11 +94,25 @@ router.get('/users_update_ar', (req, res) => {
 
 //#endregion users
 
+//#region human_resources
+
+router.get('/hr_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.hr_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'hr_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
 //#region emoloyees
-router.get('/employees_ar', (req, res) => {
+router.get('/employees_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.employees_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'employees' ,'employees_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'employees' ,'employees_view_ar.html'));
         }else{
             res.redirect('/home_ar?reason=0');
         };
@@ -108,22 +122,13 @@ router.get('/employees_ar', (req, res) => {
 });
 
 
-//! Eng
-router.get('/employees_en', (req, res) => {
-    if (req.session.isLoggedIn) {
-        res.sendFile(path.join(__dirname, '..', 'views', 'en' ,'employees_en.html'));
-    } else {
-        res.redirect('/login');
-    }
-});
 
-
-router.get('/new_employee_ar', (req, res) => {
+router.get('/employees_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.employees_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'employees' ,'new_employee_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'employees' ,'employees_add_ar.html'));
         }else{
-            res.redirect('/employees_ar?reason=1');
+            res.redirect('/employees_view_ar?reason=1');
         };
     } else {        
         res.redirect('/login?reason=0');
@@ -131,18 +136,106 @@ router.get('/new_employee_ar', (req, res) => {
 });
 
 
-router.get('/update_employee_ar', (req, res) => {
+router.get('/employees_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.employees_permission > 2) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'employees' ,'update_employee_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'employees' ,'employees_update_ar.html'));
         }else{
-            res.redirect('/employees_ar?reason=2');
+            res.redirect('/employees_view_ar?reason=2');
         };
     } else {        
         res.redirect('/login?reason=0');
     }
 });
 //#endregion employees
+
+//#region effects
+router.get('/effects_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'effects' ,'effects_view_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+
+router.get('/effects_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.effects_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'effects' ,'effects_add_ar.html'));
+        }else{
+            res.redirect('/effects_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/effects_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.effects_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'effects' ,'effects_update_ar.html'));
+        }else{
+            res.redirect('/effects_view_ar?reason=2');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion
+
+
+//#region departments
+router.get('/departments_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.departments_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'departments' ,'departments_view_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+
+router.get('/departments_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.departments_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'departments' ,'departments_add_ar.html'));
+        }else{
+            res.redirect('/departments_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/departments_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.departments_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'departments' ,'departments_update_ar.html'));
+        }else{
+            res.redirect('/departments_view_ar?reason=2');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion
+
+//#endregion
+
+
+
 
 //#region cutomers 
 router.get('/customers_view_ar', (req, res) => {
@@ -156,7 +249,23 @@ router.get('/customers_view_ar', (req, res) => {
         res.redirect('/login?reason=0');
     }
 });
+
 //#endregion
+
+//#region 
+router.get('/vendors_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.vendors_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'vendors' ,'vendors_view_ar.html'));
+        }else{
+            res.redirect('/home_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion
+
 
 //#region  Attendance
 router.get('/attendance_ar', (req, res) => {

@@ -1,9 +1,7 @@
 setActiveSidebar('bread_view_ar');
-const today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
 
 const date1 = document.querySelector('#date1');
-const refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
-const refrence_input = document.querySelector(`#refrence_input`);
+
 const note_inpute = document.querySelector(`#note_inpute`);
 
 date1.value = today
@@ -12,20 +10,6 @@ function update_input_table_total(input) {
   const column_index = input.closest("td").cellIndex
 }
 
-function is_checked_refrence_fn() {
-  if (refrence_input_checkbox.checked){
-    refrence_input.value = "تلقائى"
-    refrence_input.classList.remove(`refrence_input`)
-    refrence_input.classList.add(`refrence_input_auto_mode`)
-  }else{
-    refrence_input.value = ""
-    refrence_input.classList.remove(`refrence_input_auto_mode`)
-    refrence_input.classList.add(`refrence_input`)
-  }
-}
-refrence_input_checkbox.onchange = function(){
-  is_checked_refrence_fn()
-}
 
 
 
@@ -62,7 +46,7 @@ function addRows() {
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_table_container" id="">
+                      <div class="inputTable_dropdown_tableContainer" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
   
                       </div>
@@ -314,8 +298,8 @@ async function fillAttendancetable(td) {
           <tr id="table_fotter_buttons_row">
               <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                   <div class='flex_H'>
-                      <button class="table_footer_btn"  id="w1" onclick="ShowAllDataInAttendanceTable(this)">All</button>
-                      <button class="table_footer_btn"  id="w2" onclick="showFirst50RowInAttendanceTable(this)">50</button>
+                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataInAttendanceTable(this)">All</button>
+                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowInAttendanceTable(this)">50</button>
                   </div>
               </td>
           </tr>
@@ -326,7 +310,7 @@ async function fillAttendancetable(td) {
   tableHTML += '</table>';
 
   // تحديث محتوى الصفحة بناءً على البيانات
-  td.querySelector('.inputTable_dropdown_table_container').innerHTML = await tableHTML;
+  td.querySelector('.inputTable_dropdown_tableContainer').innerHTML = await tableHTML;
 
   
 
@@ -391,7 +375,7 @@ function selectedRow(row) {
   const td = row.closest("td")
   td.querySelector('.id_hidden_input').value = row.cells[0].textContent; // row.id
   td.querySelector('.dropdown_select_input').textContent = row.cells[1].textContent; // row.employee_name
-  hideDropdown();
+  hideDropdown_in_inputTable();
 };
 
 
@@ -410,7 +394,7 @@ async function toggleDropdown(dropdown) {
       await showDropdown(td, dropdown_menue);
   } else {
       measureDistanceToBottom(td, dropdown_menue);
-      hideDropdown();
+      hideDropdown_in_inputTable();
   }
 
   // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
@@ -426,15 +410,18 @@ async function showDropdown(td,dropdown_menue) {
 }
 
 // إخفاء القائمة
-function hideDropdown() {
+function hideDropdown_in_inputTable() {
   try {
     const All_dropdown_menue = document.querySelectorAll(`.dropdown_menue`);
-    All_dropdown_menue.forEach(dropdown_menue => {
-      dropdown_menue.style.display = "none";
-      const icon = dropdown_menue.closest(`td`).querySelector(`i`)
-      icon.classList.add('fa-caret-down');
-      icon.classList.remove('fa-caret-up');
-    })
+    if (All_dropdown_menue) {
+      All_dropdown_menue.forEach(dropdown_menue => {
+        dropdown_menue.style.display = "none";
+        const icon = dropdown_menue.closest(`td`).querySelector(`i`)
+        icon.classList.add('fa-caret-down');
+        icon.classList.remove('fa-caret-up');
+      })
+    }
+
   } catch (error) {
     catch_error(error);
   }
@@ -454,7 +441,7 @@ document.addEventListener("click", (event) => {
   });
 
   if (!clickedInside) {
-    hideDropdown();
+    hideDropdown_in_inputTable();
   }
 });
 
@@ -462,7 +449,7 @@ document.addEventListener("click", (event) => {
 // إخفاء القائمة عند الضغط على مفتاح الهروب
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    hideDropdown();
+    hideDropdown_in_inputTable();
   }
 });
 

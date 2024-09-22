@@ -98,6 +98,8 @@ db.connect()
   })
   .catch((error) => {
     console.error("Error connecting to the database:", error); // في حالة الفشل
+    console.log(`check the internet or database connection`);
+    
     process.exit();
   });
 
@@ -479,6 +481,30 @@ async function newRefrence_fn(req,int_transaction_type) {
   return result;
 }
 
+
+async function newReference_not_transaction(req, str_tableName, str_columnName) {
+  const query = `SELECT MAX(${str_columnName}) AS refrenceCount FROM ${str_tableName} WHERE company_id = ${req.session.company_id}`;
+
+  console.log(query);
+  
+  let rows = await db.oneOrNone(query);
+  console.log(rows);
+  
+  let result = 1;
+
+  // تحويل refrenceCount إلى عدد صحيح للتأكد من أن الشرط يعمل بشكل صحيح
+  let referenceCount = parseInt(rows.refrencecount);
+
+  if (rows && referenceCount > 0) {
+    console.log(referenceCount);
+    
+    result = referenceCount + 1;
+  }
+
+  // ارجع `result`
+  return result;
+}
+
 // last activity
 async function last_activity(req) {
 
@@ -498,12 +524,31 @@ async function last_activity(req) {
 
 }
 
+
+function turn_EmptyValues_TO_null(object_Var){
+  for (let key in object_Var) {
+    if (object_Var[key] === "") {
+      object_Var[key] = null;
+    }
+  }
+}
+
 // sql injection
 let sql_injection_message_ar = "تم الكشف عن مدخلات غير صالحة بسبب وجود رموز ممنوعة. يرجى مراجعة المدخلات والمحاولة مرة أخرى."
 let sql_injection_message_en =  "Invalid input detected due to prohibited characters. Please review your input and try again."
 function sql_anti_injection(values) {
   // تحقق من كل قيمة في المصفوفة
+  
+  if(!values){
+    return;
+  }
+
   for (let value of values) {
+    // إذا كانت القيمة null أو undefined أو عدد رقمي، تجاهلها
+    if (value === null || value === undefined || typeof value === "number") {
+      continue; // تجاهل هذه القيمة وانتقل للقيمة التالية
+    }
+    
     // إذا كانت القيمة سلسلة نصية
     if (typeof value === "string") {
       // قم بإزالة المسافات الزائدة وتعقيمها
@@ -517,6 +562,27 @@ function sql_anti_injection(values) {
 }
 
 
+let InValidDateFormat_message_ar = `صيغة التاريخ غير صالحة برجاء التواصل مع احد المسؤلين`
+function isInValidDateFormat(valuesAsArray) {
+  try {
+  const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+  for (const value of valuesAsArray) {
+    if (!dateFormatRegex.test(value)) {
+      return true; // إذا كانت الصيغة غير مطابقة
+    }
+  }
+  return false; // كل القيم صيغتها صحيحة
+} catch (error) {
+  catch_error(error)
+}
+}
+
+/*
+const dates = ['2024-08-23', '2024-12-01', '2023-11-31']; // هنا كل الصيغ صحيحة حتى لو كانت بعض التواريخ غير منطقية
+ex console.log(isValidDateFormat(dates)); 
+or console.log(isValidDateFormat([date1, date2])); 
+*/
 //#region stop_hackers
 
 async function block_user(req, code){
@@ -859,6 +925,7 @@ const permissions = [
   "transaction_permission",
   "items_permission",
   "cutomers_permission",
+  "vendors_permission",
   // Add new permissions here
 ];
 
@@ -1444,7 +1511,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 //#region todo
 
   //#region get todo data
-  app.get("/get_All_todo_Data", async (req, res) => {
+  app.post("/get_All_todo_Data", async (req, res) => {
     try {
       //! Permission
       // await permissions(req, "production_permission", "view");
@@ -1976,6 +2043,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       posted_elements.table_permission_transaction,
       posted_elements.table_permission_items,
       posted_elements.table_permission_customers,
+      posted_elements.table_permission_vendors,
       posted_elements.today,
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
@@ -2019,7 +2087,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
      
         // فى حالة تعديل البيانات شامله  كلمة مرور جديده
        
-        let query1 = `Update user_company set general_permission = $3, users_permission = $4, employees_permission = $5, attendance_permission = $6, production_permission = $7, bread_permission = $8, transaction_permission = $9, items_permission = $10, cutomers_permission = $11 WHERE user_id = $1 AND company_id = $2`;
+        let query1 = `Update user_company set general_permission = $3, users_permission = $4, employees_permission = $5, attendance_permission = $6, production_permission = $7, bread_permission = $8, transaction_permission = $9, items_permission = $10, cutomers_permission = $11, vendors_permission = $12 WHERE user_id = $1 AND company_id = $2`;
         await db.any(query1, [
           posted_elements.user_id,
           req.session.company_id,
@@ -2031,7 +2099,8 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_bread,
           posted_elements.table_permission_transaction,
           posted_elements.table_permission_items,
-          posted_elements.table_permission_customers
+          posted_elements.table_permission_customers,
+          posted_elements.table_permission_vendors,
         ]);
 
         return res.json({
@@ -2106,341 +2175,6 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
 });
 //#endregion users
 
-//#region Page : employees
-
-// Add new employee
-app.post("/addNewEmployee", async (req, res) => {
-  try {
-        // إرسال رسالة إلى العميل عبر WebSocket
-        io.emit('blockUser', { userId: req.session.userId });
-        
-    const posted_elements = req.body;
-
-    //! Permission
-    await permissions(req, "employees_permission", "add");
-    if (!permissions) {
-      return;
-    }
-
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.employee_name_input,
-      posted_elements.today,
-      posted_elements.employee_job_input,
-      posted_elements.employee_beta2a_input,
-      posted_elements.employee_adress_input,
-      posted_elements.employee_phone_input,
-      posted_elements.employee_emergency_phone_input,
-      posted_elements.employee_start_date_input,
-      posted_elements.employee_leave_date_input,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
-      });
-    }
-    //* Start--------------------------------------------------------------
-
-    //2: validation data befor inserting to db
-    // const rows = await db.any(
-    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
-    //   [posted_elements.employee_name_input]
-    // );
-
-    let X = `SELECT TRIM(employee_name) FROM employees 
-              WHERE company_id = $1 AND TRIM(employee_name) = $2
-              `;
-    let rows = await db.any(X, [
-      req.session.company_id,
-      posted_elements.employee_name_input,
-    ]);
-
-    if (rows.length > 0) {
-      // اذا حصل على نتائج
-      return res.json({ success: false, message_ar: "اسم الموظف موجود بالفعل" });
-    }
-
-    //3: insert data into db
-    const newId = await newId_fn("employees",'id');
-
-    let query = `
-  INSERT INTO employees (id, employee_name, datex, emp_job, emp_beta2a, emp_adress, emp_personal_phone, emp_emergency_phone, emp_start_date, emp_end_date, company_id)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-`;
-    await db.none(query, [
-      newId,
-      posted_elements.employee_name_input,
-      posted_elements.today,
-      posted_elements.employee_job_input,
-      posted_elements.employee_beta2a_input,
-      posted_elements.employee_adress_input,
-      posted_elements.employee_phone_input,
-      posted_elements.employee_emergency_phone_input,
-      posted_elements.employee_start_date_input,
-      posted_elements.employee_leave_date_input,
-      req.session.company_id,
-    ]);
-
-    //4: send a response to frontend about success transaction
-    res.json({
-      success: true,
-      message_ar: "تم حفظ الموظف بنجاح",
-    });
-  } catch (error) {
-    console.error("Error adding employee:", error);
-    // send a response to frontend about fail transaction
-    res.status(500).json({
-      success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
-    });
-  }
-});
-
-// update Employee
-app.post("/updateEmployee", async (req, res) => {
-  try {
-    //! Permission
-    await permissions(req, "employees_permission", "view");
-    if (!permissions) {
-      return;
-    }
-
-    const posted_elements = req.body;
-
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.employee_id,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
-      });
-    }
-
-    //* Start--------------------------------------------------------------
-
-    //2: validation data befor inserting to db
-    // const rows = await db.any("SELECT * FROM employees WHERE id = $1", [
-    //   posted_elements.employee_id,
-    // ]);
-    let query = `SELECT * FROM employees 
-    WHERE company_id = $1 AND id = $2
-    `;
-    let rows = await db.any(query, [
-      req.session.company_id,
-      posted_elements.employee_id,
-    ]);
-
-    if (rows.length > 0) {
-      // اذا حصل على نتائج
-      return res.json({
-        success: true,
-        message_ar: "data get success",
-        rows: rows,
-      });
-    } else {
-      return res.json({
-        success: false,
-        message_ar: "Faild to get employee data from server",
-      });
-    }
-  } catch (error) {
-    console.error("Error get employee data:", error);
-    res.status(500).json({
-      success: false,
-      message_ar: "حدث خطأ أثناء معالجة البيانات",
-    });
-  }
-});
-
-// update_Employee
-app.post("/update_employee", async (req, res) => {
-  try {
-    //! Permission
-    await permissions(req, "employees_permission", "update");
-    if (!permissions) {
-      return;
-    }
-
-    const posted_elements = req.body;
-
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.employee_name_input,
-      posted_elements.employee_job_input,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
-      });
-    }
-
-    //* Start--------------------------------------------------------------
-
-    //1: receive data from frontend new_employee_ar.
-
-    //2: validation data befor inserting to db
-    // const rows = await db.any(
-    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1 AND id != $2",
-    //   [posted_elements.employee_name_input, posted_elements.employee_id]
-    // );
-
-    let query1 = `SELECT TRIM(employee_name) FROM employees 
-    WHERE company_id = $1 AND TRIM(employee_name) = $2 AND id != $3
-     `;
-    let rows = await db.any(query1, [
-      req.session.company_id,
-      posted_elements.employee_name_input,
-      posted_elements.employee_id,
-    ]);
-
-    if (rows.length > 0) {
-      // اذا حصل على نتائج
-      return res.json({
-        success: false,
-        message_ar: "اسم الموظف موجود بالفعل",
-      });
-    } else {
-      //3: insert data into db
-      // await db.none(
-      //   "UPDATE employees SET employee_name = $1, datex = $2, emp_job = $3, emp_beta2a = $4, emp_adress = $5, emp_personal_phone = $6, emp_emergency_phone = $7, emp_start_date = $8, emp_end_date = $9 where id = $10",
-      //   [
-      //     posted_elements.employee_name_input,
-      //     posted_elements.today,
-      //     posted_elements.employee_job_input,
-      //     posted_elements.employee_beta2a_input,
-      //     posted_elements.employee_adress_input,
-      //     posted_elements.employee_phone_input,
-      //     posted_elements.employee_emergency_phone_input,
-      //     posted_elements.employee_start_date_input,
-      //     posted_elements.employee_leave_date_input,
-      //     posted_elements.employee_id,
-      //   ]
-      // );
-
-      let query2 = `UPDATE employees SET employee_name = $1, datex = $2, emp_job = $3, emp_beta2a = $4, emp_adress = $5, emp_personal_phone = $6, emp_emergency_phone = $7, emp_start_date = $8, emp_end_date = $9 where company_id = $10 AND id = $11`;
-      await db.none(query2, [
-        posted_elements.employee_name_input,
-        posted_elements.today,
-        posted_elements.employee_job_input,
-        posted_elements.employee_beta2a_input,
-        posted_elements.employee_adress_input,
-        posted_elements.employee_phone_input,
-        posted_elements.employee_emergency_phone_input,
-        posted_elements.employee_start_date_input,
-        posted_elements.employee_leave_date_input,
-        req.session.company_id,
-        posted_elements.employee_id,
-      ]);
-
-      return res.json({
-        success: true,
-        message_ar:
-          "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
-      });
-    }
-  } catch (error) {
-    console.error("Error get employee data:", error);
-    res.status(500).json({
-      success: false,
-      message_ar: "حدث خطأ أثناء اضافة  الموظف",
-    });
-  }
-});
-
-// Delete_Employee
-app.post("/delete_employee", async (req, res) => {
-  try {
-    //! Permission
-    await permissions(req, "employees_permission", "delete");
-    if (!permissions) {
-      return;
-    }
-
-    const posted_elements = req.body;
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.employee_id,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
-      });
-    }
-
-    //* Start--------------------------------------------------------------
-
-    //3: insert data into db
-    // await db.none("DELETE FROM employees WHERE id = $1", [
-    //   posted_elements.employee_id,
-    // ]);
-
-    let query1 = `DELETE FROM employees WHERE company_id = $1 AND id = $2`;
-    await db.none(query1, [
-      req.session.company_id,
-      posted_elements.employee_id,
-    ]);
-
-    return res.json({
-      success: true,
-      message_ar:
-        "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
-    });
-  } catch (error) {
-    console.error("Error get employee data:", error);
-    res.status(500).json({
-      success: false,
-      message_ar:
-        "لا يمكن حذف الموظف : قد تكون هناك عمليات مرتبطه بالموظف يجب حذفها اولا",
-    });
-  }
-});
-
-//_______________________________________________
-
-// get all d employees data
-app.get("/get_All_Employees_Data", async (req, res) => {
-  try {
-    //! Permission
-    await permissions(req, "employees_permission", "view");
-    if (!permissions) {
-      return;
-    }
-
-    //* Start--------------------------------------------------------------
-
-    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
-
-    // console.log(req.session.company_id);
-    let query1 = `SELECT e.id, e.employee_name FROM employees e
-    WHERE e.company_id = $1`;
-    let rows = await db.any(query1, [req.session.company_id]);
-
-    const data = rows.map((row) => ({
-      id: row.id,
-      name: row.employee_name,
-    }));
-
-    res.json(data);
-  } catch (err) {
-    console.error("Error fetching data:", err.message);
-    res.status(500).send("Error: getEmployeesData");
-  }
-});
-
-//#endregion
 
 //#region cutomers
 
@@ -2551,43 +2285,62 @@ GROUP BY
       //   [posted_elements.employee_name_input]
       // );
   
-      let query0 = `SELECT TRIM(account_name) FROM accounts_header 
-                WHERE company_id = $1 AND TRIM(account_name) = $2
+      let query0 = ` select
+      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND TRIM(account_name) = $2) as account_name_count,
+      (select id from accounts_header where company_id = $1 AND global_id = 13) as parent_id
                 `;
-      let rows = await db.any(query0, [
+      let result = await db.oneOrNone(query0, [
         req.session.company_id,
         posted_elements.account_name_input_value,
       ]);
   
-      if (rows.length > 0) {
+      if (result.account_name_count > 0) {
         // اذا حصل على نتائج
         return res.json({ success: false, message_ar: "اسم العميل موجود بالفعل" });
       }
   
       //3: insert data into db
-      const newId = await newId_fn("accounts_header",'id');
+      const newId_header = await newId_fn("accounts_header",'id');
+      const newId_body = await newId_fn("accounts_body",'id');
   
-      let query = `
-    INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, credit_limit, email, tasgel_darepy, legal_info, contact_info, delivery_adress, banking_info)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-  `;
-      await db.none(query, [
-        newId,
-        posted_elements.account_name_input_value,
-        true,
-        posted_elements.acc_no_div_value,
-        1,
-        req.session.company_id,
-        2,
-        1,
-        posted_elements.credit_limit_value,
-        posted_elements.email_input_value,
-        posted_elements.tasgel_darepy_input_value,
-        posted_elements.legal_info_input_value,
-        posted_elements.contact_info_input_value,
-        posted_elements.delivery_adress_input_value,
-        posted_elements.banking_info_input_value,
-      ]);
+      let query1 = `
+      INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, credit_limit, email, tasgel_darepy, legal_info, contact_info, delivery_adress, banking_info)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    `;
+
+    let query2 = `
+    insert into accounts_body (id, parent_id, account_id)
+    values ($1, $2, $3)
+    `
+
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, [
+          newId_header,
+          posted_elements.account_name_input_value,
+          true,
+          posted_elements.acc_no_div_value,
+          1,
+          req.session.company_id,
+          2,
+          1,
+          posted_elements.credit_limit_value,
+          posted_elements.email_input_value,
+          posted_elements.tasgel_darepy_input_value,
+          posted_elements.legal_info_input_value,
+          posted_elements.contact_info_input_value,
+          posted_elements.delivery_adress_input_value,
+          posted_elements.banking_info_input_value,
+        ]);
+
+        await tx.none(query2,[
+          newId_body,
+          result.parent_id,
+          newId_header
+        ])
+      })
+
+
   
       //4: send a response to frontend about success transaction
       res.json({
@@ -2764,6 +2517,7 @@ GROUP BY
 
 
       if (result.count_id === 0) {
+        await block_user(req,'dc1')
         return res.json({
           success: false,
           xx: true,
@@ -2790,11 +2544,1286 @@ GROUP BY
           "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
       });
     } catch (error) {
-      console.error("Error get employee data:", error);
+      console.error("Error get customer data:", error);
       res.status(500).json({
         success: false,
         message_ar:
-          "لا يمكن حذف الموظف : قد تكون هناك عمليات مرتبطه بالموظف يجب حذفها اولا",
+          "لا يمكن حذف العميل : قد تكون هناك عمليات مرتبطه بالعميل يجب حذفها اولا",
+      });
+    }
+  });
+  //#endregion
+
+//#endregion
+
+//#region human_resources
+
+  //#region human_resources_department
+
+    //#region 1: get departments data
+    app.post("/get_All_human_resources_department_Data", async (req, res) => {
+      try {
+        //! Permission
+        await permissions(req, "human_resources_department", "view");
+        if (!permissions) {
+          return;
+        }
+    
+        //* Start--------------------------------------------------------------
+        
+
+        let query0 = `
+        SELECT id FROM accounts_header Where company_id = $1 AND global_id = 20
+        `
+        let result = await db.oneOrNone(query0,[req.session.company_id])
+        
+        if (!result) {
+          return res.json({
+            success: false,
+            message_ar: "حدث خطأ اثناء معالجة البيانات ",
+            message_en: "You do not have the necessary permissions to delete this account",
+          })
+        }
+
+
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    
+        // console.log(req.session.company_id);
+        let query1 = `
+
+        -- hena ba3mel ensha2 mo2kt le table gept feh el parent_id, employees_count fe table lew7dhom
+        -- we ba3den ha3tbro gdwal 3ady we ha3melo join 3ashan a5od el count beta3 el employees da5el kol ksm 3asla tol mnho
+
+    -- 1 : get depratmentId and employeesCont in it    
+   WITH department_employees AS (
+    SELECT
+        ab_inner.parent_id,
+        COUNT(ab_inner.id) AS employees_count
+    FROM 
+        accounts_body ab_inner
+    LEFT JOIN 
+        accounts_header ah_inner 
+        ON ab_inner.account_id = ah_inner.id
+    WHERE 
+        ah_inner.is_inactive IS NULL OR ah_inner.is_inactive <> 1
+    GROUP BY
+        ab_inner.parent_id
+)
+
+-- 2 : Main query
+SELECT 
+    ah.id,
+    COALESCE(ah.account_no , '') AS acc_no,
+    COALESCE(ah.account_name, '') AS department_name,
+    COALESCE(ah.legal_info, '') AS legal_info,
+    COALESCE(de.employees_count, 0) AS employees_count
+FROM 
+    accounts_body ab_outer
+LEFT JOIN 
+    accounts_header ah 
+    ON ab_outer.account_id = ah.id
+LEFT JOIN
+    department_employees de 
+    ON de.parent_id = ab_outer.account_id
+WHERE 
+    ah.company_id = $1
+    AND ab_outer.parent_id = $2
+    AND (ah.is_final_account IS NULL OR ah.is_final_account = false)
+ORDER BY
+    employees_count DESC,
+    ah.account_name ASC;
+    `;
+        let data = await db.any(query1, [
+          req.session.company_id,
+          result.id
+        ]);
+    
+        res.json(data);
+      } catch (err) {
+        console.error("Error fetching data:", err.message);
+        res.status(500).send("Error: human_resources_department");
+      }
+    });
+    //#endregion  end get department data
+
+
+    //#region departments_add
+    app.post("/addNewDepartment", async (req, res) => {
+      try {
+            // // إرسال رسالة إلى العميل عبر WebSocket
+            // io.emit('blockUser', { userId: req.session.userId });
+            
+        const posted_elements = req.body;
+    
+        //! Permission
+        await permissions(req, "departments_permission", "add");
+        if (!permissions) {
+          return;
+        }
+    
+        //! sql injection check
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+  
+        
+        turn_EmptyValues_TO_null(posted_elements);
+
+
+
+  
+        if (!posted_elements.name || posted_elements.name === '') {
+          return res.json({ success: false, message_ar: "ادخل اسم القسم" });
+        }
+
+
+        if (posted_elements.activeValue && posted_elements.activeValue !== 1) {
+          await block_user(req,'andep1')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });
+        }
+
+        //* Start--------------------------------------------------------------
+    
+        //2: validation data befor inserting to db
+        // const rows = await db.any(
+        //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+        //   [posted_elements.employee_name_input]
+        // );
+        let query0 = ` select
+                    (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 4 AND  (is_final_account IS FALSE OR is_final_account IS NULL)) as account_name_count,
+                    (select id from accounts_header where company_id = $1 AND global_id = 20) as parent_id
+                  `;
+        let result = await db.oneOrNone(query0, [
+          req.session.company_id,
+          posted_elements.name,
+        ]);
+        
+
+
+        if (result.account_name_count > 0) {
+          // اذا حصل على نتائج
+          return res.json({ success: false, message_ar: "اسم القسم موجود بالفعل" });
+        }
+        
+        
+        if (!result.parent_id) {
+          // اذا حصل على نتائج
+          return res.json({ success: false, message_ar: "حدث خطأ اثناء معالجة البيانات وتم الغاء العمليه" });
+        }
+        //3: insert data into db
+
+        let active_value;
+        if(posted_elements.activeValue == 0){
+          active_value = null
+        }else if (posted_elements.activeValue == 1) {
+          active_value = 1
+        }
+
+
+
+        const newId_header = await newId_fn("accounts_header",'id');
+        const newId_body = await newId_fn("accounts_body",'id');
+    
+
+        let query1 = `INSERT INTO accounts_header (id, account_name, finance_statement, company_id, account_type_id, main_account_id, legal_info) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+        let params1 = [newId_header, posted_elements.name, 1, req.session.company_id, 4, 2, posted_elements.info];
+    
+        let query2 = `insert into accounts_body (id, parent_id, account_id) values ($1, $2, $3)`
+        let params2 = [newId_body, result.parent_id, newId_header]
+    
+        await db.tx(async (tx) => {
+          await tx.none(query1, params1);
+          await tx.none(query2,params2);
+        })
+  
+    
+        //4: send a response to frontend about success transaction
+        res.json({
+          success: true,
+          message_ar: "تم حفظ بيانات القسم بنجاح",
+        });
+      } catch (error) {
+        console.error("Error adding department:", error);
+        // send a response to frontend about fail transaction
+        res.status(500).json({
+          success: false,
+          message_ar: "حدث خطأ أثناء اضافة القسم",
+        });
+      }
+    });
+
+    //#endregion
+
+    //#region departments Update
+    app.post("/deleteDepartment", async (req, res) => {
+      try {
+            // // إرسال رسالة إلى العميل عبر WebSocket
+            // io.emit('blockUser', { userId: req.session.userId });
+            
+        const posted_elements = req.body;
+    
+        //! Permission
+        await permissions(req, "departments_permission", "delete");
+        if (!permissions) {
+          return;
+        }
+    
+        //! sql injection check
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+  
+        //* Start--------------------------------------------------------------
+    
+        //2: validation data befor inserting to db
+        // const rows = await db.any(
+        //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+        //   [posted_elements.employee_name_input]
+        // );
+        let query0 = ` 
+                    select count(id) as id_count from accounts_header where company_id = $1 AND id = $2 AND account_type_id = 4 AND (is_final_account IS NULL OR is_final_account = FALSE);
+                  `;
+        let result = await db.oneOrNone(query0, [
+          req.session.company_id,
+          posted_elements.id,
+        ]);
+        
+
+        if (result.id_count === 0) {
+          // اذا حصل على نتائج
+          await block_user(req,'udep1')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });
+        }
+
+
+        
+        //3: delete data into db
+
+
+        let query1 = `DELETE FROM accounts_header WHERE company_id = $1 AND id = $2`;
+        let params1 = [req.session.company_id, posted_elements.id];
+    
+    
+        await db.tx(async (tx) => {
+          await tx.none(query1, params1);
+        })
+  
+    
+        //4: send a response to frontend about success transaction
+        res.json({
+          success: true,
+          message_ar: "تم حذف بيانات القسم بنجاح",
+        });
+      } catch (error) {
+        console.error("Error adding department:", error);
+        // send a response to frontend about fail transaction
+        res.status(500).json({
+          success: false,
+          message_ar: "حدث خطأ أثناء اضافة القسم",
+        });
+      }
+    });
+    //#endregion
+
+
+    //#region department delete
+    app.post("/updateDepartment", async (req, res) => {
+      try {
+            // // إرسال رسالة إلى العميل عبر WebSocket
+            // io.emit('blockUser', { userId: req.session.userId });
+            
+        const posted_elements = req.body;
+    
+        //! Permission
+        await permissions(req, "departments_permission", "update");
+        if (!permissions) {
+          return;
+        }
+    
+        //! sql injection check
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+  
+  
+        if (!posted_elements.name || posted_elements.name === '') {
+          return res.json({ success: false, message_ar: "ادخل اسم القسم" });
+        }
+
+        if (posted_elements.activeValue && posted_elements.activeValue !== 1) {
+          await block_user(req,'andep1')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });
+        }
+        //* Start--------------------------------------------------------------
+    
+        //2: validation data befor inserting to db
+        // const rows = await db.any(
+        //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+        //   [posted_elements.employee_name_input]
+        // );
+        let query0 = ` select
+                    (select count(id) from accounts_header where company_id = $1 AND id = $3 AND account_type_id = 4 AND (is_final_account IS NULL OR is_final_account = FALSE)) as id_count,
+                    (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3 AND account_type_id = 4 AND  (is_final_account = FALSE OR is_final_account IS NULL)) as account_name_count
+                  `;
+        let result = await db.oneOrNone(query0, [
+          req.session.company_id,
+          posted_elements.name,
+          posted_elements.id,
+        ]);
+        
+
+        if (result.id_count === 0) {
+          // اذا حصل على نتائج
+          await block_user(req,'udep1')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });        }
+
+        if (result.account_name_count > 0) {
+          // اذا حصل على نتائج
+          return res.json({ success: false, message_ar: "اسم القسم موجود بالفعل" });
+        }
+        
+        
+        //3: insert data into db
+
+
+        let query1 = `UPDATE accounts_header set account_name = $1, legal_info = $2, is_inactive = $3 WHERE company_id = $4 AND id = $5`;
+        let params1 = [posted_elements.name, posted_elements.info, posted_elements.activeValue, req.session.company_id, posted_elements.id];
+    
+    
+        await db.tx(async (tx) => {
+          await tx.none(query1, params1);
+        })
+  
+    
+        //4: send a response to frontend about success transaction
+        res.json({
+          success: true,
+          message_ar: "تم تعديل بيانات القسم بنجاح",
+        });
+      } catch (error) {
+        console.error("Error adding department:", error);
+        // send a response to frontend about fail transaction
+        res.status(500).json({
+          success: false,
+          message_ar: "حدث خطأ أثناء اضافة القسم",
+        });
+      }
+    });
+    //#endregion
+
+  //#endregion
+
+  //#region human_resources_employees
+// Add new employee
+app.post("/employee_add", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+    await permissions(req, "employees_permission", "add");
+    if (!permissions) {
+      return;
+    }
+
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          const InValidDateFormat = isInValidDateFormat([posted_elements.employee_start_date_value, posted_elements.employee_leave_date_value])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.employee_name_value || posted_elements.employee_name_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "ادخل اسم الموظف اولا",
+      });
+    }          
+    
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+
+    let query0 = `SELECT
+
+               (select count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 4) as count_account_name,
+               (select count(account_name) FROM accounts_header WHERE company_id = $1 AND id = $3 AND (is_final_account = false or is_final_account IS NULL) AND account_type_id = 4) as count_department_name
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.employee_name_value,
+      posted_elements.select_department_value,
+      
+    ]);
+
+     
+    if (![0,1].includes(+posted_elements.inactive_select_value)){
+      await block_user(req,'emadd1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    if (result.count_department_name == 0){
+      await block_user(req,'emadd2')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({ success: false, message_ar: "اسم الموظف موجود بالفعل" });
+    }
+
+    //3: insert data into db
+    
+    console.log(posted_elements.inactive_select_value);
+    
+    let active_value;
+    if(posted_elements.inactive_select_value == 0){
+      active_value = null
+    }else if (posted_elements.inactive_select_value == 1) {
+      active_value = 1
+    }
+
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
+
+    let query1 = `
+  INSERT INTO accounts_header (id, account_name, account_no, legal_info, email, contact_info, delivery_adress, banking_info, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+`;
+
+  let params1 =[newId_header,
+    posted_elements.employee_name_value,
+    posted_elements.account_no_value,
+    posted_elements.employee_job_value,
+    posted_elements.email_input_value,
+    posted_elements.other_info_value,
+    posted_elements.employee_start_date_value,
+    posted_elements.employee_leave_date_value,
+    active_value,
+    true,
+    1,
+    req.session.company_id,
+    4,
+    2
+  ]
+
+
+  let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                VALUES ($1, $2, $3)`
+
+  let params2 = [newId_body,
+    posted_elements.select_department_value,
+    newId_header
+  ]               
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await tx.none(query2, params2);
+  })
+
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حفظ الموظف بنجاح",
+    });
+  } catch (error) {
+    console.error("Error adding employee:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+// update Employee
+
+// update_Employee
+app.post("/update_employee", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+
+    //! Permission
+    await permissions(req, "employees_permission", "update");
+    if (!permissions) {
+      return;
+    }
+
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          const InValidDateFormat = isInValidDateFormat([posted_elements.employee_start_date_value, posted_elements.employee_leave_date_value])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+
+          turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.employee_name_value || posted_elements.employee_name_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "ادخل اسم الموظف اولا",
+      });
+    }          
+    
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+
+    let query0 = `SELECT
+              (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 4 AND is_final_account = true) as count_id,
+              (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3 AND account_type_id = 4 AND (is_final_account = false or is_final_account IS NULL)) as count_department_id,
+              (select count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $4 AND id != $2 AND account_type_id = 4) as count_account_name
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.id_value,
+      posted_elements.select_department_value,
+      posted_elements.employee_name_value
+    ]);
+
+     
+    if (![0,1].includes(+posted_elements.inactive_select_value)){
+      await block_user(req,'upemp1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    if (result.count_id == 0){
+      await block_user(req,'upemp2')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    if (result.count_department_id == 0){
+      await block_user(req,'upemp3')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({ success: false, message_ar: "اسم الموظف موجود بالفعل" });
+    }
+
+    //3: insert data into db
+    
+    console.log(posted_elements.inactive_select_value);
+    
+    let active_value;
+    if(posted_elements.inactive_select_value == 0){
+      active_value = null
+    }else if (posted_elements.inactive_select_value == 1) {
+      active_value = 1
+    }
+
+    
+    
+
+    let query1 = `
+    UPDATE accounts_header set account_name = $1, account_no = $2, legal_info = $3, email = $4, contact_info = $5, delivery_adress = $6, banking_info = $7, is_inactive = $8 WHERE company_id = $9 AND id = $10;
+    `;
+
+  let params1 =[
+    posted_elements.employee_name_value,
+    posted_elements.account_no_value,
+    posted_elements.employee_job_value,
+    posted_elements.email_value,
+    posted_elements.other_info_value,
+    posted_elements.employee_start_date_value,
+    posted_elements.employee_leave_date_value,
+    active_value,
+    req.session.company_id,
+    posted_elements.id_value,
+  ]
+
+
+  let query2 = `update accounts_body set parent_id = $1 WHERE account_id = $2`
+
+  let params2 = [
+    posted_elements.select_department_value,
+    posted_elements.id_value,
+  ]               
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await tx.none(query2, params2);
+  })
+
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم تعديل بيانات الموظف بنجاح : سيتم تحويلك الى صفحة الموظفين الرئيسية",
+    });
+  } catch (error) {
+    console.error("Error updating employee:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء تعديل بيانات الموظف",
+    });
+  }
+});
+
+// Delete_Employee
+app.post("/delete_employee", async (req, res) => {
+  try {
+        // // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+
+    //! Permission
+    await permissions(req, "employees_permission", "delete");
+    if (!permissions) {
+      return;
+    }
+
+    //! sql injection check
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+    let query0 = `SELECT 
+                (select count(id) from accounts_header where company_id = $1 AND id = $2 AND account_type_id = 4 AND is_final_account = true) as count_id,
+                (select count(account_id) from transaction_body where account_id = $2) as count_actions
+
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.id_value,
+    ]);
+    
+
+    if (result.id_count === 0) {
+      // اذا حصل على نتائج
+      await block_user(req,'delmp1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    if (result.count_actions > 0){
+      return res.json({
+        success: false,
+        message_ar: 'يوجد حركات على الحساب : لا يمكن حذف الحساب',
+      });
+    }
+
+
+    
+    //3: delete data into db
+
+
+    let query1 = `DELETE FROM accounts_header WHERE company_id = $1 AND id = $2`;
+    let params1 = [req.session.company_id, posted_elements.id_value];
+
+
+    await db.tx(async (tx) => {
+      await tx.none(query1, params1);
+    })
+
+
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حذف بيانات الموظف بنجاح",
+    });
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء حذف بيانات الموظف",
+    });
+  }
+});
+
+//_______________________________________________
+
+// get all d employees data
+app.post("/get_All_Employees_Data", async (req, res) => {
+  try {
+ 
+    const posted_elements = req.body;
+    
+    //! Permission
+    await permissions(req, "employees_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+      
+
+    //* Start--------------------------------------------------------------
+
+   
+    // console.log(req.session.company_id);
+    let query1 = `
+    SELECT 
+        A.id, 
+        COALESCE(A.account_name, '') as account_name, 
+        COALESCE(A.account_no, '') as account_no, 
+        COALESCE(A.legal_info, '') as job,
+        COALESCE(A.email, '') as email,
+        COALESCE(A.contact_info, '') as another_info,
+        COALESCE(A.delivery_adress, '') as start_date,
+        COALESCE(A.banking_info, '') as end_date,
+        CASE 
+            WHEN A.is_inactive = 1 THEN 'غير نشط'
+            ELSE 'نشط'
+        END as is_inactive,
+        COALESCE(SUM(T.credit) - SUM(T.debit), 0) AS balance,
+        B.parent_id as department_id,
+        COALESCE(ParentAccount.account_name, '') AS department_name
+    FROM 
+        accounts_header A
+    LEFT JOIN 
+        transaction_body T ON A.id = T.account_id
+    LEFT JOIN 
+        accounts_body B ON A.id = B.account_id
+    LEFT JOIN 
+        accounts_header ParentAccount ON B.parent_id = ParentAccount.id
+    WHERE
+        A.company_id = $1
+        AND A.account_type_id = 4
+        AND A.is_final_account = true
+        AND (B.parent_id = $2 OR $2 IS NULL)  -- هذا الشرط الجديد للتحقق من department_id
+    GROUP BY
+        A.id, 
+        A.account_name, 
+        A.account_no, 
+        A.legal_info,
+        A.email,
+        A.contact_info,
+        A.delivery_adress, 
+        A.banking_info,
+        A.is_inactive,
+        B.parent_id,
+        ParentAccount.account_name;
+    `;
+    
+    let data = await db.any(query1, [req.session.company_id,posted_elements.QKey]);
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching data:", err);
+    res.status(500).send("Error: getEmployeesData");
+  }
+});
+
+  //#endregion
+
+  //#region human_resources_effects
+
+  //#endregion
+
+//#endregion
+
+//#region vendors
+
+//#region get vendor data
+app.get("/get_All_vendors_Data", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "vendors_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    // console.log(req.session.company_id);
+    let query1 = `SELECT 
+    A.id, 
+    A.account_name, 
+    A.account_no, 
+    A.credit_limit, 
+    A.email, 
+    A.tasgel_darepy, 
+    A.legal_info, 
+    A.contact_info, 
+    A.delivery_adress, 
+    A.banking_info,
+    COALESCE(SUM(T.debit) - SUM(T.credit), 0) AS balance
+FROM 
+    accounts_header A
+LEFT JOIN 
+    transaction_body T ON A.id = T.account_id
+WHERE
+    A.company_id = $1
+    AND A.account_type_id = 3
+GROUP BY
+    A.id, 
+    A.account_name, 
+    A.account_no, 
+    A.credit_limit, 
+    A.email, 
+    A.tasgel_darepy, 
+    A.legal_info, 
+    A.contact_info, 
+    A.delivery_adress, 
+    A.banking_info;
+`;
+    let data = await db.any(query1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching data:", err.message);
+    res.status(500).send("Error: getVendorsData");
+  }
+});
+
+//#endregion
+
+  //#region add vendor
+  app.post("/addNewVendor", async (req, res) => {
+    try {
+          // // إرسال رسالة إلى العميل عبر WebSocket
+          // io.emit('blockUser', { userId: req.session.userId });
+          
+      const posted_elements = req.body;
+  
+      //! Permission
+      await permissions(req, "vendors_permission", "add");
+      if (!permissions) {
+        return;
+      }
+  
+      //! sql injection check
+      // const hasBadSymbols = sql_anti_injection([
+      //   posted_elements.employee_name_input,
+      //   posted_elements.today,
+      //   posted_elements.employee_job_input,
+      //   posted_elements.employee_beta2a_input,
+      //   posted_elements.employee_adress_input,
+      //   posted_elements.employee_phone_input,
+      //   posted_elements.employee_emergency_phone_input,
+      //   posted_elements.employee_start_date_input,
+      //   posted_elements.employee_leave_date_input,
+      //   // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      // ]);
+
+      // سرد كل القيم مره واحده 
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
+        return res.json({ success: false, message_ar: "ادخل اسم المورد" });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //2: validation data befor inserting to db
+      // const rows = await db.any(
+      //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+      //   [posted_elements.employee_name_input]
+      // );
+      let query0 = ` select
+      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND TRIM(account_name) = $2) as account_name_count,
+      (select id from accounts_header where company_id = $1 AND global_id = 14) as parent_id
+                `;
+      let result = await db.oneOrNone(query0, [
+        req.session.company_id,
+        posted_elements.account_name_input_value,
+      ]);
+  
+      if (result.account_name_count > 0) {
+        // اذا حصل على نتائج
+        return res.json({ success: false, message_ar: "اسم المورد موجود بالفعل" });
+      }
+  
+      //3: insert data into db
+      const newId_header = await newId_fn("accounts_header",'id');
+      const newId_body = await newId_fn("accounts_body",'id');
+  
+      let query1 = `
+    INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, credit_limit, email, tasgel_darepy, legal_info, contact_info, delivery_adress, banking_info)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+  `;
+
+  let query2 = `
+  insert into accounts_body (id, parent_id, account_id)
+  values ($1, $2, $3)
+  `
+  await db.tx(async (tx) => {
+    await tx.none(query1, [
+      newId_header,
+      posted_elements.account_name_input_value,
+      true,
+      posted_elements.acc_no_div_value,
+      1,
+      req.session.company_id,
+      3,
+      1,
+      posted_elements.credit_limit_value,
+      posted_elements.email_input_value,
+      posted_elements.tasgel_darepy_input_value,
+      posted_elements.legal_info_input_value,
+      posted_elements.contact_info_input_value,
+      posted_elements.delivery_adress_input_value,
+      posted_elements.banking_info_input_value,
+    ]);
+
+    await tx.none(query2,[
+      newId_body,
+      result.parent_id,
+      newId_header
+    ])
+  })
+
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم حفظ بيانات المورد بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding vendors:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء اضافة العميل",
+      });
+    }
+  });
+  //#endregion
+
+  //#region update vendor
+  app.post("/updateVendor", async (req, res) => {
+    try {
+          // // إرسال رسالة إلى العميل عبر WebSocket
+          // io.emit('blockUser', { userId: req.session.userId });
+          
+      const posted_elements = req.body;
+  
+      //! Permission
+      await permissions(req, "vendors_permission", "add");
+      if (!permissions) {
+        return;
+      }
+  
+      //! sql injection check
+      // const hasBadSymbols = sql_anti_injection([
+      //   posted_elements.employee_name_input,
+      //   posted_elements.today,
+      //   posted_elements.employee_job_input,
+      //   posted_elements.employee_beta2a_input,
+      //   posted_elements.employee_adress_input,
+      //   posted_elements.employee_phone_input,
+      //   posted_elements.employee_emergency_phone_input,
+      //   posted_elements.employee_start_date_input,
+      //   posted_elements.employee_leave_date_input,
+      //   // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      // ]);
+
+      console.log(posted_elements);
+      
+      // سرد كل القيم مره واحده 
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '' || !posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value) ) {
+        return res.json({ success: false, message_ar: "ادخل اسم المورد" });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //2: validation data befor inserting to db
+      // const rows = await db.any(
+      //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+      //   [posted_elements.employee_name_input]
+      // );
+  
+
+      let query0 = ` select
+                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3 AND account_name = $3 AND id != $2) as count_account_name_exist,
+                      (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3) as count_id
+      `
+      let result = await db.oneOrNone(query0, [
+        req.session.company_id,
+        posted_elements.account_id_hidden_value,
+        posted_elements.account_name_input_value,
+      ]);
+  
+      if (result.count_id === 0) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.count_account_name_exist > 0) {
+        return res.json({
+          success: false,
+          message_ar: "اسم المورد موجود بالفعل"
+        });
+      }
+  
+      let query = `
+    UPDATE accounts_header set account_name = $1, account_no = $2, credit_limit = $3, email = $4, tasgel_darepy = $5, legal_info = $6, contact_info = $7, delivery_adress = $8, banking_info = $9
+    WHERE company_id = $10 AND account_type_id = 2 AND id = $11
+  `;
+      await db.none(query, [
+        posted_elements.account_name_input_value,
+        posted_elements.acc_no_div_value,
+        posted_elements.credit_limit_value,
+        posted_elements.email_input_value,
+        posted_elements.tasgel_darepy_input_value,
+        posted_elements.legal_info_input_value,
+        posted_elements.contact_info_input_value,
+        posted_elements.delivery_adress_input_value,
+        posted_elements.banking_info_input_value,
+        req.session.company_id,
+        posted_elements.account_id_hidden_value
+      ]);
+  
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم تحديث بيانات المورد بنجاح",
+      });
+    } catch (error) {
+      console.error("Error adding vendors:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء تحديث بيانات المورد",
+      });
+    }
+  });
+  //#endregion
+
+  //#region delete vendor
+  app.post("/delete_vendor", async (req, res) => {
+    try {
+      //! Permission
+      await permissions(req, "vendors_permission", "delete");
+      if (!permissions) {
+        return;
+      }
+  
+      const posted_elements = req.body;
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_id_hidden_value,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      //* Start--------------------------------------------------------------
+  
+      if (!posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value)) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+  
+      let query0 = `
+              select
+              (select count(account_id) from transaction_body where account_id = $1) as count_account_id,
+              (select count(id) from accounts_header where company_id = $2 AND account_type_id = 3) as count_id
+      `
+
+      let result = await db.oneOrNone(query0,[
+        posted_elements.account_id_hidden_value,
+        req.session.company_id
+      ])
+
+
+      if (result.count_id === 0) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.count_account_id > 0) {
+        return res.json({
+          success: false,
+          message_ar: 'يوجد حركات على الحساب : تم الغاء الحذف',
+        });
+      }
+
+      let query1 = `DELETE FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 3`;
+      await db.none(query1, [
+        req.session.company_id,
+        posted_elements.account_id_hidden_value,
+      ]);
+  
+      return res.json({
+        success: true,
+        message_ar:
+          "تم حذف بيانات المورد بنجاح : سيتم تحويلك الان الى صفحه الموردين الرئيسيه",
+      });
+    } catch (error) {
+      console.error("Error get vendor data:", error);
+      res.status(500).json({
+        success: false,
+        message_ar:
+          "لا يمكن حذف بيانات المورد : قد تكون هناك عمليات مرتبطه بالمورد يجب حذفها اولا",
       });
     }
   });
@@ -2807,46 +3836,69 @@ GROUP BY
 //#region 1: Add attendance_add
 app.post("/attendance_add", async (req, res) => {
   try {
+
+
     //! Permission
     await permissions(req, "attendance_permission", "add");
     if (!permissions) {
       return;
     }
-
     const posted_elements = req.body;
+    
 
-    //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
-      });
-    }
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          const InValidDateFormat = isInValidDateFormat([posted_elements.date_input_val])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+
+        turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
 
     //3: insert data into db
     const newId = await newId_fn("attendance",'id');
+    let Reference
 
-    let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note, company_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
+    if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
+      const query = `select count(reference) as count from attendance where company_id = $1 AND reference = $2`
+      const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference])
+      if (result && result.count > 0) {
+          return res.json({
+          success: false,
+          message_ar: "هذا المرجع موجود بالفعل , رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح",
+        });
+      }else{
+        Reference = posted_elements.reference
+      }
+
+    }else{
+      Reference = await newReference_not_transaction(req,'attendance','reference')
+    }
+
+    let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
     await db.none(query1, [
       newId,
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
+      posted_elements.id_hidden_input_val,
+      posted_elements.date_input_val,
+      posted_elements.days_input_val,
+      posted_elements.hours_input_val,
+      posted_elements.values_input_val,
+      posted_elements.note_input_val,
       req.session.company_id,
+      Reference
     ]);
 
     //4: send a response to frontend about success transaction
@@ -2877,13 +3929,9 @@ app.post("/getEmployeesData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT e.id, e.employee_name FROM employees e where e.company_id = $1`;
-    let rows = await db.any(query1, [req.session.company_id]);
+    let query1 = `SELECT id, account_name FROM accounts_header where company_id = $1 AND account_type_id = 4 AND is_final_account IS TRUE`;
+    let data = await db.any(query1, [req.session.company_id]);
 
-    const data = rows.map((row) => ({
-      id: row.id,
-      employee_name: row.employee_name,
-    }));
     res.json(data);
   } catch (error) {
     console.error("Error while get Employees Data", error);
@@ -2896,42 +3944,134 @@ app.post("/getEmployeesData1", async (req, res) => {
 //#endregion
 
 //#region 3: get data for review tables
-app.get("/get_All_attendance_Data", async (req, res) => {
+app.post("/effects_view", async (req, res) => {
   try {
+
+    const posted_elements = req.body;
+
     //! Permission
     await permissions(req, "attendance_permission", "view");
     if (!permissions) {
       return;
     }
 
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+        if (posted_elements.checkbox_aggregation_val && posted_elements.select_aggregation_val == '1') {
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        }
+
+
+      turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
-    // const rows =
-    //   await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.note, A.datex, A.last_update
-    //     FROM Attendance A
-    //     LEFT JOIN  employees E on A.employee_id = E.id
-    //     ORDER BY A.datex DESC`);
 
-    let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
+        
+        
+
+        let query
+        let params;
+
+        if (posted_elements.checkbox_aggregation_val && posted_elements.checkbox_aggregation_val === true){
+          
+          query = `
+SELECT 
+    NULL as id, -- عامود id ببيانات فارغة
+    COALESCE(ah.account_no, '') as account_no, -- إضافة account_no من accounts_header
+    NULL as datex, -- عامود datex ببيانات فارغة
+    NULL as reference,
+    A.employee_id,
+    COALESCE(ah.account_name, '') as account_name,
+    SUM(COALESCE(A.days, 0)) as days, -- جمع أيام الحضور
+    SUM(COALESCE(A.hours, 0)) as hours, -- جمع الساعات
+    SUM(COALESCE(A.values, 0)) as values, -- جمع القيم
+    '' as note, -- حقل note ببيانات فارغة
+    CASE 
+        WHEN ah.is_inactive = 1 THEN 'غير نشط'
+        ELSE 'نشط'
+    END as is_inactive,
+    COALESCE(parent_ah.id, 0) as department_id, -- ID الحساب الأب
+    COALESCE(parent_ah.account_name, '') as department_name -- اسم الحساب الأب
+FROM 
+    Attendance A
+LEFT JOIN 
+    accounts_header ah ON A.employee_id = ah.id
+LEFT JOIN 
+    accounts_body ab ON ah.id = ab.account_id -- الانضمام إلى accounts_body للحصول على parent_id
+LEFT JOIN 
+    accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
+WHERE
+    A.company_id = $1
+    AND ah.account_type_id = 4
+    AND ah.is_final_account = true
+    AND (A.datex BETWEEN $2 AND $3 )
+GROUP BY 
+    A.employee_id, ah.account_name, parent_ah.id, parent_ah.account_name, ah.account_no, ah.is_inactive
+ORDER BY 
+    A.employee_id;
+
+`
+
+  params = [req.session.company_id,posted_elements.start_date,posted_elements.end_date]
+
+
+        }else{
+          query =  `
+          SELECT 
+              A.id,
+              COALESCE(ah.account_no, '') as account_no,
+              COALESCE(A.datex, '') as datex,
+              A.reference,
+              A.employee_id,
+              COALESCE(ah.account_name, '') as account_name,
+              COALESCE(A.days, 0) as days, 
+              COALESCE(A.hours, 0) as hours,
+              COALESCE(A.values, 0) as values,
+              COALESCE(A.note, '') as note,
+              CASE 
+                  WHEN ah.is_inactive = 1 THEN 'غير نشط'
+                  ELSE 'نشط'
+              END as is_inactive,
+              COALESCE(parent_ah.id, 0) as department_id, -- إضافة للحصول على ID الحساب الأب
+              COALESCE(parent_ah.account_name, '') as department_name -- اسم الحساب الأب
           FROM Attendance A
-          LEFT JOIN  employees E on A.employee_id = E.id
-          where A.company_id = $1
-          ORDER BY A.datex DESC`;
-    let rows = await db.any(query1, [req.session.company_id]);
+          LEFT JOIN accounts_header ah ON A.employee_id = ah.id
+          LEFT JOIN accounts_body ab ON ah.id = ab.account_id -- الانضمام إلى accounts_body للحصول على parent_id
+          LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
+          WHERE
+              A.company_id = $1
+              AND ah.account_type_id = 4
+              AND ah.is_final_account = true
+              AND (A.datex BETWEEN $2 AND $3 )
+              AND (A.employee_id = $4 OR $4 IS NULL)
+          ORDER BY
+              A.datex DESC,
+              A.reference DESC;
+          `
 
-    const data = rows.map((row) => ({
-      id: row.id,
-      employee_id: row.employee_id,
-      employee_name: row.employee_name,
-      days: row.days,
-      hours: row.hours,
-      values: row.values,
-      note: row.note,
-      datex: row.datex,
-    }));
+          params = [req.session.company_id,posted_elements.start_date,posted_elements.end_date,posted_elements.QKey] 
+        }
+    
 
+
+    let data = await db.any(query, params);
     res.json(data);
   } catch (error) {
-    console.error("Error getEmployeesData1:", error);
+    console.error("Error getEffectsData1:", error);
     res
       .status(500)
       .json({ success: false, message_ar: "حدث خطأ أثناء عرض البيانات" });
@@ -3018,16 +4158,8 @@ app.post("/attendance_update", async (req, res) => {
     }
 
     //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
-      posted_elements.attendance_id,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
     if (hasBadSymbols) {
       return res.json({
         success: false,
@@ -3036,31 +4168,53 @@ app.post("/attendance_update", async (req, res) => {
       });
     }
 
+    const InValidDateFormat = isInValidDateFormat([posted_elements.date_val])
+    if (InValidDateFormat){
+      return res.json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+if (!posted_elements.emp_name || posted_elements.emp_name == ''){
+return res.json({
+  success: false,
+  message_ar:
+    "ادخل اسم الموظف اولا",
+});
+}  
     //* Start--------------------------------------------------------------
+    let Reference
 
-    // await db.none(
-    //   "UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7",
-    //   [
-    //     posted_elements.id_hidden_input,
-    //     posted_elements.date_input,
-    //     posted_elements.days_input,
-    //     posted_elements.hours_inpu,
-    //     posted_elements.values_input,
-    //     posted_elements.note_inpute,
-    //     posted_elements.attendance_id,
-    //   ]
-    // );
+    if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
+      const query = `select count(reference) as count from attendance where company_id = $1 AND reference = $2 And id != $3`
+      const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference, posted_elements.id_val])
+      if (result && result.count > 0) {
+          return res.json({
+          success: false,
+          message_ar: "هذا المرجع موجود بالفعل , رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح",
+        });
+      }else{
+        Reference = posted_elements.reference
+      }
 
-    let query1 = `UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where company_id = $7 AND id = $8`;
+    }else{
+      Reference = await newReference_not_transaction(req,'attendance','reference')
+    }
+
+    let query1 = `UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6, reference = $7 where company_id = $8 AND id = $9`;
     await db.none(query1, [
-      posted_elements.id_hidden_input,
-      posted_elements.date_input,
-      posted_elements.days_input,
-      posted_elements.hours_inpu,
-      posted_elements.values_input,
-      posted_elements.note_inpute,
+      posted_elements.emp_id,
+      posted_elements.date_val,
+      posted_elements.days_val,
+      posted_elements.hours_val,
+      posted_elements.values_val,
+      posted_elements.note_val,
+      Reference,
       req.session.company_id,
-      posted_elements.attendance_id,
+      posted_elements.id_val,
     ]);
 
     return res.json({
@@ -3090,10 +4244,8 @@ app.post("/attendance_delete", async (req, res) => {
     }
 
     //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.attendance_id,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
     if (hasBadSymbols) {
       return res.json({
         success: false,
@@ -3104,15 +4256,12 @@ app.post("/attendance_delete", async (req, res) => {
 
     //* Start--------------------------------------------------------------
 
-    //3: insert data into db
-    // await db.none("DELETE FROM attendance WHERE id = $1", [
-    //   posted_elements.attendance_id,
-    // ]);
+
 
     let query1 = `DELETE FROM attendance WHERE company_id = $1 AND id = $2`;
     await db.none(query1, [
       req.session.company_id,
-      posted_elements.attendance_id,
+      posted_elements.id_val,
     ]);
 
     return res.json({
@@ -3194,7 +4343,7 @@ app.post("/production_add_ar", async (req, res) => {
 });
 
 // get all production data
-app.get("/get_All_production_Data", async (req, res) => {
+app.post("/get_All_production_Data", async (req, res) => {
   try {
     //! Permission
     await permissions(req, "production_permission", "view");
@@ -3348,7 +4497,7 @@ app.post("/delete_production", async (req, res) => {
 //#region  bread
 
 //#region 1: bread_review
-app.get("/get_All_bread_Data", async (req, res) => {
+app.post("/get_All_bread_Data", async (req, res) => {
   try {
     //! Permission
     await permissions(req, "bread_permission", "view");
@@ -4534,6 +5683,8 @@ app.post("/getAccountsData1", async (req, res) => {
 
 //#endregion
 
+
+
 //#region items
 
   //#region tree
@@ -5098,7 +6249,7 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
 //#endregion
 
 //#endregion end tree
-app.get("/get_All_items_Data_for_table", async (req, res) => {
+app.post("/get_All_items_Data_for_table", async (req, res) => {
   try {
     //! Permission
     await permissions(req, "items_permission", "view");

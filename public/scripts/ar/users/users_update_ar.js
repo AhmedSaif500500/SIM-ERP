@@ -73,8 +73,9 @@ if (!user_id) {
       document.querySelector('#table_permission_production').value = array1.production_permission;
       document.querySelector('#table_permission_bread').value = array1.bread_permission;
       document.querySelector('#table_permission_transaction').value = array1.transaction_permission;
-      document.querySelector('#table_permission_items').value = array1.transaction_permission;
-      document.querySelector('#table_permission_cutomers').value = array1.transaction_permission;
+      document.querySelector('#table_permission_items').value = array1.items_permission;
+      document.querySelector('#table_permission_cutomers').value = array1.customers_permission;
+      document.querySelector('#table_permission_vendors').value = array1.vendors_permission;
     } catch (error) {
       catch_error('error in show_data', error.message_ar);
     };
@@ -202,6 +203,7 @@ if (!user_id) {
       let table_permission_transaction = parseInt(document.querySelector("#table_permission_transaction").value);
       let table_permission_items = parseInt(document.querySelector("#table_permission_items").value);
       let table_permission_customers = parseInt(document.querySelector("#table_permission_customers").value);
+      let table_permission_vendors = parseInt(document.querySelector("#table_permission_vendors").value);
       const today = new Date().toISOString().split("T")[0]; // date in format (yyyy-mm-dd)
       // const changePassword_div = document.querySelector('#changePassword_div');
 
@@ -248,6 +250,7 @@ if(!dialogAnswer){
         table_permission_transaction = 0;
         table_permission_items = 0;
         table_permission_customers = 0;
+        table_permission_vendors = 0;
         // add here all tables select permission id
       };
       console.log(user_id);
@@ -265,6 +268,7 @@ if(!dialogAnswer){
         table_permission_transaction,
         table_permission_items,
         table_permission_customers,
+        table_permission_vendors,
         today,
       };
 

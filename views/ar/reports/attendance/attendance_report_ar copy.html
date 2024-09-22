@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+     <!-- start ------------------------------------------------------------------------------------------>
+
+     <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+
+    <div id="white_backcolor" class="white_backcolor">
+      <!-- content -->
+              <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="effects_view_ar">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div id="h2_text_div" class="h2_text_div"></div>
+          </h2>
+
+        <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+
+        <!-- <div class="btn_container">
+          <a href="/attendance_add_ar" class="btn_new" id="newBtn">جديد</a>
+        </div> -->
+
+        
+        <label for="select_report" class="lbl_sm">نوع التقرير</label>
+        <select id="select_report" class="select_year" style="width: 18rem;">
+          <!-- إضافة خيارات من 1 إلى 12 -->
+          <option value="1" selected>تقرير عن موظف واحد</option>
+          <option value="2">تقرير اجمالى عن كل الموظفين</option>
+        </select>
+
+        <!-- search in table -->
+        <div class="row x_start y_end h_fit wrap">
+
+   
+            <div class="column x_end y_start me_15 h_fit">
+            <div class="row wrap grow_1 x_start y_center">
+              <label for="dropdown_select_input" class="lbl_sm">اسم الموظف</label>
+            </div>
+
+            <!-- dropdown -->
+
+              <div class="dropdown_container" id="dropdown_container">
+                <div class="dropdown_select" id="dropdown_select">
+                  <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة" class="dropdown_select_input hover" readonly autocomplete="off">
+                  <i class="fa-solid fa-caret-down left_icon"></i>
+                </div>
+                <input type="hidden" id="id_hidden_input" readonly>
+                <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
+                  <div class="dropdown_search">
+                    <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..." oninput="performSearch1()" autocomplete="off">
+                  </div>
+                  <div class="dropdown_menue-items" id="dropdownItems">
+                    <!-- قائمة الخيارات تظهر هنا -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+
+
+
+     
+            <div class="column x_end y_start me_15 h_fit">
+              <label for="select_month" class="lbl_sm">الشهر</label>
+          
+            <!-- dropdown -->
+              <select id="select_month" class="select_month">
+                <!-- إضافة خيارات من 1 إلى 12 -->
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+            </div>
+         
+    
+
+
+          
+            <div class="column x_end y_start me_15 h_fit">
+              <label for="select_year" class="lbl_sm">العام</label>
+            <!-- dropdown -->
+              <select id="select_year" class="select_year">
+                <!-- إضافة خيارات من 1 إلى 12 -->
+                <option value="2024" selected>2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+                <option value="2031">2031</option>
+                <option value="2032">2032</option>
+                <option value="2033">2033</option>
+                <option value="2034">2034</option>
+                <option value="2035">2035</option>
+                <option value="2036">2036</option>
+                <option value="2037">2037</option>
+                <option value="2038">2038</option>
+                <option value="2039">2039</option>
+                <option value="2040">2040</option>
+              </select>
+            </div>
+
+            <div class="column x_end y_start me_15 h_fit">
+              <button id="custom_search_btn" class="btn_search hover" style="inset-block-end: 0;">search</button>
+            </div>
+
+        </div>
+
+
+        <div id="page_content" style="display: none;">
+
+        <!-- <div id="table_main_container" class="column grow_1" style="display: none;"> -->
+          <h2 id="tableAdress" class="h2"></h2>
+          <!-- search in table -->
+          <div id="search_in_table_div" class="flex_row">
+            <div class="input_with_icon_div">
+              <input type="search" name="searchInput" id="searchInput" placeholder="search" class="search_input hover">
+              <i class="fa-light fa-magnifying-glass left_icon"></i>
+            </div>
+            <button id="searchBtn" class="btn_search hover">search</button>
+          </div>
+
+          
+        <!-- table container filled by js -->
+        <div id="tableContainer" class="tableContainer"></div>
+
+      </div>
+      </div>
+    </div>
+  </div>
+
+</div> <!-- end body content -->
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/reports/attendance_reports/attendance_report_ar.js"></script>
+
+
+</body>
+
+</html>

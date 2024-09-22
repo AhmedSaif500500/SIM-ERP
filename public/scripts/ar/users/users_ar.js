@@ -1,5 +1,5 @@
 setActiveSidebar('users_ar');
-const tableContainer = document.getElementById("table-container");
+const tableContainer = document.getElementById("tableContainer");
 const searchBtn = document.getElementById("searchBtn");
 const searchInput = document.getElementById("searchInput");
 
@@ -66,8 +66,8 @@ async function fillAttendancetable() {
     <tr id="table_fotter_buttons_row">
         <td colspan="3">
             <div class='flex_H'>
-                <button class="table_footer_btn" onclick="ShowAllDataInAttendanceTable()">All</button>
-                <button class="table_footer_btn" onclick="showFirst50RowInAttendanceTable()">50</button>
+                <button class="table_footer_show_data" onclick="ShowAllDataInAttendanceTable()">All</button>
+                <button class="table_footer_show_data" onclick="showFirst50RowInAttendanceTable()">50</button>
             </div>
         </td>
     </tr>

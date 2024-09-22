@@ -19,7 +19,7 @@
   </style>
 </head>
 
-<body class="body">
+<body class="body scroll">
   <script src="/public/scripts/darkmode.js"></script>
   <div id="alert-container" class="alert-container"></div>
   <div id="body_content">
@@ -36,7 +36,9 @@
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space" class="scroll">
+                <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
           <h2 class="h2" style="gap: 1rem;">
             الاصناف
           </h2>
@@ -56,12 +58,13 @@
 
           <div class="table_div flex_column" style='display: none;'>
 
+           <div id="page_content" style="display: none;"> 
             <div class="btn_container">
               <button id="newGroupBtn_table" class="btn_new">مجموعه جديده</button>
               <button id="newItemBtn_table" class="btn_new">صنف جديد</button>
             </div>
 
-            <div class="flex_row gap_05">
+            <div class="search_in_table_div">
               <div class="input_with_icon_div">
                 <input type="search" name="searchInput" id="searchInput" placeholder="search"
                   class="search_input hover">
@@ -70,7 +73,8 @@
               <button id="searchBtn" class="btn_search hover">search</button>
             </div>
 
-            <div id="table-container" class="table_container scroll"></div>
+            <div id="tableContainer" class="tableContainer scroll"></div>
+          </div>
           </div>
         </div>
       </div>

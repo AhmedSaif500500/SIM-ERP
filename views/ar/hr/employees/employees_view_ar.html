@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الموظفين</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <div id="fn_container_div" class="fn_container_div"></div>
+
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="hr_ar" title="الموارد البشرية">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <span id="h2_text_div" class="h2_text_div">الموظفين</span>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
+          </h2>
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+
+          <div id="page_content" style="display: none;">
+            <div class="btn_container">
+              <a href="employees_add_ar" id="btn_new_employee" class="btn_new">جديد</a>
+            </div>
+            <!-- search in table -->
+            <div class="search_in_table_div">
+              <div class="input_with_icon_div">
+                <input type="search" name="searchInput" id="searchInput" placeholder="search"
+                  class="search_input hover">
+                <i class="fa-light fa-magnifying-glass left_icon"></i>
+              </div>
+              <button id="searchBtn" class="btn_search hover">search</button>
+              <i id="filter_icon" class="fa-duotone fa-solid fa-filter-list filer_icon" title="تصفية متقدمة"></i>
+              <i id="filter_icon_cancel" class="fa-duotone fa-solid fa-filter-slash fa-bounce filer_icon_cancel"
+                style="display: none;" title="الغاء التصفية"></i>
+            </div>
+            
+            
+              <div id="filter_div" class="filter_div hidden_height">
+                <!-- acc no  -->
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_account_no"
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">المعرف</div>
+                  </div>
+                  <div class="select_and_input_div hidden_select_and_input_div">
+                    <select id="select_account_no" class="dark_select hover"
+                      onchange="filter_insideSelect_string_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">يحتوى على</option>
+                      <option value="2">لا يحتوى على</option>
+                      <option value="3">فارغ</option>
+                      <option value="4">ليس فارغ</option>
+                    </select>
+                    <input id="input_account_no" name="inside_input_search" type="search" class="input_text_sm hover"
+                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                  </div>
+                </div>
+
+                <!-- ACCOUNT NAME -->
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <!-- no checkbox here -->
+                    <div class="checkbox_label">الاسم</div>
+                  </div>
+                  <div class="select_and_input_div">
+                    <select id="select_account_name" class="dark_select hover"
+                      onchange="filter_insideSelect_string_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">يحتوى على</option>
+                      <option value="2">لا يحتوى على</option>
+                      <option value="3">فارغ</option>
+                      <option value="4">ليس فارغ</option>
+                    </select>
+                    <input id="input_account_name" name="inside_input_search" type="search" class="input_text_sm hover"
+                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                  </div>
+                </div>
+
+                <!-- job  -->
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_job" title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">الوظيفة</div>
+                  </div>
+                  <div class="select_and_input_div hidden_select_and_input_div">
+                    <select id="select_job" class="dark_select hover"
+                      onchange="filter_insideSelect_string_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">يحتوى على</option>
+                      <option value="2">لا يحتوى على</option>
+                      <option value="3">فارغ</option>
+                      <option value="4">ليس فارغ</option>
+                    </select>
+                    <input id="input_job" type="search" name="inside_input_search" class="input_text_sm hover"
+                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                  </div>
+                </div>
+
+
+                <!-- department  name-->
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_deparment_name"
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">القسم</div>
+                  </div>
+                  <div class="select_and_input_div hidden_select_and_input_div">
+                    <select id="select_department_name" class="dark_select hover"
+                      onchange="filter_insideSelect_string_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">يحتوى على</option>
+                      <option value="2">لا يحتوى على</option>
+                      <option value="3">فارغ</option>
+                      <option value="4">ليس فارغ</option>
+                    </select>
+                    <input id="input_department_name" name="inside_input_search" type="search"
+                      class="input_text_sm hover" style="display: none;" placeholder="مطلوب"
+                      oninput="check_parse(this,'string')">
+                  </div>
+                </div>
+
+                <!-- email  -->
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_email"
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">البريد</div>
+                  </div>
+                  <div class="select_and_input_div hidden_select_and_input_div">
+                    <select id="select_email" class="dark_select hover"
+                      onchange="filter_insideSelect_string_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">يحتوى على</option>
+                      <option value="2">لا يحتوى على</option>
+                      <option value="3">فارغ</option>
+                      <option value="4">ليس فارغ</option>
+                    </select>
+                    <input id="input_email" type="search" name="inside_input_search" class="input_text_sm hover"
+                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                  </div>
+                </div>
+
+
+
+                <!-- another info  -->
+
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_another_info"
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">معلومات اخرى</div>
+                  </div>
+                  <div class="select_and_input_div hidden_select_and_input_div">
+                    <select id="select_another_info" class="dark_select hover"
+                      onchange="filter_insideSelect_string_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">يحتوى على</option>
+                      <option value="2">لا يحتوى على</option>
+                      <option value="3">فارغ</option>
+                      <option value="4">ليس فارغ</option>
+                    </select>
+                    <input id="input_another_info" name="inside_input_search" type="search" class="input_text_sm hover"
+                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                  </div>
+                </div>
+
+                <!-- start date  -->
+                <div class="filter_div_sub flex_column y_start">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_start_date"
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_date_column_with_select_and_two_inputs(this)"></span>
+                    <div class="checkbox_label">تاريخ بداية التعاقد</div>
+                  </div>
+                  <div class="select_and_input_div flex_column y_start gap_05 hidden_select_and_input_div">
+                    <select id="select_start_date" class="dark_select hover"
+                      onchange="filter_insideSelect_date_column_with_two_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">تحديد الفتره</option>
+                    </select>
+                    <div class="two_date_div" style="display: none;">
+                      <!-- date -->
+                      <div class="flex_row wrap gap_05">
+                        <label for="input_start_date1" class="lbl_sm">من</label>
+                        <div class="input_with_icon_div m_0">
+                          <input type="search" id="input_start_date1" class="hover input_date m_0 datepicker"
+                            placeholder="التاريخ..." readonly autocomplete="off">
+                          <i class="fa-regular fa-calendar left_icon"></i>
+                        </div>
+                      </div>
+                      <!-- date -->
+                      <div class="flex_row wrap gap_05">
+                        <label for="input_end_date1" class="lbl_sm">الى</label>
+                        <div class="input_with_icon_div m_0">
+                          <input type="search" id="input_end_date1" class="hover input_date m_0 datepicker"
+                            placeholder="التاريخ..." readonly autocomplete="off">
+                          <i class="fa-regular fa-calendar left_icon"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- end date  -->
+                <div class="filter_div_sub flex_column y_start">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_end_date"
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_date_column_with_select_and_two_inputs(this)"></span>
+                    <div class="checkbox_label">تاريخ نهاية التعاقد</div>
+                  </div>
+                  <div class="select_and_input_div flex_column y_start gap_05 hidden_select_and_input_div">
+                    <select id="select_end_date" class="dark_select hover"
+                      onchange="filter_insideSelect_date_column_with_two_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">تحديد الفتره</option>
+                    </select>
+                    <div class="two_date_div" style="display: none;">
+                      <!-- date -->
+                      <div class="flex_row wrap gap_05">
+                        <label for="input_start_date2" class="lbl_sm">من</label>
+                        <div class="input_with_icon_div m_0">
+                          <input type="search" id="input_start_date2" class="hover input_date m_0 datepicker"
+                            placeholder="التاريخ..." readonly autocomplete="off">
+                          <i class="fa-regular fa-calendar left_icon"></i>
+                        </div>
+                      </div>
+                      <!-- date -->
+                      <div class="flex_row wrap gap_05">
+                        <label for="input_end_date2" class="lbl_sm">الى</label>
+                        <div class="input_with_icon_div m_0">
+                          <input type="search" id="input_end_date2" class="hover input_date m_0 datepicker"
+                            placeholder="التاريخ..." readonly autocomplete="off">
+                          <i class="fa-regular fa-calendar left_icon"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- balance  -->
+                <div class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="check_balance" checked
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">الرصيد</div>
+                  </div>
+                  <div class="select_and_input_div">
+                    <select id="select_balance" class="dark_select hover"
+                      onchange="filter_insideSelect_number_column_with_input(this)">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">اكبر من</option>
+                      <option value="2">اصغر من</option>
+                      <option value="3">تساوى</option>
+                      <option value="4">صفر</option>
+                      <option value="5">ليس صفر</option>
+                    </select>
+                    <input id="input_balance" name="inside_input_search" type="search" class="input_text_sm hover"
+                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
+                  </div>
+                </div>
+
+                <!-- active-->
+                <div id="active_div" class="filter_div_sub">
+                  <div class="flex_row">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_active" checked
+                        title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    <div class="checkbox_label">نشط</div>
+                  </div>
+                  <div class="select_and_input_div">
+                    <select id="select_active" class="dark_select hover">
+                      <option value="0" selected>اظهار الكل</option>
+                      <option value="1">نشط</option>
+                      <option value="2">غير نشط</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="btn_container_top_border">
+                  <button id="btn_do" class="btn_do">تطبيق</button>
+                </div>
+
+              </div>
+            <div id="tableContainer" class="tableContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- end body content -->
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/hr/employees/employees_view_ar.js"></script>
+
+
+</body>
+
+</html>
