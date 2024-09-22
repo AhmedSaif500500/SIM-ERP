@@ -69,7 +69,6 @@ async function fillAttendancetable() {
                                 <th></th>
                                 <th style="display: none;" >ID</th>
                                 <th style="widrh: auto; white-space: nowrap; text-align: center;">التاريخ</th>
-                                <th style="widrh: auto; white-space: nowrap; text-align: center;">اليوم</th>
                                 <th style="width: 100%">البيان</th>
                                 <th style="width: auto; white-space: nowrap; text-align: center;">انتاج</th>
                                 <th style="width: auto; white-space: nowrap;text-align: center;">صرف</th>
@@ -86,11 +85,10 @@ async function fillAttendancetable() {
                             <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;text-align: center;">${row.datex}</td>
-                            <td style="width: auto; white-space: nowrap;text-align: center;">${day_name(row.datex)}</td>
                             <td style="min-width: 20rem;width: 100%; white-space: wrap">${row.note}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;" class="table_number">${total_column(total_column1,row.procution_amount)}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;" class="table_number">${total_column(total_column2,row.sales_amount)}</td>
-                            <td style="width: auto; white-space: nowrap; font-weight: bold;text-align: center;" class="table_number">${floatToString(false,row.cumulative_balance)}</td>
+                            <td style="width: auto; white-space: nowrap; font-weight: bold;text-align: center;" class="table_number">${floatToString(true,row.cumulative_balance)}</td>
                           </tr>`;
         });
 
@@ -100,14 +98,13 @@ async function fillAttendancetable() {
                 <td id="tfooter1" ></td>
                 <td id="tfooter2" style="display: none" ></td>
                 <td id="tfooter3"></td>
-                <td id="tfooter4"></td>
-                <td id="tfooter5" style="width: 100%"></td>
+                <td id="tfooter4" style="width: 100%"></td>
+                <td id="tfooter5" style="text-align: center;"></td>
                 <td id="tfooter6" style="text-align: center;"></td>
-                <td id="tfooter7" style="text-align: center;"></td>
-                <td id="tfooter8" style="width: auto; font-weight: bold;text-align: center;"></td>
+                <td id="tfooter7" style="width: auto; font-weight: bold;text-align: center;"></td>
             </tr>
                         <tr id="table_fotter_buttons_row">
-                            <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                            <td colspan="7">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
                                  <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                                  <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -126,8 +123,8 @@ async function fillAttendancetable() {
 
 // عرض نتائج الجمع
 document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-document.getElementById("tfooter6").textContent = floatToString(false,total_column1.value);
-document.getElementById("tfooter7").textContent = floatToString(false,total_column2.value);
+document.getElementById("tfooter5").textContent = floatToString(false,total_column1.value);
+document.getElementById("tfooter6").textContent = floatToString(false,total_column2.value);
 
 
 

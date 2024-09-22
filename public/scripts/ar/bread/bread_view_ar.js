@@ -72,7 +72,6 @@ async function fillAttendancetable() {
                                 <th></th>
                                 <th style="display: none;" >ID</th>
                                 <th style="width: auto; white-space: nowrap;text-align: center">التاريخ</th>
-                                <th style="width: auto; white-space: nowrap;text-align: center">اليوم</th>
                                 <th style="display: none;">vendor_id</th>
                                 <th style="width: auto; white-space: nowrap;">المورد</th>
                                 <th style="min-width: 20rem; width: 100%; white-space: nowrap;">البيان</th>
@@ -89,7 +88,6 @@ async function fillAttendancetable() {
                             <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${row.datex}</td>
-                            <td style="width: auto; white-space: nowrap;text-align: center">${day_name(row.datex)}</td>
                             <td style="display: none;">${row.vendor_id}</td>
                             <td style="width: auto; white-space: nowrap">${row.vendore_name}</td>
                             <td style="min-width: 20rem; width: 100%; white-space: nowrap">${row.note ? row.note : ''}</td>
@@ -104,15 +102,14 @@ async function fillAttendancetable() {
                 <td id="tfooter1" ></td>
                 <td id="tfooter2" style="display: none;" ></td>
                 <td id="tfooter3"></td>
-                <td id="tfooter4"></td>
-                <td id="tfooter5" style="display: none;"></td>
-                <td id="tfooter6" style="width: auto"></td>
-                <td id="tfooter7" style="width: 100%"></td>
+                <td id="tfooter4" style="display: none;"></td>
+                <td id="tfooter5" style="width: auto"></td>
+                <td id="tfooter6" style="width: 100%"></td>
+                <td id="tfooter7" style="width: auto; white-space: nowrap; text-align: center"></td>
                 <td id="tfooter8" style="width: auto; white-space: nowrap; text-align: center"></td>
-                <td id="tfooter9" style="width: auto; white-space: nowrap; text-align: center"></td>
             </tr>
                         <tr id="table_fotter_buttons_row">
-                            <td colspan="9">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+                            <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
                                  <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
                                  <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
@@ -130,8 +127,8 @@ async function fillAttendancetable() {
 
 
 document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-document.getElementById("tfooter8").textContent = floatToString(false,total_column1.value);
-document.getElementById("tfooter9").textContent = floatToString(false,total_column2.value);
+document.getElementById("tfooter7").textContent = floatToString(false,total_column1.value);
+document.getElementById("tfooter8").textContent = floatToString(false,total_column2.value);
 
 
 
@@ -143,7 +140,7 @@ document.getElementById("tfooter9").textContent = floatToString(false,total_colu
 if (array1.length > 0 && array1.length <= 50) {
     document.querySelector('#table_fotter_buttons_row').style.display = "none";
 } else if (array1.length < 1) {
-    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='9' class="td_no_result">لا نتائج</td>`;
+    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='8' class="td_no_result">لا نتائج</td>`;
 };
 
 

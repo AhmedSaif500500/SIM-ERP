@@ -1425,7 +1425,7 @@ function day_name(dateStr) {
     // نضيف يومًا واحدًا للحصول على اليوم التالي
     date.setDate(date.getDate() + 1);
 
-    
+
   const options = { weekday: 'short' }; // تحديد نوع الترجمة
   const currentLang = localStorage.getItem('currentLang')
   if (currentLang === 'ar') {
