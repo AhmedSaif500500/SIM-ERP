@@ -2984,6 +2984,7 @@ app.post("/employee_add", async (req, res) => {
             });
           }
 
+          
           const InValidDateFormat = isInValidDateFormat([posted_elements.employee_start_date_value, posted_elements.employee_leave_date_value])
           if (InValidDateFormat){
             return res.json({
