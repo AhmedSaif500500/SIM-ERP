@@ -16,6 +16,7 @@ const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
 let datex_div = filter_div.querySelector(`#datex_div`);
+let checkbox_datex_div = filter_div.querySelector(`#checkbox_datex_div`);
 let checkbox_datex = filter_div.querySelector(`#checkbox_datex`);
 let select_datex = filter_div.querySelector(`#select_datex`);
 let input_start_date1 = filter_div.querySelector(`#input_start_date1`);
@@ -96,6 +97,7 @@ function backUp_filter_div_conditions() {
     const conditions = {
         
         datex_div_display: window.getComputedStyle(datex_div).display,
+        checkbox_datex_div_display: window.getComputedStyle(checkbox_datex_div).display,
         checkbox_datex: checkbox_datex.checked,
         select_datex: select_datex.value,
         input_start_date1: input_start_date1.value,
@@ -246,6 +248,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     if (conditions) {
 
         datex_div.style.display = conditions.datex_div_display;
+        checkbox_datex_div.style.display = conditions.checkbox_datex_div_display;
         checkbox_datex.checked = conditions.checkbox_datex;
         select_datex.value = conditions.select_datex;
         input_start_date1.value = conditions.input_start_date1;
@@ -486,7 +489,7 @@ async function filterDiv_conditions_when_start_aggregation(date1, date2) {
 async function Execution() {
     try {
         showLoadingIcon(content_space);
-
+        searchInput.value = "";
         if (QKey && +QKey > 0 ){
             // console.log(`حالة ال Qkey`);
             sub_h2_header.textContent = `الموظف : ${emp_name} من ${reverseDateFormatting(input_start_date1.value)}  الى ${reverseDateFormatting(input_end_date1.value)}`;
@@ -497,16 +500,23 @@ async function Execution() {
             
         } else if (!checkbox_aggregation.checked) {
             // console.log(`الحالة العادة`);
-            note_div.style.display = "flex";
-            datex_div.style.display = "flex";
-            reference_div.style.display = "flex";
+            // note_div.style.display = "flex";
+            // datex_div.style.display = "flex";
+            // reference_div.style.display = "flex";
             sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
         
         } else if (checkbox_aggregation.checked) {
             // console.log(`حالة التجميع `);
+
+            checkbox_datex_div.style.display = `none`;
+            checkbox_datex.checked = false
+            reference_div.style.display = `none`;
+            check_reference.checked = false
+            
+        
             sub_h2_header.textContent = `تقرير مجمع من   ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
             back_href.title = "المؤثرات";
-            searchInput.value = "";
+            
 
             showAlert(`info`,`تم تجميع البيانات على مستوى الموظف من ${reverseDateFormatting(input_start_date1.value)} الى ${reverseDateFormatting(input_end_date1.value)}`);
         }

@@ -7,6 +7,7 @@
   <title>Document</title>
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
 
   <style>
 
@@ -102,7 +103,7 @@
             </div>
           </div>
           
-          <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
+          <a href="users_view_ar" target="_self" id="users_control_a" style="display: none;">
             <i class="fa-solid fa-user"></i>
             المستخدمين
           </a>
@@ -152,17 +153,22 @@
                 <div id="content_space" class="scroll">
 
        
-
-          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
-          
           <input type="hidden" id="company_name_hidden_input">
 
-          <div id="" class="column x_start y_start grow_1 media_width_100" style="margin: 0 auto; position: relative; width:60%; min-width: 10rem; max-width: 100%;">
+          <div id="" class="column x_start grow_1 media_width_100" style="margin: 0 auto; position: relative; width:60%; min-width: 10rem; max-width: 60rem;">
 
-            <h2 class="h2">
-              <i class="fa-solid fa-arrow-right back_icon" onclick="logout()"></i>
-              الاعمال التجارية
+            <h2 id="h2" class="h2">
+              <a id="back_href" class="back_href" onclick="logout()" title="خروج">
+                <i class="fa-solid fa-arrow-right back_icon"></i>
+              </a>
+              <div class="h2_main_text_div">
+                <a id="h2_text_div" class="h2_text_div" href="companies_ar" title="اعادة تحميل الصفحة">الاعمال التجارية</a>
+                <span id="sub_h2_header" class="sub_h2_header"></span>
+              </div>
             </h2>
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+          <div id="page_content" style="display: none;">
+
           <!-- search in table -->
           <div id="add_company_users_btns_div" class="row x_end y_center w_full mb_10" style="display: none; gap: 1rem; position: relative;">
             <button id="add_new_bussnies" class="btn_new">اضافة عمل تجارى جديد</button>
@@ -179,6 +185,7 @@
 
           <div id="tableContainer" class="tableContainer w_full" style="height: auto;"></div>
 
+        </div>
         </div>
         </div>
       </div>

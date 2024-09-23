@@ -643,7 +643,7 @@ async function khorogFawry(req,userId) {
 //#region owners_and_companies
 
 //#region 1:- companies view
-app.get("/get_companies_data", async (req, res) => {
+app.post("/get_companies_data", async (req, res) => {
   try {
 
     //! Permission
@@ -892,7 +892,7 @@ app.post("/company_login", async (req, res) => {
   //       req.session.general_permission = rows[0].general_permission;
   //       req.session.accounts_permission = rows[0].accounts_permission;
   //       req.session.employees_permission = rows[0].employees_permission;
-  //       req.session.attendance_permission = rows[0].attendance_permission;
+  //       req.session.effects_permission = rows[0].effects_permission;
   //       req.session.users_permission = rows[0].users_permission;
   //       req.session.production_permission = rows[0].production_permission;
   //       req.session.bread_permission = rows[0].bread_permission;
@@ -903,7 +903,7 @@ app.post("/company_login", async (req, res) => {
   //         company_name: rows[0].company_name,
   //         general_permission: rows[0].general_permission,
   //         employees_permission: rows[0].employees_permission,
-  //         attendance_permission: rows[0].attendance_permission,
+  //         effects_permission: rows[0].effects_permission,
   //         users_permission: rows[0].users_permission,
   //         production_permission: rows[0].production_permission,
   //         bread_permission: rows[0].bread_permission,
@@ -917,8 +917,10 @@ app.post("/company_login", async (req, res) => {
 const permissions = [
   "general_permission",
   "accounts_permission",
+  "hr_permission",
+  "departments_permission",
   "employees_permission",
-  "attendance_permission",
+  "effects_permission",
   "users_permission",
   "production_permission",
   "bread_permission",
@@ -1890,15 +1892,15 @@ app.get("/get_All_users_Data", async (req, res) => {
 //       //3: insert data into db
 //       const newId = await newId_fn("users",'id');
 
-//       let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, attendance_permission, production_permission, bread_permission, transaction_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+//       let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, effects_permission, production_permission, bread_permission, transaction_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 //       await db.none(query, [
 //         newId,
 //         posted_elements.user_name_input,
 //         pass_input1,
 //         posted_elements.general_permission_select,
 //         posted_elements.table_permission_users,
-//         posted_elements.table_permission_employee,
-//         posted_elements.table_permission_attendance,
+//         posted_elements.table_permission_employees,
+//         posted_elements.table_permission_effects,
 //         posted_elements.table_permission_production,
 //         posted_elements.table_permission_bread,
 //         posted_elements.table_permission_transaction,
@@ -1986,24 +1988,13 @@ app.post("/updateUser", async (req, res) => {
     from user_company uc 
     left join users u on uc.user_id = u.id  
     WHERE uc.company_id = $1 AND uc.user_id = $2`;
-    let rows = await db.any(query, [
+    let data = await db.any(query, [
       req.session.company_id,
       posted_elements.user_id,
     ]);
 
-    if (rows.length > 0) {
-      // اذا حصل على نتائج
-      return res.json({
-        success: true,
-        message_ar: "data get success",
-        rows: rows,
-      });
-    } else {
-      return res.json({
-        success: false,
-        message_ar: "Faild to get user data from server",
-      });
-    }
+    res.json(data);
+    
   } catch (error) {
     console.error("Error get employee data:", error);
     res.status(500).json({
@@ -2037,8 +2028,10 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       posted_elements.user_id,
       posted_elements.general_permission_select,
       posted_elements.table_permission_users,
-      posted_elements.table_permission_employee,
-      posted_elements.table_permission_attendance,
+      posted_elements.table_permission_hr,
+      posted_elements.table_permission_departments,
+      posted_elements.table_permission_employees,
+      posted_elements.table_permission_effects,
       posted_elements.table_permission_production,
       posted_elements.table_permission_transaction,
       posted_elements.table_permission_items,
@@ -2087,14 +2080,29 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
      
         // فى حالة تعديل البيانات شامله  كلمة مرور جديده
        
-        let query1 = `Update user_company set general_permission = $3, users_permission = $4, employees_permission = $5, attendance_permission = $6, production_permission = $7, bread_permission = $8, transaction_permission = $9, items_permission = $10, cutomers_permission = $11, vendors_permission = $12 WHERE user_id = $1 AND company_id = $2`;
+        let query1 = `Update user_company set general_permission = $3,
+                        users_permission = $4,
+                        hr_permission = $5,
+                        departments_permission = $6,
+                        employees_permission = $7,
+                        effects_permission = $8,
+                        production_permission = $9,
+                        bread_permission = $10,
+                        transaction_permission = $11,
+                        items_permission = $12,
+                        cutomers_permission = $13,
+                        vendors_permission = $14
+                      WHERE user_id = $1
+                        AND company_id = $2`;
         await db.any(query1, [
           posted_elements.user_id,
           req.session.company_id,
           posted_elements.general_permission_select,
           posted_elements.table_permission_users,
-          posted_elements.table_permission_employee,
-          posted_elements.table_permission_attendance,
+          posted_elements.table_permission_hr,
+          posted_elements.table_permission_departments,
+          posted_elements.table_permission_employees,
+          posted_elements.table_permission_effects,
           posted_elements.table_permission_production,
           posted_elements.table_permission_bread,
           posted_elements.table_permission_transaction,
@@ -3832,15 +3840,15 @@ GROUP BY
 
 //#endregion
 
-//#region attendance
+//#region effects
 
-//#region 1: Add attendance_add
-app.post("/attendance_add", async (req, res) => {
+//#region 1: Add effects_add
+app.post("/effects_add", async (req, res) => {
   try {
 
 
     //! Permission
-    await permissions(req, "attendance_permission", "add");
+    await permissions(req, "effects_permission", "add");
     if (!permissions) {
       return;
     }
@@ -3870,11 +3878,11 @@ app.post("/attendance_add", async (req, res) => {
     //* Start--------------------------------------------------------------
 
     //3: insert data into db
-    const newId = await newId_fn("attendance",'id');
+    const newId = await newId_fn("effects",'id');
     let Reference
 
     if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
-      const query = `select count(reference) as count from attendance where company_id = $1 AND reference = $2`
+      const query = `select count(reference) as count from effects where company_id = $1 AND reference = $2`
       const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference])
       if (result && result.count > 0) {
           return res.json({
@@ -3886,10 +3894,10 @@ app.post("/attendance_add", async (req, res) => {
       }
 
     }else{
-      Reference = await newReference_not_transaction(req,'attendance','reference')
+      Reference = await newReference_not_transaction(req,'effects','reference')
     }
 
-    let query1 = `INSERT INTO attendance (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
     await db.none(query1, [
       newId,
       posted_elements.id_hidden_input_val,
@@ -3908,7 +3916,7 @@ app.post("/attendance_add", async (req, res) => {
       message_ar: "تم حفظ البيانات بنجاح",
     });
   } catch (error) {
-    console.error("Error adding attendance:", error);
+    console.error("Error adding effects:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
@@ -3916,13 +3924,13 @@ app.post("/attendance_add", async (req, res) => {
     });
   }
 });
-//#endregion END - Add attendance_add
+//#endregion END - Add effects_add
 
 //#region 2: get data to fill dropdownbox of employees
 app.post("/getEmployeesData1", async (req, res) => {
   try {
     //! Permission
-    await permissions(req, "attendance_permission", "view");
+    await permissions(req, "effects_permission", "view");
     if (!permissions) {
       return;
     }
@@ -3951,7 +3959,7 @@ app.post("/effects_view", async (req, res) => {
     const posted_elements = req.body;
 
     //! Permission
-    await permissions(req, "attendance_permission", "view");
+    await permissions(req, "effects_permission", "view");
     if (!permissions) {
       return;
     }
@@ -4008,7 +4016,7 @@ SELECT
     COALESCE(parent_ah.id, 0) as department_id, -- ID الحساب الأب
     COALESCE(parent_ah.account_name, '') as department_name -- اسم الحساب الأب
 FROM 
-    Attendance A
+    effects A
 LEFT JOIN 
     accounts_header ah ON A.employee_id = ah.id
 LEFT JOIN 
@@ -4049,7 +4057,7 @@ ORDER BY
               END as is_inactive,
               COALESCE(parent_ah.id, 0) as department_id, -- إضافة للحصول على ID الحساب الأب
               COALESCE(parent_ah.account_name, '') as department_name -- اسم الحساب الأب
-          FROM Attendance A
+          FROM effects A
           LEFT JOIN accounts_header ah ON A.employee_id = ah.id
           LEFT JOIN accounts_body ab ON ah.id = ab.account_id -- الانضمام إلى accounts_body للحصول على parent_id
           LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
@@ -4080,20 +4088,20 @@ ORDER BY
 });
 //#endregion
 
-//#region 4: update attendance
-app.post("/updateattendance", async (req, res) => {
+//#region 4: update effects
+app.post("/updateeffects", async (req, res) => {
   try {
     const posted_elements = req.body;
 
     //! Permission
-    await permissions(req, "attendance_permission", "view");
+    await permissions(req, "effects_permission", "view");
     if (!permissions) {
       return;
     }
 
     //! sql injection check
     const hasBadSymbols = sql_anti_injection([
-      posted_elements.attendance_id,
+      posted_elements.effects_id,
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
     if (hasBadSymbols) {
@@ -4108,21 +4116,21 @@ app.post("/updateattendance", async (req, res) => {
 
     //2: validation data befor inserting to db
     // const rows = await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
-    // FROM Attendance A
+    // FROM effects A
     // LEFT JOIN  employees E on A.employee_id = E.id
     // where A.id=$1
     // ORDER BY A.datex DESC`, [
-    //   posted_elements.attendance_id,
+    //   posted_elements.effects_id,
     // ]);
 
     let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
-      FROM Attendance A
+      FROM effects A
       LEFT JOIN  employees E on A.employee_id = E.id
       where A.company_id = $1 AND A.id=$2 
       ORDER BY A.datex DESC`;
     let rows = await db.any(query1, [
       req.session.company_id,
-      posted_elements.attendance_id,
+      posted_elements.effects_id,
     ]);
 
     if (rows.length > 0) {
@@ -4139,7 +4147,7 @@ app.post("/updateattendance", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error updateattendance:", error);
+    console.error("Error updateeffects:", error);
     res.status(500).json({
       success: false,
       message_ar: "حدث خطأ أثناء تحميل البيانات",
@@ -4148,12 +4156,12 @@ app.post("/updateattendance", async (req, res) => {
 });
 //#endregion
 
-//#region 5: Update Attendance data
-app.post("/attendance_update", async (req, res) => {
+//#region 5: Update effects data
+app.post("/effects_update", async (req, res) => {
   try {
     const posted_elements = req.body;
     //! Permission
-    await permissions(req, "attendance_permission", "update");
+    await permissions(req, "effects_permission", "update");
     if (!permissions) {
       return;
     }
@@ -4190,7 +4198,7 @@ return res.json({
     let Reference
 
     if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
-      const query = `select count(reference) as count from attendance where company_id = $1 AND reference = $2 And id != $3`
+      const query = `select count(reference) as count from effects where company_id = $1 AND reference = $2 And id != $3`
       const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference, posted_elements.id_val])
       if (result && result.count > 0) {
           return res.json({
@@ -4202,10 +4210,10 @@ return res.json({
       }
 
     }else{
-      Reference = await newReference_not_transaction(req,'attendance','reference')
+      Reference = await newReference_not_transaction(req,'effects','reference')
     }
 
-    let query1 = `UPDATE attendance SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6, reference = $7 where company_id = $8 AND id = $9`;
+    let query1 = `UPDATE effects SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6, reference = $7 where company_id = $8 AND id = $9`;
     await db.none(query1, [
       posted_elements.emp_id,
       posted_elements.date_val,
@@ -4235,11 +4243,11 @@ return res.json({
 //#endregion
 
 //#region 6: Delete attatendace
-app.post("/attendance_delete", async (req, res) => {
+app.post("/effects_delete", async (req, res) => {
   try {
     const posted_elements = req.body;
     //! Permission
-    await permissions(req, "attendance_permission", "delete");
+    await permissions(req, "effects_permission", "delete");
     if (!permissions) {
       return;
     }
@@ -4259,7 +4267,7 @@ app.post("/attendance_delete", async (req, res) => {
 
 
 
-    let query1 = `DELETE FROM attendance WHERE company_id = $1 AND id = $2`;
+    let query1 = `DELETE FROM effects WHERE company_id = $1 AND id = $2`;
     await db.none(query1, [
       req.session.company_id,
       posted_elements.id_val,
@@ -4280,7 +4288,7 @@ app.post("/attendance_delete", async (req, res) => {
 });
 
 //#endregion
-//#endregion END - attendance
+//#endregion END - effects
 
 //#region production
 
@@ -4755,12 +4763,12 @@ WHERE bread_header_id = $1;`;
 
 //#endregion end - update bread
 
-//#region report attendance
-app.post("/report_attendance", async (req, res) => {
+//#region report effects
+app.post("/report_effects", async (req, res) => {
   try {
     const posted_elements = req.body;
     //! Permission
-    await permissions(req, "attendance_permission", "view");
+    await permissions(req, "effects_permission", "view");
     if (!permissions) {
       return;
     }
@@ -4790,7 +4798,7 @@ app.post("/report_attendance", async (req, res) => {
       SUM(a.days) AS total_days,
       SUM(a.hours) AS total_hours,
       SUM(a.values) AS total_values
-    FROM attendance a
+    FROM effects a
     LEFT JOIN employees e ON e.id = a.employee_id
     WHERE
       a.company_id = $1
@@ -4832,7 +4840,7 @@ app.post("/report_attendance", async (req, res) => {
       a.values,
       a.note,
       a.datex
-    FROM attendance a
+    FROM effects a
     LEFT JOIN employees e ON e.id = a.employee_id
     WHERE
       a.company_id = $1
@@ -4868,7 +4876,7 @@ app.post("/report_attendance", async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("Error report_attendance:", error);
+    console.error("Error report_effects:", error);
     res.status(500).json({
       success: false,
       message_ar: "حدث خطأ أثناء تحميل البيانات",
@@ -5656,7 +5664,7 @@ app.post("/api/update-account-parent", async (req, res) => {
 app.post("/getAccountsData1", async (req, res) => {
   try {
     // //! Permission
-    // await permissions(req, "attendance_permission", "view");
+    // await permissions(req, "effects_permission", "view");
     // if (!permissions) {
     //   return;
     // }

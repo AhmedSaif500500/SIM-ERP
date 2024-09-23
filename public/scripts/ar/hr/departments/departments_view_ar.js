@@ -28,6 +28,7 @@ filter_icon.onclick = () =>{
 }
 
 
+
 filter_icon_cancel.onclick = async () =>{
     try {
         checkbox_account_no.checked = false;
@@ -203,8 +204,8 @@ async function fillTable() {
 // هنا إضافة صف الأزرار بعد إغلاق الجدول
 tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row_div">
                 <div id="table_footer_showRows_div" class='flex_H'>
-                    <button class="table_footer_show_data" id="" onclick="ShowAllDataInAttendanceTable()">الكل</button>
-                    <button class="table_footer_show_data" id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                    <button class="table_footer_show_data" id="" onclick="ShowAllDataIneffectsTable()">الكل</button>
+                    <button class="table_footer_show_data" id="" onclick="showFirst50RowIneffectsTable()">50</button>
                 </div>    
                 <div id="table_footer_showRows_div" class='flex_H'>
                     <button class="table_footer_show_data" id="copy" onclick="copyTableToClipboard(this,'review_table')">نسخ الى الحافظة</button>

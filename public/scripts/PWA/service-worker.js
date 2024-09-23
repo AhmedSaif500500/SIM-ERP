@@ -43,14 +43,14 @@ self.addEventListener('install', function(event) {
           '/views/ar/home_ar.html',
           '/public/scripts/ar/home_ar.js',
 
-          //attendance
-          '/views/ar/attendance/attendance_ar.html',
-          '/views/ar/attendance/attendance_add_ar.html',
-          '/views/ar/attendance/attendance_update_ar.html',
+          //effects
+          '/views/ar/effects/effects_ar.html',
+          '/views/ar/effects/effects_add_ar.html',
+          '/views/ar/effects/effects_update_ar.html',
 
-          '/public/scripts/ar/attendance/attendance_ar.js',
-          '/public/scripts/ar/attendance/attendance_add_ar.js',
-          '/public/scripts/ar/attendance/attendance_update_ar.js',
+          '/public/scripts/ar/effects/effects_ar.js',
+          '/public/scripts/ar/effects/effects_add_ar.js',
+          '/public/scripts/ar/effects/effects_update_ar.js',
 
           //employees
           '/views/ar/employees/employees_ar.html',
@@ -72,17 +72,17 @@ self.addEventListener('install', function(event) {
 
           //users
           '/views/ar/users/users_add_ar.html',
-          '/views/ar/users/users_ar.html',
+          '/views/ar/users/users_view_ar.html',
           '/views/ar/users/users_update_ar.html',
 
-          '/public/scripts/ar/users/new_user_ar.js',
-          '/public/scripts/ar/users/users_ar.js',
+          '/public/scripts/ar/users/users_add_ar.js',
+          '/public/scripts/ar/users/users_view_ar.js',
           '/public/scripts/ar/users/users_edit_ar.js',
 
           //reports
-          '/views/ar/reports/attendance/attendance_report_ar.html',
+          '/views/ar/reports/effects/effects_report_ar.html',
 
-          '/public/scripts/ar/reports/attendance_reports/attendance_report_ar.js',
+          '/public/scripts/ar/reports/effects_reports/effects_report_ar.js',
 
           
         ]);

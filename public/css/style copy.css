@@ -1547,13 +1547,13 @@ position: relative;
 display: flex; flex-direction: row; flex-wrap: wrap;
 justify-content: start; align-items: center;
 gap: 1.3rem;
-  /******************/
+
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  
   width: 100%;
   text-decoration: none;
+  text-wrap: nowrap;
   padding-block-start: 1.5rem;
   padding-block-end: 1.5rem;
   padding-inline-start: 1rem;

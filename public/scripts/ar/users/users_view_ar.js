@@ -138,9 +138,10 @@ searchInput.addEventListener("keydown", (event) => {
 
 function tabble_update_btn_fn(updateBtn) {
   // عثر على الموظف باستخدام معرف الموظف
-  const selectedUser = updateBtn.closest("tr").cells[1].textContent;
+  const selectedUser = parseInt(updateBtn.closest("tr").cells[1].textContent);
   if (selectedUser) {
     sessionStorage.setItem("user_id", selectedUser);
+    // console.log(sessionStorage.getItem("user_id"));
     window.location.href = "/users_update_ar";
   } else {
     return;

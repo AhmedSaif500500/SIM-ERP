@@ -24,12 +24,28 @@ let array1 = [];
 let slice_Array1 = [];
 
 async function geteProductionData_fn() {
-  const response = await fetch('/get_companies_data');
-  const data = await response.json();
+try {
+  
+  const data = await fetchData_postAndGet(
+    "/get_companies_data",
+    {},
+    "","",
+    15,
+    false,"",
+    false,
+    true,
+    content_space,
+    false,"",
+    "حدث خطأ اثناء معالجة البيانات"
+);
+
 
   // تحديث array1 بنتيجة الـ slice
   array1 = data.slice();
 
+} catch (error) {
+  catch_error(error)
+}
 }
 
 
@@ -208,10 +224,10 @@ document.querySelector('#yesButton').style.display = 'none'
 async function showFirst50RowAtTheBegening() {
   await geteProductionData_fn()
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable()
+  filleffectstable()
 }
 
-async function fillAttendancetable() {
+async function filleffectstable() {
   //  @@ هاااااام جدا 
   // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
   // el properties hya :
@@ -251,8 +267,8 @@ async function fillAttendancetable() {
                         <tr id="table_fotter_buttons_row" style="height: 3.7rem;">
                             <td colspan="3">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class="flex_H">
-                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -270,6 +286,8 @@ async function fillAttendancetable() {
   } else if (array1.length < 1) {
     document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='7' class="td_no_result">لا نتائج</td>`;
   };
+
+  page_content.style.display = `flex`
 };
 
 async function performSearch() {
@@ -286,20 +304,20 @@ async function performSearch() {
 
   slice_Array1 = array1.slice(0, 50);
 
-  await fillAttendancetable();
+  await filleffectstable();
 
 }
 
 
-async function ShowAllDataInAttendanceTable() {
+async function ShowAllDataIneffectsTable() {
   showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
   slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  await fillAttendancetable()
+  await filleffectstable()
 }
 
-async function showFirst50RowInAttendanceTable() {
+async function showFirst50RowIneffectsTable() {
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  await fillAttendancetable()
+  await filleffectstable()
 
 }
 
@@ -354,23 +372,15 @@ async function company_login_btn(enter_button) {
 
 
 
-    // sessionStorage.setItem("company_id", data[0].company_id); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("company_name", data[0].company_name); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("general_permission", data[0].general_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("employees_permission", data[0].employees_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("attendance_permission", data[0].attendance_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("users_permission", data[0].users_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("production_permission", data[0].production_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("bread_permission", data[0].bread_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("accounts_permission", data[0].accounts_permission); // save username in seesionStorage to use it in index.html
-    // sessionStorage.setItem("transaction_permission", data[0].transaction_permission); // save username in seesionStorage to use it in index.html
 
     // Define an array of permissions
 const permissions = [
   "general_permission",
   "accounts_permission",
+  "hr_permission",
+  "departments_permission",
   "employees_permission",
-  "attendance_permission",
+  "effects_permission",
   "users_permission",
   "production_permission",
   "bread_permission",
@@ -686,7 +696,7 @@ async function show_table_update_current_user() {
 async function showFirst50RowAtTheBegening2() {
   await getUsersData_fn2();
   slice_Array2 = array2.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable2();
+  filleffectstable2();
 }
 
 async function getUsersData_fn2() {
@@ -829,7 +839,7 @@ async function save_new_user() {
 
 
 
-async function fillAttendancetable2() {
+async function filleffectstable2() {
 
   const dialogOverlay_input = document.querySelector('#dialogOverlay_input');
   const users_table_view = dialogOverlay_input.querySelector('#users_table_view');
@@ -905,8 +915,8 @@ async function fillAttendancetable2() {
 <tr id="table_fotter_buttons_row2">
     <td colspan="3">
         <div class='flex_H'>
-            <button class="table_footer_show_data" onclick="ShowAllDataInAttendanceTable2()">All</button>
-            <button class="table_footer_show_data" onclick="showFirst50RowInAttendanceTable2()">50</button>
+            <button class="table_footer_show_data" onclick="ShowAllDataIneffectsTable2()">All</button>
+            <button class="table_footer_show_data" onclick="showFirst50RowIneffectsTable2()">50</button>
         </div>
     </td>
 </tr>
@@ -938,7 +948,7 @@ async function fillAttendancetable2() {
   };
 }
 
-// search in attendanceTable
+// search in effectsTable
 
 async function performSearch2() {
 
@@ -956,16 +966,16 @@ async function performSearch2() {
   });
 
   slice_Array2 = array2.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable2();
+  filleffectstable2();
 }
-async function ShowAllDataInAttendanceTable2() {
+async function ShowAllDataIneffectsTable2() {
   showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
   slice_Array2 = array2.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable2();
+  filleffectstable2();
 }
-async function showFirst50RowInAttendanceTable2() {
+async function showFirst50RowIneffectsTable2() {
   slice_Array2 = array2.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable2();
+  filleffectstable2();
 }
 async function performSearch2_Onsearch(input) {
   input.addEventListener("search", async (event) => {

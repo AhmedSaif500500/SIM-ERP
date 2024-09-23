@@ -1203,15 +1203,7 @@ width: 100% !important;
   text-align: start;
 }
 
-.permission_table_select {
-  height: var(--input_height);
-  width: 4rem;
-  line-height: 100%;
-  color: var(--Font_Color);
-  font-weight: bold;
-  background-color: var(--input_text_background_color);
-  text-align: start;
-}
+
 
 @media screen and (max-width: 750px) {
   .permission_select {
@@ -1589,6 +1581,7 @@ html[dir="rtl"] {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
+  min-width: 17rem;
   width: 17rem;
   background-color: var(--bg_sidebar);
   padding: 1rem;
@@ -1678,12 +1671,10 @@ display: flex; flex-direction: row; flex-wrap: wrap;
 justify-content: start; align-items: center;
 gap: 1.3rem;
   /******************/
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  
+
   width: 100%;
   text-decoration: none;
+   text-wrap: nowrap;
   padding-block-start: 1.5rem;
   padding-block-end: 1.5rem;
   padding-inline-start: 1rem;
@@ -3070,7 +3061,7 @@ color: var(--Font_Color);
 }
 .alert {
   margin-block-end: 1rem;
-  padding: 2rem;
+  padding: 1.4rem;
   border-radius: 0.2rem;
   position: relative;
   opacity: 0;
@@ -3119,24 +3110,20 @@ color: var(--Font_Color);
   color: #155724;
   background-color: #d4edda;
   border-inline-start: 0.7rem solid green;
-  font-size: 1.5rem;
-  font-weight: bold;
+
 }
 
 .alert-fail {
   color: #721c24;
   background-color: #f8d7da;
   border-inline-start: 0.7rem solid red;
-  font-size: 1.5rem;
-  font-weight: bold;
 }
 
 .alert-info {
   color: #0c5460;
   background-color: #d1ecf1;
   border-inline-start: 0.7rem solid blue;
-  font-size: 1.5rem;
-  font-weight: bold;
+
 }
 
 .alert-warning {
@@ -3145,10 +3132,16 @@ color: var(--Font_Color);
   /* #fff3cd */
   border-inline-start: 0.7rem solid orange;
   /*#ffeeba*/
-  font-size: 1.5rem;
-  font-weight: bold;
+
 }
 
+
+
+.alert-success, .alert-fail, .alert-info, .alert-warning{
+  font-size: 1.5rem;
+  line-height: 1.5;
+  font-weight: bold;
+}
 /* .alert-content {
     margin: 0;
     color: var(--btn_color);

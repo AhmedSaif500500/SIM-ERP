@@ -25,17 +25,24 @@
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-        <div id="content_space">
+        <div id="content_space" class="scroll">
+
+           <!-- <div id="fn_container_div" class="fn_container_div"></div> -->
+
+
           <h2 id="h2" class="h2">
-             <a id="back_href" class="back_href" href="users_ar">
+            <a id="back_href" class="back_href" href="users_view_ar" title="المستخدمين">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-   
-            المستخدمين / مستخدم جديد
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="effects_view_ar" title="اعادة تحميل الصفحة">المستخدمين</a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
           </h2>
+
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-
+          <div id="page_content" style="display: none;">
 
 
           <p id="p_stop_user_text" style="color: red; text-align: start; margin-block-end: 1rem; display:none">* هذا المستخدم تم ايقافه</p>
@@ -47,7 +54,7 @@
           <!-- الصلاحيات -->
 
           <label for="general_permission_select" class="lbl_sm">صلاحيات عامه</label>
-          <select onchange="" class="permission_select hover" id="general_permission_select">
+          <select onchange="" class="select hover" id="general_permission_select">
             <option value="0" selected>ايقاف المستخدم</option>
             <option value="1">تخصيص صلاحيات</option>
             <option value="2">فقط / عرض</option>
@@ -80,7 +87,43 @@
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">المستخدمين</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_users"
+                  <select class="select hover" id="table_permission_users"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              <!-- الموارد البشرية -->
+              <tr>
+                <td style="width: auto;">2</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الموارد البشرية</td>
+                <td style="width: auto;">
+                  <select class="select hover" id="table_permission_hr"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+              
+              <!-- الاقسام الادارية -->
+              <tr>
+                <td style="width: auto;">3</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الاقسام الادراية</td>
+                <td style="width: auto;">
+                  <select class="select hover" id="table_permission_departments"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -95,11 +138,11 @@
 
               <!-- الوظفين -->
               <tr>
-                <td style="width: auto;">2</td>
+                <td style="width: auto;">4</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">الموظفين</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_employee"
+                  <select class="select hover" id="table_permission_employees"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -113,11 +156,11 @@
 
               <!--  المؤثرات -->
               <tr>
-                <td style="width: auto;">3</td>
+                <td style="width: auto;">5</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">المؤثرات</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_attendance"
+                  <select class="select hover" id="table_permission_effects"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -131,11 +174,11 @@
 
               <!--  production -->
               <tr>
-                <td style="width: auto;">3</td>
+                <td style="width: auto;">6</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">الانتاج</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_production"
+                  <select class="select hover" id="table_permission_production"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -150,11 +193,11 @@
 
               <!-- bread -->
               <tr>
-                <td style="width: auto;">3</td>
+                <td style="width: auto;">7</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">العيش</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_bread"
+                  <select class="select hover" id="table_permission_bread"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -168,11 +211,11 @@
 
               <!-- transaction -->
               <tr>
-                <td style="width: auto;">3</td>
+                <td style="width: auto;">8</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">قيد محاسبى</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_transaction"
+                  <select class="select hover" id="table_permission_transaction"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -186,11 +229,11 @@
 
                             <!-- items -->
                             <tr>
-                              <td style="width: auto;">3</td>
+                              <td style="width: auto;">9</td>
                               <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                               <td style="width: auto; text-wrap: nowrap;">الاصناف</td>
                               <td style="width: auto;">
-                                <select class="permission_table_select" id="table_permission_items"
+                                <select class="select hover" id="table_permission_items"
                                   onchange="updatePermissionLevel(this)">
                                   <option value="0" selected>0</option>
                                   <option value="1">1</option>
@@ -203,31 +246,31 @@
                             </tr>
               
               
-                            <!-- customers -->
-                            <tr>
-                              <td style="width: auto;">3</td>
-                              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
-                              <td style="width: auto; text-wrap: nowrap;">العملاء</td>
-                              <td style="width: auto;">
-                                <select class="permission_table_select" id="table_permission_customers"
-                                  onchange="updatePermissionLevel(this)">
-                                  <option value="0" selected>0</option>
-                                  <option value="1">1</option>
-                                  <option value="2">2</option>
-                                  <option value="3">3</option>
-                                  <option value="4">4</option>
-                                </select>
-                              </td>
-                              <td style="width: 100%; text-wrap: nowrap;"></td>
-                            </tr>
+            <!-- customers -->
+            <tr>
+               <td style="width: auto;">10</td>
+               <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+               <td style="width: auto; text-wrap: nowrap;">العملاء</td>
+               <td style="width: auto;">
+                 <select class="select hover" id="table_permission_customers"
+                   onchange="updatePermissionLevel(this)">
+                   <option value="0" selected>0</option>
+                   <option value="1">1</option>
+                   <option value="2">2</option>
+                   <option value="3">3</option>
+                   <option value="4">4</option>
+                 </select>
+               </td>
+               <td style="width: 100%; text-wrap: nowrap;"></td>
+             </tr>
                      
-                                          <!-- vendors -->
+              <!-- vendors -->
               <tr>
-                <td style="width: auto;">3</td>
+                <td style="width: auto;">11</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">الموردين</td>
                 <td style="width: auto;">
-                  <select class="permission_table_select" id="table_permission_vendors"
+                  <select class="select hover" id="table_permission_vendors"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -274,19 +317,8 @@
             <button class="btn_cancel" id="btn_delete">حذف</button>
           </div>
 
+        </div>
 
-          <!-- search in table -->
-          <!-- <div id="search-div" style="display: flex;">
-                    <div class="search_div">
-                        <input type="text" name="searchInput" id="searchInput" placeholder="search" class="hover">
-                        <div class="clearArrow" id="clearArrow1" title="clear search">✗</div>
-                        <i class="fa-light fa-magnifying-glass left_icon"></i>
-                    </div>
-                    <button id="searchBtn" name="searchBtn" class="searchBtn">search</button>
-                </div> -->
-
-          <!-- table container filled by js -->
-          <!-- <div id="tableContainer"></div> -->
 
         </div>
       </div>

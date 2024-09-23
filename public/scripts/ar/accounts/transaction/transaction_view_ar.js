@@ -101,8 +101,8 @@ async function fillMaintable() {
                         <tr id="table_fotter_buttons_row">
                             <td colspan="6">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
-                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -137,7 +137,7 @@ if (array1.length > 0 && array1.length <= 50) {
 };
 
 
-// search in attendanceTable
+// search in effectsTable
 async function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
@@ -178,13 +178,13 @@ async function performSearch() {
 }
 
 
-async function ShowAllDataInAttendanceTable(){
+async function ShowAllDataIneffectsTable(){
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
     slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     fillMaintable()
 }
 
-async function showFirst50RowInAttendanceTable(){
+async function showFirst50RowIneffectsTable(){
     slice_Array1 = array1.slice(0,50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     fillMaintable()
 }

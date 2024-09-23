@@ -1,8 +1,8 @@
 
-setActiveSidebar('attendance_ar');
+setActiveSidebar('effects_ar');
 
 //check permissions
-// pagePermission('attendance_permission','view');
+// pagePermission('effects_permission','view');
 
 //#region table
 
@@ -85,7 +85,7 @@ async function getEmployeesData_fn() {
         };
 
         // إرسال البيانات إلى الخادم
-        const response = await fetch('/report_attendance', {
+        const response = await fetch('/report_effects', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -112,7 +112,7 @@ async function getEmployeesData_fn() {
 async function showFirst50RowAtTheBegening() {
     await getEmployeesData_fn()
     slice_Array1 = await array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    await fillAttendancetable()
+    await filleffectstable()
 }
 
 
@@ -137,7 +137,7 @@ document.querySelector('#custom_search_btn').addEventListener("click", async fun
    await start_custom_search_btn_fn()
 });
 
-async function fillAttendancetable() {
+async function filleffectstable() {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
     // el properties hya :
@@ -160,7 +160,7 @@ async function fillAttendancetable() {
        total_column3.value = 0
 
         // إعداد رأس الجدول
-        let tableHTML = `<table id="attendance_table" class="review_table">
+        let tableHTML = `<table id="effects_table" class="review_table">
         <thead>
             <tr>
                 <th></th>
@@ -200,8 +200,8 @@ async function fillAttendancetable() {
 <tr id="table_fotter_buttons_row">
 <td colspan="7">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
     <div class='flex_H'>
-        <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-        <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+        <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
+        <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
     </div>
 </td>
 </tr>
@@ -244,7 +244,7 @@ document.getElementById("tfooter6").textContent = total_column3.value;
 
     } else { //  فى حاله الموظف الفردى
         // إعداد رأس الجدول
-        let tableHTML = `<table id="attendance_table" class="review_table">
+        let tableHTML = `<table id="effects_table" class="review_table">
         <thead>
             <tr>
                 <th style="display:;"></th>
@@ -293,8 +293,8 @@ document.getElementById("tfooter6").textContent = total_column3.value;
 <tr id="table_fotter_buttons_row1">
 <td colspan="9">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
     <div class='flex_H'>
-        <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-        <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+        <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
+        <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
     </div>
 </td>
 </tr>
@@ -328,7 +328,7 @@ let total_values = 0;
 
 // الحصول على الجدول
 
-let tableBody = document.getElementById("attendance_table").getElementsByTagName("tbody")[0];
+let tableBody = document.getElementById("effects_table").getElementsByTagName("tbody")[0];
 
 // البدء بعملية جمع الأعمدة
 for (let i = 0; i < tableBody.rows.length; i++) {
@@ -392,7 +392,7 @@ document.getElementById("tfooter7").textContent = total_values;
 };
 
 
-// search in attendanceTable
+// search in effectsTable
 async function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
@@ -421,18 +421,18 @@ async function performSearch() {
     });
 
     slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable()
+    filleffectstable()
 }
 
-async function ShowAllDataInAttendanceTable() {
+async function ShowAllDataIneffectsTable() {
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
     slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable()
+    filleffectstable()
 }
 
-async function showFirst50RowInAttendanceTable() {
+async function showFirst50RowIneffectsTable() {
     slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable()
+    filleffectstable()
 }
 
 
@@ -467,7 +467,7 @@ changeSelect('select_year',current_year);
 
 
 async function tabble_update_btn_fn(updateButton) {
-    const permission = await btn_permission('attendance_permission','update');
+    const permission = await btn_permission('effects_permission','update');
 
     if (!permission){ // if false
         return;
@@ -476,8 +476,8 @@ async function tabble_update_btn_fn(updateButton) {
         // عثر على الموظف باستخدام معرف الموظف
         const selectedrow = updateButton.closest("tr").cells[1].textContent;
         if (selectedrow) {
-            sessionStorage.setItem('attendance_id', selectedrow);
-            window.location.href = '/attendance_update_ar';
+            sessionStorage.setItem('effects_id', selectedrow);
+            window.location.href = '/effects_update_ar';
         } else {
             return;
         };
@@ -511,7 +511,7 @@ async function getEmployeesData_fn1() {
     data2 = await fetchData_postAndGet(
         '/getEmployeesData1',
         {},
-        'attendance_permission','view',
+        'effects_permission','view',
         15,
         false,'',
         'حدث خطأ اثناء معالجة البيانات',
@@ -528,12 +528,12 @@ async function getEmployeesData_fn1() {
 async function showFirst50RowAtTheBegening1() {
     await getEmployeesData_fn1()
     slice_Array2 = array2.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable1()
+    filleffectstable1()
 }
 
 
 
-async function fillAttendancetable1() {
+async function filleffectstable1() {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
     // el properties hya :
@@ -566,8 +566,8 @@ async function fillAttendancetable1() {
           <tr id="table_fotter_buttons_row">
               <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                   <div class='flex_H'>
-                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataInAttendanceTable1()">All</button>
-                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowInAttendanceTable()">50</button>
+                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataIneffectsTable1()">All</button>
+                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowIneffectsTable()">50</button>
                   </div>
               </td>
           </tr>
@@ -596,7 +596,7 @@ async function fillAttendancetable1() {
 
 };
 
-// search in attendanceTable
+// search in effectsTable
 async function performSearch1() {
 
     // الحصول على قيمة البحث
@@ -611,19 +611,19 @@ async function performSearch1() {
     });
 
     slice_Array2 = array2.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable1()
+    filleffectstable1()
 }
 
-async function ShowAllDataInAttendanceTable1() {
+async function ShowAllDataIneffectsTable1() {
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
     slice_Array2 = array2.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    await fillAttendancetable1()
+    await filleffectstable1()
 
 };
 
-async function showFirst50RowInAttendanceTable1() {
+async function showFirst50RowIneffectsTable1() {
     slice_Array2 = array2.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    await fillAttendancetable1()
+    await filleffectstable1()
 };
 
 

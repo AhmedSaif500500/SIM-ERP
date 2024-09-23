@@ -165,8 +165,8 @@ function loadSidebarContents() {
       شطب المخزون
     </a>
 
-    <!-- <a href="index2.html" target="_self"> -->
-    <a href="users_ar" target="_self" id="users_control_a" style="display: none;">
+  
+    <a href="users_view_ar" target="_self" id="users_control_a" style="display: none;">
       <i class="fa-duotone fa-user"></i>
       الصلاحيات
     </a>
@@ -714,7 +714,7 @@ function total_column(totalVariable, rowData) {
 }
 
 //?  use it like this 
-//todoa 1 :  first  code line after FillAttendanceTable lazem t3mel prepare Global variables ely hatshta8ala 3alhea  7asp 3add el columns ely enta 3ayz tegm3ha 
+//todoa 1 :  first  code line after FilleffectsTable lazem t3mel prepare Global variables ely hatshta8ala 3alhea  7asp 3add el columns ely enta 3ayz tegm3ha 
 //? example       total_column1.value = 0
 //? example       total_column2.value = 0
 

@@ -260,12 +260,12 @@ async function getEmployeesData_fn() {
 async function showFirst50RowAtTheBegening(td) {
   await getEmployeesData_fn()
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable(td)
+  filleffectstable(td)
 }
 
 
 
-async function fillAttendancetable(td) {
+async function filleffectstable(td) {
   //  @@ هاااااام جدا 
   // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
   // el properties hya :
@@ -298,8 +298,8 @@ async function fillAttendancetable(td) {
           <tr id="table_fotter_buttons_row">
               <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                   <div class='flex_H'>
-                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataInAttendanceTable(this)">All</button>
-                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowInAttendanceTable(this)">50</button>
+                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataIneffectsTable(this)">All</button>
+                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowIneffectsTable(this)">50</button>
                   </div>
               </td>
           </tr>
@@ -333,7 +333,7 @@ async function fillAttendancetable(td) {
 
 };
 
-// search in attendanceTable
+// search in effectsTable
 async function performSearch(input) {
 
   const td = input.closest("td")
@@ -352,21 +352,21 @@ async function performSearch(input) {
   });
 
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable(td)
+  filleffectstable(td)
 }
 
-async function ShowAllDataInAttendanceTable(button) {
+async function ShowAllDataIneffectsTable(button) {
   const td = button.closest("td");
   showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
   slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  await fillAttendancetable(td)
+  await filleffectstable(td)
 
 };
 
-async function showFirst50RowInAttendanceTable(button) {
+async function showFirst50RowIneffectsTable(button) {
   const td = button.closest("td")
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  await fillAttendancetable(td)
+  await filleffectstable(td)
 };
 
 

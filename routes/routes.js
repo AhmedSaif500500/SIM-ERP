@@ -47,10 +47,10 @@ router.get('/home_en', (req, res) => {
 //#endregion login and home
 
 //#region users
-router.get('/users_ar', (req, res) => {
+router.get('/users_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission === 6) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_view_ar.html'));
         }else{
             res.redirect('/home_ar?reason=0');
         };
@@ -67,7 +67,7 @@ router.get('/users_add_ar', (req, res) => {
         if (req.session.is_owner || req.session.general_permission === 6) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_add_ar.html'));
         }else{
-            res.redirect('/users_ar?reason=1');
+            res.redirect('/users_view_ar?reason=1');
         };
     } else {        
         res.redirect('/login?reason=0');
@@ -81,7 +81,7 @@ router.get('/users_update_ar', (req, res) => {
         if (req.session.is_owner || req.session.general_permission === 6) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_update_ar.html'));
         }else{
-            res.redirect('/users_ar?reason=2');
+            res.redirect('/users_view_ar?reason=2');
         };
     } else {        
         res.redirect('/login?reason=0');
@@ -267,11 +267,11 @@ router.get('/vendors_view_ar', (req, res) => {
 //#endregion
 
 
-//#region  Attendance
-router.get('/attendance_ar', (req, res) => {
+//#region  effects
+router.get('/effects_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.attendance_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'attendance' ,'attendance_ar.html'));
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'effects' ,'effects_ar.html'));
         }else{
             res.redirect('/home_ar?reason=0');
         };
@@ -281,12 +281,12 @@ router.get('/attendance_ar', (req, res) => {
 });
 
 
-router.get('/attendance_add_ar', (req, res) => {
+router.get('/effects_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.attendance_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'attendance' ,'attendance_add_ar.html'));
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.effects_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'effects' ,'effects_add_ar.html'));
         }else{
-            res.redirect('/attendance_ar?reason=1');
+            res.redirect('/effects_ar?reason=1');
         };
     } else {        
         res.redirect('/login?reason=0');
@@ -294,18 +294,18 @@ router.get('/attendance_add_ar', (req, res) => {
 });
 
 
-router.get('/attendance_update_ar', (req, res) => {
+router.get('/effects_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.attendance_permission > 2) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'attendance' ,'attendance_update_ar.html'));
+        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.effects_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'effects' ,'effects_update_ar.html'));
         }else{
-            res.redirect('/attendance_ar?reason=2');
+            res.redirect('/effects_ar?reason=2');
         };
     } else {        
         res.redirect('/login?reason=0');
     }
 });
-//#endregion end Attendance
+//#endregion end effects
 
 //#region production
 
@@ -392,10 +392,10 @@ router.get('/bread_update_ar', (req, res) => {
 //#endregion end bread
 
 //#region reports 
-router.get('/attendance_report_ar', (req, res) => {
+router.get('/effects_report_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.attendance_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'reports', 'attendance' ,'attendance_report_ar.html'));
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'reports', 'effects' ,'effects_report_ar.html'));
         }else{
             res.redirect('/home_ar?reason=0');
         };

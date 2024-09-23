@@ -26,10 +26,10 @@ const btn_delete = document.querySelector('#btn_delete');
 let effects_update_data = {}
 let is_coming_from_effects_view = false
 let urlData = getURLData('data','effects_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة المؤثرات')
-let attendance_data = urlData.employees_update_data
+let effects_data = urlData.employees_update_data
 function CheckUrlParams (){
   try {
-      if (attendance_data && attendance_data !== 'noParams'){
+      if (effects_data && effects_data !== 'noParams'){
         effects_update_data = {
           pageName : 'effects_update_ar',
         }
@@ -37,7 +37,7 @@ function CheckUrlParams (){
             back_href.href = `effects_view_ar?data=${encodedData}`
             is_coming_from_effects_view = true
           return true
-      }else if(attendance_data && attendance_data === 'noParams'){
+      }else if(effects_data && effects_data === 'noParams'){
             return true
       }else{
           return false
@@ -62,7 +62,7 @@ async function getEmployeesData_fn() {
   data = await fetchData_postAndGet(
     '/getEmployeesData1',
     {},
-    'attendance_permission','view',
+    'effects_permission','view',
     15,
     false,'',
     false,
@@ -76,10 +76,10 @@ async function getEmployeesData_fn() {
 async function showFirst50RowAtTheBegening() {
   await getEmployeesData_fn()
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable()
+  filleffectstable()
 }
 
-async function fillAttendancetable() {
+async function filleffectstable() {
   //  @@ هاااااام جدا 
   // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
   // el properties hya :
@@ -112,8 +112,8 @@ async function fillAttendancetable() {
           <tr id="table_fotter_buttons_row">
               <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                   <div class='flex_H'>
-                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataInAttendanceTable()">All</button>
-                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowInAttendanceTable()">50</button>
+                      <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataIneffectsTable()">All</button>
+                      <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowIneffectsTable()">50</button>
                   </div>
               </td>
           </tr>
@@ -154,19 +154,19 @@ async function performSearch() {
   });
 
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  fillAttendancetable()
+  filleffectstable()
 }
 
-async function ShowAllDataInAttendanceTable() {
+async function ShowAllDataIneffectsTable() {
   showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
   slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  await fillAttendancetable()
+  await filleffectstable()
 
 };
 
-async function showFirst50RowInAttendanceTable() {
+async function showFirst50RowIneffectsTable() {
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-  await fillAttendancetable()
+  await filleffectstable()
 };
 
 
@@ -291,16 +291,16 @@ colors()
 
 async function showData(){
   try {
-    sub_h2_header.textContent = `${attendance_data.acc_name}`
-    x_input.value = attendance_data.x;
-    date_input.value = attendance_data.datex;
-    refrence_input.value = attendance_data.reference;
-    id_hidden_input.value = attendance_data.emp_x;
-    dropdown_select_input.value = attendance_data.acc_name;
-    days_input.value = !attendance_data.days || attendance_data.days === ''? 0 : attendance_data.days; 
-    hours_input.value = !attendance_data.hours || attendance_data.hours === ''? 0 : attendance_data.hours; 
-    values_input.value = !attendance_data.values || attendance_data.values === ''? 0 : attendance_data.values; 
-    note_input.value = attendance_data.note
+    sub_h2_header.textContent = `${effects_data.acc_name}`
+    x_input.value = effects_data.x;
+    date_input.value = effects_data.datex;
+    refrence_input.value = effects_data.reference;
+    id_hidden_input.value = effects_data.emp_x;
+    dropdown_select_input.value = effects_data.acc_name;
+    days_input.value = !effects_data.days || effects_data.days === ''? 0 : effects_data.days; 
+    hours_input.value = !effects_data.hours || effects_data.hours === ''? 0 : effects_data.hours; 
+    values_input.value = !effects_data.values || effects_data.values === ''? 0 : effects_data.values; 
+    note_input.value = effects_data.note
 
   } catch (error) {
     catch_error(error)
@@ -330,7 +330,7 @@ try {
   }
 
     const postData = await fetchData_postAndGet(
-      '/attendance_update',
+      '/effects_update',
       {id_val,
         date_val,
         emp_name,
@@ -341,7 +341,7 @@ try {
         note_val,
         reference
       },
-      'attendance_permission','update',
+      'effects_permission','update',
       15,true,'هل تريد تعديل  بيانات المؤثؤات ؟',
       true,false,'',
       false,'false',
@@ -363,9 +363,9 @@ btn_update.onclick = function() {
 btn_delete.onclick = async function(){
   const id_val = x_input.value
   const postData = await fetchData_postAndGet(
-    '/attendance_delete',
+    '/effects_delete',
     {id_val},
-    'attendance_permission','delete',
+    'effects_permission','delete',
     15,true,'هل تريد حذف بيانات المؤثؤات ؟',
     true,false,'',
     true,'effects_view_ar',

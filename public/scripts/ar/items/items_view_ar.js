@@ -880,11 +880,11 @@ async function geteProductionData_fn() {
 async function showFirst50RowAtTheBegening() {
     await geteProductionData_fn()
     slice_Array1 = await array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable()
+    filleffectstable()
 }
 
 
-async function fillAttendancetable() {
+async function filleffectstable() {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
     // el properties hya :
@@ -962,8 +962,8 @@ async function fillAttendancetable() {
                         <tr id="table_fotter_buttons_row">
                             <td colspan="15">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                                 <div class='flex_H'>
-                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataInAttendanceTable()">All</button>
-                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowInAttendanceTable()">50</button>
+                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
+                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
                                 </div>
                             </td>
                         </tr>
@@ -997,7 +997,7 @@ async function fillAttendancetable() {
 };
 
 
-// search in attendanceTable
+// search in effectsTable
 async function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
@@ -1013,7 +1013,7 @@ async function performSearch() {
     slice_Array1 = array1.slice(0, 50);
 
     // ملء الجدول بالبيانات
-    await fillAttendancetable();
+    await filleffectstable();
     /*
                
         const cumulativeBalanceColumnHeaders = document.querySelectorAll('#bread_table th:nth-child(7), #bread_table td:nth-child(7)');
@@ -1032,15 +1032,15 @@ async function performSearch() {
     */
 }
 
-async function ShowAllDataInAttendanceTable() {
+async function ShowAllDataIneffectsTable() {
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
     slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable()
+    filleffectstable()
 }
 
-async function showFirst50RowInAttendanceTable() {
+async function showFirst50RowIneffectsTable() {
     slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillAttendancetable()
+    filleffectstable()
 }
 
 async function tabble_update_btn_fn(updateBtn) {
