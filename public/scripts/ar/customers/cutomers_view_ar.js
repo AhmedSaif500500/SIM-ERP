@@ -106,7 +106,7 @@ async function filleffectstable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="width: 100%;">${row.account_name}</td>
                             <td style="display: none">${row.account_no}</td>
@@ -239,7 +239,7 @@ back_icon_to_table_view.onclick = function (){
 }
 }
 
-async function tabble_update_btn_fn(updateBtn) {
+async function table_update_btn_fn(updateBtn) {
     try {
     const permission = btn_permission('customers_permission','update');
 

@@ -718,7 +718,7 @@ async function fillTable() {
             linkStyle = true;
         } else {
             fn = ``;
-            buttonRow = `<td style="${style_button}"><button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button></td>`;
+            buttonRow = `<td style="${style_button}"><button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>`;
             linkStyle = false;
         }
 
@@ -909,7 +909,7 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function tabble_update_btn_fn(updateBtn) {
+async function table_update_btn_fn(updateBtn) {
     const permission = await btn_permission("employees_permission", "update");
 
     if (!permission) {

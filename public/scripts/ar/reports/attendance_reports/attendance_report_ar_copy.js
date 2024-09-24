@@ -264,7 +264,7 @@ document.getElementById("tfooter6").textContent = total_column3.value;
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
+            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
             <td style="display: none;">${row.id}</td>
             <td style="display: none;">${row.employee_id}</td>
             <td style="display: none;">${row.employee_name}</td>
@@ -466,7 +466,7 @@ changeSelect('select_year',current_year);
 }
 
 
-async function tabble_update_btn_fn(updateButton) {
+async function table_update_btn_fn(updateButton) {
     const permission = await btn_permission('effects_permission','update');
 
     if (!permission){ // if false

@@ -30,13 +30,11 @@ let effects_data = urlData.employees_update_data
 function CheckUrlParams (){
   try {
       if (effects_data && effects_data !== 'noParams'){
-        effects_update_data = {
-          pageName : 'effects_update_ar',
-        }
+        effects_update_data = {pageName : 'effects_update_ar',}
             const encodedData = encodeURIComponent(JSON.stringify(effects_update_data));
             back_href.href = `effects_view_ar?data=${encodedData}`
             is_coming_from_effects_view = true
-          return true
+            return true
       }else if(effects_data && effects_data === 'noParams'){
             return true
       }else{

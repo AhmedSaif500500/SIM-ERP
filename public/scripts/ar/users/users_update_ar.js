@@ -6,12 +6,14 @@ setActiveSidebar('users_view_ar');
 
 //#region  Authentication
 
-const user_id = parseInt(sessionStorage.getItem('user_id'));
-sessionStorage.removeItem('user_id');
-if (!user_id) {
+// const user_id = parseInt(sessionStorage.getItem('user_id'));
+// sessionStorage.removeItem('user_id');
+// if (!user_id) {
 
-  redirection('users_view_ar', 'fail', 'رجاء تحديد المستخدم اولا : سيتم توجيهك الى صفحه المستخدمين الرئيسية')
-};
+//   redirection('users_view_ar', 'fail', 'رجاء تحديد المستخدم اولا : سيتم توجيهك الى صفحه المستخدمين الرئيسية')
+// };
+
+
 
 //#endregion end-Authentication
 
@@ -22,11 +24,17 @@ const sub_h2_header =  document.querySelector(`#sub_h2_header`);
 let data = [];
 let array1 = [];
 let slice_Array1 = [];
+
+let user_id;
 async function get_user_data_fn() {
   try {
 
+    let urlData = getURLData('data','users_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الصلاحيات')
+    user_id = urlData.selectedUser;
 
-
+    console.log(user_id);
+    
+    return
     const data = await fetchData_postAndGet(
       '/updateUser',
       { user_id },

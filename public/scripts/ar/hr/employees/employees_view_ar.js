@@ -216,7 +216,7 @@ slice_array1.forEach(row => {
     let activeClass = row.is_inactive == 'غير نشط' ? 'table_red_condition' : 'table_green_condition';
 
     tableHTML += `<tr>
-                    <td style="${style_button}"><button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button></td>
+                    <td style="${style_button}"><button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
                     <td style="${style_id}">${row.id}</td>
                     <td style="${style_account_no}">${row.account_no}</td>
                     <td style="${style_name}">${row.account_name}</td>
@@ -346,7 +346,7 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function tabble_update_btn_fn(updateBtn) {
+async function table_update_btn_fn(updateBtn) {
     const permission = await btn_permission('employees_permission','update');
 
     if (!permission){ // if false

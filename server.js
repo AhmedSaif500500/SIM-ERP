@@ -1392,14 +1392,10 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
     left join users u on uc.user_id = u.id
     where u.owner_id = $1
     order by user_name ASC`;
-    let rows = await db.any(query, [req.session.owner_id]);
+    let data = await db.any(query, [req.session.owner_id]);
 
     
-    // const rows = await db.any("SELECT id, user_name  FROM users");
-    const data = rows.map((row) => ({
-      id: row.id,
-      user_name: row.user_name,
-    }));
+
 
     res.json(data);
     last_activity(req);
@@ -1829,7 +1825,7 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 //#region users
 
 // review  users data
-app.get("/get_All_users_Data", async (req, res) => {
+app.post("/get_All_users_Data", async (req, res) => {
   try {
     //! check Permission
     permissions(req, "users_permission", "view");

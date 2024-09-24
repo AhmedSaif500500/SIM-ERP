@@ -50,7 +50,7 @@ async function filleffectstable() {
   // slice_Array1 = ""; // تفريغ المصفوفه
   slice_Array1.forEach((user) => {
     tableHTML += `<tr>
-        <td style="width: auto;"> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
+        <td style="width: auto;"> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
         <td style="display: none;">${user.id}</td> <!-- تم إخفاء العمود ID -->
         <td style="width: 100%;">${user.user_name}</td>
       </tr>`;
@@ -136,7 +136,7 @@ searchInput.addEventListener("keydown", (event) => {
   }
 });
 
-function tabble_update_btn_fn(updateBtn) {
+function table_update_btn_fn(updateBtn) {
   // عثر على الموظف باستخدام معرف الموظف
   const selectedUser = updateBtn.closest("tr").cells[1].textContent;
   if (selectedUser) {

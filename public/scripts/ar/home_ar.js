@@ -101,7 +101,7 @@ async function fillTodotable() {
             let isChecked = row.is_done ? 'checked' : ''; // تحديد ما إذا كان يجب تحديد الخانة
             let noteClass = row.is_done ? 'deleted_text' : ''; // إضافة deleted_text إلى العناصر التي تم حذفها
             tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="width: auto; white-space: nowrap;">${row.datex}</td>
                             <td style="width: auto; text-align: center;">
@@ -309,7 +309,7 @@ new_todo_btn.addEventListener('click', function (){
 
 
   
-    async function tabble_update_btn_fn(updateBtn) {
+    async function table_update_btn_fn(updateBtn) {
         const row  = updateBtn.closest("tr")
         
         checked_div.style.display = 'flex'

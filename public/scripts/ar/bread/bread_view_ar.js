@@ -85,7 +85,7 @@ async function filleffectstable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="tabble_update_btn_fn(this)">تحرير</button> </td>
+                            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center">${row.datex}</td>
                             <td style="display: none;">${row.vendor_id}</td>
@@ -99,14 +99,14 @@ async function filleffectstable() {
         tableHTML += `</tbody>
         <tfoot>
             <tr class="table_totals_row";>
-                <td id="tfooter1" ></td>
-                <td id="tfooter2" style="display: none;" ></td>
-                <td id="tfooter3"></td>
-                <td id="tfooter4" style="display: none;"></td>
-                <td id="tfooter5" style="width: auto"></td>
-                <td id="tfooter6" style="width: 100%"></td>
+                <td id="tfooter0" ></td>
+                <td id="tfooter1" style="display: none;" ></td>
+                <td id="tfooter2"></td>
+                <td id="tfooter3" style="display: none;"></td>
+                <td id="tfooter4" style="width: auto"></td>
+                <td id="tfooter5" style="width: 100%"></td>
+                <td id="tfooter6" style="width: auto; white-space: nowrap; text-align: center"></td>
                 <td id="tfooter7" style="width: auto; white-space: nowrap; text-align: center"></td>
-                <td id="tfooter8" style="width: auto; white-space: nowrap; text-align: center"></td>
             </tr>
                         <tr id="table_fotter_buttons_row">
                             <td colspan="8">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
@@ -126,9 +126,9 @@ async function filleffectstable() {
         page_content.style.display = 'flex'
 
 
-document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-document.getElementById("tfooter7").textContent = floatToString(false,total_column1.value);
-document.getElementById("tfooter8").textContent = floatToString(false,total_column2.value);
+document.getElementById("tfooter0").textContent = slice_Array1.length; // عدد الصفوف
+document.getElementById("tfooter6").textContent = floatToString(false,total_column1.value);
+document.getElementById("tfooter7").textContent = floatToString(false,total_column2.value);
 
 
 
@@ -218,18 +218,17 @@ searchInput.addEventListener('keydown', (event) => {
 
 
 
-async function tabble_update_btn_fn(updateBtn) {
+async function table_update_btn_fn(updateBtn) {
   const row  = updateBtn.closest("tr")
 
   const production_data = {
     h_id : row.cells[1].textContent,
     datex : row.cells[2].textContent,
-     day : row.cells[3].textContent,
-     vendor_id : row.cells[4].textContent,
-     vendore_name : row.cells[5].textContent,
-     note : row.cells[6].textContent,
-     total_wazn : row.cells[7].textContent,
-     total_amount : row.cells[8].textContent,
+     vendor_id : row.cells[3].textContent,
+     vendore_name : row.cells[4].textContent,
+     note : row.cells[5].textContent,
+     total_wazn : row.cells[6].textContent,
+     total_amount : row.cells[7].textContent,
   }
 
   sessionStorage.setItem('bread_update_data',JSON.stringify(production_data))
