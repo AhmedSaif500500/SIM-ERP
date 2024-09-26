@@ -429,7 +429,10 @@ function showAlert(type, message) {
 let dialogAnswer = false; // متغير عالمي
 
 function showDialog(title, message, icon) {
+try {
+  
 
+  
   return new Promise((resolve) => {
     dialogAnswer = false;
 
@@ -451,6 +454,8 @@ function showDialog(title, message, icon) {
             </div>
         `;
 
+  
+        
     // إضافة القالب إلى الـ DOM
     document.body.insertAdjacentHTML('beforeend', dialogHTML);
 
@@ -469,6 +474,7 @@ function showDialog(title, message, icon) {
 
     // التحكم في زر "نعم"
     yesButton.onclick = function () {
+
       showLoadingIcon(this);
       body.style.pointerEvents = 'none';
       dialogAnswer = true;
@@ -482,6 +488,10 @@ function showDialog(title, message, icon) {
       resolve(false);
     };
   });
+
+} catch (error) {
+  catch_error(error)
+}
 }
 
 async function closeDialog() {
@@ -2127,6 +2137,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
   try {
 
+    
     if (is_showLoadingIcon) {
       showLoadingIcon(Element_showLoadingIcon_as_avariable)
 
@@ -2139,6 +2150,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
       return false;
     }
 
+    
     const permission = await btn_permission(permission_name, permission_type);
 
     if (!permission) {
@@ -2146,19 +2158,19 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
       return false;
     };
 
-    // // تجهيز البيانات للإرسال إلى الخادم
-    // const posted_elements = {
-    //     user_id,
-    // };
+    
+    
+
     if (is_confirm_dialog) {
       if (is_confirm_dialog === true)
-        await showDialog('', dialogMessage, '');
+        await showDialog('', dialogMessage, '');        
       if (!dialogAnswer) {
         hideLoadingIcon(Element_showLoadingIcon_as_avariable)
         return false;
       }
     }
 
+    
 
     // تعيين حد زمني للطلب
     const timeout = setTimeout(() => {
@@ -2166,6 +2178,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     }, ResponseTimeBySecends * 1000); //
 
     // إرسال الطلب إلى الخادم
+    
     const response = await fetch(FetchURL, {
       method: 'post',
       headers: {
@@ -2175,6 +2188,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
       signal, // تمرير الإشارة لإلغاء الطلب
     });
 
+    
     // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
     clearTimeout(timeout);
 

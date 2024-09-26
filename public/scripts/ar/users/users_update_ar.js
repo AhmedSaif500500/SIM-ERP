@@ -19,6 +19,7 @@ setActiveSidebar('users_view_ar');
 
 
 const sub_h2_header =  document.querySelector(`#sub_h2_header`);
+const btn_update =  document.querySelector(`#btn_update`);
 
 // many codes
 let data = [];
@@ -32,9 +33,7 @@ async function get_user_data_fn() {
     let urlData = getURLData('data','users_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الصلاحيات')
     user_id = urlData.selectedUser;
 
-    console.log(user_id);
-    
-    return
+
     const data = await fetchData_postAndGet(
       '/updateUser',
       { user_id },
@@ -50,6 +49,8 @@ async function get_user_data_fn() {
 
 
     array1 = data[0] /* اول صف فقط فى الروز الى فيه البيانات */
+
+    
     await show_data();
 
   } catch (error) {
@@ -67,19 +68,20 @@ async function show_data() {
     sub_h2_header.textContent = `المستخدم : ${array1.user_full_name}`
     const optionValue = array1.general_permission;
 
-    document.querySelector(`#user_name_input`).value = array1.user_full_name;
-    document.querySelector('#general_permission_select').value = document.querySelector('#general_permission_select').options[optionValue].value;
-    document.querySelector("#table_permission_users").value = array1.users_permission;
-    document.querySelector("#table_permission_hr").value = array1.hr_permission;
-    document.querySelector("#table_permission_departments").value = array1.departments_permission;
-    document.querySelector("#table_permission_employees").value = array1.employees_permission;
-    document.querySelector("#table_permission_effects").value = array1.effects_permission;
-    document.querySelector("#table_permission_production").value = array1.production_permission;
-    document.querySelector("#table_permission_bread").value = array1.bread_permission;
-    document.querySelector("#table_permission_transaction").value = array1.transaction_permission;
-    document.querySelector("#table_permission_items").value = array1.items_permission;
-    document.querySelector("#table_permission_customers").value = array1.customers_permission;
-    document.querySelector("#table_permission_vendors").value = array1.vendors_permission;
+    document.querySelector(`#user_name_input`).value = array1.user_full_name || 0;
+    // document.querySelector('#general_permission_select').value = document.querySelector('#general_permission_select').options[optionValue].value || 0;
+    document.querySelector('#general_permission_select').value = array1.general_permission || 0;
+    document.querySelector("#table_permission_users").value = array1.users_permission || 0;
+    document.querySelector("#table_permission_hr").value = array1.hr_permission || 0;
+    document.querySelector("#table_permission_departments").value = array1.departments_permission || 0;
+    document.querySelector("#table_permission_employees").value = array1.employees_permission || 0;
+    document.querySelector("#table_permission_effects").value = array1.effects_permission || 0;
+    document.querySelector("#table_permission_production").value = array1.production_permission || 0;
+    document.querySelector("#table_permission_bread").value = array1.bread_permission || 0;
+    document.querySelector("#table_permission_transaction").value = array1.transaction_permission || 0;
+    document.querySelector("#table_permission_items").value = array1.items_permission || 0;
+    document.querySelector("#table_permission_customers").value = array1.customers_permission || 0;
+    document.querySelector("#table_permission_vendors").value = array1.vendors_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -160,8 +162,9 @@ document.querySelector("#general_permission_select").addEventListener("change", 
 
 //  عمل فحص لكل صف لفحص مستولى الصلاحيه واضفه النص الخاص بالصلاحيه
 function update_Permissions_Levels_Text_OnPageLoad() {
+  
   // العثور على جميع عناصر الـ select في الصفحة
-  const selects = document.querySelectorAll('.permission_table_select');
+  const selects = document.querySelectorAll('.s');
 
   // الدوران على كل select وتحديث النص لكل صف
   selects.forEach(select => {
@@ -172,8 +175,9 @@ function update_Permissions_Levels_Text_OnPageLoad() {
 document.addEventListener("DOMContentLoaded", async function () {
   try {
     await get_user_data_fn();
-    general_permission_select_change();
+    await general_permission_select_change();
     update_Permissions_Levels_Text_OnPageLoad();
+    page_content.style.display = `flex`
   } catch (error) {
     catch_error('Error during DOMContentLoaded', error)
   }
@@ -187,122 +191,68 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 
-document.querySelector("#btn_update").addEventListener("click", async function () {
-  try {
-    const controller = new AbortController();
-    const signal = controller.signal;
+btn_update.addEventListener("click", async function () {
+  
+try {
+  
 
-    // event.preventDefault(); // if <a>
-
-    // استعداد البيانات
-    // const user_name_input = document.querySelector("#user_name_input").value.trim();
-    // const pass_input1 = document.querySelector("#pass_input1").value.trim();
-    // const pass_input2 = document.querySelector("#pass_input2").value.trim();
-    let general_permission_select = parseInt(document.querySelector("#general_permission_select").value);
-    let table_permission_users = parseInt(document.querySelector("#table_permission_users").value); // 5aleha let msh const
-    let table_permission_hr = parseInt(document.querySelector("#table_permission_hr").value);
-    let table_permission_departments = parseInt(document.querySelector("#table_permission_departments").value);
-    let table_permission_employees = parseInt(document.querySelector("#table_permission_employees").value);
-    let table_permission_effects = parseInt(document.querySelector("#table_permission_effects").value);
-    let table_permission_production = parseInt(document.querySelector("#table_permission_production").value);
-    let table_permission_bread = parseInt(document.querySelector("#table_permission_bread").value);
-    let table_permission_transaction = parseInt(document.querySelector("#table_permission_transaction").value);
-    let table_permission_items = parseInt(document.querySelector("#table_permission_items").value);
-    let table_permission_customers = parseInt(document.querySelector("#table_permission_customers").value);
-    let table_permission_vendors = parseInt(document.querySelector("#table_permission_vendors").value);
-
-
-    await showDialog('', 'هل تريد تعديل بيانات المستخدم', '');
-    if (!dialogAnswer) {
-      return
-    }
-
-    // التحقق اذا المستخدم يريد ادخال  كلمة مرور جديده ام لا 
-    // let newPassword_Condition = false;
-    // if (changePassword_div.style.display === 'block') {
-    //   newPassword_Condition = true;
-    // };
+  
+    function A(str_variable) {
+      const element = document.querySelector(str_variable);
+      return element.value == 0 ? '' : element.value;
+  }
+  
+  let general_permission_select = A("#general_permission_select");
+  let table_permission_users = A("#table_permission_users");
+  let table_permission_hr = A("#table_permission_hr");
+  let table_permission_departments = A("#table_permission_departments");
+  let table_permission_employees = A("#table_permission_employees");
+  let table_permission_effects = A("#table_permission_effects");
+  let table_permission_production = A("#table_permission_production");
+  let table_permission_bread = A("#table_permission_bread");
+  let table_permission_transaction = A("#table_permission_transaction");
+  let table_permission_items = A("#table_permission_items");
+  let table_permission_customers = A("#table_permission_customers");
+  let table_permission_vendors = A("#table_permission_vendors");
 
 
     // ضبط قيم الصلاحيات
-    if (general_permission_select !== 1 || general_permission_select === 0) {
+    if (general_permission_select !== 1 || general_permission_select == '') {
 
-      table_permission_users = 0;
-      table_permission_hr = 0;
-      table_permission_departments = 0;
-      table_permission_employees = 0;
-      table_permission_effects = 0;
-      table_permission_production = 0;
-      table_permission_bread = 0;
-      table_permission_transaction = 0;
-      table_permission_items = 0;
-      table_permission_customers = 0;
-      table_permission_vendors = 0;
+      table_permission_users = '';
+      table_permission_hr = '';
+      table_permission_departments = '';
+      table_permission_employees = '';
+      table_permission_effects = '';
+      table_permission_production = '';
+      table_permission_bread = '';
+      table_permission_transaction = '';
+      table_permission_items = '';
+      table_permission_customers = '';
+      table_permission_vendors = '';
       // add here all tables select permission id
     };
-    console.log(user_id);
 
 
     // تجهيز البيانات للإرسال إلى الخادم
-    const posted_elements = {
-      user_id,
-      general_permission_select,
-      table_permission_users,
-      table_permission_hr,
-      table_permission_departments,
-      table_permission_employees,
-      table_permission_effects,
-      table_permission_production,
-      table_permission_bread,
-      table_permission_transaction,
-      table_permission_items,
-      table_permission_customers,
-      table_permission_vendors,
-      today,
-    };
 
-    // تعيين حد زمني للطلب
-    const timeout = setTimeout(() => {
-      controller.abort(); // إلغاء الطلب
-    }, 10000); // 10 ثواني
+   
+    const postData = await fetchData_postAndGet(
+      '/update_User_from_user_update_ar',
+      {user_id,general_permission_select,table_permission_users,table_permission_hr,table_permission_departments,table_permission_employees,table_permission_effects,table_permission_production,table_permission_bread,table_permission_transaction,table_permission_items,table_permission_customers,table_permission_vendors},
+      'users_permission','update',
+      15,true,'هل تريد تعديل  صلاحيات المستخدم ؟',
+      true,false,'',
+      true,'users_view_ar',
+      'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+    )
 
-    // إرسال البيانات إلى الخادم
-    const response = await fetch("/update_User_from_user_update_ar", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(posted_elements),
-      signal, // تمرير الإشارة لإلغاء الطلب
-    })
 
-    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
-    clearTimeout(timeout);
+      console.log(`fetch end now`);
+      
 
-    if (response.ok) {
-      // استلام الرد من الخادم
-      const data = await response.json();
-      if (data.success) {
-        closeDialog()
-        await redirection('users_view_ar', 'success', data.message_ar);
-      } else {
-        closeDialog()
-        if (data.xx && data.xx === true) {
-          await redirection('login', 'fail', data.message_ar);
-          return;
-        } else {
-          showAlert("fail", data.message_ar);
-        }
-
-      };
-    } else {
-      closeDialog();
-      showAlert('fail', `Request failed with status code: ${response.status}`);
-    }
   } catch (error) {
-    closeDialog();
-    catch_error(error);
-    // يمكنك هنا إظهار رسالة خطأ أو اتخاذ إجراء آخر في حالة حدوث أي خطأ آخر
+    catch_error(error)
   }
 });
 

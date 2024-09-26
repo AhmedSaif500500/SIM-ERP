@@ -481,7 +481,6 @@ async function newRefrence_fn(req,int_transaction_type) {
   return result;
 }
 
-
 async function newReference_not_transaction(req, str_tableName, str_columnName) {
   const query = `SELECT MAX(${str_columnName}) AS refrenceCount FROM ${str_tableName} WHERE company_id = ${req.session.company_id}`;
 
@@ -543,14 +542,15 @@ function sql_anti_injection(values) {
     return;
   }
 
-  for (let value of values) {
+
+  for (let value of Object.values(values)) {
     // إذا كانت القيمة null أو undefined أو عدد رقمي، تجاهلها
-    if (value === null || value === undefined || typeof value === "number") {
+    if (value === null || value === undefined || typeof value === "number") {      
       continue; // تجاهل هذه القيمة وانتقل للقيمة التالية
     }
     
     // إذا كانت القيمة سلسلة نصية
-    if (typeof value === "string") {
+    if (typeof value === "string") {      
       // قم بإزالة المسافات الزائدة وتعقيمها
       // وتحقق من وجود رموز ضارة
       if (value.trim().match(/['";$%&<>]/)) {
@@ -926,7 +926,7 @@ const permissions = [
   "bread_permission",
   "transaction_permission",
   "items_permission",
-  "cutomers_permission",
+  "customers_permission",
   "vendors_permission",
   // Add new permissions here
 ];
@@ -2002,40 +2002,22 @@ app.post("/updateUser", async (req, res) => {
 
 app.post("/update_User_from_user_update_ar", async (req, res) => {
   try {
+
+ 
+    
     const posted_elements = await req.body;
 
     //! Permission
-    
+
+  
     await permissions(req, "Users_permission", "update");
     if (!permissions) {
       return;
     }
 
-    // let general_permission = parseInt(req.session.general_permission);
-    // if (!general_permission || general_permission !== 6) {
-    //   return res.json({
-    //     success: false,
-    //     message_ar: "Sorry,you  can't use this featue",
-    //   });
-    // }
-
     //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.user_id,
-      posted_elements.general_permission_select,
-      posted_elements.table_permission_users,
-      posted_elements.table_permission_hr,
-      posted_elements.table_permission_departments,
-      posted_elements.table_permission_employees,
-      posted_elements.table_permission_effects,
-      posted_elements.table_permission_production,
-      posted_elements.table_permission_transaction,
-      posted_elements.table_permission_items,
-      posted_elements.table_permission_customers,
-      posted_elements.table_permission_vendors,
-      posted_elements.today,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
     if (hasBadSymbols) {
       return res.json({
         success: false,
@@ -2044,6 +2026,10 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       });
     }
 
+    turn_EmptyValues_TO_null(posted_elements);
+
+
+   
     //* Start--------------------------------------------------------------
 
     if (parseInt(posted_elements.user_id) === 1) {
@@ -2065,16 +2051,6 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       });
     }
 
-    //2: validation data befor inserting to db
-    // const rows = await db.any("SELECT user_name FROM users WHERE user_name = $1 and id != $2 ", [
-    //   posted_elements.user_name_input,
-    //   posted_elements.user_id,
-    // ]);
-
-
-      // updqte data depending on newPassword_Condition
-     
-        // فى حالة تعديل البيانات شامله  كلمة مرور جديده
        
         let query1 = `Update user_company set general_permission = $3,
                         users_permission = $4,
@@ -2086,7 +2062,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
                         bread_permission = $10,
                         transaction_permission = $11,
                         items_permission = $12,
-                        cutomers_permission = $13,
+                        customers_permission = $13,
                         vendors_permission = $14
                       WHERE user_id = $1
                         AND company_id = $2`;
@@ -2247,7 +2223,7 @@ GROUP BY
       const posted_elements = req.body;
   
       //! Permission
-      await permissions(req, "cutomers_permission", "add");
+      await permissions(req, "customers_permission", "add");
       if (!permissions) {
         return;
       }
@@ -2371,7 +2347,7 @@ GROUP BY
       const posted_elements = req.body;
   
       //! Permission
-      await permissions(req, "cutomers_permission", "add");
+      await permissions(req, "customers_permission", "add");
       if (!permissions) {
         return;
       }

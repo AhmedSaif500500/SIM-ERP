@@ -240,7 +240,7 @@ router.get('/departments_update_ar', (req, res) => {
 //#region cutomers 
 router.get('/customers_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.cutomers_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.customers_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'customers' ,'customers_view_ar.html'));
         }else{
             res.redirect('/home_ar?reason=0');

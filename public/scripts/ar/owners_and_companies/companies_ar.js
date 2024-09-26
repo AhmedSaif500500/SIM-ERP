@@ -386,7 +386,7 @@ const permissions = [
   "bread_permission",
   "transaction_permission",
   "items_permission",
-  "cutomers_permission",
+  "customers_permission",
   "vendors_permission",
   // Add new permissions here
 ];
@@ -734,7 +734,7 @@ async function save_new_user() {
 
     const user_fullName_input = document.querySelector(`#user_fullName_input`).value.trim();
     if (!user_fullName_input || user_fullName_input === '') {
-      showAlert('warning', 'رجاء ادخل اسم المستخدم الذى يظهر فى البرنامج للاخرين  ')
+      showAlert('warning', 'رجاء ادخل اسم المستخدم الذى يظهر فى التطبيق للاخرين  ')
       return;
     }
 
