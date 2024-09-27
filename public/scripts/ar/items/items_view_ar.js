@@ -973,7 +973,7 @@ async function filleffectstable() {
     tableHTML += '</table>';
 
     // تحديث محتوى الصفحة بناءً على البيانات
-    tableContainer.innerHTML = await tableHTML;
+    tableContainer.innerHTML = tableHTML;
     page_content.style.display = 'flex'
 
 
@@ -998,7 +998,7 @@ async function filleffectstable() {
 
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
 

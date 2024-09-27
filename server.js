@@ -73,7 +73,7 @@ app.set("view engine", "ejs"); // تعيين محرك العرض لـ EJS
 //! Database
 const pgp = require("pg-promise")();
 const dotenv = require("dotenv");
-const { log, table } = require("console");
+const { log, table, error } = require("console");
 dotenv.config();
 
 // قراءة قيمة DB_SSL من ملف .env وتحويلها إلى قيمة بوليانية
@@ -363,7 +363,7 @@ app.get("/Logout", async (req, res) => {
     // إنهاء الجلسة
     req.session.destroy((err) => {
       if (err) {
-        console.error("Logout Error:", err.message);
+        console.error("Logout Error:", error);
         res.status(500).json({ success: false, message_ar: "Logout Error" });
       } else {
         res.json({ success: true, message_ar: "Logout successful" });
@@ -434,7 +434,7 @@ async function permissions(req, secendary_permission, perm_type) {
           }
       }
     }
-  } catch (err) {
+  } catch (error) {
     console.error("Error permission Templet:", err);
     res.status(500).send("Error:");
   }
@@ -655,7 +655,7 @@ app.post("/get_companies_data", async (req, res) => {
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     const owner = req.session.is_owner;
     let query1;
-    let rows;
+    let data;
 
     if (owner) {
       query1 = `select 
@@ -665,7 +665,7 @@ app.post("/get_companies_data", async (req, res) => {
       where owner_id = $1
       order BY company_name asc;
   `;
-      rows = await db.any(query1, [req.session.owner_id]);
+      data = await db.any(query1, [req.session.owner_id]);
     } else {
       query1 = `select 
       uc.company_id,
@@ -675,16 +675,13 @@ app.post("/get_companies_data", async (req, res) => {
       where uc.user_id = $1
       order BY c.company_name asc;
   `;
-      rows = await db.any(query1, [req.session.userId]);
+      data = await db.any(query1, [req.session.userId]);
     }
 
-    const data = rows.map((row) => ({
-      company_id: row.company_id,
-      company_name: row.company_name,
-    }));
+
 
     res.json(data);
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_All_bread_Data:", err);
     res.status(500).send("Error:");
   }
@@ -976,7 +973,7 @@ if (rows.length > 0) {
         });
       }
     }
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_All_bread_Data:", err);
     res.status(500).send("Error:");
   }
@@ -1032,7 +1029,7 @@ app.post("/api/get_companies_users", async (req, res) => {
         });
       }
     }
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_All_bread_Data:", err);
     res.status(500).send("Error:");
   }
@@ -1399,8 +1396,8 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
 
     res.json(data);
     last_activity(req);
-  } catch (err) {
-    console.error("Error get_All_users_Data ", err.message);
+  } catch (error) {
+    console.error("Error get_All_users_Data ", error);
     res.status(500).json({
       success: false,
       message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
@@ -1511,41 +1508,59 @@ app.post("/get_info_for_updateUser", async (req, res) => {
   //#region get todo data
   app.post("/get_All_todo_Data", async (req, res) => {
     try {
-      //! Permission
-      // await permissions(req, "production_permission", "view");
-      // if (!permissions) {
-      //   return;
-      // }
+      const posted_elements = req.body;
+      //! No permissions
+
+
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
   
       //* Start--------------------------------------------------------------
   
       // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
   
-      let query1 = `select
-      t.id,
-      t.datex,
-      t.is_done,
-      t.text
+      let query1 = `
+      select
+        t.id,
+        COALESCE(t.datex, '') as datex,
+        t.is_done,
+        COALESCE(t.text, '') as note
       from todo t
-      where t.user_id = $1 and company_id = $2
-        ORDER BY
-            t.is_done ASC, t.datex DESC, t.id DESC;
+      where t.user_id = $1
+       And company_id = $2
+       AND (t.datex BETWEEN $3 AND $4 )
+      ORDER BY
+        t.is_done ASC, t.datex DESC, t.id DESC;
   ;`;
-      let rows = await db.any(query1, [
+      let data = await db.any(query1, [
         req.session.userId,
         req.session.company_id,
+        posted_elements.start_date,
+        posted_elements.end_date,
       ]);
   
-      const data = rows.map((row) => ({
-        id: row.id,
-        datex: row.datex,
-        is_done: row.is_done,
-        note: row.text,
-      }));
-  
+
+    
+      
       res.json(data);
-    } catch (err) {
-      console.error("Error todo data:", err.message);
+    } catch (error) {
+      console.error("Error notes data:", error);
       res.status(500).send("Error: getting todo list");
     }
   });
@@ -1851,8 +1866,8 @@ app.post("/get_All_users_Data", async (req, res) => {
 
     res.json(data);
     last_activity(req);
-  } catch (err) {
-    console.error("Error get_All_users_Data ", err.message);
+  } catch (error) {
+    console.error("Error get_All_users_Data ", error);
     res.status(500).json({
       success: false,
       message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
@@ -2206,8 +2221,8 @@ GROUP BY
     let data = await db.any(query1, [req.session.company_id]);
 
     res.json(data);
-  } catch (err) {
-    console.error("Error fetching data:", err.message);
+  } catch (error) {
+    console.error("Error fetching data:", error);
     res.status(500).send("Error: getEmployeesData");
   }
 });
@@ -2619,8 +2634,8 @@ ORDER BY
         ]);
     
         res.json(data);
-      } catch (err) {
-        console.error("Error fetching data:", err.message);
+      } catch (error) {
+        console.error("Error fetching data:", error);
         res.status(500).send("Error: human_resources_department");
       }
     });
@@ -3423,7 +3438,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
     
     let data = await db.any(query1, [req.session.company_id,posted_elements.QKey]);
     res.json(data);
-  } catch (err) {
+  } catch (error) {
     console.error("Error fetching data:", err);
     res.status(500).send("Error: getEmployeesData");
   }
@@ -3487,8 +3502,8 @@ GROUP BY
     let data = await db.any(query1, [req.session.company_id]);
 
     res.json(data);
-  } catch (err) {
-    console.error("Error fetching data:", err.message);
+  } catch (error) {
+    console.error("Error fetching data:", error);
     res.status(500).send("Error: getVendorsData");
   }
 });
@@ -4362,8 +4377,8 @@ ORDER BY
     }));
 
     res.json(data);
-  } catch (err) {
-    console.error("Error fetching data:", err.message);
+  } catch (error) {
+    console.error("Error fetching data:", error);
     res.status(500).send("Error: getEmployeesData");
   }
 });
@@ -4518,7 +4533,7 @@ ORDER BY h.datex DESC, h.id DESC;
     }));
 
     res.json(data);
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_All_bread_Data:", err);
     res.status(500).send("Error:");
   }
@@ -4614,7 +4629,7 @@ WHERE bread_header_id = $1 ;`;
 
   const data = {header:rows0 , body:rows}    
     res.json(data);
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_bread_Data_for_update_page:", err);
     res.status(500).send("Error:");
   }
@@ -6264,7 +6279,7 @@ ORDER BY h1.id asc;;
 `;
     let data = await db.any(query1, [req.session.company_id]);
     res.json(data);
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_All_bread_Data:", err);
     res.status(500).send("Error:");
   }
@@ -6573,7 +6588,7 @@ ORDER BY datex DESC, refrence desc;
     }));
 
     res.json(data);
-  } catch (err) {
+  } catch (error) {
     console.error("Error get_All_transaction_Data:", err);
     res.status(500).send("Error:");
   }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <div id="fn_container_div" class="fn_container_div"></div>
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="hr_ar" title="الموارد البشرية">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="effects_view_ar" title="اعادة تحميل الصفحة">المؤثرات</a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
+          </h2>
+          <div id="page_content" style="display: none;">
+            <!-- !________________________________________________CONTENT_____________________________________________________________ -->
+
+
+            <label for="company_name_input" class="lbl_sm">اسم العمل التجارى الجديده</label>
+            <input type="search" id="company_name_input" class="input_text_md hover w_full"
+              oninput="check_parse(this, 'string')" autocomplete="off">
+
+
+            <div id="" class="dialog_footer">
+              <button id="yesButton" class="btn_save" style="display: none;">حفظ</button>
+              <button id="noButton" class="btn_cancel">إنهاء</button>
+            </div>
+
+
+
+            <!--! ________________________________________________#END CONTENT_____________________________________________________________ -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  </div> <!-- end body content -->
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/hr/effects/effects_view_ar.js"></script>
+
+
+</body>
+
+</html>

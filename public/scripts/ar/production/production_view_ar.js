@@ -30,10 +30,7 @@ async function geteProductionData_fn() {
         false,'',
         'حدث خطأ اثناء معالجة البيانات'
     )
-    // const response = await fetch('/get_All_production_Data');
-    //  data = await response.json();
 
-    // تحديث array1 بنتيجة الـ slice
     array1 = data.slice();
     
 }
@@ -49,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
     showFirst50RowAtTheBegening();
 });
 
-async function filleffectstable() {
+function filleffectstable() {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
     // el properties hya :
@@ -85,7 +82,7 @@ async function filleffectstable() {
                             <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;text-align: center;">${row.datex}</td>
-                            <td style="min-width: 20rem;width: 100%; white-space: wrap">${row.note}</td>
+                            <td style="min-width: 20rem;width: 100%; white-space: wrap">${row.note.replace(/\n/g, "<br>")}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;" class="table_number">${total_column(total_column1,row.procution_amount)}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;" class="table_number">${total_column(total_column2,row.sales_amount)}</td>
                             <td style="width: auto; white-space: nowrap; font-weight: bold;text-align: center;" class="table_number">${floatToString(true,row.cumulative_balance)}</td>
@@ -140,7 +137,7 @@ if (array1.length > 0 && array1.length <= 50) {
 
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
 
@@ -157,7 +154,7 @@ async function performSearch() {
     slice_Array1 = array1.slice(0, 50);
 
     // ملء الجدول بالبيانات
-    await filleffectstable();
+    filleffectstable();
 
 //#region  افاء عامود ال جرد اذا كان هناك نتائج فى البحث
            
@@ -179,13 +176,13 @@ async function performSearch() {
 }
 
 
-async function ShowAllDataIneffectsTable(){
+function ShowAllDataIneffectsTable(){
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
     slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     filleffectstable()
 }
 
-async function showFirst50RowIneffectsTable(){
+function showFirst50RowIneffectsTable(){
     slice_Array1 = array1.slice(0,50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     filleffectstable()
 }
@@ -207,7 +204,7 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function table_update_btn_fn(updateBtn) {
+function table_update_btn_fn(updateBtn) {
   const row  = updateBtn.closest("tr")
 
 

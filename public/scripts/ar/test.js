@@ -232,7 +232,7 @@ async function filleffectstable() {
   tableHTML += '</table>';
 
   // تحديث محتوى الصفحة بناءً على البيانات
-  document.querySelector('#dropdownItems').innerHTML = await tableHTML;
+  document.querySelector('#dropdownItems').innerHTML = tableHTML;
 
   
 
@@ -256,7 +256,7 @@ async function filleffectstable() {
 };
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
 
   // الحصول على قيمة البحث
   const searchValue = document.querySelector('#dropdown_search_input').value.trim().toLowerCase();

@@ -49,7 +49,7 @@ async function pagePermission(perm_name, perm_type) {
   if (!owner) {
     const X1 = sessionStorage.getItem('general_permission');
     const X2 = sessionStorage.getItem(perm_name);
-    const dirPageName = 'home_ar';
+    const dirPageName = 'notes_ar';
     const body_content = document.querySelector('#body_content');
     switch (perm_type) {
       case 'view':

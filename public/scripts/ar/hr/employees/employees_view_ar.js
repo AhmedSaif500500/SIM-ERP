@@ -161,7 +161,7 @@ filteredData_Array = data.filter(row => {
 }
 }
 
-async function fillTable() {
+function fillTable() {
     try {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
@@ -264,7 +264,7 @@ tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row
 
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = await tableHTML;
+        tableContainer.innerHTML = tableHTML;
         setupColumnSorting('review_table');
         hideLoadingIcon(content_space)
         page_content.style.display = 'flex';
@@ -289,7 +289,7 @@ if (array1.length > 0 && array1.length <= 50) {
 };
 
 
-async function performSearch() {
+function performSearch() {
     try {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();

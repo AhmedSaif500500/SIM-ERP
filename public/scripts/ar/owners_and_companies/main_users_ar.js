@@ -93,7 +93,7 @@ async function filleffectstable() {
 }
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
   // الحصول على قيمة البحث
   const searchValue = searchInput.value.trim().toLowerCase();
 

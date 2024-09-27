@@ -39,16 +39,16 @@ self.addEventListener('install', function(event) {
           '/views/login.html',
           '/public/scripts/login.js',
 
-          //home_ar
-          '/views/ar/home_ar.html',
-          '/public/scripts/ar/home_ar.js',
+          //notes_ar
+          '/views/ar/notes_ar.html',
+          '/public/scripts/ar/notes_ar.js',
 
           //effects
-          '/views/ar/effects/effects_ar.html',
+          '/views/ar/effects/effects_view_ar.html',
           '/views/ar/effects/effects_add_ar.html',
           '/views/ar/effects/effects_update_ar.html',
 
-          '/public/scripts/ar/effects/effects_ar.js',
+          '/public/scripts/ar/effects/effects_view_ar.js',
           '/public/scripts/ar/effects/effects_add_ar.js',
           '/public/scripts/ar/effects/effects_update_ar.js',
 

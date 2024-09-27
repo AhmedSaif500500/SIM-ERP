@@ -3,7 +3,7 @@ pagePermission("effects_permission", "view");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
-
+let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
 let startDate = firstDayOfYear;
@@ -169,6 +169,7 @@ function backUp_filter_div_conditions() {
         checkbox_active: checkbox_active.checked,
         select_active: select_active.value,
 
+        is_filter: is_filter,
         is_filter_div_hidden: filter_div.classList.contains(`hidden_height`)
             ? true
             : false,
@@ -194,7 +195,6 @@ function backUp_filter_div_conditions() {
     // حفظ المصفوفة المحدثة في sessionStorage
     sessionStorage.setItem(`effectsViewArray`,JSON.stringify(conditionsArray));
    
-
 }
 
 back_href.onclick = async function (event) {
@@ -210,9 +210,9 @@ back_href.onclick = async function (event) {
        
     }else{
 
-        await restore_filter_div_conditions(2)
+        restore_filter_div_conditions(2)
         await getData_fn();
-        await showFirst50RowAtTheBegening();
+
     }
 };
 
@@ -327,7 +327,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         sub_h2_header.textContent = conditions.sub_h2_header;
         QKey = conditions.QKey_val;
 
-   
+        is_filter = conditions.is_filter;
         if (conditions.is_filter_div_hidden) {
             hidden_filter_div();
     
@@ -367,38 +367,32 @@ function deafult_checkbox() {
 
 async function filter_icon_cancel_fn() {
     try {
-        await showDialog(
-            "",
-            "هل تريد الغاء التصفية والرجوع الى الحالة الافتراضية ؟",
-            ""
-        );
-        if (!dialogAnswer) {
-            return;
+
+        if(is_filter){
+
+            await showDialog("","هل تريد الغاء التصفية والرجوع الى الحالة الافتراضية ؟","");
+            if (!dialogAnswer) {
+                return;
+            }
+    
+            deafult_checkbox();
+            // QKey = null;
+            input_start_date1.value = firstDayOfYear;
+            input_end_date1.value = lastDayOfYear;
+            checkbox_aggregation.checked = false;
+            note_div.style.display = "flex";
+            reference_div.style.display = "flex";
+            sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
+            
+            await getData_fn();
+            closeDialog();
+            sessionStorage.removeItem('effectsViewArray');
+            conditionsArray = []
+            
         }
 
-        deafult_checkbox();
-        // QKey = null;
-        input_start_date1.value = firstDayOfYear;
-        input_end_date1.value = lastDayOfYear;
-        checkbox_aggregation.checked = false;
-        note_div.style.display = "flex";
-        reference_div.style.display = "flex";
-        sub_h2_header.textContent = `من ${reverseDateFormatting(
-            input_start_date1.value
-        )}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
-        await getData_fn();
-        if (checkbox_aggregation.checked) {
-            hidden_filter_div();
-            await showFirst50RowAtTheBegening();
-            showAlert(`info`, "تم الغاء التجميع على مستوى الموظف");
-        } else {
-            hidden_filter_div();
-            await showFirst50RowAtTheBegening();
-        }
-        closeDialog();
-        sessionStorage.removeItem('effectsViewArray');
-        conditionsArray = []
-        
+        hidden_filter_div();
+        is_filter = false;
     } catch (error) {
         closeDialog();
         catch_error;
@@ -406,7 +400,7 @@ async function filter_icon_cancel_fn() {
 }
 
 filter_icon_cancel.onclick = async () => {
-    filter_icon_cancel_fn();
+    await filter_icon_cancel_fn();
 };
 
 let QKey = null;
@@ -444,7 +438,7 @@ async function getData_fn() {
 
         // QKey = null;
 
-        await showFirst50RowAtTheBegening();
+        showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
     }
@@ -464,36 +458,18 @@ async function getData_fn() {
 //     }
 // }
 
-async function filterDiv_conditions_when_start_aggregation(date1, date2) {
-    showLoadingIcon(content_space);
-    deafult_checkbox();
-    await getData_fn();
-    sub_h2_header.textContent = `تقرير مجمع من   ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
-    checkbox_note.checked = false;
-    check_reference.checked = false;
-    note_div.style.display = "none";
-    reference_div.style.display = "none";
-    searchInput.value = "";
-    checkbox_datex.checked = false;
-    datex_div.style.display = "none";
-    await showFirst50RowAtTheBegening();
-    showAlert(
-        `info`,
-        `تم تجميع البيانات على مستوى الموظف من ${reverseDateFormatting(
-            date1
-        )} الى ${reverseDateFormatting(date2)}`
-    );
-}
+
 
 
 async function Execution() {
     try {
         showLoadingIcon(content_space);
+        is_filter = true
         searchInput.value = "";
         if (QKey && +QKey > 0 ){
             // console.log(`حالة ال Qkey`);
             sub_h2_header.textContent = `الموظف : ${emp_name} من ${reverseDateFormatting(input_start_date1.value)}  الى ${reverseDateFormatting(input_end_date1.value)}`;
-            await showFirst50RowAtTheBegening();
+            showFirst50RowAtTheBegening();
             backUp_filter_div_conditions();
             hideLoadingIcon(content_space);
             return
@@ -522,7 +498,6 @@ async function Execution() {
         }
 
         await getData_fn();
-        await showFirst50RowAtTheBegening();
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
     } catch (error) {
@@ -548,10 +523,10 @@ for (const input of inside_input_search_array) {
 }
 
 btn_do.onclick = async () => {
-    Execution();
+    await Execution();
 };
 
-async function showFirst50RowAtTheBegening() {
+function showFirst50RowAtTheBegening() {
     try {
         page_content.style.display = "none";
 
@@ -659,14 +634,14 @@ async function showFirst50RowAtTheBegening() {
         array1 = filteredData_Array.slice();
 
         slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-        await fillTable();
+        fillTable();
 
     } catch (error) {
         catch_error(error);
     }
 }
 
-async function fillTable() {
+function fillTable() {
     try {
         //  @@ هاااااام جدا
         // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
@@ -766,9 +741,8 @@ async function fillTable() {
                         ${tdNumber(linkStyle,false,true,row.days,style_balance1,total_column1,fn)}
                         ${tdNumber(linkStyle,false,true,row.hours,style_balance2,total_column2,fn)}
                         ${tdNumber(linkStyle,false,true,row.values,style_balance3,total_column3,fn)}
-                        <td style="${style_note}">${row.note}</td>
-                        <td style="${style_active}"><span class="${activeClass}">${row.is_inactive
-                }</span></td>                        
+                        <td style="${style_note}">${row.note.replace(/\n/g, "<br>")}</td>
+                        <td style="${style_active}"><span class="${activeClass}">${row.is_inactive}</span></td>                        
                       </tr>`;
         });
 
@@ -804,7 +778,7 @@ async function fillTable() {
                  </div>`;
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = await tableHTML;
+        tableContainer.innerHTML = tableHTML;
         setupColumnSorting("review_table");
         hideLoadingIcon(content_space);
         page_content.style.display = "flex";
@@ -839,7 +813,7 @@ async function fillTable() {
     }
 }
 
-async function performSearch() {
+function performSearch() {
     try {
         // الحصول على قيمة البحث
         const searchValue = searchInput.value.trim().toLowerCase();
@@ -880,7 +854,7 @@ async function performSearch() {
     }
 }
 
-async function ShowAllDataInTable() {
+function ShowAllDataInTable() {
     showAlert(
         "info",
         "ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات"
@@ -889,7 +863,7 @@ async function ShowAllDataInTable() {
     fillTable();
 }
 
-async function showFirst50RowInTable() {
+function showFirst50RowInTable() {
     slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     fillTable();
 }
@@ -1048,7 +1022,6 @@ async function aggregation_balance_details(details_btn) {
 
         await getData_fn();
 
-        await showFirst50RowAtTheBegening();
 
         // sub_h2_header.textContent = `الموظف : ${emp_name} من ${reverseDateFormatting(input_start_date1.value)}  الى ${reverseDateFormatting(input_end_date1.value)}`;
         // QKey = null;

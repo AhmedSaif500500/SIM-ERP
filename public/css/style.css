@@ -1017,9 +1017,11 @@ width: 100% !important;
   border-radius: 0.3rem;
   transition: var(--transition);
   padding: 0.5rem;
+  margin-block-end: 1rem;
   width: 100%;
-  height: 20rem;
-  resize: none;
+  max-width: 40rem;
+  height: 12rem;
+  /* resize: none; */
   margin-block-end: 1rem;
   color: var(--Font_Color);
   background-color: var(--input_text_background_color);

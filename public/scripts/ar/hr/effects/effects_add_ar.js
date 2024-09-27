@@ -115,7 +115,7 @@ async function filleffectstable() {
 };
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
 
   // الحصول على قيمة البحث
   const searchValue = document.querySelector('#dropdown_search_input').value.trim().toLowerCase();
@@ -123,9 +123,9 @@ async function performSearch() {
   // فلترة البيانات بناءً على قيمة البحث
   array1 = data.filter(row => {
     // التحقق من أن employee.id و employee.name ليستان فارغتين
-    const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
-    const nameMatch = row.employee_name && row.employee_name.toString().toLowerCase().includes(searchValue);
-    return idMatch || nameMatch;
+    // const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
+    const nameMatch = row.account_name && row.account_name.toString().toLowerCase().includes(searchValue);
+    return nameMatch;
   });
 
   slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط

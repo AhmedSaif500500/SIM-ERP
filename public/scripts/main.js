@@ -124,10 +124,11 @@ function loadSidebarContents() {
       <i class="fa-duotone fa-square-xmark"></i>
     </div>
 
-    <a href="home_ar" target="_self" class="">
-      <i class="fa-duotone fa-list"></i>
-      الملاحظات
-    </a>
+<a href="notes_ar" target="_self" class="" onclick="sessionStorage.removeItem('noteViewArray')">
+  <i class="fa-duotone fa-list"></i>
+  الملاحظات
+</a>
+
 
     <a href="hr_ar" target="_self" class="">
       <i class="fa-duotone fa-user-tie"></i>

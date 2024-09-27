@@ -138,7 +138,7 @@ async function filleffectstable() {
   };
 };
 
-async function performSearch() {
+function performSearch() {
 
   // الحصول على قيمة البحث
   const searchValue = document.querySelector('#dropdown_search_input').value.trim().toLowerCase();

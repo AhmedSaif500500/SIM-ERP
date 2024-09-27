@@ -119,7 +119,7 @@ try {
 
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        myTable.innerHTML = await tableHTML;
+        myTable.innerHTML = tableHTML;
 
         page_content.style.display = "flex";
       } catch (error) {

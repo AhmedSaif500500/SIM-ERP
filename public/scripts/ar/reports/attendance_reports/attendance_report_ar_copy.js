@@ -1,5 +1,5 @@
 
-setActiveSidebar('effects_ar');
+setActiveSidebar('effects_view_ar');
 
 //check permissions
 // pagePermission('effects_permission','view');
@@ -308,7 +308,7 @@ document.getElementById("tfooter6").textContent = total_column3.value;
         tableAdress.textContent = `${array1[0].employee_name}  :  ${select_month.value} - ${select_year.value}`;
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = await tableHTML;
+        tableContainer.innerHTML = tableHTML;
 
         // اظهار الازرار فى الاسفل او اخفاءها حسب حجم البيانات
 
@@ -393,7 +393,7 @@ document.getElementById("tfooter7").textContent = total_values;
 
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
 

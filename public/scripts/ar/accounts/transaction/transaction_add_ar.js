@@ -310,7 +310,7 @@ async function filleffectstable(td) {
   tableHTML += '</table>';
 
   // تحديث محتوى الصفحة بناءً على البيانات
-  td.querySelector('.inputTable_dropdown_tableContainer').innerHTML = await tableHTML;
+  td.querySelector('.inputTable_dropdown_tableContainer').innerHTML = tableHTML;
 
   
 

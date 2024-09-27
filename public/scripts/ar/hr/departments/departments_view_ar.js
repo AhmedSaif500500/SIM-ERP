@@ -29,7 +29,7 @@ filter_icon.onclick = () =>{
 
 
 
-filter_icon_cancel.onclick = async () =>{
+filter_icon_cancel.onclick = () =>{
     try {
         checkbox_account_no.checked = false;
         checkbox_another_info.checked = false;
@@ -74,11 +74,11 @@ async function getData_fn() {
 }
 }
 
-async function Execution(){
+ function Execution(){
     try {
         showLoadingIcon(btn_do)
         searchInput.value = ""
-        await showFirst50RowAtTheBegening()
+        showFirst50RowAtTheBegening()
         hideLoadingIcon(btn_do) 
     } catch (error) {
         hideLoadingIcon(btn_do) 
@@ -104,12 +104,12 @@ for (const input of inside_input_search_array) {
 
 
 btn_do.onclick = async () => {
-    Execution()
+   await Execution()
 }
 
 
 
-async function showFirst50RowAtTheBegening() {
+function showFirst50RowAtTheBegening() {
 
     try {
     page_content.style.display = 'none';
@@ -129,14 +129,14 @@ async function showFirst50RowAtTheBegening() {
 
     slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     
-    await fillTable()
+    fillTable()
 } catch (error) {
     catch_error
 }
 }
 
 
-async function fillTable() {
+function fillTable() {
     try {
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
@@ -214,7 +214,7 @@ tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row
 
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = await tableHTML;
+        tableContainer.innerHTML = tableHTML;
         setupColumnSorting('review_table');
         hideLoadingIcon(content_space)
         page_content.style.display = 'flex';
@@ -236,7 +236,7 @@ if (array1.length > 0 && array1.length <= 50) {
 }
 };
 
-async function performSearch() {
+function performSearch() {
     try {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
@@ -260,13 +260,13 @@ async function performSearch() {
 }
 }
 
-async function ShowAllDataInTable(){
+function ShowAllDataInTable(){
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
     slice_array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     fillTable()
 }
 
-async function showFirst50RowInTable(){
+function showFirst50RowInTable(){
     slice_array1 = array1.slice(0,50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
     fillTable()
 }
@@ -288,8 +288,8 @@ searchInput.addEventListener('keydown', (event) => {
 
 
 
-async function table_update_btn_fn(updateBtn) {
-    const permission = await btn_permission('departments_permission','update');
+function table_update_btn_fn(updateBtn) {
+    const permission = btn_permission('departments_permission','update');
 
     if (!permission){ // if false
         return;
@@ -317,8 +317,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await getData_fn()
   });
 
-
-  async function tabble_info_btn_fn(details_btn) {
+ function tabble_info_btn_fn(details_btn) {
 try {
     
     const row  = details_btn.closest("tr")

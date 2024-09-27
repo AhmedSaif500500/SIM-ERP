@@ -158,7 +158,7 @@ if (array1.length > 0 && array1.length <= 50) {
 
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
 
@@ -227,7 +227,7 @@ back_icon_to_table_view.onclick = function (){
 
 async function table_update_btn_fn(updateBtn) {
     try {
-    const permission = btn_permission('vendors_permission','update');
+    const permission = await btn_permission('vendors_permission','update');
 
     if (!permission){ // if false
         return;

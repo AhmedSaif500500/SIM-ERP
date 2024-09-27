@@ -151,7 +151,7 @@ async function filleffectstable() {
         tableHTML += '</table>';
 
         // تحديث محتوى الصفحة بناءً على البيانات
-        tableContainer.innerHTML = await tableHTML;
+        tableContainer.innerHTML = tableHTML;
         page_content.style.display = 'flex'
           //  عمليات صف الاجمالى 
           // جمع القيم في العمود رقم 6
@@ -172,7 +172,7 @@ if (array1.length > 0 && array1.length <= 50) {
 
 
 // search in effectsTable
-async function performSearch() {
+function performSearch() {
     // الحصول على قيمة البحث
     const searchValue = searchInput.value.trim().toLowerCase();
 
@@ -241,7 +241,7 @@ back_icon_to_table_view.onclick = function (){
 
 async function table_update_btn_fn(updateBtn) {
     try {
-    const permission = btn_permission('customers_permission','update');
+    const permission = await btn_permission('customers_permission','update');
 
     if (!permission){ // if false
         return;
