@@ -3996,7 +3996,7 @@ SELECT
     SUM(COALESCE(A.hours, 0)) as hours, -- جمع الساعات
     SUM(COALESCE(A.values, 0)) as values, -- جمع القيم
     '' as note, -- حقل note ببيانات فارغة
-    CASE 
+    CASE
         WHEN ah.is_inactive = 1 THEN 'غير نشط'
         ELSE 'نشط'
     END as is_inactive,
@@ -4004,7 +4004,7 @@ SELECT
     COALESCE(parent_ah.account_name, '') as department_name -- اسم الحساب الأب
 FROM 
     effects A
-LEFT JOIN 
+LEFT JOIN
     accounts_header ah ON A.employee_id = ah.id
 LEFT JOIN 
     accounts_body ab ON ah.id = ab.account_id -- الانضمام إلى accounts_body للحصول على parent_id

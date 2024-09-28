@@ -2118,11 +2118,11 @@ font-size: 2rem;
   z-index: 1;
 }
 
-@media screen and (max-width: 750px) {
+/* @media screen and (max-width: 750px) {
   .dropdown_container{
     width: 100%;
   }
-}
+} */
 
 
 .dropdown_select {

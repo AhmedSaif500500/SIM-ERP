@@ -289,7 +289,7 @@ colors()
 
 async function showData(){
   try {
-    sub_h2_header.textContent = `${effects_data.acc_name}`
+    sub_h2_header.textContent = `تعديل /  ${effects_data.acc_name}`
     x_input.value = effects_data.x;
     date_input.value = effects_data.datex;
     refrence_input.value = effects_data.reference;
@@ -340,9 +340,9 @@ try {
         reference
       },
       'effects_permission','update',
-      15,true,'هل تريد تعديل  بيانات المؤثؤات ؟',
+      15,true,'هل تريد تعديل  البيانات ؟',
       true,false,'',
-      false,'false',
+      true,'effects_view_ar',
       'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
     )
 

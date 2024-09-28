@@ -297,9 +297,9 @@ async function save(A_or_B) {
       '/effects_add',
       posted_items,
       'effects_permission','add',
-      15,true,'هل تريد حفظ بيانات المؤثؤات ؟',
+      15,true,'هل تريد حفظ البيانات ؟',
       true,false,'',
-      true,'employees_view_ar',
+      true,'effects_view_ar',
       'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
     )
 
