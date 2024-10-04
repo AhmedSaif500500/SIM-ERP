@@ -92,11 +92,11 @@ self.addEventListener('install', function(event) {
 });
 
 self.addEventListener('activate', function(event) {
-  const cacheWhitelist = ['static-v1.1']; // يجب تحديث الإصدار الجديد هنا
+  const cacheWhitelist = ["static-v1.2"]; // يجب تحديث الإصدار الجديد هنا
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
+    caches.keys().then(function (cacheNames) {
       return Promise.all(
-        cacheNames.map(function(cacheName) {
+        cacheNames.map(function (cacheName) {
           if (!cacheWhitelist.includes(cacheName)) {
             return caches.delete(cacheName); // حذف الكاش القديم
           }
