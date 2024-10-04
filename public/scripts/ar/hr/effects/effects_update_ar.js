@@ -292,7 +292,7 @@ async function showData(){
     sub_h2_header.textContent = `تعديل /  ${effects_data.acc_name}`
     x_input.value = effects_data.x;
     date_input.value = effects_data.datex;
-    refrence_input.value = effects_data.reference;
+    refrence_input.value = effects_data.referenceCONCAT;
     id_hidden_input.value = effects_data.emp_x;
     dropdown_select_input.value = effects_data.acc_name;
     days_input.value = !effects_data.days || effects_data.days === ''? 0 : effects_data.days; 
@@ -312,7 +312,6 @@ async function update(){
 try {
   
 
-  const reference = refrence_input.value
   const id_val = x_input.value
   const date_val = date_input.value
   const emp_id = id_hidden_input.value
@@ -327,7 +326,8 @@ try {
     return
   }
 
-    const postData = await fetchData_postAndGet(
+
+    const gpt = await GPT_fetchData_postAndGet(
       '/effects_update',
       {id_val,
         date_val,
@@ -337,17 +337,18 @@ try {
         hours_val,
         values_val,
         note_val,
-        reference
       },
-      'effects_permission','update',
-      15,true,'هل تريد تعديل  البيانات ؟',
-      true,false,'',
+      'effects_permission','update',15,
+      true,'هل تريد تعديل  البيانات ؟',
+      false,
+      false,'',
+      false,'',
+      true,effects_update_data,'effects_view_ar',
       true,'effects_view_ar',
-      'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+      'حدث خطأ اثناء معالجة البيانات'
     )
 
-    const encodedData = encodeURIComponent(JSON.stringify(effects_update_data));
-    window.location.href = `effects_view_ar?data=${encodedData}`
+
 
   } catch (error) {
     catch_error(error)
@@ -359,10 +360,13 @@ btn_update.onclick = function() {
 }
 
 btn_delete.onclick = async function(){
-  const id_val = x_input.value
+  const id = effects_data.x;
+  const year = effects_data.year
+  const reference = effects_data.reference;
+  
   const postData = await fetchData_postAndGet(
     '/effects_delete',
-    {id_val},
+    {id,year,reference},
     'effects_permission','delete',
     15,true,'هل تريد حذف بيانات المؤثؤات ؟',
     true,false,'',

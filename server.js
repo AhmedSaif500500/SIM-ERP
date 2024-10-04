@@ -43,6 +43,31 @@ open Terminal vscode
 
 //#endregion End-Guid
 
+
+let today = new Date().toISOString().split("T")[0];
+
+function getYear(dateStringOrVar) {
+  return +dateStringOrVar.split("-")[0];
+}
+
+
+
+function timeNow(){
+  const now = new Date();
+
+let hours = now.getHours();
+const minutes = String(now.getMinutes()).padStart(2, '0');
+const seconds = String(now.getSeconds()).padStart(2, '0');
+
+const ampm = hours >= 12 ? 'PM' : 'AM';
+hours = hours % 12;
+hours = hours ? String(hours).padStart(2, '0') : '12'; // تحويل 0 إلى 12
+
+// const result = `${hours}:${minutes}:${seconds} ${ampm}`;
+const result = `${hours}:${minutes} ${ampm}`;
+return result
+}
+
 //#region app-Started
 const http = require('http');
 const express = require("express");
@@ -201,10 +226,64 @@ cron.schedule("*/5 * * * *", async () => {
 
 //#endregion end-cron
 
+function formatFromFiveDigits(num) {
+  // التحقق من أن الرقم ليس سالبًا
+  if (num < 0) {
+      throw new Error("الرقم لا يمكن أن يكون سالبًا");
+  }
+  
+  // التحقق من أن الرقم لا يتجاوز 5 أرقام
+  if (num > 99999) {
+      throw new Error("الرقم لا يمكن أن يتجاوز 5 أرقام");
+  }
+  
+  // تحويل الرقم إلى صيغة مكونة من 5 أرقام مع أصفار بادئة
+  return num.toString().padStart(5, '0');
+}
+
+// استخدام الدالة
+try {
+  const formattedNumber = formatNumber(16);
+  console.log(formattedNumber); // سيطبع: 00016
+} catch (error) {
+  console.error(error.message);
+}
+
+async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transaction_id, year, reference, req, tx) {
+  // احسب الوقت الحالي
+  try {
+    const timex = timeNow();
+    const id = await newId_fn('history', 'id');
+
+    // قم بتنفيذ استعلام SQL باستخدام `db.none`
+    const query = `
+      INSERT INTO history (id, user_id, transactionType_id, history_type, datex, timex, transaction_id, year, reference, company_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+    `;
+
+    const params = [id, req.session.userId, int_transactionTypeId, int_1Add_2Update_3Delete, today, timex, transaction_id, year, reference, req.session.company_id];
+
+    await tx.none(query, params);
+  } catch (error) {
+    console.error("Error while inserting history:", error);
+    throw new Error("حدث خطأ أثناء معالجة البيانات وتم إلغاء العملية."); // إلقاء خطأ مع رسالة مخصصة
+  }
+}
+
+
+
+
+
+
 //#region global variables
 const is_forbidden_adding_branches = [1, 2, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
 const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
 //#endregion
+
+
+
+
+
 
 //#region Login
 
@@ -234,7 +313,7 @@ app.post("/Login", async (req, res) => {
     //* start --------------------------------------------------
 
     //2: get Today
-    let today = new Date().toISOString().split("T")[0];
+    
 
     let query = `SELECT * FROM users WHERE TRIM(user_name) = $1`;
     let rows = await db.any(query, [posted_elements.username_Input]);
@@ -263,6 +342,7 @@ app.post("/Login", async (req, res) => {
           req.session.destroy();
           return res.json({
             success: false, // العمليه فشلت
+            xx: true,
             message_ar: "هذا الحساب تم تجميده من قبل : برجاء التواصل مع الاداره",
           });
         }
@@ -271,6 +351,7 @@ app.post("/Login", async (req, res) => {
           req.session.destroy();
           return res.json({
             success: false, // العمليه فشلت
+            xx: true,
             message_ar: "هذا الحساب تم ايقافه من قبل مدير النظام : برجاء التواصل مع الاداره",
           });
         }
@@ -286,6 +367,13 @@ app.post("/Login", async (req, res) => {
           ipAddress = req.socket.remoteAddress;
         }
        
+        let query2 = `SELECT id, transaction_type_name FROM transaction_type`;
+        let rows2 = await db.any(query2);
+
+        req.session.transaction_table = rows2
+        // console.log(req.session.transaction_table)
+
+
         req.session.isLoggedIn = true; // active session
         req.session.ipAddress = ipAddress; // get IP 
         req.session.userId = parseInt(rows[0].id);
@@ -1837,6 +1925,88 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 
 //#endregion
 
+
+
+//#region history
+  //#region history_view
+  app.post("/get_All_history_Data", async (req, res) => {
+    try {
+      const posted_elements = req.body;
+      //! No permissions
+
+
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+  
+      //* Start--------------------------------------------------------------
+  
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `
+ select
+	H.id,
+  H.datex,
+  H.timex,
+  H.user_id,
+  COALESCE(u.user_full_name, '') as user_full_name,
+  H.transactiontype_id,
+	tt.transaction_type_name,
+	H.transaction_id,
+  H.year,
+  H.reference,
+  H.history_type
+from
+	history H
+left join
+	transaction_type tt on tt.id = H.transactiontype_id
+left join
+	users u on u.id  = H.user_id
+where 
+	H.company_id = $1
+	AND (H.datex BETWEEN $2 AND $3 )
+order by
+	H.datex desc,
+	H.id desc
+  ;`;
+      let data = await db.any(query1, [
+        req.session.company_id,
+        posted_elements.start_date,
+        posted_elements.end_date,
+      ]);
+  
+
+    
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Error notes data:", error);
+      res.status(500).send("Error: getting todo list");
+    }
+  });
+
+  //#endregion
+
+//#endregion
+
+
+
+
 //#region users
 
 // review  users data
@@ -1874,7 +2044,6 @@ app.post("/get_All_users_Data", async (req, res) => {
     });
   }
 });
-
 
 
 //     //* Start--------------------------------------------------------------
@@ -3864,27 +4033,50 @@ app.post("/effects_add", async (req, res) => {
         turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
 
+    const currentYear = getYear(posted_elements.date_input_val)
     //3: insert data into db
     const newId = await newId_fn("effects",'id');
-    let Reference
+    
 
-    if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
-      const query = `select count(reference) as count from effects where company_id = $1 AND reference = $2`
-      const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference])
-      if (result && result.count > 0) {
-          return res.json({
-          success: false,
-          message_ar: "هذا المرجع موجود بالفعل , رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح",
-        });
-      }else{
-        Reference = posted_elements.reference
+    // if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
+    //   const query = `select count(reference) as count from effects where company_id = $1 AND reference = $2`
+    //   const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference])
+    //   if (result && result.count > 0) {
+    //       return res.json({
+    //       success: false,
+    //       message_ar: "هذا المرجع موجود بالفعل , رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح",
+    //     });
+    //   }else{
+    //     Reference = posted_elements.reference
+    //   }
+
+    // }else{
+    //   Reference = await newReference_not_transaction(req,'effects','reference')
+    // }
+
+    // Get new reference
+      const Q = `
+        select
+          max(e.reference) as max
+        from
+          effects e
+        where
+          e.company_id = $1
+          and e.year = $2
+        ;`
+  
+      const P = [req.session.company_id, currentYear];
+      const result = await db.oneOrNone(Q, P);
+       
+      const reference = result.max
+      let new_reference = 1
+      if (reference && reference > 0){
+        new_reference = reference + 1
       }
 
-    }else{
-      Reference = await newReference_not_transaction(req,'effects','reference')
-    }
 
-    let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+
+    let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, year, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
     await db.none(query1, [
       newId,
       posted_elements.id_hidden_input_val,
@@ -3894,13 +4086,15 @@ app.post("/effects_add", async (req, res) => {
       posted_elements.values_input_val,
       posted_elements.note_input_val,
       req.session.company_id,
-      Reference
+      currentYear,
+      new_reference
     ]);
 
+    const new_referenceFormatting = formatFromFiveDigits(new_reference)
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حفظ البيانات بنجاح",
+      message_ar: `تم انشاء المؤثر بمرجع : ${new_referenceFormatting}-${currentYear}`,
     });
   } catch (error) {
     console.error("Error adding effects:", error);
@@ -3942,7 +4136,7 @@ app.post("/getEmployeesData1", async (req, res) => {
 //#region 3: get data for review tables
 app.post("/effects_view", async (req, res) => {
   try {
-
+    
     const posted_elements = req.body;
 
     //! Permission
@@ -3990,6 +4184,7 @@ SELECT
     COALESCE(ah.account_no, '') as account_no, -- إضافة account_no من accounts_header
     NULL as datex, -- عامود datex ببيانات فارغة
     NULL as reference,
+    NULL as year,
     A.employee_id,
     COALESCE(ah.account_name, '') as account_name,
     SUM(COALESCE(A.days, 0)) as days, -- جمع أيام الحضور
@@ -4032,6 +4227,7 @@ ORDER BY
               COALESCE(ah.account_no, '') as account_no,
               COALESCE(A.datex, '') as datex,
               A.reference,
+              A.year,
               A.employee_id,
               COALESCE(ah.account_name, '') as account_name,
               COALESCE(A.days, 0) as days, 
@@ -4182,25 +4378,10 @@ return res.json({
 });
 }  
     //* Start--------------------------------------------------------------
-    let Reference
 
-    if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
-      const query = `select count(reference) as count from effects where company_id = $1 AND reference = $2 And id != $3`
-      const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference, posted_elements.id_val])
-      if (result && result.count > 0) {
-          return res.json({
-          success: false,
-          message_ar: "هذا المرجع موجود بالفعل , رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح",
-        });
-      }else{
-        Reference = posted_elements.reference
-      }
 
-    }else{
-      Reference = await newReference_not_transaction(req,'effects','reference')
-    }
 
-    let query1 = `UPDATE effects SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6, reference = $7 where company_id = $8 AND id = $9`;
+    let query1 = `UPDATE effects SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7 AND company_id = $8 `;
     await db.none(query1, [
       posted_elements.emp_id,
       posted_elements.date_val,
@@ -4208,17 +4389,15 @@ return res.json({
       posted_elements.hours_val,
       posted_elements.values_val,
       posted_elements.note_val,
-      Reference,
-      req.session.company_id,
       posted_elements.id_val,
+      req.session.company_id,
     ]);
 
     return res.json({
       success: true,
-      message_ar:
-        "تم تعديل البيانات : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
+      message_ar: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
     });
-    // }
+    
   } catch (error) {
     console.error("Error get employee data:", error);
     res.status(500).json({
@@ -4233,46 +4412,49 @@ return res.json({
 app.post("/effects_delete", async (req, res) => {
   try {
     const posted_elements = req.body;
+    
     //! Permission
     await permissions(req, "effects_permission", "delete");
     if (!permissions) {
-      return;
+      return res.status(403).json({ success: false, message_ar: "ليس لديك إذن للحذف." });
     }
 
     //! sql injection check
     const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
-
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        message_ar: "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
     //* Start--------------------------------------------------------------
-
-
-
     let query1 = `DELETE FROM effects WHERE company_id = $1 AND id = $2`;
-    await db.none(query1, [
-      req.session.company_id,
-      posted_elements.id_val,
-    ]);
+    let params1 = [req.session.company_id, posted_elements.id];
+
+    await db.tx(async (tx) => {
+      try {
+        await tx.none(query1, params1);
+        await history(16, 3, posted_elements.id, posted_elements.year, posted_elements.reference, req, tx)
+      } catch (error) {
+        // إذا حدث خطأ، سيتم إلغاء العملية تلقائيًا بسبب `tx`
+        throw new Error("حدث خطأ أثناء تسجيل التاريخ."); // إلقاء خطأ مع رسالة مخصصة
+      }
+    });
 
     return res.json({
       success: true,
-      message_ar:
-        "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
+      message_ar: "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
     });
   } catch (error) {
-    console.error("Error get employee data:", error);
+    console.error("Error during effects deletion:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء حذف ",
+      message_ar: "حدث خطأ أثناء حذف البيانات أو تسجيل التاريخ.",
     });
   }
 });
+
 
 //#endregion
 //#endregion END - effects
@@ -5592,9 +5774,6 @@ app.post("/api/update-account-parent", async (req, res) => {
 
 
     const forbiddenValues = is_forbidden_adding_branches.join(','); // تحويل المصفوفه الى سلسه نصيه
-
-    console.log(is_forbidden_adding_branches);
-    console.log(forbiddenValues);
     
     const query0 = `select
     id
@@ -5737,7 +5916,7 @@ ORDER BY h1.id asc;`;  // in (1,2 ) ya3ny = 1 or 2
 //#region 2 : get revenue_account
 app.post("/api/get_revenue_accounts", async (req, res) => {
   try {
-    console.log('start');
+
     let query1 = `select id, account_name, global_id
 from accounts_header
 where company_id = $1 AND main_account_id = 4 AND is_final_account = true

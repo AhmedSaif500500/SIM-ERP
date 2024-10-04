@@ -114,6 +114,7 @@ async function filleffectstable() {
 
 };
 
+
 // search in effectsTable
 function performSearch() {
 
@@ -269,7 +270,7 @@ function clear_inputs() {
 
 
 async function save(A_or_B) {
-  const reference = refrence_input_checkbox.checked  || (refrence_input.value && isNaN(refrence_input.value))  ? 'auto' : refrence_input.value 
+  
   const date_input_val = date_input.value;
   const id_hidden_input_val = id_hidden_input.value;
   const dropdown_select_input_val = dropdown_select_input.value;
@@ -289,7 +290,7 @@ async function save(A_or_B) {
     return; // يجب إعادة التنفيذ بمجرد إظهار الخطأ أو إتخاذ إجراء آخر
   };
 
-  posted_items = {reference,date_input_val, id_hidden_input_val, days_input_val, hours_input_val, values_input_val, note_input_val}
+  posted_items = {date_input_val, id_hidden_input_val, days_input_val, hours_input_val, values_input_val, note_input_val}
 
   if (A_or_B == 'A'){
 

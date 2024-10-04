@@ -19,16 +19,14 @@ let datex_div = filter_div.querySelector(`#datex_div`);
 let checkbox_datex_div = filter_div.querySelector(`#checkbox_datex_div`);
 let checkbox_datex = filter_div.querySelector(`#checkbox_datex`);
 let select_datex = filter_div.querySelector(`#select_datex`);
-let input_start_date1 = filter_div.querySelector(`#input_start_date1`);
-input_start_date1.value = firstDayOfYear;
-let input_end_date1 = filter_div.querySelector(`#input_end_date1`);
-input_end_date1.value = lastDayOfYear;
+let input_start_date1 = filter_div.querySelector(`#input_start_date1`); input_start_date1.value = firstDayOfYear;
+let input_end_date1 = filter_div.querySelector(`#input_end_date1`); input_end_date1.value = lastDayOfYear;
 
-let reference_div = filter_div.querySelector(`#reference_div`);
-let check_reference = filter_div.querySelector(`#check_reference`);
-let reference_selectAndInput_div = filter_div.querySelector(`#reference_selectAndInput_div`);
-let select_reference = filter_div.querySelector(`#select_reference`);
-let input_reference = filter_div.querySelector(`#input_reference`);
+let referenceCONCAT_div = filter_div.querySelector(`#referenceCONCAT_div`);
+let checkbox_referenceCONCAT = filter_div.querySelector(`#checkbox_referenceCONCAT`);
+let referenceCONCAT_selectAndInput_div = filter_div.querySelector(`#referenceCONCAT_selectAndInput_div`);
+let select_referenceCONCAT = filter_div.querySelector(`#select_referenceCONCAT`);
+let input_referenceCONCAT = filter_div.querySelector(`#input_referenceCONCAT`);
 
 let depatment_name_div = filter_div.querySelector(`#depatment_name_div`);
 let checkbox_deparment_name = filter_div.querySelector(`#checkbox_deparment_name`);
@@ -62,21 +60,21 @@ let input_note = filter_div.querySelector(`#input_note`);
 
 
 let balance1_div = filter_div.querySelector(`#balance1_div`);
-let check_balance1 = filter_div.querySelector(`#check_balance1`);
+let checkbox_balance1 = filter_div.querySelector(`#checkbox_balance1`);
 let balance1_selectAndInput_div = filter_div.querySelector(`#balance1_selectAndInput_div`);
 let select_balance1 = filter_div.querySelector(`#select_balance1`);
 let input_balance1 = filter_div.querySelector(`#input_balance1`);
 
 
 let balance2_div = filter_div.querySelector(`#balance2_div`);
-let check_balance2 = filter_div.querySelector(`#check_balance2`);
+let checkbox_balance2 = filter_div.querySelector(`#checkbox_balance2`);
 let balance2_selectAndInput_div = filter_div.querySelector(`#balance2_selectAndInput_div`);
 let select_balance2 = filter_div.querySelector(`#select_balance2`);
 let input_balance2 = filter_div.querySelector(`#input_balance2`);
 
 
 let balance3_div = filter_div.querySelector(`#balance3_div`);
-let check_balance3 = filter_div.querySelector(`#check_balance3`);
+let checkbox_balance3 = filter_div.querySelector(`#checkbox_balance3`);
 let balance3_selectAndInput_div = filter_div.querySelector(`#balance3_selectAndInput_div`);
 let select_balance3 = filter_div.querySelector(`#select_balance3`);
 let input_balance3 = filter_div.querySelector(`#input_balance3`);
@@ -103,12 +101,12 @@ function backUp_filter_div_conditions() {
         input_start_date1: input_start_date1.value,
         input_end_date1: input_end_date1.value,
 
-        reference_div_display: window.getComputedStyle(reference_div).display,
-        input_reference_display: window.getComputedStyle(input_reference).display,
-        reference_selectAndInput_div_isHidden : reference_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        check_reference: check_reference.checked,
-        select_reference: select_reference.value,
-        input_reference: input_reference.value,
+        referenceCONCAT_div_display: window.getComputedStyle(referenceCONCAT_div).display,
+        input_referenceCONCAT_display: window.getComputedStyle(input_referenceCONCAT).display,
+        referenceCONCAT_selectAndInput_div_isHidden : referenceCONCAT_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
+        checkbox_referenceCONCAT: checkbox_referenceCONCAT.checked,
+        select_referenceCONCAT: select_referenceCONCAT.value,
+        input_referenceCONCAT: input_referenceCONCAT.value,
 
         depatment_name_div_display: window.getComputedStyle(depatment_name_div).display,
         input_department_display: window.getComputedStyle(input_department_name).display,
@@ -145,21 +143,21 @@ function backUp_filter_div_conditions() {
         balance1_div_display: window.getComputedStyle(balance1_div).display,
         input_balance1_display: window.getComputedStyle(input_balance1).display,
         balance1_selectAndInput_div_isHidden : balance1_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        check_balance1: check_balance1.checked,
+        checkbox_balance1: checkbox_balance1.checked,
         select_balance1: select_balance1.value,
         input_balance1: input_balance1.value,
 
         balance2_div_display: window.getComputedStyle(balance2_div).display,
         input_balance2_display: window.getComputedStyle(input_balance2).display,
         balance2_selectAndInput_div_isHidden : balance2_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        check_balance2: check_balance2.checked,
+        checkbox_balance2: checkbox_balance2.checked,
         select_balance2: select_balance2.value,
         input_balance2: input_balance2.value,
 
         balance3_div_display: window.getComputedStyle(balance3_div).display,
         input_balance3_display: window.getComputedStyle(input_balance3).display,
         balance3_selectAndInput_div_isHidden : balance3_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        check_balance3: check_balance3.checked,
+        checkbox_balance3: checkbox_balance3.checked,
         select_balance3: select_balance3.value,
         input_balance3: input_balance3.value,
 
@@ -170,9 +168,7 @@ function backUp_filter_div_conditions() {
         select_active: select_active.value,
 
         is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains(`hidden_height`)
-            ? true
-            : false,
+        is_filter_div_hidden: filter_div.classList.contains(`hidden_height`) ? true : false,
         sub_h2_header: sub_h2_header.textContent,
         
         QKey_val: QKey,
@@ -255,12 +251,12 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         input_end_date1.value = conditions.input_end_date1;
 
 
-        reference_div.style.display = conditions.reference_div_display;
-        input_reference.style.display = conditions.input_reference_display;
-        check_reference.checked = conditions.check_reference;
-        if (conditions.reference_selectAndInput_div_isHidden){reference_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{reference_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_reference.value = conditions.select_reference;
-        input_reference.value = conditions.input_reference;
+        referenceCONCAT_div.style.display = conditions.referenceCONCAT_div_display;
+        input_referenceCONCAT.style.display = conditions.input_referenceCONCAT_display;
+        checkbox_referenceCONCAT.checked = conditions.checkbox_referenceCONCAT;
+        if (conditions.referenceCONCAT_selectAndInput_div_isHidden){referenceCONCAT_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{referenceCONCAT_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
+        select_referenceCONCAT.value = conditions.select_referenceCONCAT;
+        input_referenceCONCAT.value = conditions.input_referenceCONCAT;
 
         depatment_name_div.style.display = conditions.depatment_name_div_display;
         input_department_name.style.display = conditions.input_department_display;
@@ -298,21 +294,21 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         balance1_div.style.display = conditions.balance1_div_display;
         input_balance1.style.display = conditions.input_balance1_display;
         if (conditions.balance1_selectAndInput_div_isHidden){balance1_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance1_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        check_balance1.checked = conditions.check_balance1;
+        checkbox_balance1.checked = conditions.checkbox_balance1;
         select_balance1.value = conditions.select_balance1;
         input_balance1.value = conditions.input_balance1;
 
         balance2_div.style.display = conditions.balance2_div_display;
         input_balance2.style.display = conditions.input_balance2_display;
         if (conditions.balance2_selectAndInput_div_isHidden){balance2_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance2_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        check_balance2.checked = conditions.check_balance2;
+        checkbox_balance2.checked = conditions.checkbox_balance2;
         select_balance2.value = conditions.select_balance2;
         input_balance2.value = conditions.input_balance2;
 
         balance3_div.style.display = conditions.balance3_div_display;
         input_balance3.style.display = conditions.input_balance3_display;
         if (conditions.balance3_selectAndInput_div_isHidden){balance3_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance3_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        check_balance3.checked = conditions.check_balance3;
+        checkbox_balance3.checked = conditions.checkbox_balance3;
         select_balance3.value = conditions.select_balance3;
         input_balance3.value = conditions.input_balance3;
 
@@ -357,11 +353,12 @@ function deafult_checkbox() {
     checkbox_deparment_name.checked = false;
     checkbox_account_no.checked = false;
     checkbox_account_name.checked = true;
-    checkbox_note.checked = false;
-    check_balance1.checked = true;
-    check_balance2.checked = true;
-    check_balance3.checked = true;
-    check_balance3.reference = true;
+    note_div.style.display = `flex`
+    checkbox_note.checked = true;
+    checkbox_balance1.checked = true;
+    checkbox_balance2.checked = true;
+    checkbox_balance3.checked = true;
+    checkbox_balance3.reference = true;
     select_active.value = 0;
 }
 
@@ -381,7 +378,7 @@ async function filter_icon_cancel_fn() {
             input_end_date1.value = lastDayOfYear;
             checkbox_aggregation.checked = false;
             note_div.style.display = "flex";
-            reference_div.style.display = "flex";
+            referenceCONCAT_div.style.display = "flex";
             sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
             
             await getData_fn();
@@ -478,7 +475,7 @@ async function Execution() {
             // console.log(`الحالة العادة`);
             // note_div.style.display = "flex";
             // datex_div.style.display = "flex";
-            // reference_div.style.display = "flex";
+            // referenceCONCAT_div.style.display = "flex";
             sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
         
         } else if (checkbox_aggregation.checked) {
@@ -486,8 +483,11 @@ async function Execution() {
 
             checkbox_datex_div.style.display = `none`;
             checkbox_datex.checked = false
-            reference_div.style.display = `none`;
-            check_reference.checked = false
+            referenceCONCAT_div.style.display = `none`;
+            checkbox_referenceCONCAT.checked = false
+            note_div.style.display = `none`;
+            checkbox_note.checked = false;
+            
             
         
             sub_h2_header.textContent = `تقرير مجمع من   ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
@@ -574,15 +574,16 @@ function showFirst50RowAtTheBegening() {
                 );
             const isBalanceMatch1 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    check_balance1,
+                    checkbox_balance1,
                     select_balance1,
                     input_balance1,
                     "days",
                     row
                 );
+
             const isBalanceMatch2 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    check_balance2,
+                    checkbox_balance2,
                     select_balance2,
                     input_balance2,
                     "hours",
@@ -590,7 +591,7 @@ function showFirst50RowAtTheBegening() {
                 );
             const isBalanceMatch3 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    check_balance3,
+                    checkbox_balance3,
                     select_balance3,
                     input_balance3,
                     "values",
@@ -598,9 +599,9 @@ function showFirst50RowAtTheBegening() {
                 );
             const isReferenceMatch =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    check_reference,
-                    select_reference,
-                    input_reference,
+                    checkbox_referenceCONCAT,
+                    select_referenceCONCAT,
+                    input_referenceCONCAT,
                     "reference",
                     row
                 );
@@ -656,28 +657,22 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_datex = `display:${checkbox_datex.checked ? "table-cell" : "none"
-            }; width: ${!checkbox_account_name.checked && !checkbox_note.checked ? `100%` : "auto"
-            }; white-space: nowrap; text-align: start`;
-        let style_reference = `display:${check_reference.checked ? "table-cell" : "none"
-            }; width: auto; white-space: nowrap; text-align: start`;
+        let style_datex = `display:${checkbox_datex.checked ? "table-cell" : "none"}; width: ${!checkbox_account_name.checked && !checkbox_note.checked ? `100%` : "auto"}; white-space: nowrap; text-align: start`;
+        let style_reference = `display: none;`; 
+        let style_year = `display: none;`;
+        let style_referenceCONCAT = `display:${checkbox_referenceCONCAT.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_department_id = `display: none;`;
-        let style_department_name = `display:${checkbox_deparment_name.checked ? "table-cell" : "none"
-            }; width: auto; white-space: nowrap; text-align: start`;
+        let style_department_name = `display:${checkbox_deparment_name.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_account_no = `display:${checkbox_account_no.checked ? "table-cell" : "none"
             };  width: auto; white-space: nowrap; text-align: start`;
-        let style_name = `display:${checkbox_account_name.checked ? "table-cell" : "none"
-            }; width: ${checkbox_note.checked ? "auto" : "100%"
-            }; white-space: nowrap; text-align: start`;
+        let style_name = `display:${checkbox_account_name.checked ? "table-cell" : "none"}; width: ${checkbox_note.checked ? "auto" : "100%"}; white-space: nowrap; text-align: start`;
         let style_note = `display:${checkbox_note.checked ? "table-cell" : "none"
             }; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`;
-        let style_balance1 = `display:${check_balance1.checked ? "table-cell" : "none"
+        let style_balance1 = `display:${checkbox_balance1.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_balance2 = `display:${checkbox_balance2.checked ? "table-cell" : "none"
             }; width: auto; white-space: nowrap; text-align: start`;
-        let style_balance2 = `display:${check_balance2.checked ? "table-cell" : "none"
-            }; width: auto; white-space: nowrap; text-align: start`;
-        let style_balance3 = `display:${check_balance3.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let style_active = `display:${checkbox_active.checked ? "table-cell" : "none"
-            };  width: auto; white-space: nowrap; text-align: center;`;
+        let style_balance3 = `display:${checkbox_balance3.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_active = `display:${checkbox_active.checked ? "table-cell" : "none"};  width: auto; white-space: nowrap; text-align: center;`;
 
         total_column1.value = 0;
         total_column2.value = 0;
@@ -706,6 +701,8 @@ function fillTable() {
                                 <th style="${style_id}">ID</th>
                                 <th style="${style_datex}">التاريخ</th>
                                 <th style="${style_reference}">#</th>
+                                <th style="${style_year}">#</th>
+                                <th style="${style_referenceCONCAT}">#</th>
                                 <th style="${style_department_id}">dep_id</th>
                                 <th style="${style_department_name}">القسم</th>
                                 <th style="${style_account_no}">المعرف</th>
@@ -722,46 +719,48 @@ function fillTable() {
 
         slice_array1.forEach((row) => {
             let activeClass =
-                row.is_inactive == "غير نشط"
-                    ? "table_red_condition"
-                    : "table_green_condition";
+                row.is_inactive == "غير نشط"? "table_red_condition": "table_green_condition";
+            let referenceCONCAT = `${row.year}-${formatToFiveDigits(row.reference)}`
 
-            tableHTML += `<tr>
+            tableHTML +=
+                     `<tr>
                         ${buttonRow}
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_datex}">${row.datex}</td>
                         <td style="${style_reference}">${row.reference}</td>
-                        <td style="${style_department_id}">${row.department_id
-                }</td>
-                        <td style="${style_department_name}">${row.department_name
-                }</td>
+                        <td style="${style_year}">${row.year}</td>
+                        <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
+                        <td style="${style_department_id}">${row.department_id}</td>
+                        <td style="${style_department_name}">${row.department_name}</td>
                         <td style="${style_account_no}">${row.account_no}</td>
                         <td style="${style_id}">${row.employee_id}</td>
                         <td style="${style_name}">${row.account_name}</td>
                         ${tdNumber(linkStyle,false,true,row.days,style_balance1,total_column1,fn)}
                         ${tdNumber(linkStyle,false,true,row.hours,style_balance2,total_column2,fn)}
                         ${tdNumber(linkStyle,false,true,row.values,style_balance3,total_column3,fn)}
-                        <td style="${style_note}">${row.note.replace(/\n/g, "<br>")}</td>
+                        <td style="${style_note}">${row.note}</td>
                         <td style="${style_active}"><span class="${activeClass}">${row.is_inactive}</span></td>                        
                       </tr>`;
         });
 
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td id="tfooter0" style="${style_button}"></td>
-                        <td id="tfooter1" style="${style_id}"></td>
-                        <td id="tfooter2" style="${style_datex}"></td>
-                        <td id="tfooter3" style="${style_reference}"></td>
-                        <td id="tfooter4" style="${style_department_id}"></td>
-                        <td id="tfooter5" style="${style_department_name}"></td>
-                        <td id="tfooter6" style="${style_account_no}"></td>
-                        <td id="tfooter7" style="${style_id}"></td>
-                        <td id="tfooter8" style="${style_name}"></td>
-                        <td id="tfooter9" style="${style_balance1}"></td>
-                        <td id="tfooter10" style="${style_balance2}"></td>
-                        <td id="tfooter11" style="${style_balance3}"></td>
-                        <td id="tfooter12" style="${style_note}"></td>
-                        <td id="tfooter13" style="${style_active}"></td>
+                        <td id="footer_style_button" style="${style_button}"></td>
+                        <td id="footer_style_id1" style="${style_id}"></td>
+                        <td id="footer_style_datex" style="${style_datex}"></td>
+                        <td id="footer_style_reference" style="${style_reference}"></td>
+                        <td id="footer_style_year" style="${style_year}"></td>
+                        <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
+                        <td id="footer_style_department_id" style="${style_department_id}"></td>
+                        <td id="footer_style_department_name" style="${style_department_name}"></td>
+                        <td id="footer_style_account_no" style="${style_account_no}"></td>
+                        <td id="footer_style_id2" style="${style_id}"></td>
+                        <td id="footer_style_name" style="${style_name}"></td>
+                        <td id="footer_style_balance1" style="${style_balance1}"></td>
+                        <td id="footer_style_balance2" style="${style_balance2}"></td>
+                        <td id="footer_style_balance3" style="${style_balance3}"></td>
+                        <td id="footer_style_note" style="${style_note}"></td>
+                        <td id="footer_style_active" style="${style_active}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -786,16 +785,16 @@ function fillTable() {
         // جمع القيم في العمود رقم 6
 
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
-        tableContainer.querySelector(`#tfooter0`).textContent = slice_array1.length; //  عدد الصفوف
-        tableContainer.querySelector(`#tfooter9`).textContent = floatToString(
+        tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
+        tableContainer.querySelector(`#footer_style_balance1`).textContent = floatToString(
             true,
             total_column1.value
         );
-        tableContainer.querySelector(`#tfooter10`).textContent = floatToString(
+        tableContainer.querySelector(`#footer_style_balance2`).textContent = floatToString(
             true,
             total_column2.value
         );
-        tableContainer.querySelector(`#tfooter11`).textContent = floatToString(
+        tableContainer.querySelector(`#footer_style_balance3`).textContent = floatToString(
             true,
             total_column3.value
         );
@@ -822,20 +821,20 @@ function performSearch() {
 
         array1 = filteredData_Array.filter((row) => {
             const datexInfoMatch = performSearch_Row(checkbox_datex,"datex",searchValue,row);
-            const referenceMatch = performSearch_Row(check_reference,"reference",searchValue,row);
+            const referenceCONCAT_Match = performSearch_Row(checkbox_referenceCONCAT,"reference",searchValue,row);
             const departmentMatch = performSearch_Row(checkbox_deparment_name,"department_name",searchValue,row);
             const accNoMatch = performSearch_Row(checkbox_account_no,"account_no",searchValue,row);
             const nameMatch = performSearch_Row(checkbox_account_name,"account_name",searchValue,row);
             const anotherInfoMatch = performSearch_Row(checkbox_note,"note",searchValue,row);
-            const balanceMatch1 = performSearch_Row(check_balance1,"days",searchValue,row);
-            const balanceMatch2 = performSearch_Row(check_balance2,"hours",searchValue,row);
-            const balanceMatch3 = performSearch_Row(check_balance3,"values",searchValue,row);
+            const balanceMatch1 = performSearch_Row(checkbox_balance1,"days",searchValue,row);
+            const balanceMatch2 = performSearch_Row(checkbox_balance2,"hours",searchValue,row);
+            const balanceMatch3 = performSearch_Row(checkbox_balance3,"values",searchValue,row);
             const activeeMatch = performSearch_Row(checkbox_active,"is_inactive",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 datexInfoMatch ||
-                referenceMatch ||
+                referenceCONCAT_Match ||
                 departmentMatch ||
                 accNoMatch ||
                 nameMatch ||
@@ -899,14 +898,16 @@ async function table_update_btn_fn(updateBtn) {
         x: row.cells[1].textContent,
         datex: row.cells[2].textContent,
         reference: row.cells[3].textContent,
-        account_no: row.cells[6].textContent,
-        emp_x: row.cells[7].textContent,
-        acc_name: row.cells[8].textContent,
-        days: row.cells[9].textContent,
-        hours: row.cells[10].textContent,
-        values: row.cells[11].textContent,
-        note: row.cells[12].textContent,
-        active: row.cells[13].textContent,
+        year: row.cells[4].textContent,
+        referenceCONCAT: row.cells[5].textContent,
+        account_no: row.cells[8].textContent,
+        emp_x: row.cells[9].textContent,
+        acc_name: row.cells[10].textContent,
+        days: row.cells[11].textContent,
+        hours: row.cells[12].textContent,
+        values: row.cells[13].textContent,
+        note: row.cells[14].textContent,
+        active: row.cells[15].textContent,
     };
 
     
@@ -996,12 +997,12 @@ async function aggregation_balance_details(details_btn) {
         deafult_checkbox();
         checkbox_aggregation.checked = false;
         note_div.style.display = "flex";
-        reference_div.style.display = "flex";
+        referenceCONCAT_div.style.display = "flex";
        
         emp_name = row.cells[8].textContent;
         checkbox_account_name.checked = false;
         checkbox_note.checked = true;
-        check_reference.checked = true;
+        checkbox_referenceCONCAT.checked = true;
         account_name_div.style.display = `none`
         active_div.style.display = `none`
         checkbox_active.checked = false;

@@ -57,15 +57,14 @@
               </div>
                 <input type="hidden" id="x_input">
 
-              <div class="column x_start y_start w_fit">
-                <label for="refrence_input" class="lbl_sm">المرجع</label>
-                <div class="input_with_icon_div">
-                  <span class="refrence_input_checkbox"><input type="checkbox" id="refrence_input_checkbox"
-                      title="تلقائى"></span>
-                  <input type="search" id="refrence_input" class="refrence_input hover"
-                    oninput="check_parse(this,'number')" placeholder="اختياؤى" autocomplete="off">
+                <div class="column x_start y_start w_fit">
+                  <label for="refrence_input" class="lbl_sm">المرجع</label>
+                  <div class="input_with_icon_div">
+                    <span class="refrence_input_checkbox"><input type="checkbox" id="refrence_input_checkbox" checked disabled title="تلقائى"></span>
+                    <input type="search" id="refrence_input" class="refrence_input refrence_input_auto_mode hover"
+                      oninput="check_parse(this,'number')" placeholder="تلقائى" autocomplete="off">
+                  </div>
                 </div>
-              </div>
 
             </div>
 

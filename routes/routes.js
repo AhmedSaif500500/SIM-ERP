@@ -26,6 +26,19 @@ router.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views' , 'login.html'));
 });
 
+router.get('/history_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission === 6 || req.session.history_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'history', 'history_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
 
 router.get('/notes_ar', async (req, res) => {
     if (req.session.isLoggedIn) {  
@@ -73,6 +86,9 @@ router.get('/users_add_ar', (req, res) => {
         res.redirect('/login?reason=0');
     }
 });
+
+
+
 
 
 

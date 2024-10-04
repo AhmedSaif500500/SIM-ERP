@@ -31,22 +31,21 @@ console.log(document.querySelector(`#date1`).value);
       const note1_input = document.querySelector('#note1_input').value.trim();
       const date1 = document.querySelector('#date1').value.trim();
       
-      await fetchUpdate1(
-        { id_input,
-          production_amount_input,
-          sales_amount_input,
-          note1_input,
-          date1,
-          today,},
-          'production_permission',
-          'هل تريد تعديل بيانات الجرد ؟',
-          10,
-          '/production_update_ar',
-          true,
-          'production_view_ar'
-      )
+
+      const post = await fetchData_postAndGet(
+        '/production_update_ar',
+        { id_input,production_amount_input,sales_amount_input,note1_input,date1,today},
+        'production_permission','update',
+        15,
+        true,'هل تريد تعديل البيانات ؟',
+        false,false,'',
+        true,'production_view_ar',
+        'حدث خطأ اثناء معالجة البيانات'
+      ) 
+
       });
       
+
 
       async function delete_production() {
 const id = parseInt(document.querySelector(`#hidden_id_input`).value);

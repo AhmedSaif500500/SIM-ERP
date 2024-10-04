@@ -28,7 +28,7 @@
   --btn_new_backcolor: #2196f3;
   --btn_save_backcolor: #04aa6d;
   --btn_update_backcolor: #ff5722;
-  --btn_cancel_backcolor: #f44336;
+  --btn_delete_backcolor: #f44336;
   --btn_color: rgb(255, 255, 255);
 
   --btn_search_backcolor: rgb(229, 229, 229);
@@ -118,7 +118,7 @@
   --btn_new_backcolor: #2196f3;
   --btn_save_backcolor: #04aa6d;
   --btn_update_backcolor: #ff5722;
-  --btn_cancel_backcolor: #f44336;
+  --btn_delete_backcolor: #f44336;
   --btn_color: rgb(255, 255, 255);
 
   --btn_search_backcolor: rgb(67, 67, 67);
@@ -1007,7 +1007,7 @@ width: 100% !important;
 }
 
 .btn_cancel {
-  background-color: var(--btn_cancel_backcolor);
+  background-color: var(--btn_delete_backcolor);
 }
 
 .btn_do,
@@ -1537,7 +1537,7 @@ html[dir="rtl"] {
 
   .closeMenueIcon i {
     /* el X ely gowa hya shafafa fadya fabtgep el lon el 5alfya ely waraha */
-    color: var(--btn_cancel_backcolor);
+    color: var(--btn_delete_backcolor);
     font-size: 3rem;
   }
 }
@@ -2369,7 +2369,7 @@ font-size: 2rem;
 }
 
 .table_red_condition{
-  color: var(--btn_cancel_backcolor);
+  color: var(--btn_delete_backcolor);
 }
 
 .tabble_update_btn:hover, .tabble_view_btn:hover {
@@ -3125,7 +3125,7 @@ color: var(--Font_Color);
 
 /* الخصائص عند الوقوف على الرابط */
 .link:hover {
-  color: var(--btn_cancel_backcolor); /* تغيير لون النص عند الوقوف على الرابط */
+  color: var(--btn_delete_backcolor); /* تغيير لون النص عند الوقوف على الرابط */
   text-decoration: underline; /* إضافة تسطير عند الوقوف */
 }
 
@@ -3156,7 +3156,7 @@ color: var(--Font_Color);
 }
 
 .td_negative_number{
-  color: var(--btn_cancel_backcolor) !important;
+  color: var(--btn_delete_backcolor) !important;
 }
 
 .td_link_number, .td_normal_number , .td_negative_number{
@@ -3186,7 +3186,7 @@ color: var(--Font_Color);
 
 /* الخصائص عند الوقوف على الرابط */
 .table_number:hover {
-  /* color: var(--btn_cancel_backcolor); تغيير لون النص عند الوقوف على الرابط */
+  /* color: var(--btn_delete_backcolor); تغيير لون النص عند الوقوف على الرابط */
   /* opacity: 0.8;
   scale: 1; */
   text-decoration: underline; /* إضافة تسطير عند الوقوف */
@@ -3200,7 +3200,7 @@ color: var(--Font_Color);
 
 
 .inactive_color{
-  background-color: var(--btn_cancel_backcolor)!important;
+  background-color: var(--btn_delete_backcolor)!important;
   color: var(--btn_color);
 }
 

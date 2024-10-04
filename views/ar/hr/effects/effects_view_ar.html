@@ -101,15 +101,15 @@
 
 
             <!-- reference  -->
-            <div id="reference_div" class="filter_div_sub">
+            <div id="referenceCONCAT_div" class="filter_div_sub">
               <div class="flex_row">
-                <span class="refrence_input_checkbox"><input type="checkbox" id="check_reference" checked
+                <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_referenceCONCAT" checked
                     title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
                 <div class="checkbox_label">المرجع</div>
               </div>
-              <div ID="reference_selectAndInput_div" class="select_and_input_div">
-                <select id="select_reference" class="dark_select hover"
+              <div ID="referenceCONCAT_selectAndInput_div" class="select_and_input_div">
+                <select id="select_referenceCONCAT" class="dark_select hover"
                   onchange="filter_insideSelect_number_column_with_input(this)">
                   <option value="0" selected>اظهار الكل</option>
                   <option value="1">اكبر من</option>
@@ -118,7 +118,7 @@
                   <option value="4">صفر</option>
                   <option value="5">ليس صفر</option>
                 </select>
-                <input id="input_reference" name="inside_input_search" type="search" class="input_text_sm hover"
+                <input id="input_referenceCONCAT" name="inside_input_search" type="search" class="input_text_sm hover"
                   style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
               </div>
             </div>
@@ -197,10 +197,10 @@
             <div class="filter_div_sub" id="note_dive">
               <div class="flex_row">
                 <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_note" title="اظهار العمود"
-                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
                 <div class="checkbox_label">البيان</div>
               </div>
-              <div id="note_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+              <div id="note_selectAndInput_div" class="select_and_input_div">
                 <select id="select_note" class="dark_select hover"
                   onchange="filter_insideSelect_string_column_with_input(this)">
                   <option value="0" selected>اظهار الكل</option>
@@ -218,7 +218,7 @@
             <!-- balance  -->
             <div id="balance1_div" class="filter_div_sub">
               <div class="flex_row">
-                <span class="refrence_input_checkbox"><input type="checkbox" id="check_balance1" checked
+                <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_balance1" checked
                     title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
                 <div class="checkbox_label">اليوم</div>
@@ -241,7 +241,7 @@
             <!-- balance  -->
             <div id="balance2_div" class="filter_div_sub">
               <div class="flex_row">
-                <span class="refrence_input_checkbox"><input type="checkbox" id="check_balance2" checked
+                <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_balance2" checked
                     title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
                 <div class="checkbox_label">الساعة</div>
@@ -264,7 +264,7 @@
             <!-- balance  -->
             <div id="balance3_div" class="filter_div_sub">
               <div class="flex_row">
-                <span class="refrence_input_checkbox"><input type="checkbox" id="check_balance3" checked
+                <span class="refrence_input_checkbox"><input type="checkbox" id="checkbox_balance3" checked
                     title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
                 <div class="checkbox_label">القيمة</div>

@@ -15,28 +15,28 @@ let refrence_input = document.querySelector(`#refrence_input`);
 
 
 
-  if (refrence_input_checkbox && refrence_input) {
-    function is_checked_refrence_fn() {
-    if (refrence_input_checkbox.checked){
-      refrence_input.value = "تلقائى"
-      refrence_input.classList.remove(`refrence_input`)
-      refrence_input.classList.add(`refrence_input_auto_mode`)
-    }else{
-      refrence_input.value = ""
-      refrence_input.classList.remove(`refrence_input_auto_mode`)
-      refrence_input.classList.add(`refrence_input`)
-    }
-  }
+//   if (refrence_input_checkbox && refrence_input) {
+//     function is_checked_refrence_fn() {
+//     if (refrence_input_checkbox.checked){
+//       refrence_input.value = "تلقائى"
+//       refrence_input.classList.remove(`refrence_input`)
+//       refrence_input.classList.add(`refrence_input_auto_mode`)
+//     }else{
+//       refrence_input.value = ""
+//       refrence_input.classList.remove(`refrence_input_auto_mode`)
+//       refrence_input.classList.add(`refrence_input`)
+//     }
+//   }
 
-  refrence_input_checkbox.onchange = function(){
-    is_checked_refrence_fn()
-  }
+//   refrence_input_checkbox.onchange = function(){
+//     is_checked_refrence_fn()
+//   }
   
-  document.addEventListener('DOMContentLoaded', async function(){
-     is_checked_refrence_fn()
-   })
+//   document.addEventListener('DOMContentLoaded', async function(){
+//      is_checked_refrence_fn()
+//    })
   
-}
+// }
 
 
 function reverseDateFormatting(dateValue) {
@@ -57,6 +57,24 @@ function reverseDateFormatting(dateValue) {
   }
 }
 
+
+function formatToFiveDigits(num) {
+
+if (!num){
+  return 0
+}
+
+  // Check if the number is a valid integer and not negative
+  if (typeof num !== 'number' || num < 0 || num > 99999) {
+      showAlert('fail', 'يوجد خطأ فى بيانات المرجع : برجاء التواصل مع احد المسؤليين')
+      return
+  }
+  
+  // Convert the number to a string and pad it with leading zeros
+  return num.toString().padStart(5, '0');
+}
+
+
 //#region 
 
 //#region add templetes
@@ -75,7 +93,7 @@ function loadHeaderContents() {
   // الكود HTML كمتغير نصي
   const headerContent = `
       <a href="#" id="MenueIcon" class="MenueIcon" title="Open Menue">
-          <i class="fa-duotone fa-bars"></i>
+          <i class="fa-duotone fa-bars" style="font-size: 2.5rem"></i>
       </a>
       <div class="header_dark_lang_control">
           <a id="dark_toggle_btn" class="">
@@ -84,16 +102,19 @@ function loadHeaderContents() {
           <a href="" id="lang_btn" class=""> en </a>
       </div>
       <div class="header_menue">
-          <a href="companies_ar">
-          <i class="fa-light fa-address-book" style="font-size: 2rem"></i>
-              الاعمال التجاريه
+          <a href="companies_ar" title="الاعمال التجارية"
+            <i class="fa-duotone fa-solid fa-books" style="font-size: 2.5rem"></i>
           </a>
+
+
       </div>
       <div class="header_user_div" style="gap: 0.7rem;">
           <button id="header_user_today" class="header_user_name" style="display: none;">${today}</button>
           <button id="header_user_name" class="header_user_name"></button>
-          <div id="user_options" class="user_options" style="display: none;">
-              <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
+          <div id="user_options" class="user_options hidden_height">
+              <button id="user_setting_btn" class="btn_new">الاعدادات</button>
+              <button id="history_setting_btn" class="btn_new" onclick="">السجل الزمنى</button>
+              <button id="backup_setting_btn" class="btn_new" onclick="">النسخ الاحتياطى</button>
               <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
           </div>
           <button id="header_company_name" class="header_user_name"></button>
@@ -166,7 +187,7 @@ function loadSidebarContents() {
       شطب المخزون
     </a>
 
-  
+
     <a href="users_view_ar" target="_self" id="users_control_a" style="display: none;">
       <i class="fa-duotone fa-user"></i>
       الصلاحيات
@@ -270,6 +291,7 @@ async function fixed_information() {
     const header_user_name = document.querySelector('#header_user_name');
     const header_company_name = document.querySelector('#header_company_name');
     const user_setting_btn = document.querySelector('#user_setting_btn');
+  
 
     const excludedPages1 = ['/', 'login']
     if (excludedPages1.includes(currentPage)) {
@@ -304,18 +326,27 @@ async function fixed_information() {
 
 fixed_information()
 
-
+const history_setting_btn = document.querySelector('#history_setting_btn');
+if (history_setting_btn){
+  history_setting_btn.onclick = function(){
+  try {
+    window.location.href = "history_view_ar";
+  } catch (error) {
+    catch_error(error)
+  }
+}
+}
 
 user_setting_btn.addEventListener('click', function () {
   try {
-    hide_User_options();
-    const id = sessionStorage.getItem('current_id');
-    sessionStorage.setItem("user_id", id);
-    window.location.href = "/users_update_ar";
+      showAlert(`info`, `مازال تحت التحديث`)
   } catch (error) {
     catch_error('user_setting_btn EROR', error.message)
   }
 });
+
+
+
 
 
 header_user_name.addEventListener('click', function () {
@@ -323,10 +354,10 @@ header_user_name.addEventListener('click', function () {
 });
 function user_options_display() {
   const user_options = document.querySelector('#user_options');
-  if (user_options.style.display === 'flex') {
-    hide_User_options()
-  } else {
+  if (user_options.classList.contains(`hidden_height`)) {
     show_User_options()
+  } else {
+    hide_User_options()
   }
 }
 
@@ -342,15 +373,14 @@ document.addEventListener('click', function (event) {
 });
 function show_User_options() {
   if (user_options !== null) {
-    user_options.style.display = 'flex'
+    user_options.classList.remove(`hidden_height`)
     user_options.focus();
   }
 }
 
 function hide_User_options() {
-  const user_option = document.querySelector(`#user_option`);
   if (user_options !== null) {
-    user_options.style.display = 'none'
+    user_options.classList.add(`hidden_height`)
   }
 
 }
@@ -1611,6 +1641,20 @@ async function redirection(page, messageType, messageText) {
   window.location.href = page;
 };
 
+
+async function urlParamsRedirection(urlParams_object, redirectionPage, messageType, messageText) {
+  showAlert(messageType, messageText);
+  body.style.pointerEvents = 'none';
+
+  // تأخير تنفيذ الكود بمدة 3 ثواني
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
+    const encodedData = encodeURIComponent(JSON.stringify(urlParams_object));
+    window.location.href = `${redirectionPage}?data=${encodedData}`
+};
+
+
+
 function showRedirectionReason() {
   let message;
   const urlParams = new URLSearchParams(window.location.search);
@@ -2132,7 +2176,7 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
 
 
 // let data = [];
-async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, error_message) {
+async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, is_urlParams, urlParams_object, urlParams_Page, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
   const controller = new AbortController();
   const signal = controller.signal;
 
@@ -2241,6 +2285,254 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     }
   }
 }
+
+
+async function NEW_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, is_urlParams, urlParams_object, urlParams_redirectionPage, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  try {
+
+    
+    if (is_showLoadingIcon) {
+      showLoadingIcon(Element_showLoadingIcon_as_avariable)
+
+    }
+
+
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      return false;
+    }
+
+    
+    const permission = await btn_permission(permission_name, permission_type);
+
+    if (!permission) {
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      return false;
+    };
+
+    
+    
+
+    if (is_confirm_dialog) {
+      if (is_confirm_dialog === true)
+        await showDialog('', dialogMessage, '');        
+      if (!dialogAnswer) {
+        hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+        return false;
+      }
+    }
+
+    
+
+    // تعيين حد زمني للطلب
+    const timeout = setTimeout(() => {
+      controller.abort(); // إلغاء الطلب
+    }, ResponseTimeBySecends * 1000); //
+
+    // إرسال الطلب إلى الخادم
+    
+    const response = await fetch(FetchURL, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal, // تمرير الإشارة لإلغاء الطلب
+    });
+
+    
+    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+    clearTimeout(timeout);
+    hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+    if (response.ok) {
+      
+      
+      
+
+      const data = await response.json();
+      if (data.xx && data.xx === true) {
+        closeDialog();
+        redirection('login', 'fail', data.message_ar)
+        return false
+      }
+
+      if (data.success) {
+        if (is_close_dialog === true) { closeDialog(); }
+          body_content.style.pointerEvents = 'none';
+
+          if (is_redirection_page){
+            redirection(redirection_page, 'success', data.message_ar);
+            return true;
+          } else if(is_urlParams){
+            urlParamsRedirection(urlParams_object, urlParams_redirectionPage, 'success', data.message_ar)
+            return true;
+          }else if(is_confirm_dialog){
+            showAlert('success',data.message_ar)
+            return true
+          }else{
+            return data; // إرجاع البيانات لاستخدامها خارج الدالة
+          }
+      }else{
+        if (is_ERROR_redirection_page){
+            if(is_urlParams){
+              urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message)
+            }else{
+              redirection(ERROR_redirection_page, 'fail', error_message);
+            }
+        }else{
+          showAlert('fail',error_message)
+        }
+        return false;
+      }
+    } else {
+      if (is_ERROR_redirection_page){
+        if(is_urlParams){
+          urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message)
+        }else{
+          showAlert('fail',error_message)
+        }
+      }else{
+        showAlert('fail',error_message)
+      }
+    return false;
+    }
+  } catch (error) {
+    hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+      return false;
+
+    } else if(is_ERROR_redirection_page) {
+        if(is_urlParams){
+          urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message)
+        }else{
+          redirection(ERROR_redirection_page, 'fail', error_message);
+        }
+        return false
+      }else{
+        showAlert('fail',error_message)
+        catch_error(error);
+        return false
+    }
+  }
+}
+
+
+
+async function GPT_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, is_urlParams, urlParams_object, urlParams_redirectionPage, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  function handleError(isRedirection = false) {
+    hideLoadingIcon(Element_showLoadingIcon_as_avariable);
+    if (isRedirection) {
+      if (is_urlParams) {
+        urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message);
+      } else {
+        redirection(ERROR_redirection_page, 'fail', error_message);
+      }
+    } else {
+      showAlert('fail', error_message);
+    }
+  }
+
+  try {
+    if (is_showLoadingIcon) {
+      showLoadingIcon(Element_showLoadingIcon_as_avariable);
+    }
+
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable);
+      return false;
+    }
+
+    const permission = await btn_permission(permission_name, permission_type);
+    if (!permission) {
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable);
+      return false;
+    }
+
+    if (is_confirm_dialog) {
+      await showDialog('', dialogMessage, '');
+      if (!dialogAnswer) {
+        hideLoadingIcon(Element_showLoadingIcon_as_avariable);
+        return false;
+      }
+    }
+
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, ResponseTimeBySecends * 1000);
+
+    const response = await fetch(FetchURL, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal,
+    });
+
+    clearTimeout(timeout);
+    hideLoadingIcon(Element_showLoadingIcon_as_avariable);
+    closeDialog()
+    if (response.ok) {
+      const data = await response.json();
+      if (data.xx && data.xx === true) {
+        redirection('login', 'fail', data.message_ar);
+        return false;
+      }
+
+      if (data.success) {
+        body_content.style.pointerEvents = 'none';
+
+        if (is_redirection_page) {
+          redirection(redirection_page, 'success', data.message_ar);
+          return true;
+        } else if (is_urlParams) {
+          urlParamsRedirection(urlParams_object, urlParams_redirectionPage, 'success', data.message_ar);
+          return true;
+        } else if (is_confirm_dialog) {
+          showAlert('success', data.message_ar);
+          return true;
+        } else {
+          return data;
+        }
+      } else {
+        if (is_ERROR_redirection_page) {
+          handleError(true);
+        } else {
+          showAlert('fail', error_message);
+        }
+        return false;
+      }
+    } else {
+      if (is_ERROR_redirection_page) {
+        handleError(true);
+      } else {
+        showAlert('fail', error_message);
+      }
+      return false;
+    }
+  } catch (error) {
+    closeDialog()
+    hideLoadingIcon(Element_showLoadingIcon_as_avariable);
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+      return false;
+    } else {
+      handleError(is_ERROR_redirection_page);
+      catch_error(error);
+      return false;
+    }
+  }
+}
+
 
 //#endregion END- fetching
 
@@ -2411,6 +2703,31 @@ if (fn_icon && fn_options_div){
 }
 
 
+
+
+function textareaFormat(string_td_or_textarea, value) {
+  try {
+    let result;
+    switch (string_td_or_textarea) {
+      case 'td':
+        result = value.replace(/\n/g, "<br>");
+        break;
+      case 'textarea':
+        result = value.replace(/<br\s*\/?>/gi, "\n");
+        break;
+      default:
+        throw new Error("Invalid input type: must be 'td' or 'textarea'");
+    }
+    return result;
+  } catch (error) {
+    catch_error(error);
+  }
+
+/* How to use:
+    textareaFormat('textarea', row.cells[4].innerHTML);
+*/
+
+}
 
 
 

@@ -57,6 +57,23 @@ let note_selectAndInput_div = filter_div.querySelector(`#note_selectAndInput_div
 let select_note = filter_div.querySelector(`#select_note`);
 let input_note = filter_div.querySelector(`#input_note`);
 
+let balance1_div = filter_div.querySelector(`#balance1_div`);
+let checkbox_balance1 = filter_div.querySelector(`#checkbox_balance1`);
+let balance1_selectAndInput_div = filter_div.querySelector(`#balance1_selectAndInput_div`);
+let select_balance1 = filter_div.querySelector(`#select_balance1`);
+let input_balance1 = filter_div.querySelector(`#input_balance1`);
+
+let referenceCONCAT_div = filter_div.querySelector(`#referenceCONCAT_div`);
+let checkbox_referenceCONCAT = filter_div.querySelector(`#checkbox_referenceCONCAT`);
+let referenceCONCAT_selectAndInput_div = filter_div.querySelector(`#referenceCONCAT_selectAndInput_div`);
+let select_referenceCONCAT = filter_div.querySelector(`#select_referenceCONCAT`);
+let input_referenceCONCAT = filter_div.querySelector(`#input_referenceCONCAT`);
+
+let account_name_div = filter_div.querySelector(`#account_name_div`);
+let checkbox_account_name = filter_div.querySelector(`#checkbox_account_name`);
+let accountName_selectAndInput_div = filter_div.querySelector(`#accountName_selectAndInput_div`);
+let select_account_name = filter_div.querySelector(`#select_account_name`);
+let input_account_name = filter_div.querySelector(`#input_account_name`);
 
 let active_div = filter_div.querySelector(`#active_div`);
 let checkbox_active = filter_div.querySelector(`#checkbox_active`);
@@ -66,7 +83,6 @@ let select_active = filter_div.querySelector(`#select_active`);
 const btn_do = filter_div.querySelector(`#btn_do`);
 
 function backUp_filter_div_conditions() {
-
 
 
     const conditions = {
@@ -85,17 +101,37 @@ function backUp_filter_div_conditions() {
         select_note: select_note.value,
         input_note: input_note.value,
 
+        balance1_div_display: window.getComputedStyle(balance1_div).display,
+        input_balance1_display: window.getComputedStyle(input_balance1).display,
+        balance1_selectAndInput_div_isHidden : balance1_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
+        checkbox_balance1: checkbox_balance1.checked,
+        select_balance1: select_balance1.value,
+        input_balance1: input_balance1.value,
+
+        referenceCONCAT_div_display: window.getComputedStyle(referenceCONCAT_div).display,
+        input_referenceCONCAT_display: window.getComputedStyle(input_referenceCONCAT).display,
+        referenceCONCAT_selectAndInput_div_isHidden : referenceCONCAT_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
+        checkbox_referenceCONCAT: checkbox_referenceCONCAT.checked,
+        select_referenceCONCAT: select_referenceCONCAT.value,
+        input_referenceCONCAT: input_referenceCONCAT.value,
+      
+
+        account_name_div_display: window.getComputedStyle(account_name_div).display,
+        input_account_name_display: window.getComputedStyle(input_account_name).display,
+        accountName_selectAndInput_div_isHidden : accountName_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
+        checkbox_account_name: checkbox_account_name.checked,
+        select_account_name: select_account_name.value,
+        input_account_name: input_account_name.value,
+
 
         active_div_display: window.getComputedStyle(active_div).display,
-        /* No input */
         active_selectAndInput_div_isHidden : active_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
         checkbox_active: checkbox_active.checked,
         select_active: select_active.value,
+
         is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains(`hidden_height`)
-            ? true
-            : false,
-      
+        is_filter_div_hidden: filter_div.classList.contains(`hidden_height`) ? true : false,
+        sub_h2_header: sub_h2_header.textContent,
     };
 
 
@@ -172,11 +208,37 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         select_note.value = conditions.select_note;
         input_note.value = conditions.input_note;
 
+        balance1_div.style.display = conditions.balance1_div_display;
+        input_balance1.style.display = conditions.input_balance1_display;
+        if (conditions.balance1_selectAndInput_div_isHidden){balance1_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance1_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
+        checkbox_balance1.checked = conditions.checkbox_balance1;
+        select_balance1.value = conditions.select_balance1;
+        input_balance1.value = conditions.input_balance1;
+
+        referenceCONCAT_div.style.display = conditions.referenceCONCAT_div_display;
+        input_referenceCONCAT.style.display = conditions.input_referenceCONCAT_display;
+        checkbox_referenceCONCAT.checked = conditions.checkbox_referenceCONCAT;
+        if (conditions.referenceCONCAT_selectAndInput_div_isHidden){referenceCONCAT_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{referenceCONCAT_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
+        select_referenceCONCAT.value = conditions.select_referenceCONCAT;
+        input_referenceCONCAT.value = conditions.input_referenceCONCAT;
+
+        account_name_div.style.display = conditions.account_name_div_display;
+        input_account_name.style.display = conditions.input_account_name_display;
+        checkbox_account_name.checked = conditions.checkbox_account_name;
+        if (conditions.accountName_selectAndInput_div_isHidden){accountName_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{accountName_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
+        select_account_name.value = conditions.select_account_name;
+        input_account_name.value = conditions.input_account_name;
+
+
         active_div.style.display = conditions.active_div_display;
         /* NO input */
         if (conditions.active_selectAndInput_div_isHidden){active_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{active_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
         checkbox_active.checked = conditions.checkbox_active;
         select_active.value = conditions.select_active;
+
+
+        sub_h2_header.textContent = conditions.sub_h2_header;
+
         is_filter = conditions.is_filter;
         if (conditions.is_filter_div_hidden) {
             hidden_filter_div();
@@ -197,9 +259,8 @@ filter_icon.onclick = () => {
 
 function deafult_checkbox() {
     searchInput.value = "";
-    checkbox_datex.checked = true;
-    checkbox_note.checked = true;
-    select_active.value = 0;
+    checkbox_balance1.checked = true;
+
 }
 
 async function filter_icon_cancel_fn() {
@@ -214,7 +275,6 @@ async function filter_icon_cancel_fn() {
             deafult_checkbox();
             input_start_date1.value = firstDayOfYear;
             input_end_date1.value = lastDayOfYear;
-            note_div.style.display = "flex";
             closeDialog();
             sessionStorage.removeItem('noteViewArray');
             conditionsArray = []
@@ -241,19 +301,13 @@ let filteredData_Array = [];
 
 async function getData_fn() {
     try {
-       
-        let start_date;
-        let end_date;
+    
 
-        start_date = input_start_date1.value;
-        end_date = input_end_date1.value;
-       
-        //! here 
-
-        
-        
+        let start_date = input_start_date1.value;
+        let end_date = input_end_date1.value;
+              
         data = await fetchData_postAndGet(
-            "/get_All_todo_Data",
+            "/get_All_history_Data",
             {start_date, end_date},
             "",
             "",
@@ -268,6 +322,7 @@ async function getData_fn() {
             "حدث خطأ اثناء معالجة البيانات"
         );
  
+        
         showFirst50RowAtTheBegening();
   
     } catch (error) {
@@ -330,21 +385,21 @@ function showFirst50RowAtTheBegening() {
                 );
             const isdatexMatch =  filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(checkbox_datex,select_datex,input_start_date1,input_end_date1,"datex",row);
 
+            const isBalanceMatch1 = filterData_number_column_with_showAndHiddenCheckbox(checkbox_balance1,select_balance1,input_balance1,"days",row);
 
-            const isActiveceMatch =
-                filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
-                    checkbox_active,
-                    select_active,
-                    "is_inactive",
-                    row
-                );
+            const isReferenceMatch = filterData_number_column_with_showAndHiddenCheckbox(checkbox_referenceCONCAT,select_referenceCONCAT,input_referenceCONCAT,"reference",row);
 
-
+            const isActiveceMatch = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(checkbox_active,select_active,"is_inactive",row);
+            
+            const isNameMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_account_name,select_account_name,input_account_name,"account_name",row);
             return (
 
                 isAnotherInfoMatch &&
                 isdatexMatch &&
-                isActiveceMatch
+                isBalanceMatch1 &&
+                isReferenceMatch &&
+                isActiveceMatch &&
+                isNameMatch
             ); // && otherCondition;
         });
 
@@ -374,56 +429,99 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
+        let style_year = `display: none;`;
+        let style_reference = `display: none;`;
+        let style_user_id = `display: none;`;
+        let style_transaction_id = `display: none;`;
+        let style_user_full_name = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
         let style_datex = `display: table-cell ; width: auto; white-space: nowrap; text-align: start`;
+        let style_timex = `display:${checkbox_balance1.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_transactiontype_id = `display: none;`;
+        let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_note = `display: table-cell; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`;
+        let style_crud = `width: auto; white-space: nowrap; text-align: center;`;
 
-        let style_note = `display:${checkbox_note.checked ? "table-cell" : "none"}; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`;
-
-        let style_active = `display:${checkbox_active.checked ? "table-cell" : "none"};  width: auto; white-space: nowrap; text-align: center;`;
-        let delete_button = `width: auto; white-space: nowrap; text-align: center;`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
         let tableHTML = `<table id="review_table" class="review_table">
                         <thead>
                             <tr>
-                                <th style="${style_button}"></th>
-                                <th style="${style_id}">ID</th>
+
+                                <th style="${style_id}"></th>
                                 <th style="${style_datex}">التاريخ</th>
-                                <th style="${style_active}">الحالة</th>
-                                <th style="${style_note}">الملاحظة</th>
-                                <th style="${delete_button}"></th>
+                                <th style="${style_timex}">الوقت</th>                                
+                                <th style="${style_user_id}"></th>
+                                <th style="${style_user_full_name}">المسخدم</th>
+                                <th style="${style_transaction_id}"></th>
+                                <th style="${style_year}"></th>
+                                <th style="${style_reference}"></th>
+                                <th style="${style_referenceCONCAT}">المرجع</th>
+                                <th style="${style_transactiontype_id}">التاريخ</th>
+                                <th style="${style_note}">البيان</th>
+                                <th style="${style_crud}">الاجراء</th> 
                             </tr>
                         </thead>
                         <tbody>`;
 
         slice_array1.forEach((row) => {
 
-            let isChecked = row.is_done ? 'checked' : ''; // تحديد ما إذا كان يجب تحديد الخانة
-            let noteClass = row.is_done ? 'deleted_text' : ''; // إضافة deleted_text إلى العناصر التي تم حذفها
 
-            tableHTML += `<tr>
-                        
-                        <td style="${style_button}"><button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+            let crud_name;
+            let crud_class;
+
+        
+                let history_type = +row.history_type
+                switch (history_type) {
+                    case 1:
+                    crud_name = 'انشاء'
+                    crud_class = "tabble_view_btn"
+                        break;
+                    case 2:
+                        crud_name = 'تحديث'
+                        crud_class = "tabble_update_btn"
+                        break;
+                    case 3:
+                        crud_name = 'حذف'
+                        crud_class = "tabble_delete_btn"
+                        break;
+                    default:
+                        break;
+                }
+        
+            
+           let referenceCONCAT = `${row.year}-${formatToFiveDigits(row.reference)}`
+            tableHTML += `
+                    <tr>
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_datex}">${row.datex}</td>
-                        <td style="${style_active}"><input type="checkbox" onchange="checked_fn(this)" ${isChecked}></td> 
-                        <td style="${style_note}" class="${noteClass}">${textareaFormat('td',row.note)}</td>
-                        <td style="${delete_button}">
-                            <div class="table_buttons_div">
-                              <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
-                          </td>               
+                        <td style="${style_timex}">${row.timex}</td>
+                        <td style="${style_user_id}">${row.user_id}</td>
+                        <td style="${style_user_full_name}">${row.user_full_name}</td>   
+                        <td style="${style_transaction_id}">${row.transaction_id}</td>         
+                        <td style="${style_year}">${row.year}</td>             
+                        <td style="${style_reference}">${row.reference}</td>      
+                        <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
+                        <td style="${style_transactiontype_id}">${row.transactiontype_id}</td>
+                        <td style="${style_note}">${row.transaction_type_name}</td>
+                        <td style="${style_crud}"><span class="${crud_class}">${crud_name}</span></td>
                       </tr>`;
         });
 
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td id="tfooter0" style="${style_button}"></td>
-                        <td id="tfooter1" style="${style_id}"></td>
-                        <td id="tfooter2" style="${style_datex}"></td>
-                        <td id="tfooter3" style="${style_active}"></td>
-                        <td id="tfooter4" style="${style_note}"></td>
-                        <td id="tfooter5" style="${delete_button}"></td>
+                        <td id="tfooter_style_id" style="${style_id}"></td>
+                        <td id="tfooter_style_datex" style="${style_datex}"></td>
+                        <td id="tfooter_style_timex" style="${style_timex}"></td>
+                        <td id="tfooter_style_user_id" style="${style_user_id}"></td>
+                        <td id="tfooter_style_user_full_name" style="${style_user_full_name}"></td>
+                        <td id="tfooter_style_transaction_id" style="${style_transaction_id}"></td>
+                        <td id="tfooter_style_year" style="${style_year}"></td>
+                        <td id="tfooter_style_reference" style="${style_reference}"></td>
+                        <td id="tfooter_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
+                        <td id="tfooter_style_transactiontype_id" style="${style_transactiontype_id}"></td>
+                        <td id="tfooter_style_note" style="${style_note}"></td>
+                        <td id="tfooter_style_crud" style="${style_crud}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -448,7 +546,7 @@ function fillTable() {
         // جمع القيم في العمود رقم 6
 
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
-        tableContainer.querySelector(`#tfooter0`).textContent = slice_array1.length; //  عدد الصفوف
+        tableContainer.querySelector(`#tfooter_style_datex`).textContent = slice_array1.length; //  عدد الصفوف
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display = "none";
@@ -471,13 +569,19 @@ function performSearch() {
             const datexInfoMatch = performSearch_Row(checkbox_datex,"datex",searchValue,row);
             const activeeMatch = performSearch_Row(checkbox_active,"is_inactive",searchValue,row);
             const anotherInfoMatch = performSearch_Row(checkbox_note,"note",searchValue,row);
-            
+            const balanceMatch1 = performSearch_Row(checkbox_balance1,"days",searchValue,row);
+            const referenceMatch = performSearch_Row(checkbox_referenceCONCAT,"reference",searchValue,row);
+            const nameMatch = performSearch_Row(checkbox_account_name,"account_name",searchValue,row);
+
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 datexInfoMatch ||
                 activeeMatch ||
-                anotherInfoMatch
+                anotherInfoMatch ||
+                balanceMatch1 ||
+                referenceMatch ||
+                nameMatch
             );
         });
 
@@ -517,146 +621,6 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-function clear_todo(){
-    date_input.value = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-dd)
-    checked_div.style.display = 'none'
-    update_btn.style.display = 'none'
-    save_btn.style.display = 'flex'
-    h2_id.textContent = 'ملاحظه جديدة'
-    hidden_input.value = ''
-    note_textarea.value = ''
-}
-
-new_note_btn.addEventListener('click', function (){
-    clear_todo()
-    dialogOverlay_input.style.display = 'flex'
-})
-  
-  save_btn.addEventListener('click', async function(){
-    datex = date_input.value;
-    note = note_textarea.value.trim();
-
-    await fetchData_postAndGet(
-        "/api/todo_add",
-        {datex,note},
-        'pass','pass',
-        15,
-        false,'',
-        true,
-        true,save_btn,
-        true,
-        'notes_ar',
-        'حدث خطأ اثناء معالجة البيانات'
-    )
-    
-    })
-
-
-    async function checked_fn(checkbox) {
-        const row  = checkbox.closest("tr")
-        const id_value = row.cells[1].textContent
-        let isChecked = checkbox.checked; // يتم فحص ما إذا كانت القيمة محددة (true) أو غير محددة (false)
-       
-        // let noteCell = checkbox.parentNode.cells[4]; // يحصل على الـ <td> الذي يحتوي على الـ note
-        let noteCell = row.cells[4]; // يحصل على الـ <td> الذي يحتوي على الـ note
-    
-        const post = await fetchData_postAndGet(
-            "/api/todo_update_is_checked",
-            {id_value,isChecked},
-            '','',
-            15,
-            true,'هل تريد تعديل حالة الملاحظه ؟',
-            true,
-            false,'',
-            true,'notes_ar',
-            'حدث خطأ اثناء معالجة البيانات'
-        )
-
-
-
-    
-        
-        // if (isChecked) {
-        //     noteCell.classList.add('deleted_text'); // إذا كانت القيمة محددة، يتم إضافة الفئة deleted_text
-        // } else {
-        //     noteCell.classList.remove('deleted_text'); // إذا كانت القيمة غير محددة، يتم إزالة الفئة deleted_text
-        // }
-    }
-  
-    async function table_update_btn_fn(updateBtn) {
-        const row  = updateBtn.closest("tr")
-        
-        checked_div.style.display = 'flex'
-        update_btn.style.display = 'flex'
-        save_btn.style.display = 'none'
-        h2_id.textContent = 'تعديل ملاحظة'
-        hidden_input.value = row.cells[1].textContent
-        date_input.value= row.cells[2].textContent
-        const checkbox = row.cells[3].querySelector("input[type='checkbox']");
-        checked_input.checked = checkbox.checked
-        
-        // note_textarea.value = row.cells[4].innerHTML.replace(/<br\s*\/?>/gi, "\n");
-        note_textarea.value = textareaFormat('textarea', row.cells[4].innerHTML);
-        dialogOverlay_input.style.display = 'flex'
-      };
-
-      update_btn.addEventListener('click', async function(){
-        const id_value = hidden_input.value
-        const datex = date_input.value;
-        const note = note_textarea.value;
-        const is_checked = checked_input.checked
-        
-
-          await fetchData_postAndGet(
-            "/api/todo_update",
-            {id_value,datex,note,is_checked},
-            'pass','pass',
-            15,
-            false,'',
-            true,
-            true,update_btn,
-            true,'notes_ar',
-            'حدث خطأ اثناء معالجة البيانات'
-          )
-        })
-
-
-async function deleteRow(button){
-    const row  = button.closest("tr")
-    const id_value = row.cells[1].textContent
-
-        await fetchData_postAndGet(
-            "/api/todo_delete",
-            {id_value},
-            'pass','pass',
-            15,
-            true,'هل تريد حذف الملاحظه الحالية ؟',
-            true,
-            false,'',
-            true,'notes_ar',
-            'حدث خطأ اثناء معالجة البيانات'
-        )
-
-}
-
-  noButton.onclick = function () {
-    try {
-        dialogOverlay_input.style.animation = 'fadeOut 0.3s forwards';
-        setTimeout(() => {
-            dialogOverlay_input.style.display = 'none'
-            closeDialog()
-            clear_todo()
-            dialogOverlay_input.style.animation = 'none';
-          }, 300);
-          
-    } catch (error) {
-        dialogOverlay_input.style.display = 'none'
-        closeDialog()
-        clear_todo()
-        catch_error(error)
-        dialogOverlay_input.style.animation = 'none';
-    }
-  };
 
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -677,3 +641,8 @@ window.addEventListener("beforeprint", function () {
 });
 
 /*--------------------------------------------------------------------------------*/
+
+
+
+
+
