@@ -374,32 +374,20 @@ function showFirst50RowAtTheBegening() {
 
         filteredData_Array = data.filter((row) => {
 
-
-            const isAnotherInfoMatch =
-                filterData_string_column_with_showAndHiddenCheckbox(
-                    checkbox_note,
-                    select_note,
-                    input_note,
-                    "note",
-                    row
-                );
-            const isdatexMatch =  filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(checkbox_datex,select_datex,input_start_date1,input_end_date1,"datex",row);
-
-            const isBalanceMatch1 = filterData_number_column_with_showAndHiddenCheckbox(checkbox_balance1,select_balance1,input_balance1,"days",row);
-
-            const isReferenceMatch = filterData_number_column_with_showAndHiddenCheckbox(checkbox_referenceCONCAT,select_referenceCONCAT,input_referenceCONCAT,"reference",row);
-
-            const isActiveceMatch = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(checkbox_active,select_active,"is_inactive",row);
-            
-            const isNameMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_account_name,select_account_name,input_account_name,"account_name",row);
+            const datex =  filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(checkbox_datex,select_datex,input_start_date1,input_end_date1,"datex",row);
+            const timex = filterData_number_column_with_showAndHiddenCheckbox(checkbox_balance1,select_balance1,input_balance1,"timex",row);
+            const referenceCONCAT = filterData_number_column_with_showAndHiddenCheckbox(checkbox_referenceCONCAT,select_referenceCONCAT,input_referenceCONCAT,"referenceCONCAT",row);
+            const user_full_name = filterData_string_column_with_showAndHiddenCheckbox(checkbox_account_name,select_account_name,input_account_name,"user_full_name",row);
+            const transaction_type_name = filterData_string_column_with_showAndHiddenCheckbox(checkbox_note,select_note,input_note,"transaction_type_name",row);
+            const history_type = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(checkbox_active,select_active,"history_type",row);
             return (
 
-                isAnotherInfoMatch &&
-                isdatexMatch &&
-                isBalanceMatch1 &&
-                isReferenceMatch &&
-                isActiveceMatch &&
-                isNameMatch
+                datex &&
+                timex &&
+                referenceCONCAT &&
+                user_full_name &&
+                transaction_type_name &&
+                history_type
             ); // && otherCondition;
         });
 
@@ -465,28 +453,25 @@ function fillTable() {
         slice_array1.forEach((row) => {
 
 
-            let crud_name;
-            let crud_class;
+            
+            let history_class;
 
         
-                let history_type = +row.history_type
+                let history_type = row.history_type
                 switch (history_type) {
-                    case 1:
-                    crud_name = 'انشاء'
-                    crud_class = "table_view_btn"
+                    case 'إنشاء':
+                    history_class = "table_view_btn"
                         break;
-                    case 2:
-                        crud_name = 'تحديث'
-                        crud_class = "table_save_btn"
+                    case 'تحديث':
+                        history_class = "table_save_btn"
                         break;
-                    case 3:
-                        crud_name = 'حذف'
-                        crud_class = "table_delete_btn"
+                    case 'حذف':
+                        history_class = "table_delete_btn"
                         break;
                     default:
                         break;
                 }
-        
+    
             
            let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
             tableHTML += `
@@ -501,7 +486,7 @@ function fillTable() {
                         <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
                         <td style="${style_transactiontype_id}">${row.transactiontype_id}</td>
                         <td style="${style_note}">${row.transaction_type_name}</td>
-                        <td style="${style_crud}"><span class="${crud_class}">${crud_name}</span></td>
+                        <td style="${style_crud}"><span class="${history_class}">${row.history_type}</span></td>
                       </tr>`;
         });
 
@@ -562,22 +547,22 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const datexInfoMatch = performSearch_Row(checkbox_datex,"datex",searchValue,row);
-            const activeeMatch = performSearch_Row(checkbox_active,"is_inactive",searchValue,row);
-            const anotherInfoMatch = performSearch_Row(checkbox_note,"note",searchValue,row);
-            const balanceMatch1 = performSearch_Row(checkbox_balance1,"days",searchValue,row);
-            const referenceMatch = performSearch_Row(checkbox_referenceCONCAT,"reference",searchValue,row);
-            const nameMatch = performSearch_Row(checkbox_account_name,"account_name",searchValue,row);
+            const datex = performSearch_Row(checkbox_datex,"datex",searchValue,row);
+            const transaction_type_name = performSearch_Row(checkbox_note,"transaction_type_name",searchValue,row);
+            const timex = performSearch_Row(checkbox_balance1,"timex",searchValue,row);
+            const referenceCONCAT = performSearch_Row(checkbox_referenceCONCAT,"referenceCONCAT",searchValue,row);
+            const user_full_name = performSearch_Row(checkbox_account_name,"user_full_name",searchValue,row)
+            const history_type = performSearch_Row(checkbox_active,"history_type",searchValue,row);
 
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                datexInfoMatch ||
-                activeeMatch ||
-                anotherInfoMatch ||
-                balanceMatch1 ||
-                referenceMatch ||
-                nameMatch
+                datex ||
+                history_type ||
+                transaction_type_name ||
+                timex ||
+                referenceCONCAT ||
+                user_full_name
             );
         });
 

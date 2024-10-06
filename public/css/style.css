@@ -2486,13 +2486,16 @@ html[dir="rtl"] {
 .table_delete_btn,
 .table_update_btn,
 .table_view_btn {
-  display: flex;
+  /* display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap; */
+  display: block;
   padding: 0.2rem;
+  width: 3.5rem;
   color: var(--btn_color);
+  text-align: center;
   /* border: 0.1rem solid var(--btn_update_backcolor); */
   border-radius: 0.3rem;
   cursor: pointer;

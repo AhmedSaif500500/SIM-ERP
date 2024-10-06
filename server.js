@@ -2007,7 +2007,12 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 	tt.transaction_type_name,
 	H.transaction_id,
   H.reference,
-  H.history_type
+            CASE
+              WHEN H.history_type = 1 THEN 'إنشاء'
+              WHEN H.history_type = 2 THEN 'تحديث'
+              WHEN H.history_type = 3 THEN 'حذف'
+              ELSE 'غير محدد' -- خيار افتراضي إذا لم تكن القيمة 1 أو 2 أو 3
+          END AS history_type
 from
 	history H
 left join
