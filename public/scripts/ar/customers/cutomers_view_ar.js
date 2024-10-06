@@ -106,7 +106,7 @@ async function filleffectstable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
+                            <td> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="width: 100%;">${row.account_name}</td>
                             <td style="display: none">${row.account_no}</td>

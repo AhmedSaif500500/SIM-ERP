@@ -899,7 +899,7 @@ async function filleffectstable2() {
   // slice_Array2 = ""; // تفريغ المصفوفه
   slice_Array2.forEach((user) => {
     tableHTML2 += `<tr>
-    <td style="width: auto;"> <button class="tabble_update_btn" onclick="table_update_btn_fn2(this)">تحرير</button> </td>
+    <td style="width: auto;"> <button class="table_update_btn" onclick="table_update_btn_fn2(this)">تحرير</button> </td>
     <td style="display: none;">${user.id}</td> <!-- تم إخفاء العمود ID -->
     <td style="width: 100%;">${user.user_name}</td>
   </tr>`;

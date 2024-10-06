@@ -429,7 +429,6 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_year = `display: none;`;
         let style_reference = `display: none;`;
         let style_user_id = `display: none;`;
         let style_transaction_id = `display: none;`;
@@ -454,7 +453,6 @@ function fillTable() {
                                 <th style="${style_user_id}"></th>
                                 <th style="${style_user_full_name}">المسخدم</th>
                                 <th style="${style_transaction_id}"></th>
-                                <th style="${style_year}"></th>
                                 <th style="${style_reference}"></th>
                                 <th style="${style_referenceCONCAT}">المرجع</th>
                                 <th style="${style_transactiontype_id}">التاريخ</th>
@@ -475,22 +473,22 @@ function fillTable() {
                 switch (history_type) {
                     case 1:
                     crud_name = 'انشاء'
-                    crud_class = "tabble_view_btn"
+                    crud_class = "table_view_btn"
                         break;
                     case 2:
                         crud_name = 'تحديث'
-                        crud_class = "tabble_update_btn"
+                        crud_class = "table_save_btn"
                         break;
                     case 3:
                         crud_name = 'حذف'
-                        crud_class = "tabble_delete_btn"
+                        crud_class = "table_delete_btn"
                         break;
                     default:
                         break;
                 }
         
             
-           let referenceCONCAT = `${row.year}-${formatToFiveDigits(row.reference)}`
+           let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
             tableHTML += `
                     <tr>
                         <td style="${style_id}">${row.id}</td>
@@ -499,7 +497,6 @@ function fillTable() {
                         <td style="${style_user_id}">${row.user_id}</td>
                         <td style="${style_user_full_name}">${row.user_full_name}</td>   
                         <td style="${style_transaction_id}">${row.transaction_id}</td>         
-                        <td style="${style_year}">${row.year}</td>             
                         <td style="${style_reference}">${row.reference}</td>      
                         <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
                         <td style="${style_transactiontype_id}">${row.transactiontype_id}</td>
@@ -516,7 +513,6 @@ function fillTable() {
                         <td id="tfooter_style_user_id" style="${style_user_id}"></td>
                         <td id="tfooter_style_user_full_name" style="${style_user_full_name}"></td>
                         <td id="tfooter_style_transaction_id" style="${style_transaction_id}"></td>
-                        <td id="tfooter_style_year" style="${style_year}"></td>
                         <td id="tfooter_style_reference" style="${style_reference}"></td>
                         <td id="tfooter_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
                         <td id="tfooter_style_transactiontype_id" style="${style_transactiontype_id}"></td>

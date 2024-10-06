@@ -177,7 +177,7 @@ async function filleffectstable() {
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-            <td> <button class="tabble_view_btn" onclick="tabble_view_btn_fn(this)">عرض</button> </td>
+            <td> <button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button> </td>
             <td style="display: none;">${row.employee_id}</td>
             <td style="display: ;width: 100%;">${row.employee_name}</td>
             <td style="width: auto; white-space: nowrap; text-align: center;" class="table_number">${total_column(total_column1,row.total_days)}</td>
@@ -264,7 +264,7 @@ document.getElementById("tfooter6").textContent = total_column3.value;
         // slice_Array1 = ""; // تفريغ المصفوفه
         slice_Array1.forEach(row => {
             tableHTML += `<tr>
-            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
+            <td> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
             <td style="display: none;">${row.id}</td>
             <td style="display: none;">${row.employee_id}</td>
             <td style="display: none;">${row.employee_name}</td>
@@ -454,7 +454,7 @@ searchInput.addEventListener('keydown', (event) => {
 
 
 
-async function tabble_view_btn_fn(viewButton) {
+async function table_view_btn_fn(viewButton) {
     id_hidden_input.value = viewButton.closest("tr").cells[1].textContent;
     dropdown_select_input.value = viewButton.closest("tr").cells[2].textContent;
 

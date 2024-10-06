@@ -79,7 +79,7 @@ function filleffectstable() {
         slice_Array1.forEach(row => {
             
             tableHTML += `<tr>
-                            <td> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
+                            <td> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;text-align: center;">${row.datex}</td>
                             <td style="min-width: 20rem;width: 100%; white-space: wrap">${row.note}</td>

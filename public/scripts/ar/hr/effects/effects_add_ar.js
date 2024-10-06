@@ -294,29 +294,38 @@ async function save(A_or_B) {
 
   if (A_or_B == 'A'){
 
-    const post = await fetchData_postAndGet(
+    const post1 = await new_fetchData_postAndGet(
       '/effects_add',
       posted_items,
       'effects_permission','add',
-      15,true,'هل تريد حفظ البيانات ؟',
-      true,false,'',
+      15,
+      true,'هل تريد حفظ البيانات ؟',
+      false,'',
+      false,false,'',
       true,'effects_view_ar',
-      'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+      false,'',
+      'حدث خطأ اثناء معالجة البيانات'
     )
 
   } else if(A_or_B == 'B'){
 
-    const post = await fetchData_postAndGet(
+
+
+    const post1 = await new_fetchData_postAndGet(
       '/effects_add',
       posted_items,
       'effects_permission','add',
-      15,true,'هل تريد حفظ بيانات المؤثؤات ؟',
-      true,false,'',
+      15,
+      true,'هل تريد حفظ البيانات ؟',
       false,'',
-      'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+      false,false,'',
+      false,'',
+      false,'',
+      'حدث خطأ اثناء معالجة البيانات'
     )
 
-    if (post) {
+
+    if (post1) {
       clear_inputs()
     }
   }

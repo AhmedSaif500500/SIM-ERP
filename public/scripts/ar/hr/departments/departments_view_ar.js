@@ -179,12 +179,12 @@ function fillTable() {
         
         slice_array1.forEach(row => {
             tableHTML += `<tr>
-                            <td style="${style_button}"> <button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
+                            <td style="${style_button}"> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="${style_id}">${row.id}</td>
                             <td style="${style_account_no}">${row.acc_no}</td>
                             <td style="${style_name}">${row.department_name}</td>
                             <td style="${style_another_info}">${row.legal_info}</td>
-                            ${tdNumber(true,false,true,row.employees_count,style_balance,total_column1,`onclick = "tabble_info_btn_fn(this)"`)}
+                            ${tdNumber(true,false,true,row.employees_count,style_balance,total_column1,`onclick = "table_info_btn_fn(this)"`)}
                           </tr>`;
         });
 
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await getData_fn()
   });
 
- function tabble_info_btn_fn(details_btn) {
+ function table_info_btn_fn(details_btn) {
 try {
     
     const row  = details_btn.closest("tr")

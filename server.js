@@ -46,11 +46,20 @@ open Terminal vscode
 
 let today = new Date().toISOString().split("T")[0];
 
-function getYear(dateStringOrVar) {
-  return +dateStringOrVar.split("-")[0];
+function getYear(dateString) {
+  // التأكد من أن السلسلة تتبع الصيغة الصحيحة
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  
+  if (!datePattern.test(dateString)) {
+      throw new Error("Invalid date format. Please use YYYY-MM-DD.");
+  }
+
+  // تحويل السلسلة إلى كائن Date
+  const date = new Date(dateString);
+  
+  // استخراج السنة
+  return date.getFullYear();
 }
-
-
 
 function timeNow(){
   const now = new Date();
@@ -227,6 +236,8 @@ cron.schedule("*/5 * * * *", async () => {
 //#endregion end-cron
 
 function formatFromFiveDigits(num) {
+  try {
+
   // التحقق من أن الرقم ليس سالبًا
   if (num < 0) {
       throw new Error("الرقم لا يمكن أن يكون سالبًا");
@@ -239,17 +250,15 @@ function formatFromFiveDigits(num) {
   
   // تحويل الرقم إلى صيغة مكونة من 5 أرقام مع أصفار بادئة
   return num.toString().padStart(5, '0');
-}
-
-// استخدام الدالة
-try {
-  const formattedNumber = formatNumber(16);
-  console.log(formattedNumber); // سيطبع: 00016
+      
 } catch (error) {
-  console.error(error.message);
+  throw new Error('Error formatFromFiveDigits')
+}
 }
 
-async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transaction_id, year, reference, req, tx) {
+
+
+async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transaction_id, reference, req, tx) {
   // احسب الوقت الحالي
   try {
     const timex = timeNow();
@@ -257,11 +266,11 @@ async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transac
 
     // قم بتنفيذ استعلام SQL باستخدام `db.none`
     const query = `
-      INSERT INTO history (id, user_id, transactionType_id, history_type, datex, timex, transaction_id, year, reference, company_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+      INSERT INTO history (id, user_id, transactionType_id, history_type, datex, timex, transaction_id, reference, company_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     `;
 
-    const params = [id, req.session.userId, int_transactionTypeId, int_1Add_2Update_3Delete, today, timex, transaction_id, year, reference, req.session.company_id];
+    const params = [id, req.session.userId, int_transactionTypeId, int_1Add_2Update_3Delete, today, timex, transaction_id, reference, req.session.company_id];
 
     await tx.none(query, params);
   } catch (error) {
@@ -546,50 +555,79 @@ async function newId_fn(tableName_string,columnName_string) {
 }
 
 // get new refrence
-async function newRefrence_fn(req,int_transaction_type) {
-  // قم بتنفيذ الاستعلام للحصول على الحد الأقصى من القيم الموجودة
+// async function newRefrence_fn(req,int_transaction_type) {
+//   // قم بتنفيذ الاستعلام للحصول على الحد الأقصى من القيم الموجودة
 
 
 
-  const query = `SELECT MAX(refrence) AS refrence FROM transaction_header
-                  WHERE company_id = $1 AND transaction_type = ${int_transaction_type}`;
+//   const query = `SELECT MAX(refrence) AS refrence FROM transaction_header
+//                   WHERE company_id = $1 AND transaction_type = ${int_transaction_type}`;
                                           
-    let rows = await db.any(query, [
-    req.session.owner_id,
-  ]);
-  // افتراض أن الحد الأقصى للقيمة الأولية هو 1 إذا لم يكن هناك أي سجلات
-  let result = 1;
+//     let rows = await db.any(query, [
+//     req.session.owner_id,
+//   ]);
+//   // افتراض أن الحد الأقصى للقيمة الأولية هو 1 إذا لم يكن هناك أي سجلات
+//   let result = 1;
 
-  // تحقق مما إذا كان `query` فارغًا أو إذا لم يكن هناك قيمة في `query[0].id`
-  if (rows && rows.length > 0 && rows[0].refrence !== null) {
-    result = parseInt(rows[0].refrence) + 1;
-  }
+//   // تحقق مما إذا كان `query` فارغًا أو إذا لم يكن هناك قيمة في `query[0].id`
+//   if (rows && rows.length > 0 && rows[0].refrence !== null) {
+//     result = parseInt(rows[0].refrence) + 1;
+//   }
 
-  // ارجع `result`
-  return result;
-}
+//   // ارجع `result`
+//   return result;
+// }
 
-async function newReference_not_transaction(req, str_tableName, str_columnName) {
-  const query = `SELECT MAX(${str_columnName}) AS refrenceCount FROM ${str_tableName} WHERE company_id = ${req.session.company_id}`;
+// async function newReference_not_transaction(req, str_tableName, str_columnName) {
+//   const query = `SELECT MAX(${str_columnName}) AS refrenceCount FROM ${str_tableName} WHERE company_id = ${req.session.company_id}`;
 
-  console.log(query);
+//   console.log(query);
   
-  let rows = await db.oneOrNone(query);
-  console.log(rows);
+//   let rows = await db.oneOrNone(query);
+//   console.log(rows);
   
-  let result = 1;
+//   let result = 1;
 
-  // تحويل refrenceCount إلى عدد صحيح للتأكد من أن الشرط يعمل بشكل صحيح
-  let referenceCount = parseInt(rows.refrencecount);
+//   // تحويل refrenceCount إلى عدد صحيح للتأكد من أن الشرط يعمل بشكل صحيح
+//   let referenceCount = parseInt(rows.refrencecount);
 
-  if (rows && referenceCount > 0) {
-    console.log(referenceCount);
+//   if (rows && referenceCount > 0) {
+//     console.log(referenceCount);
     
-    result = referenceCount + 1;
-  }
+//     result = referenceCount + 1;
+//   }
 
-  // ارجع `result`
-  return result;
+//   // ارجع `result`
+//   return result;
+// }
+
+
+async function newReference_fn(str_tableName, year, req) {
+  try {
+    const query1 = `
+      SELECT
+        MAX(reference) AS max
+      FROM
+        ${str_tableName} -- كن حذرًا مع هذا الإدخال
+      WHERE
+        company_id = $1
+         AND datex LIKE '${year}-%'; -- التحقق من السنة في بداية التاريخ
+
+    `;
+
+    const Params1 = [req.session.company_id];
+    const result = await db.oneOrNone(query1, Params1);
+
+    let new_reference = 1;
+    if (result && result.max && result.max > 0) {
+      new_reference = result.max + 1;
+    }
+
+    return new_reference; // يجب إرجاع القيمة الجديدة
+
+  } catch (error) {
+    throw new Error(`Failed to retrieve reference: ${error.message}`);
+  }
 }
 
 // last activity
@@ -1968,7 +2006,6 @@ app.post("/get_info_for_updateUser", async (req, res) => {
   H.transactiontype_id,
 	tt.transaction_type_name,
 	H.transaction_id,
-  H.year,
   H.reference,
   H.history_type
 from
@@ -4001,83 +4038,45 @@ GROUP BY
 //#region 1: Add effects_add
 app.post("/effects_add", async (req, res) => {
   try {
-
-
     //! Permission
     await permissions(req, "effects_permission", "add");
     if (!permissions) {
-      return;
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
     }
+
     const posted_elements = req.body;
-    
 
-          // سرد كل القيم مره واحده 
-          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    // سرد كل القيم مره واحده
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
 
-          if (hasBadSymbols) {
-            return res.json({
-              success: false,
-              message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
-            });
-          }
+    if (hasBadSymbols) {
+      return res.status(400).json({
+        success: false,
+        message_ar: "تم اكتشاف أحرف غير مسموح بها في المدخلات. يرجى مراجعة المدخلات والمحاولة مرة أخرى.",
+      });
+    }
 
-          const InValidDateFormat = isInValidDateFormat([posted_elements.date_input_val])
-          if (InValidDateFormat){
-            return res.json({
-              success: false,
-              message_ar: InValidDateFormat_message_ar,
-            });
-          }
+    const InValidDateFormat = isInValidDateFormat([posted_elements.date_input_val]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
 
-        turn_EmptyValues_TO_null(posted_elements);
-    //* Start--------------------------------------------------------------
+    turn_EmptyValues_TO_null(posted_elements);
 
-    const currentYear = getYear(posted_elements.date_input_val)
-    //3: insert data into db
-    const newId = await newId_fn("effects",'id');
-    
+    //* Start Transaction --------------------------------------------------
 
-    // if (posted_elements.reference && !isNaN(posted_elements.reference) && posted_elements.reference > 0) {
-    //   const query = `select count(reference) as count from effects where company_id = $1 AND reference = $2`
-    //   const result = await db.oneOrNone(query, [req.session.company_id, posted_elements.reference])
-    //   if (result && result.count > 0) {
-    //       return res.json({
-    //       success: false,
-    //       message_ar: "هذا المرجع موجود بالفعل , رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح",
-    //     });
-    //   }else{
-    //     Reference = posted_elements.reference
-    //   }
+    const newId = await newId_fn("effects", 'id');
+    const year = getYear(posted_elements.date_input_val)
+    const newReference = await newReference_fn('effects', year, req);
 
-    // }else{
-    //   Reference = await newReference_not_transaction(req,'effects','reference')
-    // }
-
-    // Get new reference
-      const Q = `
-        select
-          max(e.reference) as max
-        from
-          effects e
-        where
-          e.company_id = $1
-          and e.year = $2
-        ;`
-  
-      const P = [req.session.company_id, currentYear];
-      const result = await db.oneOrNone(Q, P);
-       
-      const reference = result.max
-      let new_reference = 1
-      if (reference && reference > 0){
-        new_reference = reference + 1
-      }
-
-
-
-    let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, year, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-    await db.none(query1, [
+    let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    let params1 = [
       newId,
       posted_elements.id_hidden_input_val,
       posted_elements.date_input_val,
@@ -4086,25 +4085,32 @@ app.post("/effects_add", async (req, res) => {
       posted_elements.values_input_val,
       posted_elements.note_input_val,
       req.session.company_id,
-      currentYear,
-      new_reference
-    ]);
+      newReference,
+    ];
 
-    const new_referenceFormatting = formatFromFiveDigits(new_reference)
-    //4: send a response to frontend about success transaction
+    const new_referenceFormatting = formatFromFiveDigits(newReference);
+
+    await db.tx(async (tx) => {
+      await tx.none(query1, params1);
+      await history(16, 1, newId, newReference, req, tx);
+    });
+
+  
+    // إرسال استجابة للواجهة الأمامية حول نجاح المعاملة
     res.json({
       success: true,
-      message_ar: `تم انشاء المؤثر بمرجع : ${new_referenceFormatting}-${currentYear}`,
+      message_ar: `تم إنشاء المؤثر بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     console.error("Error adding effects:", error);
-    // send a response to frontend about fail transaction
+    // إرسال استجابة للواجهة الأمامية حول فشل المعاملة
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء الاضافه",
+      message_ar: "حدث خطأ أثناء الإضافة",
     });
   }
 });
+
 //#endregion END - Add effects_add
 
 //#region 2: get data to fill dropdownbox of employees
@@ -4184,7 +4190,6 @@ SELECT
     COALESCE(ah.account_no, '') as account_no, -- إضافة account_no من accounts_header
     NULL as datex, -- عامود datex ببيانات فارغة
     NULL as reference,
-    NULL as year,
     A.employee_id,
     COALESCE(ah.account_name, '') as account_name,
     SUM(COALESCE(A.days, 0)) as days, -- جمع أيام الحضور
@@ -4207,6 +4212,7 @@ LEFT JOIN
     accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
 WHERE
     A.company_id = $1
+     AND (A.is_deleted IS DISTINCT FROM TRUE) -- جلب كل البيانات بإستثناء الحقل الذي قيمته ترو
     AND ah.account_type_id = 4
     AND ah.is_final_account = true
     AND (A.datex BETWEEN $2 AND $3 )
@@ -4227,7 +4233,6 @@ ORDER BY
               COALESCE(ah.account_no, '') as account_no,
               COALESCE(A.datex, '') as datex,
               A.reference,
-              A.year,
               A.employee_id,
               COALESCE(ah.account_name, '') as account_name,
               COALESCE(A.days, 0) as days, 
@@ -4246,6 +4251,7 @@ ORDER BY
           LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
           WHERE
               A.company_id = $1
+              AND (A.is_deleted IS DISTINCT FROM TRUE) -- جلب كل البيانات بإستثناء الحقل الذي قيمته ترو
               AND ah.account_type_id = 4
               AND ah.is_final_account = true
               AND (A.datex BETWEEN $2 AND $3 )
@@ -4382,20 +4388,30 @@ return res.json({
 
 
     let query1 = `UPDATE effects SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7 AND company_id = $8 `;
-    await db.none(query1, [
+    let params1 = [
       posted_elements.emp_id,
-      posted_elements.date_val,
+      posted_elements.id,
       posted_elements.days_val,
       posted_elements.hours_val,
       posted_elements.values_val,
       posted_elements.note_val,
       posted_elements.id_val,
       req.session.company_id,
-    ]);
+    ]
 
+
+    const year = getYear(posted_elements.date_val)
+    const reference = formatFromFiveDigits(posted_elements.reference);
+
+    await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(16, 2, posted_elements.id, posted_elements.reference, req, tx)
+    });
+
+    
     return res.json({
       success: true,
-      message_ar: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
+      message_ar: `تم تعديل بيانات المؤثر بمرجع : ${reference}-${year}`,
     });
     
   } catch (error) {
@@ -4429,22 +4445,25 @@ app.post("/effects_delete", async (req, res) => {
     }
 
     //* Start--------------------------------------------------------------
-    let query1 = `DELETE FROM effects WHERE company_id = $1 AND id = $2`;
+    let query1 = `update effects set is_deleted = TRUE WHERE company_id = $1 AND id = $2`;
     let params1 = [req.session.company_id, posted_elements.id];
 
+
+    const reference = formatFromFiveDigits(posted_elements.reference);
+
+
+    const year = getYear(posted_elements.datex)
+
     await db.tx(async (tx) => {
-      try {
         await tx.none(query1, params1);
-        await history(16, 3, posted_elements.id, posted_elements.year, posted_elements.reference, req, tx)
-      } catch (error) {
-        // إذا حدث خطأ، سيتم إلغاء العملية تلقائيًا بسبب `tx`
-        throw new Error("حدث خطأ أثناء تسجيل التاريخ."); // إلقاء خطأ مع رسالة مخصصة
-      }
+        await history(16, 3, posted_elements.id, posted_elements.reference, req, tx)
     });
 
+
+    
     return res.json({
       success: true,
-      message_ar: "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه المؤثرات الرئيسيه",
+      message_ar: `تم حذف المؤثر بمرجع : ${reference}-${year}`,
     });
   } catch (error) {
     console.error("Error during effects deletion:", error);

@@ -312,7 +312,7 @@ async function update(){
 try {
   
 
-  const id_val = x_input.value
+  const id = effects_data.x
   const date_val = date_input.value
   const emp_id = id_hidden_input.value
   const emp_name = dropdown_select_input.value.trim()
@@ -320,16 +320,17 @@ try {
   const hours_val = !hours_input.value || hours_input.value == 0 || hours_input.value == '' || isNaN(hours_input.value) ? null : hours_input.value;
   const values_val = !values_input.value || values_input.value == 0 || values_input.value == '' || isNaN(values_input.value) ? null : values_input.value;
   const note_val = note_input.value.trim()
+  const reference = effects_data.reference;
 
-  if (!id_val || isNaN(id_val) || emp_name == ''){
+  if (!id || isNaN(id) || emp_name == ''){
     showAlert(`warining`,'اختر الموظف للتعديل')
     return
   }
 
 
-    const gpt = await GPT_fetchData_postAndGet(
+    const gpt = await new_fetchData_postAndGet(
       '/effects_update',
-      {id_val,
+      {id,
         date_val,
         emp_name,
         emp_id,
@@ -337,18 +338,17 @@ try {
         hours_val,
         values_val,
         note_val,
+        reference
       },
       'effects_permission','update',15,
       true,'هل تريد تعديل  البيانات ؟',
       false,
       false,'',
-      false,'',
       true,effects_update_data,'effects_view_ar',
-      true,'effects_view_ar',
+      false,'',
+      false,'',
       'حدث خطأ اثناء معالجة البيانات'
     )
-
-
 
   } catch (error) {
     catch_error(error)
@@ -360,19 +360,40 @@ btn_update.onclick = function() {
 }
 
 btn_delete.onclick = async function(){
+  try {
+    
   const id = effects_data.x;
-  const year = effects_data.year
+  const datex = effects_data.datex;
   const reference = effects_data.reference;
   
-  const postData = await fetchData_postAndGet(
+  // const postData = await fetchData_postAndGet(
+  //   '/effects_delete',
+  //   {id,datex,reference},
+  //   'effects_permission','delete',
+  //   15,true,'هل تريد حذف بيانات المؤثؤات ؟',
+  //   true,false,'',
+  //   true,'effects_view_ar',
+  //   'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+  // )
+
+  const post = await new_fetchData_postAndGet(
     '/effects_delete',
-    {id,year,reference},
+    {id,datex,reference},
     'effects_permission','delete',
-    15,true,'هل تريد حذف بيانات المؤثؤات ؟',
-    true,false,'',
+    15,
+    true,'هل تريد حذف بيانات المؤثؤات ؟',
+    false,
+    false,'',
+    true,effects_update_data,'effects_view_ar',
+    false,'',
     true,'effects_view_ar',
-    'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+    'حدث خطأ اثناء معالجة البيانات'
   )
+
+
+} catch (error) {
+  catch_error
+}
 }
 
 

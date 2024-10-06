@@ -417,21 +417,38 @@ async function getData_fn() {
         end_date = input_end_date1.value;
        
         
-        data = await fetchData_postAndGet(
+        // data = await fetchData_postAndGet(
+        //     "/effects_view",
+        //     { QKey, checkbox_aggregation_val, start_date, end_date },
+        //     "employees_permission",
+        //     "view",
+        //     15,
+        //     false,
+        //     "",
+        //     false,
+        //     true,
+        //     content_space,
+        //     false,
+        //     "",
+        //     "حدث خطأ اثناء معالجة البيانات"
+        // );
+
+
+        data = await new_fetchData_postAndGet(
             "/effects_view",
-            { QKey, checkbox_aggregation_val, start_date, end_date },
-            "employees_permission",
-            "view",
+            { QKey, checkbox_aggregation_val, start_date, end_date},
+            "employees_permission","view",
             15,
+            false,'',
             false,
-            "",
-            false,
-            true,
-            content_space,
-            false,
-            "",
-            "حدث خطأ اثناء معالجة البيانات"
-        );
+            true,content_space,
+            false,false,'',
+            false,'',
+            false,'notes_ar',
+            'حدث خطأ اثناء معالجة البيانات'
+        )
+
+
 
         // QKey = null;
 
@@ -659,7 +676,6 @@ function fillTable() {
         let style_id = `display: none;`;
         let style_datex = `display:${checkbox_datex.checked ? "table-cell" : "none"}; width: ${!checkbox_account_name.checked && !checkbox_note.checked ? `100%` : "auto"}; white-space: nowrap; text-align: start`;
         let style_reference = `display: none;`; 
-        let style_year = `display: none;`;
         let style_referenceCONCAT = `display:${checkbox_referenceCONCAT.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_department_id = `display: none;`;
         let style_department_name = `display:${checkbox_deparment_name.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
@@ -684,11 +700,11 @@ function fillTable() {
 
         if (checkbox_aggregation.checked) {
             fn = `onclick = "aggregation_balance_details(this)"`;
-            buttonRow = `<td style="${style_button}"><button class="tabble_view_btn" onclick="aggregation_balance_details(this)">عرض</button></td>`;
+            buttonRow = `<td style="${style_button}"><button class="table_view_btn" onclick="aggregation_balance_details(this)">عرض</button></td>`;
             linkStyle = true;
         } else {
             fn = ``;
-            buttonRow = `<td style="${style_button}"><button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>`;
+            buttonRow = `<td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>`;
             linkStyle = false;
         }
 
@@ -701,7 +717,6 @@ function fillTable() {
                                 <th style="${style_id}">ID</th>
                                 <th style="${style_datex}">التاريخ</th>
                                 <th style="${style_reference}">#</th>
-                                <th style="${style_year}">#</th>
                                 <th style="${style_referenceCONCAT}">#</th>
                                 <th style="${style_department_id}">dep_id</th>
                                 <th style="${style_department_name}">القسم</th>
@@ -720,7 +735,7 @@ function fillTable() {
         slice_array1.forEach((row) => {
             let activeClass =
                 row.is_inactive == "غير نشط"? "table_red_condition": "table_green_condition";
-            let referenceCONCAT = `${row.year}-${formatToFiveDigits(row.reference)}`
+            let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
 
             tableHTML +=
                      `<tr>
@@ -728,7 +743,6 @@ function fillTable() {
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_datex}">${row.datex}</td>
                         <td style="${style_reference}">${row.reference}</td>
-                        <td style="${style_year}">${row.year}</td>
                         <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
                         <td style="${style_department_id}">${row.department_id}</td>
                         <td style="${style_department_name}">${row.department_name}</td>
@@ -749,7 +763,6 @@ function fillTable() {
                         <td id="footer_style_id1" style="${style_id}"></td>
                         <td id="footer_style_datex" style="${style_datex}"></td>
                         <td id="footer_style_reference" style="${style_reference}"></td>
-                        <td id="footer_style_year" style="${style_year}"></td>
                         <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
                         <td id="footer_style_department_id" style="${style_department_id}"></td>
                         <td id="footer_style_department_name" style="${style_department_name}"></td>
@@ -898,16 +911,16 @@ async function table_update_btn_fn(updateBtn) {
         x: row.cells[1].textContent,
         datex: row.cells[2].textContent,
         reference: row.cells[3].textContent,
-        year: row.cells[4].textContent,
-        referenceCONCAT: row.cells[5].textContent,
-        account_no: row.cells[8].textContent,
-        emp_x: row.cells[9].textContent,
-        acc_name: row.cells[10].textContent,
-        days: row.cells[11].textContent,
-        hours: row.cells[12].textContent,
-        values: row.cells[13].textContent,
-        note: row.cells[14].textContent,
-        active: row.cells[15].textContent,
+        referenceCONCAT: row.cells[4].textContent,
+        account_no: row.cells[7].textContent,
+        emp_x: row.cells[8].textContent,
+        acc_name: row.cells[9].textContent,
+        days: row.cells[10].textContent,
+        hours: row.cells[11].textContent,
+        values: row.cells[12].textContent,
+        note: row.cells[13].textContent,
+        active: row.cells[14].textContent,
+        
     };
 
     

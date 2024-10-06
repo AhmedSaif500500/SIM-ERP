@@ -403,7 +403,7 @@ function fillTable() {
 
             tableHTML += `<tr>
                         
-                        <td style="${style_button}"><button class="tabble_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_datex}">${row.datex}</td>
                         <td style="${style_active}"><input type="checkbox" onchange="checked_fn(this)" ${isChecked}></td> 

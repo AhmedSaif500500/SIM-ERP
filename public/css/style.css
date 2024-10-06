@@ -2482,10 +2482,10 @@ html[dir="rtl"] {
   height: 3.5rem;
 }
 
-.tabble_save_btn,
-.tabble_delete_btn,
-.tabble_update_btn,
-.tabble_view_btn {
+.table_save_btn,
+.table_delete_btn,
+.table_update_btn,
+.table_view_btn {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -2493,30 +2493,30 @@ html[dir="rtl"] {
   flex-wrap: nowrap;
   padding: 0.2rem;
   color: var(--btn_color);
-  border: 0.1rem solid var(--btn_update_backcolor);
+  /* border: 0.1rem solid var(--btn_update_backcolor); */
   border-radius: 0.3rem;
   cursor: pointer;
   transition: var(--transition);
 }
 
-.tabble_save_btn {
+.table_save_btn {
   background-color: var(--btn_save_backcolor);
 }
 
-.tabble_delete_btn {
+.table_delete_btn {
   background-color: var(--btn_delete_backcolor);
 }
 
-.tabble_update_btn {
+.table_update_btn {
   background-color: var(--btn_update_backcolor);
 }
 
-.tabble_view_btn {
+.table_view_btn {
   background-color: var(--btn_new_backcolor);
 }
 
-.tabble_update_btn:hover,
-.tabble_view_btn:hover {
+.table_update_btn:hover,
+.table_view_btn:hover {
   opacity: var(--btn_hover_opacity);
   /* لون خلفية الزر عند التحويل إليه */
 }

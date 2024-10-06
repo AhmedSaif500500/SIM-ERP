@@ -2332,7 +2332,7 @@ font-size: 2rem;
   height: 3.5rem;
 }
 
-.tabble_update_btn {
+.table_update_btn {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -2346,7 +2346,7 @@ font-size: 2rem;
   transition: var(--transition);
 }
 
-.tabble_view_btn {
+.table_view_btn {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -2372,7 +2372,7 @@ font-size: 2rem;
   color: var(--btn_delete_backcolor);
 }
 
-.tabble_update_btn:hover, .tabble_view_btn:hover {
+.table_update_btn:hover, .table_view_btn:hover {
   opacity: var(--btn_hover_opacity);
   /* لون خلفية الزر عند التحويل إليه */
 }

@@ -75,6 +75,20 @@ if (!num){
 }
 
 
+function getYear(dateString) {
+  // التأكد من أن السلسلة تتبع الصيغة الصحيحة
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  
+  if (!datePattern.test(dateString)) {
+      throw new Error("Invalid date format. Please use YYYY-MM-DD.");
+  }
+
+  // تحويل السلسلة إلى كائن Date
+  const date = new Date(dateString);
+  
+  // استخراج السنة
+  return date.getFullYear();
+}
 //#region 
 
 //#region add templetes
@@ -2174,6 +2188,82 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
   }
 }
 
+async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, dialogMessage, ResponseTimeBySecends, redirectionPage, error_message) {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  // console.log(inputErrors);
+  try {
+    if (inputErrors) {
+      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      return;
+    }
+
+    const permission = await btn_permission(permission_name, permission_type);
+
+    if (!permission) {
+      return;
+    };
+
+
+    // // تجهيز البيانات للإرسال إلى الخادم
+    // const posted_elements = {
+    //     user_id,
+    // };
+
+    await showDialog('', dialogMessage, '');
+    if (!dialogAnswer) {
+      return;
+    }
+
+    // تعيين حد زمني للطلب
+    const timeout = setTimeout(() => {
+      controller.abort(); // إلغاء الطلب
+    }, ResponseTimeBySecends * 1000); // 10 ثواني
+
+    // إرسال الطلب إلى الخادم
+    const response = await fetch(FetchURL, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(posted_elements_AS_OBJECT),
+      signal, // تمرير الإشارة لإلغاء الطلب
+    });
+
+    // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
+    clearTimeout(timeout);
+
+    if (response.ok) {
+      const data = await response.json();
+      closeDialog();
+      if (data.success) {
+        body_content.style.pointerEvents = 'none';
+        redirection(redirectionPage, 'success', data.message_ar);
+      } else {
+        body_content.style.pointerEvents = 'auto';
+        if (data.xx && data.xx === true) {
+          redirection('login', 'fail', data.message_ar)
+        } else {
+          showAlert('fail', data.message_ar);
+        }
+
+      }
+    } else {
+      closeDialog();
+      showAlert('fail', `Request failed with status code: ${response.status}`);
+    }
+  } catch (error) {
+    closeDialog();
+    if (error.name === 'AbortError') {
+      showAlert('fail', 'Request timed out. Please try again.');
+    } else {
+      showAlert('fail', error_message);
+      catch_error(error);
+    }
+  }
+}
+
 
 // let data = [];
 async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, is_urlParams, urlParams_object, urlParams_Page, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
@@ -2287,7 +2377,8 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 }
 
 
-async function NEW_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, is_urlParams, urlParams_object, urlParams_redirectionPage, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
+
+async function new_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_urlParams, urlParams_object, urlParams_redirectionPage, is_redirection_page, redirection_page, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
   const controller = new AbortController();
   const signal = controller.signal;
 
@@ -2347,191 +2438,76 @@ async function NEW_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, per
     
     // إلغاء المهلة الزمنية إذا تمت الاستجابة في الوقت المناسب
     clearTimeout(timeout);
-    hideLoadingIcon(Element_showLoadingIcon_as_avariable)
-    if (response.ok) {
-      
-      
-      
 
+    if (response.ok) {
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      if (is_close_dialog === true) { closeDialog(); }
+    
       const data = await response.json();
       if (data.xx && data.xx === true) {
         closeDialog();
         redirection('login', 'fail', data.message_ar)
         return false
-      }
-
-      if (data.success) {
-        if (is_close_dialog === true) { closeDialog(); }
+      } else {
+        if (data.success && is_urlParams){
+          closeDialog();
           body_content.style.pointerEvents = 'none';
-
-          if (is_redirection_page){
-            redirection(redirection_page, 'success', data.message_ar);
-            return true;
-          } else if(is_urlParams){
-            urlParamsRedirection(urlParams_object, urlParams_redirectionPage, 'success', data.message_ar)
-            return true;
-          }else if(is_confirm_dialog){
+          urlParamsRedirection(urlParams_object, urlParams_redirectionPage, 'success', data.message_ar);
+          return true
+        } else if (data.success && is_redirection_page) {
+          closeDialog();
+          body_content.style.pointerEvents = 'none';
+          redirection(redirection_page, 'success', data.message_ar);
+          return true
+        }else if (is_confirm_dialog){
+          closeDialog();
+          if (data.success) {
             showAlert('success',data.message_ar)
             return true
-          }else{
-            return data; // إرجاع البيانات لاستخدامها خارج الدالة
-          }
-      }else{
-        if (is_ERROR_redirection_page){
-            if(is_urlParams){
-              urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message)
-            }else{
-              redirection(ERROR_redirection_page, 'fail', error_message);
-            }
-        }else{
-          showAlert('fail',error_message)
+          } else {
+            showAlert('fail',data.message_ar)
+            return false
+          } 
+        } else {
+          return data; // إرجاع البيانات لاستخدامها خارج الدالة
         }
-        return false;
+
       }
     } else {
+      hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+      if (is_close_dialog === true) { closeDialog(); }
       if (is_ERROR_redirection_page){
-        if(is_urlParams){
-          urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message)
-        }else{
-          showAlert('fail',error_message)
+        if (is_urlParams) {
+          urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message);
+        } else {
+          redirection(ERROR_redirection_page, 'fail', error_message);
         }
-      }else{
-        showAlert('fail',error_message)
       }
-    return false;
+      showAlert('fail', `Request failed with status code: ${response.status}`);
+      return false
     }
   } catch (error) {
     hideLoadingIcon(Element_showLoadingIcon_as_avariable)
+    closeDialog();
     if (error.name === 'AbortError') {
       showAlert('fail', 'Request timed out. Please try again.');
       return false;
-
-    } else if(is_ERROR_redirection_page) {
-        if(is_urlParams){
-          urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message)
-        }else{
+    } else {
+      
+      catch_error(error);
+      if (is_ERROR_redirection_page){
+        if (is_urlParams) {
+          urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message);
+        } else {
           redirection(ERROR_redirection_page, 'fail', error_message);
         }
-        return false
-      }else{
-        showAlert('fail',error_message)
-        catch_error(error);
-        return false
-    }
-  }
-}
-
-
-
-async function GPT_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permission_name, permission_type, ResponseTimeBySecends, is_confirm_dialog, dialogMessage, is_close_dialog, is_showLoadingIcon, Element_showLoadingIcon_as_avariable, is_redirection_page, redirection_page, is_urlParams, urlParams_object, urlParams_redirectionPage, is_ERROR_redirection_page, ERROR_redirection_page, error_message) {
-  const controller = new AbortController();
-  const signal = controller.signal;
-
-  function handleError(isRedirection = false) {
-    hideLoadingIcon(Element_showLoadingIcon_as_avariable);
-    if (isRedirection) {
-      if (is_urlParams) {
-        urlParamsRedirection(urlParams_object, ERROR_redirection_page, 'fail', error_message);
-      } else {
-        redirection(ERROR_redirection_page, 'fail', error_message);
       }
-    } else {
       showAlert('fail', error_message);
-    }
-  }
-
-  try {
-    if (is_showLoadingIcon) {
-      showLoadingIcon(Element_showLoadingIcon_as_avariable);
-    }
-
-    if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
-      hideLoadingIcon(Element_showLoadingIcon_as_avariable);
-      return false;
-    }
-
-    const permission = await btn_permission(permission_name, permission_type);
-    if (!permission) {
-      hideLoadingIcon(Element_showLoadingIcon_as_avariable);
-      return false;
-    }
-
-    if (is_confirm_dialog) {
-      await showDialog('', dialogMessage, '');
-      if (!dialogAnswer) {
-        hideLoadingIcon(Element_showLoadingIcon_as_avariable);
-        return false;
-      }
-    }
-
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, ResponseTimeBySecends * 1000);
-
-    const response = await fetch(FetchURL, {
-      method: 'post',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(posted_elements_AS_OBJECT),
-      signal,
-    });
-
-    clearTimeout(timeout);
-    hideLoadingIcon(Element_showLoadingIcon_as_avariable);
-    closeDialog()
-    if (response.ok) {
-      const data = await response.json();
-      if (data.xx && data.xx === true) {
-        redirection('login', 'fail', data.message_ar);
-        return false;
-      }
-
-      if (data.success) {
-        body_content.style.pointerEvents = 'none';
-
-        if (is_redirection_page) {
-          redirection(redirection_page, 'success', data.message_ar);
-          return true;
-        } else if (is_urlParams) {
-          urlParamsRedirection(urlParams_object, urlParams_redirectionPage, 'success', data.message_ar);
-          return true;
-        } else if (is_confirm_dialog) {
-          showAlert('success', data.message_ar);
-          return true;
-        } else {
-          return data;
-        }
-      } else {
-        if (is_ERROR_redirection_page) {
-          handleError(true);
-        } else {
-          showAlert('fail', error_message);
-        }
-        return false;
-      }
-    } else {
-      if (is_ERROR_redirection_page) {
-        handleError(true);
-      } else {
-        showAlert('fail', error_message);
-      }
-      return false;
-    }
-  } catch (error) {
-    closeDialog()
-    hideLoadingIcon(Element_showLoadingIcon_as_avariable);
-    if (error.name === 'AbortError') {
-      showAlert('fail', 'Request timed out. Please try again.');
-      return false;
-    } else {
-      handleError(is_ERROR_redirection_page);
-      catch_error(error);
-      return false;
+      return false
     }
   }
 }
+
 
 
 //#endregion END- fetching
