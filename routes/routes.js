@@ -59,6 +59,23 @@ router.get('/home_en', (req, res) => {
 
 //#endregion login and home
 
+
+//#region settings
+router.get('/general_settings_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission === 6) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'general_settings_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+//#endregion
+
+
 //#region users
 router.get('/users_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {

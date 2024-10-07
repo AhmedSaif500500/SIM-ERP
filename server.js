@@ -554,52 +554,6 @@ async function newId_fn(tableName_string,columnName_string) {
   return result;
 }
 
-// get new refrence
-// async function newRefrence_fn(req,int_transaction_type) {
-//   // قم بتنفيذ الاستعلام للحصول على الحد الأقصى من القيم الموجودة
-
-
-
-//   const query = `SELECT MAX(refrence) AS refrence FROM transaction_header
-//                   WHERE company_id = $1 AND transaction_type = ${int_transaction_type}`;
-                                          
-//     let rows = await db.any(query, [
-//     req.session.owner_id,
-//   ]);
-//   // افتراض أن الحد الأقصى للقيمة الأولية هو 1 إذا لم يكن هناك أي سجلات
-//   let result = 1;
-
-//   // تحقق مما إذا كان `query` فارغًا أو إذا لم يكن هناك قيمة في `query[0].id`
-//   if (rows && rows.length > 0 && rows[0].refrence !== null) {
-//     result = parseInt(rows[0].refrence) + 1;
-//   }
-
-//   // ارجع `result`
-//   return result;
-// }
-
-// async function newReference_not_transaction(req, str_tableName, str_columnName) {
-//   const query = `SELECT MAX(${str_columnName}) AS refrenceCount FROM ${str_tableName} WHERE company_id = ${req.session.company_id}`;
-
-//   console.log(query);
-  
-//   let rows = await db.oneOrNone(query);
-//   console.log(rows);
-  
-//   let result = 1;
-
-//   // تحويل refrenceCount إلى عدد صحيح للتأكد من أن الشرط يعمل بشكل صحيح
-//   let referenceCount = parseInt(rows.refrencecount);
-
-//   if (rows && referenceCount > 0) {
-//     console.log(referenceCount);
-    
-//     result = referenceCount + 1;
-//   }
-
-//   // ارجع `result`
-//   return result;
-// }
 
 
 async function newReference_fn(str_tableName, year, req) {
@@ -647,6 +601,115 @@ async function last_activity(req) {
     console.error("Error last_activity:", error);
   }
 
+}
+
+
+let closingDate_message_ar = `تم اغلاق جميع العمليات فى التطبيق فى هذا التاريخ `
+// async function ClosingDate_is_Allow(transaction_date, req) {
+//   try {
+//     let query1 = `SELECT datex1 FROM settings WHERE company_id = $1 AND setting_type_id = $2`;
+//     let params1 = [req.session.company_id, 1];
+//     let result = await db.oneOrNone(query1, params1);
+
+//     if (!result) {
+//       return false;
+//     }
+
+//     const closingDate = result.datex1;
+
+//     const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+//     // تحقق من تنسيق التاريخ
+//     if (!dateFormatRegex.test(transaction_date) || !dateFormatRegex.test(closingDate)) {
+//       return false;
+//     }
+
+//     // تحويل التواريخ إلى كائنات Date للمقارنة
+//     const transactionDateObj = new Date(transaction_date);
+//     const closingDateObj = new Date(closingDate);
+
+//     // إذا كان تاريخ المعاملة قبل أو يساوي تاريخ الإغلاق، ارجع false
+//     if (transactionDateObj <= closingDateObj) {
+//       return false;
+//     }
+
+//     return true;
+//   } catch (error) {
+//     throw new Error(`Error while checking closingDate: ${error.message}`);
+//   }
+// }
+
+
+async function check_settings_validation(options = {}, req) {
+  try {
+    // جلب الإعدادات بناءً على الشركة
+    const query1 = `SELECT * FROM settings WHERE company_id = $1`;
+    const params1 = [req.session.company_id];
+    const result = await db.any(query1, params1);
+
+    if (!result) {
+      return { valid: false, message_ar: "حدث خطأ غير متوقع AR500، يرجى التواصل مع الدعم الفني" };
+    }
+
+    const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+    // دالة للتحقق من تنسيق التاريخ
+    const isValidDateFormat = (date) => dateFormatRegex.test(date);
+
+    // التحقق من التاريخ المستقبلي
+    if (options.check_futureDate && options.datex) {
+      const isPreventFutureDate = result.find(item => item.setting_type_id === 2)?.boolean1;
+
+      if (isPreventFutureDate) {
+        const today = new Date();
+        const datex_As_Date = new Date(options.datex);
+
+        if (!isValidDateFormat(options.datex) || datex_As_Date > today) {
+          return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+        }
+      }
+    }
+
+    // التحقق من تاريخ الإغلاق
+    if (options.check_closingDate && options.datex) {
+      const closingDate = result.find(item => item.setting_type_id === 1)?.datex1;
+      if (!isValidDateFormat(closingDate) || !isValidDateFormat(options.datex)) {
+        return { valid: false, message_ar: "حدث خطأ غير متوقع AR527، يرجى التواصل مع الدعم الفني." };
+      }
+
+      const closingDate_As_Date = new Date(closingDate);
+      const datex_As_Date = new Date(options.datex);
+
+      if (options.type === 'add' && datex_As_Date <= closingDate_As_Date) {
+        return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+      }
+
+      if ((options.type === 'update' || options.type === 'delete') && options.tableName && options.transaction_id) {
+        const query2 = `SELECT datex FROM ${options.tableName} WHERE id = $1 AND company_id = $2`;
+        const params2 = [options.transaction_id, req.session.company_id];
+        const result1 = await db.oneOrNone(query2, params2);
+        const originalDatex = result1?.datex;
+
+        if (!originalDatex || !isValidDateFormat(originalDatex)) {
+          return { valid: false, message_ar: "حدث خطأ غير متوقع AR517، يرجى التواصل مع الدعم الفني." };
+        }
+
+        const originalDatex_As_Date = new Date(originalDatex);
+
+        if (options.type === 'update' && (originalDatex_As_Date <= closingDate_As_Date || datex_As_Date <= closingDate_As_Date)) {
+          return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+        }
+
+        if (options.type === 'delete' && originalDatex_As_Date <= closingDate_As_Date) {
+          return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+        }
+      }
+    }
+
+    return { valid: true };
+  } catch (error) {
+    throw new Error(`Error while checking settings: ${error.message}`);
+  }
 }
 
 
@@ -860,7 +923,7 @@ app.post("/api/add_new_company", async (req, res) => {
         success: false,
         message_ar: "اسم الشركه موجود بالفعل",
       });
-    } else {
+    }
 
 
       const newCompanyId = await newId_fn("companies",'id');
@@ -875,69 +938,276 @@ app.post("/api/add_new_company", async (req, res) => {
 
       
     await db.tx(async (tx) => {
-
       // 1 : add company
-      await tx.none(query1,query1_parameters) 
+      await tx.none(query1, query1_parameters);
 
       // 2 : add global accounts  in accounts_header
       let x = [];
-      let account_header_new_id = await newId_fn("accounts_header",'id');
+      let account_header_new_id = await newId_fn("accounts_header", "id");
 
-      const account_name = ['قائمة المركز المالى','قائمة الدخل','الاصول','الالتزمات','حقوق الملكيه','الايرادات','المصروفات','معلق','الاصول الثايتة','مجمع اهلاك الاصول الثابتة','النقدية وما فى حكمها','المخزون الحالى','العملاء','الموردين','حسابات رأس المال','الارياح المحتجزه','تكلفة المخزون','مصاريف اهلاك اصول ثابته','ايرادات المبيعات','الموظفين','مراكز التكلفه','مجموعة مراكز التكلفة 1']
-      const is_final_account = [null,null,null,null,null,null,null,true,null,null,null,null,null,null,null,true,true,true,true,null,null,null]
-      const finance_statement = [1,2,1,1,1,2,2,1,1,2,1,1,1,1,1,1,2,2,2,1,4,4,]
-      const cashflow_statement = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      const account_type_id = [null,null,null,null,null,1,null,null,null,null,null,5,null,null,null,1,null,6,1,4,null,null]
-      const global_id = [1,2,3,4,5,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
-      const main_account_id = [null,null,null,null,null,null,null,3,1,2,1,1,1,2,3,3,5,5,4,2,null,null]
-  
+      const account_name = [
+        "قائمة المركز المالى",
+        "قائمة الدخل",
+        "الاصول",
+        "الالتزمات",
+        "حقوق الملكيه",
+        "الايرادات",
+        "المصروفات",
+        "معلق",
+        "الاصول الثايتة",
+        "مجمع اهلاك الاصول الثابتة",
+        "النقدية وما فى حكمها",
+        "المخزون الحالى",
+        "العملاء",
+        "الموردين",
+        "حسابات رأس المال",
+        "الارياح المحتجزه",
+        "تكلفة المخزون",
+        "مصاريف اهلاك اصول ثابته",
+        "ايرادات المبيعات",
+        "الموظفين",
+        "مراكز التكلفه",
+        "مجموعة مراكز التكلفة 1",
+      ];
+      const is_final_account = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        true,
+        true,
+        true,
+        true,
+        null,
+        null,
+        null,
+      ];
+      const finance_statement = [
+        1, 2, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 4, 4,
+      ];
+      const cashflow_statement = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ];
+      const account_type_id = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        1,
+        null,
+        null,
+        null,
+        null,
+        null,
+        5,
+        null,
+        null,
+        null,
+        1,
+        null,
+        6,
+        1,
+        4,
+        null,
+        null,
+      ];
+      const global_id = [
+        1, 2, 3, 4, 5, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22,
+      ];
+      const main_account_id = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        3,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        4,
+        2,
+        null,
+        null,
+      ];
 
       for (let i = 0; i < account_name.length; i++) {
-       
         let query = `
           INSERT INTO accounts_header (id, company_id, account_name, is_final_account, finance_statement, cashflow_statement, global_id, main_account_id, account_type_id) 
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`;
 
-          let parameters = [account_header_new_id,newCompanyId,account_name[i],is_final_account[i],finance_statement[i],cashflow_statement[i],global_id[i],main_account_id[i],account_type_id[i]]
-    
-        await tx.none(query,parameters);
-        x[i+1] = parseInt(account_header_new_id);
+        let parameters = [
+          account_header_new_id,
+          newCompanyId,
+          account_name[i],
+          is_final_account[i],
+          finance_statement[i],
+          cashflow_statement[i],
+          global_id[i],
+          main_account_id[i],
+          account_type_id[i],
+        ];
+
+        await tx.none(query, parameters);
+        x[i + 1] = parseInt(account_header_new_id);
         account_header_new_id += 1;
       }
       // 3 : add global accounts in accouns_body
-      let ab_new_id = await newId_fn("accounts_body",'id');
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id},${x[1]},${x[3]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+1},${x[1]},${x[4]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+2},${x[1]},${x[5]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+3},${x[2]},${x[6]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+4},${x[2]},${x[7]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+5},${x[5]},${x[8]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+6},${x[3]},${x[9]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+7},${x[4]},${x[10]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+8},${x[3]},${x[11]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+9},${x[3]},${x[12]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+10},${x[3]},${x[13]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+11},${x[4]},${x[14]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+12},${x[5]},${x[15]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+13},${x[5]},${x[16]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+14},${x[7]},${x[17]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+15},${x[7]},${x[18]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+16},${x[6]},${x[19]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+17},${x[4]},${x[20]});`);
-        await tx.none(`INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id+18},${x[21]},${x[22]});`);
+      let ab_new_id = await newId_fn("accounts_body", "id");
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${ab_new_id},${x[1]},${x[3]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 1
+        },${x[1]},${x[4]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 2
+        },${x[1]},${x[5]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 3
+        },${x[2]},${x[6]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 4
+        },${x[2]},${x[7]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 5
+        },${x[5]},${x[8]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 6
+        },${x[3]},${x[9]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 7
+        },${x[4]},${x[10]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 8
+        },${x[3]},${x[11]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 9
+        },${x[3]},${x[12]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 10
+        },${x[3]},${x[13]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 11
+        },${x[4]},${x[14]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 12
+        },${x[5]},${x[15]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 13
+        },${x[5]},${x[16]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 14
+        },${x[7]},${x[17]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 15
+        },${x[7]},${x[18]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 16
+        },${x[6]},${x[19]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 17
+        },${x[4]},${x[20]});`
+      );
+      await tx.none(
+        `INSERT INTO accounts_body (id, parent_id, account_id) VALUES (${
+          ab_new_id + 18
+        },${x[21]},${x[22]});`
+      );
 
+      //4 : add settings
+      let settings_newId = await newId_fn("settings", "id");
+      await tx.none(
+        `INSERT INTO settings (id,company_id,setting_type_id,) values(${settings_newId},${newCompanyId},1)`
+      ); // closingDate = null
+      await tx.none(
+        `INSERT INTO settings (id,company_id,setting_type_id,) values(${
+          settings_newId + 1
+        },${newCompanyId},2)`
+      ); // prevent_futureDate = null
     })
-
     return res.json({
       success: true,
       message_ar: "تم حفظ البيانات بنجاح",
     });
 
-    }
+  
 
-
-
-    //3: insert data into db
   } catch (error) {
     console.error("Error adding production:", error);
     // send a response to frontend about fail transaction
@@ -997,46 +1267,8 @@ app.post("/company_login", async (req, res) => {
       }
     } else {
 
-      // ----------------------- old
-  //     query1 = `select 
-  //   c.company_name,
-  //   uc.*
 
-  //   from user_company uc 
-  //   left join companies c on uc.company_id  = c.id
-  //   where uc.user_id = $1 and uc.company_id = $2
-  //   order BY c.company_name asc;
-  // `;
-  //     rows = await db.any(query1, [req.session.userId, posted_elements.c_id]);
 
-  //     if (rows.length > 0) {
-  //       // save user &  company Permissions in session
-  //       req.session.company_id = rows[0].company_id;
-  //       req.session.general_permission = rows[0].general_permission;
-  //       req.session.accounts_permission = rows[0].accounts_permission;
-  //       req.session.employees_permission = rows[0].employees_permission;
-  //       req.session.effects_permission = rows[0].effects_permission;
-  //       req.session.users_permission = rows[0].users_permission;
-  //       req.session.production_permission = rows[0].production_permission;
-  //       req.session.bread_permission = rows[0].bread_permission;
-  //       req.session.transaction_permission = rows[0].transaction_permission;
-
-  //       const data = rows.map((row) => ({
-  //         company_id: rows[0].company_id,
-  //         company_name: rows[0].company_name,
-  //         general_permission: rows[0].general_permission,
-  //         employees_permission: rows[0].employees_permission,
-  //         effects_permission: rows[0].effects_permission,
-  //         users_permission: rows[0].users_permission,
-  //         production_permission: rows[0].production_permission,
-  //         bread_permission: rows[0].bread_permission,
-  //         accounts_permission: rows[0].accounts_permission,
-  //         transaction_permission: rows[0].transaction_permission,
-  //       }));
-  //       res.json(data);
-
-  // end old
-  // Define an array of permissions
 const permissions = [
   "general_permission",
   "accounts_permission",
@@ -1055,7 +1287,7 @@ const permissions = [
 ];
 
 // The SQL query remains the same
-const query1 = `select 
+const query_permissions = `select 
     c.company_name,
     uc.*
     from user_company uc 
@@ -1064,7 +1296,7 @@ const query1 = `select
     order BY c.company_name asc;
   `;
 
-const rows = await db.any(query1, [req.session.userId, posted_elements.c_id]);
+const rows = await db.any(query_permissions, [req.session.userId, posted_elements.c_id]);
 
 if (rows.length > 0) {
   // Save user & company Permissions in session
@@ -1628,6 +1860,66 @@ app.post("/get_info_for_updateUser", async (req, res) => {
 });
 //#endregion
 //#endregion  END - owners_and_companies
+
+
+
+//#region settings
+  //#region get settings data
+  app.post("/general_settings_view", async (req, res) => {
+    try {
+      
+      const posted_elements = req.body;
+  
+      // //! Permission
+      // await permissions(req, "effects_permission", "view");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+        //   // سرد كل القيم مره واحده 
+        //   const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+        //   if (hasBadSymbols) {
+        //     return res.json({
+        //       success: false,
+        //       message_ar:
+        //         "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        //     });
+        //   }
+        
+        //   if (posted_elements.checkbox_aggregation_val && posted_elements.select_aggregation_val == '1') {
+        //     const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+        //     if (InValidDateFormat){
+        //       return res.json({
+        //         success: false,
+        //         message_ar: InValidDateFormat_message_ar,
+        //       });
+        //     }
+        //   }
+  
+  
+        // turn_EmptyValues_TO_null(posted_elements);
+      //* Start--------------------------------------------------------------
+  
+          
+          
+
+            query = `SELECT * from settings where company_id = $1;`
+            params = [req.session.company_id] 
+      let data = await db.any(query, params);
+      res.json(data);
+    } catch (error) {
+      console.error("Error getEffectsData1:", error);
+      res
+        .status(500)
+        .json({ success: false, message_ar: "حدث خطأ أثناء عرض البيانات" });
+    }
+  });
+  //#endregion end get settings data
+
+//#endregion settings
+
+
 
 //#region todo
 
@@ -4054,6 +4346,8 @@ app.post("/effects_add", async (req, res) => {
 
     const posted_elements = req.body;
 
+
+
     // سرد كل القيم مره واحده
     const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
 
@@ -4069,6 +4363,22 @@ app.post("/effects_add", async (req, res) => {
       return res.status(400).json({
         success: false,
         message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      type: 'add',
+      tableName: 'effects',
+      transaction_id: posted_elements.id_hidden_input_val,
+      datex: posted_elements.date_input_val,
+    }, req);
+
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
       });
     }
 
@@ -4381,6 +4691,24 @@ app.post("/effects_update", async (req, res) => {
 
     turn_EmptyValues_TO_null(posted_elements);
 
+    
+
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      type: 'update',
+      tableName: 'effects',
+      transaction_id: posted_elements.id,
+      datex: posted_elements.date_val,
+    }, req);
+
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
 if (!posted_elements.emp_name || posted_elements.emp_name == ''){
 return res.json({
   success: false,
@@ -4395,12 +4723,12 @@ return res.json({
     let query1 = `UPDATE effects SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7 AND company_id = $8 `;
     let params1 = [
       posted_elements.emp_id,
-      posted_elements.id,
+      posted_elements.date_val,
       posted_elements.days_val,
       posted_elements.hours_val,
       posted_elements.values_val,
       posted_elements.note_val,
-      posted_elements.id_val,
+      posted_elements.id,
       req.session.company_id,
     ]
 
@@ -4446,6 +4774,22 @@ app.post("/effects_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar: "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      type: 'delete',
+      tableName: 'effects',
+      transaction_id: posted_elements.id,
+      datex: posted_elements.datex,
+    }, req);
+
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
       });
     }
 

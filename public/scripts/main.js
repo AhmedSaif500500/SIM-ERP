@@ -126,7 +126,7 @@ function loadHeaderContents() {
           <button id="header_user_today" class="header_user_name" style="display: none;">${today}</button>
           <button id="header_user_name" class="header_user_name"></button>
           <div id="user_options" class="user_options hidden_height">
-              <button id="user_setting_btn" class="btn_new">الاعدادات</button>
+              <button id="user_setting_btn" class="btn_new" onclick="window.location.href='general_settings_ar';">الاعدادات</button>
               <button id="history_setting_btn" class="btn_new" onclick="">السجل الزمنى</button>
               <button id="backup_setting_btn" class="btn_new" onclick="">النسخ الاحتياطى</button>
               <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
@@ -2483,7 +2483,7 @@ async function new_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, per
           redirection(ERROR_redirection_page, 'fail', error_message);
         }
       }
-      showAlert('fail', `Request failed with status code: ${response.status}`);
+      showAlert('fail', error_message);
       return false
     }
   } catch (error) {

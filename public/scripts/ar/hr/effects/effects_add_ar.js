@@ -300,6 +300,7 @@ async function save(A_or_B) {
       'effects_permission','add',
       15,
       true,'هل تريد حفظ البيانات ؟',
+      false,
       false,'',
       false,false,'',
       true,'effects_view_ar',

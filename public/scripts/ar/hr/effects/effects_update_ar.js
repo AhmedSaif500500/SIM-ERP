@@ -342,7 +342,7 @@ try {
       },
       'effects_permission','update',15,
       true,'هل تريد تعديل  البيانات ؟',
-      false,
+      true,
       false,'',
       true,effects_update_data,'effects_view_ar',
       false,'',
@@ -366,15 +366,6 @@ btn_delete.onclick = async function(){
   const datex = effects_data.datex;
   const reference = effects_data.reference;
   
-  // const postData = await fetchData_postAndGet(
-  //   '/effects_delete',
-  //   {id,datex,reference},
-  //   'effects_permission','delete',
-  //   15,true,'هل تريد حذف بيانات المؤثؤات ؟',
-  //   true,false,'',
-  //   true,'effects_view_ar',
-  //   'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
-  // )
 
   const post = await new_fetchData_postAndGet(
     '/effects_delete',
