@@ -682,8 +682,7 @@ function fillTable() {
         let style_account_no = `display:${checkbox_account_no.checked ? "table-cell" : "none"
             };  width: auto; white-space: nowrap; text-align: start`;
         let style_name = `display:${checkbox_account_name.checked ? "table-cell" : "none"}; width: ${checkbox_note.checked ? "auto" : "100%"}; white-space: nowrap; text-align: start`;
-        let style_note = `display:${checkbox_note.checked ? "table-cell" : "none"
-            }; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`;
+        let style_note = `display:${checkbox_note.checked ? "table-cell" : "none"}; min-width: 25rem; width: 100%; white-space: wrap; text-align: start;`;
         let style_balance1 = `display:${checkbox_balance1.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_balance2 = `display:${checkbox_balance2.checked ? "table-cell" : "none"
             }; width: auto; white-space: nowrap; text-align: start`;

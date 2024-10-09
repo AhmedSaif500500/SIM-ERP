@@ -521,6 +521,19 @@ router.get('/companies_ar', async (req, res) => {
     }
 });
 
+
+router.get('/companies_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'owners_and_companies', 'companies_add_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=2');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
 //#endregion
 
 module.exports = router;

@@ -35,8 +35,8 @@
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="effects_view_ar" title="اعادة تحميل الصفحة">المؤثرات</a>
-              <span id="sub_h2_header" class="sub_h2_header"></span>
+              <a id="h2_text_div" class="h2_text_div" href="effects_view_ar" title="اعادة تحميل الصفحة">الاعمالى التجارية</a>
+              <span id="sub_h2_header" class="sub_h2_header">اضافة عمل جديد</span>
             </div>
           </h2>
           <div id="page_content" style="display: none;">
@@ -44,13 +44,11 @@
 
 
             <label for="company_name_input" class="lbl_sm">اسم العمل التجارى الجديده</label>
-            <input type="search" id="company_name_input" class="input_text_md hover w_full"
-              oninput="check_parse(this, 'string')" autocomplete="off">
+            <input type="search" id="company_name_input" class="input_text_md hover" oninput="check_parse(this, 'string')" autocomplete="off">
 
 
-            <div id="" class="dialog_footer">
-              <button id="yesButton" class="btn_save" style="display: none;">حفظ</button>
-              <button id="noButton" class="btn_cancel">إنهاء</button>
+            <div id="" class="btn_container_top_border">
+              <button id="btn_add_company" class="btn_save">حفظ</button>
             </div>
 
 
@@ -68,7 +66,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/hr/effects/effects_view_ar.js"></script>
+  <script src="/public/scripts/ar/owners_and_companies/companies_add_ar.js"></script>
 
 
 </body>

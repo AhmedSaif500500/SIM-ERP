@@ -1572,16 +1572,19 @@ const closeMenueIcon = document.querySelector('#closeMenueIcon');
 
 
 // اظهار واخفاء القائمة   عند الضغط على زرار القائمة
-MenueIcon.addEventListener('click', function (event) {
-  event.preventDefault(); // stop a deafult herf 
-  hide_User_options(); // el ta2ked 3ala en el user_options_div is hidden
-  const sidebar_status = sidebar.classList.contains("sidebar_Media_Show"); // check if sidbar have this class or no
-  if (!sidebar_status) {
-    showMenue();
-  } else {
-    hideMenue();
-  }
-})
+if (MenueIcon){
+  MenueIcon.addEventListener('click', function (event) {
+    event.preventDefault(); // stop a deafult herf 
+    hide_User_options(); // el ta2ked 3ala en el user_options_div is hidden
+    const sidebar_status = sidebar.classList.contains("sidebar_Media_Show"); // check if sidbar have this class or no
+    if (!sidebar_status) {
+      showMenue();
+    } else {
+      hideMenue();
+    }
+  })
+}
+
 
 // ازالة كلاس الشاشه الصغيره اذا كان موجود وتم تغيير حجم الشاشه لاكبر من 750 بيكسيل
 window.addEventListener('resize', function () {
@@ -1592,10 +1595,13 @@ window.addEventListener('resize', function () {
   }
 });
 // اخفاء القائمة عند الضغط على زر الاغلاق الموجود فى اعلى القائمة
-closeMenueIcon.addEventListener('click', function () {
-  // sidebar.classList.remove("sidebar_Media_Show");
-  hideMenue();
-})
+if (closeMenueIcon){
+  closeMenueIcon.addEventListener('click', function () {
+    // sidebar.classList.remove("sidebar_Media_Show");
+    hideMenue();
+  })
+}
+
 
 function showMenue() {
   sidebar.classList.add("sidebar_Media_Show");
@@ -1780,15 +1786,20 @@ async function khorogFawry() {
 //#region sidbar custmize 
 
 // handle users_control_a
+
+const users_control_a = document.querySelector(`#users_control_a`)
 let general_permission = parseInt(sessionStorage.getItem('general_permission')) || 0;
 let owner = sessionStorage.getItem('owner');
 
 // console.log(owner);
-if (owner === 'true' || !isNaN(general_permission) && general_permission === 6) {
-  document.querySelector(`#users_control_a`).style.display = 'block';
-} else {
-  document.querySelector(`#users_control_a`).style.display = 'none';
+if (users_control_a){
+  if (owner === 'true' || !isNaN(general_permission) && general_permission === 6) {
+    document.querySelector(`#users_control_a`).style.display = 'block';
+  } else {
+    document.querySelector(`#users_control_a`).style.display = 'none';
+  }
 }
+
 
 
 //#endregion

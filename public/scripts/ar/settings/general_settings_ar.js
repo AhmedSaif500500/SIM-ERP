@@ -1,6 +1,7 @@
 const closingDate_input = document.querySelector(`#closingDate_input`);
 const prevent_futureDate_checkbox = document.querySelector(`#prevent_futureDate_checkbox`);
 const prevent_futureDate_input = document.querySelector(`#prevent_futureDate_checkbox`);
+const btn_save = document.querySelector(`#btn_save`);
 
 let data = []
 
@@ -19,7 +20,6 @@ async function getData(){
         true,'notes_ar',
         'حدث خطأ اثناء معالجة البيانات'
     )
-    console.table(data);
     
 }
 
@@ -32,22 +32,72 @@ function show_data(){
     const closingDate = data.find(item => item.setting_type_id === 1)?.datex1 || '';
     const prevent_futureDate = data.find(item => item.setting_type_id === 2)?.boolean1 || false;
 
-    console.log(closingDate);
-    console.log(prevent_futureDate);
-    
     closingDate_input.value = closingDate;
-    if (prevent_futureDate === true){
+
+    prevent_futureDate_checkbox.checked = prevent_futureDate === true;
+
+    if(prevent_futureDate === true){
         prevent_futureDate_checkbox.checked = true;
         prevent_futureDate_input.placeholder = 'الخاصية قيد التفعيل'
     }else{
         prevent_futureDate_checkbox.checked = false;
         prevent_futureDate_input.placeholder = 'الخاصية معطّلة'
     }
-    prevent_futureDate_checkbox.checked = prevent_futureDate === true;
 
+    
+}
+
+
+// function change_prevent_futureDate_checkbox(){
+//     console.log(`started`);
+    
+//     if (prevent_futureDate_checkbox.checked === true){
+//         prevent_futureDate_checkbox.checked = false;
+//         prevent_futureDate_input.placeholder = 'الخاصية معطّلة'
+//     }else{
+//         prevent_futureDate_checkbox.checked = true;
+//         prevent_futureDate_input.placeholder = 'الخاصية قيد التفعيل'
+//     }
+// }
+
+// prevent_futureDate_checkbox.onchange = function() {
+//     change_prevent_futureDate_checkbox();
+// };
+
+
+
+async function savesettingsChanges(){
+    try {
+        
+    const closingDate = closingDate_input.value || '';
+    const is_prevent_futureDate = prevent_futureDate_checkbox.checked;
+
+    const update = await new_fetchData_postAndGet(
+        "general_settings_update",
+        {closingDate,is_prevent_futureDate},
+        '','',
+        15,
+        true,'هل تريد حفظ الاعدادات الحالية ؟ ',
+        true,
+        false,'',
+        false,'','',
+        true,'general_settings_ar',
+        false,'',
+        'حدث خطأ اثناء معالجة البيانات وتم الغاء العمليه'
+    )
+} catch (error) {
+    catch_error
+}
+}
+
+btn_save.onclick = async function () {
+    await savesettingsChanges()
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
     await getData()
     show_data()
 })
+
+
+

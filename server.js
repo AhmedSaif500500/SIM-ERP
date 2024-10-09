@@ -894,9 +894,7 @@ app.post("/api/add_new_company", async (req, res) => {
 
 
     //! sql injection check
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.company_name_input_value,
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    const hasBadSymbols = sql_anti_injection([posted_elements.company_name_input_value, // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
     if (hasBadSymbols) {
       return res.json({
@@ -907,8 +905,15 @@ app.post("/api/add_new_company", async (req, res) => {
     }
     //* Start--------------------------------------------------------------
 
-    // check if company name already exist
 
+    if (!posted_elements.company_name_input_value || posted_elements.company_name_input_value == ""){
+      return res.json({
+        success: false,
+        message_ar: "رجاء ادخل اسم العمل التجارى بشكل صحيح",
+      });
+    }
+
+    // check if company name already exist
     let query0 = `
     select company_name from companies c where owner_id =$1 and company_name = $2
   `;
@@ -1193,10 +1198,10 @@ app.post("/api/add_new_company", async (req, res) => {
       //4 : add settings
       let settings_newId = await newId_fn("settings", "id");
       await tx.none(
-        `INSERT INTO settings (id,company_id,setting_type_id,) values(${settings_newId},${newCompanyId},1)`
+        `INSERT INTO settings (id,company_id,setting_type_id) values(${settings_newId},${newCompanyId},1)`
       ); // closingDate = null
       await tx.none(
-        `INSERT INTO settings (id,company_id,setting_type_id,) values(${
+        `INSERT INTO settings (id,company_id,setting_type_id) values(${
           settings_newId + 1
         },${newCompanyId},2)`
       ); // prevent_futureDate = null
@@ -1915,6 +1920,120 @@ app.post("/get_info_for_updateUser", async (req, res) => {
         .json({ success: false, message_ar: "حدث خطأ أثناء عرض البيانات" });
     }
   });
+
+  app.post("/general_settings_update", async (req, res) => {
+    try {
+      const posted_elements = req.body;
+      // //! Permission
+      // await permissions(req, "effects_permission", "update");
+      // if (!permissions) {
+      //   return;
+      // }
+
+
+      
+       // افضل صورى  للتحقق من صلاحيات المالك او مدير النظام اذا لم يكن احداهما موجود سيتم تحقق الشرط وانهاء الكود
+      if (req.session.is_owner !== true && +req.session.general_permission !== 6) {
+        return res.json({
+          success: false,
+          message_ar: "عذرًا، ليس لديك الصلاحية اللازمة للقيام بهذا الإجراء. إذا كان لديك أي استفسارات أو تحتاج إلى مساعدة إضافية، يرجى التواصل مع الإدارة.",
+          message_end: "Sorry, you do not have the necessary permissions to perform this action. If you have any questions or require further assistance, please contact the administration.",
+        });
+    }
+
+
+
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.closingDate])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+  
+
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      
+  
+      // const settings = await check_settings_validation({
+      //   check_futureDate: true,
+      //   check_closingDate: true,
+      //   type: 'update',
+      //   tableName: 'effects',
+      //   transaction_id: posted_elements.id,
+      //   datex: posted_elements.date_val,
+      // }, req);
+  
+      // if (!settings.valid) {
+      //   return res.json({
+      //     success: false,
+      //     message_ar: settings.message_ar,
+      //   });
+      // }
+  
+ 
+      //* Start--------------------------------------------------------------
+  
+  
+  
+      let query1 = `
+UPDATE settings
+SET 
+    datex1 = CASE 
+        WHEN setting_type_id = 1 THEN $2  -- القيمة الجديدة لـ datex1 عندما يكون setting_type_id يساوي $1
+        ELSE datex1  -- الاحتفاظ بالقيمة القديمة إذا لم يتم استيفاء الشروط
+    END,
+    boolean1 = CASE 
+        WHEN setting_type_id = 2 THEN $3  -- القيمة الجديدة لـ boolean1 عندما يكون setting_type_id يساوي $1
+        ELSE boolean1  -- الاحتفاظ بالقيمة القديمة إذا لم يتم استيفاء الشروط
+    END
+WHERE company_id = $1 AND setting_type_id IN (1, 2);
+
+      `;
+      let params1 = [
+        req.session.company_id,
+        posted_elements.closingDate,
+        posted_elements.is_prevent_futureDate
+      ]
+  
+  
+      // const year = getYear(posted_elements.date_val)
+      // const reference = formatFromFiveDigits(posted_elements.reference);
+  
+      await db.tx(async (tx) => {
+          await tx.none(query1, params1);
+          // await history(16, 2, posted_elements.id, posted_elements.reference, req, tx)
+      });
+  
+      
+      return res.json({
+        success: true,
+        // message_ar: `تم تعديل بيانات المؤثر بمرجع : ${reference}-${year}`,
+        message_ar: "تم تحديث الإعدادات العامة للتطبيق بنجاح. سيتم تحديث الصفحة تلقائيًا لتطبيق التغييرات.",
+        message_en: "The application settings have been successfully updated. The page will refresh automatically to apply the changes.",
+      });
+      
+    } catch (error) {
+      console.error("Error Update general settings:", error);
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء تعديل البيانات",
+      });
+    }
+  });
+
   //#endregion end get settings data
 
 //#endregion settings

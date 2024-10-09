@@ -242,6 +242,11 @@ permissions.forEach(permission => {
 
 
 
+
+add_new_bussnies.onclick = function(){
+  window.location.href='companies_add_ar';
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
   // استدعاء الدالة عندما تكتمل تحميل الصفحة
   await showFirst50RowAtTheBegening();

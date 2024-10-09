@@ -82,7 +82,7 @@ function filleffectstable() {
                             <td> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
                             <td style="display: none">${row.id}</td>
                             <td style="widrh: auto; white-space: nowrap;text-align: center;">${row.datex}</td>
-                            <td style="min-width: 20rem;width: 100%; white-space: wrap">${row.note}</td>
+                            <td style="min-width: 20rem; width: 100%; white-space: wrap">${row.note}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;" class="table_number">${total_column(total_column1,row.procution_amount)}</td>
                             <td style="width: auto; white-space: nowrap;text-align: center;" class="table_number">${total_column(total_column2,row.sales_amount)}</td>
                             <td style="width: auto; white-space: nowrap; font-weight: bold;text-align: center;" class="table_number">${floatToString(true,row.cumulative_balance)}</td>
