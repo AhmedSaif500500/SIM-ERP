@@ -76,6 +76,10 @@ if (!num){
 
 
 function getYear(dateString) {
+  
+  if (!dateString){
+    return null
+  }
   // التأكد من أن السلسلة تتبع الصيغة الصحيحة
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
   
