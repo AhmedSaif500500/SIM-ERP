@@ -3,13 +3,25 @@ const tableContainer = document.getElementById("tableContainer");
 const searchBtn = document.getElementById("searchBtn");
 const searchInput = document.getElementById("searchInput");
 
-
+let data = [];
 let array1 = [];
 let slice_Array1 = [];
 
 async function getUsersData_fn() {
-  const response = await fetch("/get_All_users_Data");
-  data = await response.json();
+
+  data = await fetchData_postAndGet(
+  "/get_All_users_Data",
+  {},
+  'users_permission','view',
+  15,
+  false,``,
+  false,
+  true,content_space,
+  false,``,
+  `حدث خطأ اثناء معالجة البيانات`
+
+)
+
 
   // تحديث array1 بنتيجة الـ slice
   array1 = data.slice();
@@ -138,10 +150,14 @@ searchInput.addEventListener("keydown", (event) => {
 
 function table_update_btn_fn(updateBtn) {
   // عثر على الموظف باستخدام معرف الموظف
-  const selectedUser = updateBtn.closest("tr").cells[1].textContent;
+  const selectedUser = parseInt(updateBtn.closest("tr").cells[1].textContent);
   if (selectedUser) {
-    sessionStorage.setItem("user_id", selectedUser);
-    window.location.href = "/users_update_ar";
+
+
+    const transferedData = { selectedUser };
+    const encodedData = encodeURIComponent(JSON.stringify(transferedData));
+
+    window.location.href = `users_update_ar?data=${encodedData}`;
   } else {
     return;
   };

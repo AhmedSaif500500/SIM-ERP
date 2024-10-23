@@ -137,14 +137,14 @@ function backUp_filter_div_conditions() {
 
     
     // استرجاع المصفوفة المحفوظة في sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem(`noteViewArray`)) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem(`historyViewArray`)) || [];
 
     
     // إضافة العنصر الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem(`noteViewArray`,JSON.stringify(conditionsArray));
+    sessionStorage.setItem(`historyViewArray`,JSON.stringify(conditionsArray));
    
 
 }
@@ -153,8 +153,10 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`noteViewArray`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`historyViewArray`)) || [];
 
+        console.log(array.length);
+        
     if (!array || array.length <= 1) {
     
       
@@ -162,7 +164,8 @@ back_href.onclick = async function (event) {
             window.location.href = `notes_ar`;
        
     }else{
-
+        console.log(`here`);
+        
         restore_filter_div_conditions(2)
         await getData_fn();
         
@@ -173,7 +176,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة في sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("noteViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("historyViewArray")) || [];
   
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -186,7 +189,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         conditionsArray.splice(-`${NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore-1}`);
 
         // حفظ المصفوفة المحدثة في sessionStorage بعد الحذف
-        sessionStorage.setItem("noteViewArray",JSON.stringify(conditionsArray));
+        sessionStorage.setItem("historyViewArray",JSON.stringify(conditionsArray));
         }
     } else {
         return
@@ -276,7 +279,7 @@ async function filter_icon_cancel_fn() {
             input_start_date1.value = firstDayOfYear;
             input_end_date1.value = lastDayOfYear;
             closeDialog();
-            sessionStorage.removeItem('noteViewArray');
+            sessionStorage.removeItem('historyViewArray');
             conditionsArray = []
             await getData_fn();
         }
@@ -608,7 +611,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     showRedirectionReason();
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`noteViewArray`);
+    const conditionsArray = sessionStorage.getItem(`historyViewArray`);
 
     if (!conditionsArray){
      

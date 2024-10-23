@@ -416,23 +416,7 @@ async function getData_fn() {
         start_date = input_start_date1.value;
         end_date = input_end_date1.value;
        
-        
-        // data = await fetchData_postAndGet(
-        //     "/effects_view",
-        //     { QKey, checkbox_aggregation_val, start_date, end_date },
-        //     "employees_permission",
-        //     "view",
-        //     15,
-        //     false,
-        //     "",
-        //     false,
-        //     true,
-        //     content_space,
-        //     false,
-        //     "",
-        //     "حدث خطأ اثناء معالجة البيانات"
-        // );
-
+    
 
         data = await new_fetchData_postAndGet(
             "/effects_view",
@@ -734,6 +718,9 @@ function fillTable() {
         slice_array1.forEach((row) => {
             let activeClass =
                 row.is_inactive == "غير نشط"? "table_red_condition": "table_green_condition";
+                
+                
+                
             let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
 
             tableHTML +=
@@ -1005,13 +992,13 @@ async function aggregation_balance_details(details_btn) {
     try {
         showLoadingIcon(content_space);
         const row = details_btn.closest("tr");
-        QKey = row.cells[7].textContent;
+        QKey = row.cells[8].textContent;
         deafult_checkbox();
         checkbox_aggregation.checked = false;
         note_div.style.display = "flex";
         referenceCONCAT_div.style.display = "flex";
        
-        emp_name = row.cells[8].textContent;
+        emp_name = row.cells[9].textContent;
         checkbox_account_name.checked = false;
         checkbox_note.checked = true;
         checkbox_referenceCONCAT.checked = true;

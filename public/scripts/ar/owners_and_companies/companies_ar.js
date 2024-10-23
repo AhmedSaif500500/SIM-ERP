@@ -200,10 +200,6 @@ async function company_login_btn(enter_button) {
 
    // sessionStorage.setItem('forbidden_deletion_array', JSON.stringify([1,2,3,4,5,6,7,8,8,10,11,12,13,14,15,16,17,8,19,20,21,22,23]));
 
-
-
-
-
     // Define an array of permissions
 const permissions = [
   "general_permission",
@@ -247,6 +243,9 @@ add_new_bussnies.onclick = function(){
   window.location.href='companies_add_ar';
 }
 
+users_btn.onclick = function(){
+  window.location.href='users_view_ar';
+}
 document.addEventListener('DOMContentLoaded', async function () {
   // استدعاء الدالة عندما تكتمل تحميل الصفحة
   await showFirst50RowAtTheBegening();

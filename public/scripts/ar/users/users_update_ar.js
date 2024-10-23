@@ -1,4 +1,4 @@
-setActiveSidebar('users_view_ar');
+setActiveSidebar('permissions_view_ar');
 
 //#region  get user data and show
 
@@ -10,7 +10,7 @@ setActiveSidebar('users_view_ar');
 // sessionStorage.removeItem('user_id');
 // if (!user_id) {
 
-//   redirection('users_view_ar', 'fail', 'رجاء تحديد المستخدم اولا : سيتم توجيهك الى صفحه المستخدمين الرئيسية')
+//   redirection('permissions_view_ar', 'fail', 'رجاء تحديد المستخدم اولا : سيتم توجيهك الى صفحه المستخدمين الرئيسية')
 // };
 
 
@@ -30,7 +30,7 @@ let user_id;
 async function get_user_data_fn() {
   try {
 
-    let urlData = getURLData('data','users_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الصلاحيات')
+    let urlData = getURLData('data','permissions_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الصلاحيات')
     user_id = urlData.selectedUser;
 
 
@@ -243,7 +243,7 @@ try {
       'users_permission','update',
       15,true,'هل تريد تعديل  صلاحيات المستخدم ؟',
       true,false,'',
-      true,'users_view_ar',
+      true,'permissions_view_ar',
       'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
     )
 
@@ -266,7 +266,7 @@ document.querySelector("#btn_delete").addEventListener("click", async function (
     15,
     '/delete_User_from_user_update_ar',
     true,
-    'users_view_ar'
+    'permissions_view_ar'
   )
 
 });

@@ -1,4 +1,4 @@
-setActiveSidebar('users_view_ar');
+setActiveSidebar('permissions_view_ar');
 //#region  save function
 
 document.querySelector("#btn_save").addEventListener("click", async function () {

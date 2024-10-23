@@ -76,12 +76,14 @@ if (!num){
 
 
 function getYear(dateString) {
-  
+
   if (!dateString){
     return null
   }
   // التأكد من أن السلسلة تتبع الصيغة الصحيحة
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  
+  
   
   if (!datePattern.test(dateString)) {
       throw new Error("Invalid date format. Please use YYYY-MM-DD.");
@@ -206,7 +208,7 @@ function loadSidebarContents() {
     </a>
 
 
-    <a href="users_view_ar" target="_self" id="users_control_a" style="display: none;">
+    <a href="permissions_view_ar" target="_self" id="users_control_a" style="display: none;">
       <i class="fa-duotone fa-user"></i>
       الصلاحيات
     </a>
@@ -348,6 +350,7 @@ const history_setting_btn = document.querySelector('#history_setting_btn');
 if (history_setting_btn){
   history_setting_btn.onclick = function(){
   try {
+    sessionStorage.removeItem('historyViewArray');  ذ
     window.location.href = "history_view_ar";
   } catch (error) {
     catch_error(error)

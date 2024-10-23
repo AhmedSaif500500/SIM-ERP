@@ -77,6 +77,7 @@ const result = `${hours}:${minutes} ${ampm}`;
 return result
 }
 
+
 //#region app-Started
 const http = require('http');
 const express = require("express");
@@ -204,7 +205,7 @@ async function check_last_activity_fn() {
     await db.none(
       `
       UPDATE users
-      SET is_active = false
+      SET is_active = null
       WHERE last_activity < $1;
   `,
       [sessionTime]
@@ -1399,6 +1400,44 @@ app.post("/api/get_companies_users", async (req, res) => {
 });
 //#endregion
 
+//#region 5:- get users
+app.post("/get_main_users_Data", async (req, res) => {
+  try {
+    //! check Permission
+    permissions(req, "users_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+
+    //*----------------------------------------------------------------
+
+    let query = `select id,
+      user_full_name,
+              CASE
+              WHEN is_stop = true THEN 'ايقاف'
+              ELSE ''
+          END AS is_stop
+    from users
+    where owner_id = $1`;
+    let data = await db.any(query, [req.session.owner_id]);
+
+    // const rows = await db.any("SELECT id, user_name  FROM users");
+    console.table(data);
+    
+
+    res.json(data);
+    last_activity(req);
+  } catch (error) {
+    console.error("Error get_All_users_Data ", error);
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
+    });
+  }
+});
+//#endregion
+
 //#region 5:- save new user
 app.post("/api/save_new_user", async (req, res) => {
   try {
@@ -2462,100 +2501,6 @@ order by
 
 //#region users
 
-// review  users data
-app.post("/get_All_users_Data", async (req, res) => {
-  try {
-    //! check Permission
-    permissions(req, "users_permission", "view");
-    if (!permissions) {
-      return;
-    }
-
-  
-
-    //*----------------------------------------------------------------
-
-    let query = `select uc.user_id, u.user_full_name as user_name
-    from user_company uc
-    left join users u on uc.user_id = u.id 
-    where uc.company_id  = $1`;
-    let rows = await db.any(query, [req.session.company_id]);
-
-    // const rows = await db.any("SELECT id, user_name  FROM users");
-    const data = rows.map((row) => ({
-      id: row.user_id,
-      user_name: row.user_name,
-    }));
-
-    res.json(data);
-    last_activity(req);
-  } catch (error) {
-    console.error("Error get_All_users_Data ", error);
-    res.status(500).json({
-      success: false,
-      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
-    });
-  }
-});
-
-
-//     //* Start--------------------------------------------------------------
-
-//     //1: receive data from frontend new_employee_ar.
-
-//     //2: validation data befor inserting to db
-//     // const rows = await db.any(
-//     //   "SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1",
-//     //   [posted_elements.user_name_input]
-//     // );
-
-//     let query = `SELECT TRIM(user_name) FROM users WHERE TRIM(user_name) = $1`;
-//     let rows = await db.any(query, [posted_elements.user_name_input]);
-
-//     if (rows.length > 0) {
-//       // اذا حصل على نتائج
-//       return res.json({
-//         success: false,
-//         message_ar: "اسم المستخدم موجود بالفعل",
-//       });
-//     } else {
-//       //! تشفير كلمة المرور قبل إدخالها في قاعدة البيانات
-//       const pass_input1 = await bcrypt.hash(posted_elements.pass_input1, 12);
-
-//       //3: insert data into db
-//       const newId = await newId_fn("users",'id');
-
-//       let query = `INSERT into users (id, user_name, user_password, general_permission, users_permission, employees_permission, effects_permission, production_permission, bread_permission, transaction_permission, datex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
-//       await db.none(query, [
-//         newId,
-//         posted_elements.user_name_input,
-//         pass_input1,
-//         posted_elements.general_permission_select,
-//         posted_elements.table_permission_users,
-//         posted_elements.table_permission_employees,
-//         posted_elements.table_permission_effects,
-//         posted_elements.table_permission_production,
-//         posted_elements.table_permission_bread,
-//         posted_elements.table_permission_transaction,
-//         posted_elements.today,
-//       ]);
-
-//       //4: send a response to frontend about success transaction
-//       res.json({
-//         success: true,
-//         message_ar: "تم حفظ المستخدم بنجاح",
-//       });
-//       last_activity(req);
-//     }
-//   } catch (error) {
-//     console.error("Error adding new user:", error);
-//     // send a response to frontend about fail transaction
-//     res.status(500).json({
-//       success: false,
-//       message_ar: "حدث خطأ أثناء اضافة المستخدم",
-//     });
-//   }
-// });
 
 // update user
 app.post("/updateUser", async (req, res) => {
