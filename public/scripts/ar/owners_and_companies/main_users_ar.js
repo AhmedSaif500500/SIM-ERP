@@ -141,7 +141,7 @@ function table_update_btn_fn(updateBtn) {
   const selectedUser = updateBtn.closest("tr").cells[1].textContent;
   if (selectedUser) {
     sessionStorage.setItem("user_id", selectedUser);
-    window.location.href = "/users_update_ar";
+    window.location.href = "/permissions_update_ar";
   } else {
     return;
   };

@@ -92,10 +92,36 @@ router.get('/permissions_view_ar', (req, res) => {
 
 
 
+
+
+router.get('/users_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {        
+        if (req.session.is_owner) {            
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'owners_and_companies', 'users_view_ar.html'));
+        }else{            
+            res.redirect('/companies_ar?reason=1');
+        };
+    } else {
+        res.redirect('/login?reason=0');
+    }
+});
+
 router.get('/users_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission === 6) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_add_ar.html'));
+        if (req.session.is_owner) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'owners_and_companies', 'users_add_ar.html'));
+        }else{
+            res.redirect('/permissions_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/users_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'owners_and_companies', 'users_update_ar.html'));
         }else{
             res.redirect('/permissions_view_ar?reason=1');
         };
@@ -105,24 +131,10 @@ router.get('/users_add_ar', (req, res) => {
 });
 
 
-router.get('/users_view_ar', (req, res) => {
+router.get('/permissions_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission === 6) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_view_ar.html'));
-        }else{
-            res.redirect('/companies_ar?reason=1');
-        };
-    } else {        
-        res.redirect('/login?reason=0');
-    }
-});
-
-
-
-router.get('/users_update_ar', (req, res) => {
-    if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission === 6) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'users_update_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'users', 'permissions_update_ar.html'));
         }else{
             res.redirect('/permissions_view_ar?reason=2');
         };

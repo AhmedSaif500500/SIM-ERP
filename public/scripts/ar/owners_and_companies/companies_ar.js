@@ -4,9 +4,9 @@
 
 const is_owner = sessionStorage.getItem('owner')
 const add_company_users_btns_div = document.querySelector(`#add_company_users_btns_div`);
-if (is_owner && is_owner === 'true') {
+if (is_owner && is_owner == 'true') {  
   add_company_users_btns_div.style.display = 'flex';
-} else {
+} else {  
   add_company_users_btns_div.style.display = 'none';
 }
 //#endregion
@@ -190,43 +190,24 @@ async function company_login_btn(enter_button) {
       'حدث خطأ اثناء الدخول الى العمل التجارى المحدد'
     )
 
-    const dataLength = data.length
-    if (!dataLength) {
+    
+    
+
+    if (!data) {
       hideLoadingIcon(enter_button);
       showAlert('fail', 'حدث خطأ اثناء معالجه البيانات برجاء التواصل مع الدعم الفنى')
       return
     }
 
-
-   // sessionStorage.setItem('forbidden_deletion_array', JSON.stringify([1,2,3,4,5,6,7,8,8,10,11,12,13,14,15,16,17,8,19,20,21,22,23]));
-
-    // Define an array of permissions
-const permissions = [
-  "general_permission",
-  "accounts_permission",
-  "hr_permission",
-  "departments_permission",
-  "employees_permission",
-  "effects_permission",
-  "users_permission",
-  "production_permission",
-  "bread_permission",
-  "transaction_permission",
-  "items_permission",
-  "customers_permission",
-  "vendors_permission",
-  // Add new permissions here
-];
-
-// Save company_id and company_name
-sessionStorage.setItem("company_id", data[0].company_id); 
-sessionStorage.setItem("company_name", data[0].company_name); 
+sessionStorage.setItem("company_id", data.company_id); 
+sessionStorage.setItem("company_name", data.company_name); 
 
 // Save all permissions dynamically
-permissions.forEach(permission => {
-  sessionStorage.setItem(permission, data[0][permission]);
-});
-
+    // حفظ جميع الأذونات ديناميكيًا
+    internal_permissions.forEach(permission => {
+      sessionStorage.setItem(permission, data[permission]); // الوصول إلى كل إذن بشكل صحيح
+      
+    });
 
     hideLoadingIcon(enter_button)
     window.location.href = '/notes_ar';
@@ -244,9 +225,11 @@ add_new_bussnies.onclick = function(){
 }
 
 users_btn.onclick = function(){
+  sessionStorage.removeItem('usersViewArray');
   window.location.href='users_view_ar';
 }
 document.addEventListener('DOMContentLoaded', async function () {
+  clear_sub_sessionStorage()
   // استدعاء الدالة عندما تكتمل تحميل الصفحة
   await showFirst50RowAtTheBegening();
 });

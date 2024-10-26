@@ -10,7 +10,7 @@ let slice_Array1 = [];
 async function getUsersData_fn() {
 
   data = await fetchData_postAndGet(
-  "/get_All_users_Data",
+  "/get_users_permissions_Data",
   {},
   'users_permission','view',
   15,
@@ -21,7 +21,6 @@ async function getUsersData_fn() {
   `حدث خطأ اثناء معالجة البيانات`
 
 )
-
 
   // تحديث array1 بنتيجة الـ slice
   array1 = data.slice();
@@ -60,11 +59,11 @@ async function filleffectstable() {
 
   // إضافة صفوف الجدول بناءً على البيانات
   // slice_Array1 = ""; // تفريغ المصفوفه
-  slice_Array1.forEach((user) => {
+  slice_Array1.forEach((row) => {
     tableHTML += `<tr>
         <td style="width: auto;"> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
-        <td style="display: none;">${user.id}</td> <!-- تم إخفاء العمود ID -->
-        <td style="width: 100%;">${user.user_name}</td>
+        <td style="display: none;">${row.user_id}</td> <!-- تم إخفاء العمود ID -->
+        <td style="width: 100%;">${row.user_full_name}</td>
       </tr>`;
   });
 
@@ -157,10 +156,15 @@ function table_update_btn_fn(updateBtn) {
     const transferedData = { selectedUser };
     const encodedData = encodeURIComponent(JSON.stringify(transferedData));
 
-    window.location.href = `users_update_ar?data=${encodedData}`;
+    window.location.href = `permissions_update_ar?data=${encodedData}`;
   } else {
     return;
   };
 };
+
+
+window.addEventListener("beforeprint", function () {
+  beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني
+});
 
 //#region

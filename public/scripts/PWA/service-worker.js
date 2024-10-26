@@ -75,7 +75,7 @@ self.addEventListener('install', function(event) {
         //users
         '/views/ar/users/users_add_ar.html',
         '/views/ar/users/permissions_view_ar.html',
-        '/views/ar/users/users_update_ar.html',
+        '/views/ar/users/permissions_update_ar.html',
 
         '/public/scripts/ar/users/users_add_ar.js',
         '/public/scripts/ar/users/permissions_view_ar.js',

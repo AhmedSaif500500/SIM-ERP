@@ -31,5 +31,6 @@ btn_add_company.onclick = async function () {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+    clear_sub_sessionStorage()
     page_content.style.display = 'flex';
 })

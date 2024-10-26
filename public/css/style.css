@@ -490,8 +490,8 @@ input[type="checkbox"]:hover {
 
 /*todo Flex*/
 .row {
-  display: flex !important;
-  flex-direction: row !important;
+  display: flex ;
+  flex-direction: row ;
 }
 .row_R {
   display: flex !important;
@@ -499,8 +499,8 @@ input[type="checkbox"]:hover {
 }
 
 .column {
-  display: flex !important;
-  flex-direction: column !important;
+  display: flex ;
+  flex-direction: column ;
 }
 
 .column_R {
@@ -2040,6 +2040,7 @@ html[dir="rtl"] {
 }
 
 .btn_eye {
+  position: relative;
   width: 4rem;
   height: var(--input_height);
   background-color: var(--btn_search_backcolor);

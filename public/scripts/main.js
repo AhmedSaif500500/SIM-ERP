@@ -12,6 +12,7 @@ let firstDayOfYear = new Date(currentYear, 0, 1).toLocaleDateString('en-CA');
 let lastDayOfYear = new Date(currentYear, 11, 31).toLocaleDateString('en-CA');
 let refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
 let refrence_input = document.querySelector(`#refrence_input`);
+let user_setting_btn = document.querySelector(`#user_setting_btn`);
 
 
 
@@ -153,7 +154,7 @@ loadHeaderContents();
 //#region add sidebar
 function loadSidebarContents() {
   const sidebar = document.querySelector('#sidebar');
-  const excludedPages = ['login', 'companies_ar']
+  const excludedPages = ['login', 'companies_ar', '/', 'companies_add_ar', 'users_view_ar', 'users_add_ar', 'users_update_ar']
 
   if (excludedPages.includes(currentPage)) {
 
@@ -171,82 +172,82 @@ function loadSidebarContents() {
 </a>
 
 
-    <a href="hr_ar" target="_self" class="">
+    <a href="hr_ar" target="_self" class="" style="display: ${module_display("hr_permission")}">
       <i class="fa-duotone fa-user-tie"></i>
       الموارد البشريه
     </a>
 
 
-    <a href="production_view_ar" target="_self" class="">
+    <a href="production_view_ar" target="_self" class="" style="display: ${module_display("production_permission")}">
       <i class="fa-duotone fa-industry"></i>
       الانتاج
     </a>
 
-    <a href="bread_view_ar" target="_self" class="">
+    <a href="bread_view_ar" target="_self" class="" style="display: ${module_display("bread_permission")}">
       <i class="fa-duotone fa-bread-slice"></i>
       العيش
     </a>
 
-    <a href="customers_view_ar" target="_self" class="">
+    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       العملاء
     </a>
 
-    <a href="vendors_view_ar" target="_self" class="">
+    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       الموردين
     </a>
 
-    <a href="items_view_ar" target="_self" class="">
+    <a href="items_view_ar" target="_self" class="" style="display: ${module_display("items_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       اصناف المخزون
     </a>
 
-    <a href="transaction_view_ar" target="_self" class="">
+    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("items_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       شطب المخزون
     </a>
 
 
-    <a href="permissions_view_ar" target="_self" id="users_control_a" style="display: none;">
+    <a href="permissions_view_ar" target="_self" id="users_control_a" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-user"></i>
       الصلاحيات
     </a>
 
-    <a href="accounts_view_ar" target="_self" class="">
+    <a href="accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};">
       <i class="fa-duotone fa-tree fa-bounce" style="color: #FFD43B;"></i>
       الحسابات
     </a>
 
-    <a href="transaction_view_ar" target="_self" class="">
+    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")};">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       القيود المحاسبية
     </a>
 
 
-    <a href="transaction_add_ar" target="_self" class="">
+    <a href="transaction_add_ar" target="_self" class="" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-tree fa-bounce" style="color: green;"></i>
       التقارير
     </a>
 
-    <a href="test_ar" target="_self" class="">
+    <a href="test_ar" target="_self" class="" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-tree fa-bounce" style="color: red;"></i>
       test
     </a>
 
-    <a href="test_ar" target="_self" class="">
+    <a href="test_ar" target="_self" class="" style="display: ${module_display("0")};">
        <i class="fa-duotone fa-gear"></i>
       الاعدادت
     </a>
 
 
 
-    <a id="Custmize_sidebar" href="#">
+    <a id="Custmize_sidebar" href="#" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-gear"></i>
       <p>تخصيص</p>
     </a>
 
-    <a id="owner_sidebar" href="#">
+    <a id="owner_sidebar" href="#" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-gear"></i>
       <p>المالك</p>
     </a>
@@ -258,6 +259,25 @@ function loadSidebarContents() {
 
 // لا تنس تنفيذ الدالة
 loadSidebarContents();
+
+
+
+function module_display(string_perm_name) {
+  const owner = sessionStorage.getItem('owner');
+  const general_permission = parseInt(sessionStorage.getItem('general_permission'));
+  const custom_permission = parseInt(sessionStorage.getItem(string_perm_name));
+
+  if ((owner && owner === 'true') || (general_permission > 1 && general_permission < 7)) {
+    console.log(`yes`);
+    
+    return 'flex';
+  } else if (custom_permission && (custom_permission > 0 && custom_permission < 5)) {
+    return 'flex';
+  } else {
+    return 'none';
+  }
+}
+
 
 
 const fn_container_div = document.querySelector(`#fn_container_div`)
@@ -318,6 +338,7 @@ async function fixed_information() {
       return;
     } else {
       if (!user_name_session) {
+        
         window.location.href = "/login";
         return;
       } else {
@@ -325,13 +346,14 @@ async function fixed_information() {
       }
     }
 
-    const excludedPages = ['companies_ar', '/', 'login']
+    const excludedPages = ['companies_ar', '/', 'login', 'companies_add_ar', 'users_view_ar', 'users_add_ar', 'users_update_ar']
 
     if (excludedPages.includes(currentPage)) {
       return;
     } else {
       if (!user_name_session || !user_company_session) {
-        window.location.href = "/login";
+        await khorogFawry(`برجاء إعادة تسجيل الدخول مره اخرى `)
+        // window.location.href = "/login";
         return;
       } else {
         header_company_name.textContent = user_company_session
@@ -358,13 +380,15 @@ if (history_setting_btn){
 }
 }
 
-user_setting_btn.addEventListener('click', function () {
-  try {
-      showAlert(`info`, `مازال تحت التحديث`)
-  } catch (error) {
-    catch_error('user_setting_btn EROR', error.message)
-  }
-});
+if (user_setting_btn){
+  user_setting_btn.addEventListener('click', function () {
+    try {
+        showAlert(`info`, `مازال تحت التحديث`)
+    } catch (error) {
+      catch_error('user_setting_btn EROR', error.message)
+    }
+  });
+}
 
 
 
@@ -1736,6 +1760,7 @@ async function logout() {
 
     if (data.success) {
       closeDialog();
+      sessionStorage.clear();
       redirection('login', 'info', 'تم تسجيل الخروج بنجاح : سيتم تجويلك الى الصفحه الرئيسيه')
     } else {
       showAlert('fail', data.message);
@@ -1747,7 +1772,7 @@ async function logout() {
 };
 
 
-async function khorogFawry() {
+async function khorogFawry(message) {
   try {
 
     // await showDialog('', 'هل تريد الخروج من التطبيق ؟', '');
@@ -1767,9 +1792,11 @@ async function khorogFawry() {
 
     const data = await response.json();
 
+     let txt = message ? message : 'قام احد المستخدمين بمحاولة تسجيل الدخول بالحساب الحالى : سيتم تجويلك الى الصفحه الرئيسيه'
+
     if (data.success) {
       closeDialog();
-      redirection('login', 'info', 'قام احد المستخدمين بمحاولة تسجيل الدخول بالحساب الحالى : سيتم تجويلك الى الصفحه الرئيسيه')
+      redirection('login', 'info', txt )
     } else {
       showAlert('fail', data.message);
     }
@@ -1778,6 +1805,8 @@ async function khorogFawry() {
     catch_error('logout Error', error);
   }
 };
+
+
 // تسجيل خروج فى حاله اغلاق المتسفح او الصفحه بدون تسجيل خروج
 // window.addEventListener('beforeunload', function () {
 //   logout()
@@ -2723,5 +2752,32 @@ function textareaFormat(string_td_or_textarea, value) {
 
 }
 
+const internal_permissions = [
+  "general_permission",
+  "accounts_permission",
+  "hr_permission",
+  "departments_permission",
+  "employees_permission",
+  "effects_permission",
+  "users_permission",
+  "production_permission",
+  "bread_permission",
+  "transaction_permission",
+  "items_permission",
+  "customers_permission",
+  "vendors_permission",
+];
 
 
+function clear_sub_sessionStorage(){
+
+  // حذف الشركة
+  sessionStorage.removeItem("company_id");
+  sessionStorage.removeItem("company_name");
+  
+  // حذف جميع الأذونات
+  internal_permissions.forEach(permission => {
+    sessionStorage.removeItem(permission);
+  });
+  
+}

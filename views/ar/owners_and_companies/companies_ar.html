@@ -9,74 +9,6 @@
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
 
-  <style>
-
-    .dialog{
-      width: 40rem;
-      overflow: auto;
-    }
-
-  @media screen and (max-width: 600px) {
-  .dialog {
-    width: 90%;
-    max-height: 90%;
-  }
-}
-
-#div1{
-  margin-block-end: 1rem;
-}
-
-#div1,
-#div2{
-  transition: var(--transition);
-}
-
-#div1 button{
-  background-color: var(--btn_save_backcolor); 
-  transition: var(--transition);
-}
-
-#div2 button{
-  background-color: var(--btn_delete_backcolor); 
-}
-
-#div1 button,
-#div2 button{
-  display: flex; flex-direction: row;
-    justify-content: center; align-items: center;
-    padding: 0.5rem 1rem;
-    color: var(--btn_color);
-    border-radius: 0.3rem;
-    margin: 0.5rem;
-    cursor: pointer;
-    word-wrap: break-word;
-    transition: var(--transition);
-}
-#div1 button:hover,
-#div2 button:hover{
-  opacity: var(--btn_hover_opacity);
-}
-
-#div1 button:active,
-#div2 button:active{
-  transform: scale(1.1);
-}
-
-
-
-
-
-    .tags_div{
-      display: flex; flex-direction: row; flex-wrap: wrap; 
-      min-height: 5rem; height: fit-content; max-height: 15rem;
-      width: 100%;
-      overflow: auto;
-      border: var(--border_normal);
-      border-radius: 0.3rem;
-      padding: 0.5rem;
-    }
-  </style>
 </head>
 
 <body class="body scroll">
@@ -114,10 +46,9 @@
 
       <div class="header_user_div" style="gap: 0.7rem;">
         <button id="header_user_name" class="header_user_name"></button>
-        <div id="user_options" class="user_options" style="display: none;">
-          <button id="user_setting_btn" class="btn_new" onclick="">الاعدادات</button>
+        <div id="user_options" class="user_options hidden_height">
           <button id="user_logout_btn" class="btn_cancel" onclick="logout()">خروج</button>
-        </div>
+      </div>
         <!-- <button id="header_user_name">قرمشه</button> -->
       </div>
 
