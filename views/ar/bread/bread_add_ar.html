@@ -8,21 +8,7 @@
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
-  <style>
-    .unit {
-      /* padding: 0.2rem; */
-      border-radius: 3px;
-      pointer-events: none;
-      background-color: var(--btn_search_backcolor);
-      height: 100%;
-      width: fit-content;
-      padding: .5rem;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-    }
-  </style>
+
 </head>
 
 <body class="body scroll">
@@ -41,15 +27,22 @@
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
                 <div id="content_space" class="scroll">
+          
+           <!-- <div id="fn_container_div" class="fn_container_div"></div> -->
 
-          <div id ="fn_container_div" class="fn_container_div"></div>
-          <h2 id="h2" class="h2">
-             <a id="back_href" class="back_href" href="bread_view_ar">
+
+           <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="bread_view_ar" title="العيش">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-            العيش / جديد
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="bread_add_ar" title="اعادة تحميل الصفحة">العيش</a>
+              <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+            </div>
           </h2>
+
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+          <div id="page_content" style="display: flex;">
           <label for="date1" class="lbl_sm">التاريخ</label>
           <!-- date -->
           <div class="input_with_icon_div">
@@ -58,7 +51,7 @@
             <i class="fa-regular fa-calendar left_icon"></i>
           </div>
           <label for="date1" class="lbl_sm">اسم المورد</label>
-          <select name="" id="vendore_select" class="select_year" style="width: fit-content;">
+          <select name="" id="vendore_select" class="select" style="width: fit-content;">
             <option value="1">حسين مرزوق</option>
             <option value="2">ابراهيم ملش</option>
             <option value="3">فرن منطى</option>
@@ -69,8 +62,8 @@
           </select>
 
           <label for="note_inpute" class="lbl_sm">البيان</label>
-          <!-- <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off" oninput="check_parse(this,'string')"> -->
-          <textarea id="note_inpute" class="text_area1 hover" oninput="check_parse(this,'string')"></textarea>
+          <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off" oninput="check_parse(this,'string')">
+          <!-- <textarea id="note_inpute" class="text_area1 hover" oninput="check_parse(this,'string')"></textarea> -->
           <!-- table -->
          
             <table id="myTable" class="input_table">
@@ -121,8 +114,8 @@
                 <tr>
                   <td colspan="4" class="">
                     <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
-                    <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
-                    <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
+                    <button onclick="addRows()" class="btn_new">سطر جديد</button>
+                    <select id="columnSelect" class="select m_0" style="width: fit-content; height: 3.5rem;">
                       <option value="1">1</option>
                       <option value="2">2</option>
                       <option value="3">3</option>
@@ -137,6 +130,8 @@
             <div class="btn_container_top_border">
               <button class="btn_save" id="btn_save">حفظ</button>
             </div>
+
+          </div>
           </div>
 
         </div>

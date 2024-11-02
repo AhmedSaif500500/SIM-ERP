@@ -31,15 +31,13 @@
       width: auto;
       /* يضمن أن العرض تلقائي بناءً على المحتوى */
     }
-
-
   </style>
 
-<style>
-  .highlight {
+  <style>
+    .highlight {
       background-color: yellow;
-  }
-</style>
+    }
+  </style>
 
 </head>
 
@@ -58,231 +56,64 @@
 
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-                <div id="content_space" class="scroll">
+        <div id="content_space" class="scroll">
 
-          <div id ="fn_container_div" class="fn_container_div"></div>
           <h2 id="h2" class="h2">
-             <a id="back_href" class="back_href" href="bread_view_ar">
+            <a id="back_href" class="back_href" href="transaction_view_ar" title="المؤثرات">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-
-            القيود اليومية / جديد
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="transaction_add_ar" title="اعادة تحميل الصفحة">القيود
+                اليومية</a>
+              <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+            </div>
           </h2>
-          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-          <div class="reference_and_date_div">
+          <div id="page_content" style="display: none;">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-            <div class="column x_start y_start w_fit">
-          <!-- date -->
-          <label for="date1" class="lbl_sm">التاريخ</label>
-          <div class="input_with_icon_div">
-            <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
-              autocomplete="off">
-            <i class="fa-regular fa-calendar left_icon"></i>
-          </div>
-          </div>
-              
-        <div class="column x_start y_start w_fit">
-            <label for="refrence_input" class="lbl_sm">المرجع</label>
-          <div class="input_with_icon_div">
-            <span class="refrence_input_checkbox"><input type="checkbox" id="refrence_input_checkbox" checked></span>
-            <input type="search" id="refrence_input" class="refrence_input hover" oninput="check_parse(this,'number')" placeholder="اختياؤى" autocomplete="off">
-          </div>
-        </div>
+            <div class="reference_and_date_div">
 
-        </div>
+              <div class="column x_start y_start w_fit">
+                <!-- date -->
+                <label for="date1" class="lbl_sm">التاريخ</label>
+                <div class="input_with_icon_div">
+                  <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+                    autocomplete="off">
+                  <i class="fa-regular fa-calendar left_icon"></i>
+                </div>
+              </div>
 
-        <label for="note_inpute" class="lbl_sm">البيان العام</label>
-        <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off">
+              <div class="column x_start y_start w_fit">
+                <label for="reference_input" class="lbl_sm">المرجع</label>
+                <div class="input_with_icon_div">
+                  <span class="reference_input_checkbox"><input type="checkbox" id="reference_input_checkbox" checked disabled title="تلقائى"></span>
+                  <input type="search" id="reference_input" class="reference_input reference_input_auto_mode hover"
+                    oninput="check_parse(this,'number')" placeholder="تلقائى" autocomplete="off">
+                </div>
+              </div>
 
-        
-          <!-- table -->
+            </div>
 
-          <table id="myTable" class="input_table">
-            <thead class="">
-              <tr>
-                <th style="width: auto;"></th>
-                <th style="width: auto;">النوع</th>
-                <th style="width: auto;">الحساب</th>
-                <th style="width: 100%;">البيان</th>
-                <th style="width: auto; text-align: center;">مدين</th>
-                <th style="width: auto; text-align: center;">دائن</th>
-                <th style="width: auto;"></th>
-              </tr>
-            </thead>
-            <tbody class="">
-              <tr class="">
-
-                <td style="width: auto;" class="">
-                  <div class="dragbutton_table">
-                    <button class="drag-handle">
-                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
-                    </button>
-                  </div>
-                </td>
-
-                <td>
-                  <select name="" id="" class="account_type select" onchange="change_select_account_type(this)"></select>
-                </td>
-                                <!-- dropdown -->
-                <td style="width: auto; height: var(--input_height);">
-                  <div class="dropdown_container_input_table" id="">
-                    <div class="row">
-                      <span class="input_span_start account_type_name T">حساب عام</span>
-                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-                      <div id="" class="dropdown_select_input T hover"></div>
-                      <i class="fa-solid fa-caret-down left_icon"></i>
-                      <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
-                      </div>
-                      
-                      <!-- items -->
-                       <div class="row items_div" style="gap:0.2rem; display:none">
-                          <div class="row">
-                            <span class="input_span_start">الكمية</span>
-                            <div class="div_input_sm hover scroll T" contenteditable="true" oninput="check_parse(this,'number')"></div>
-                          </div>
-                          <div class="row">
-                            <span class="input_span_start">موقع المخزون</span>
-                            <select name="" id="" class="select items_locations_select"></select>
-                            <div class="div_input_sm hover scroll T" contenteditable="true"></div> 
-                          </div>
-                       </div>
+            <label for="note_inpute" class="lbl_sm">البيان العام</label>
+            <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off">
 
 
-                  </div>
-                    <div class="dropdown_menue hover scroll" id="" style="display: none;">
-                      <div class="dropdown_search">
-                        <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
-                          oninput="performSearch(this)" autocomplete="off">
-                      </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
-                        <!-- قائمة الخيارات تظهر هنا -->
-  
-                      </div>
-                    </div>
-                  </div>
-                </td>
+            <!-- table -->
 
-                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" oninput="check_parse(this,'string')"></td>
-                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
-                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
+            <table id="myTable" class="input_table">
+              <thead class=""></thead>
+              <tbody class=""></tbody>
+              <tfoot class=""></tfoot>
+            </table>
 
 
-                <td style="width: auto;" class="">
-                  <div class="table_buttons_div">
-                    <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
-                    <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
-                  </div>
-                </td>
-
-              </tr>
-
-              <tr class="">
-
-                <td style="width: auto;" class="">
-                  <div class="dragbutton_table">
-                    <button class="drag-handle">
-                      <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
-                    </button>
-                  </div>
-                </td>
-
-                <td>
-                  <select name="" id="" class="account_type select" onchange="change_select_account_type(this)"></select>
-                </td>
-                                <!-- dropdown -->
-                <td style="width: auto; height: var(--input_height);">
-                  <div class="dropdown_container_input_table" id="">
-                    <div class="row">
-                      <span class="input_span_start account_type_name T">حساب عام</span>
-                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-                      <div id="" class="dropdown_select_input T hover"></div>
-                      <i class="fa-solid fa-caret-down left_icon"></i>
-                      <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
-                      </div>
-                      
-                      <!-- items -->
-                       <div class="row items_div" style="gap:0.2rem; display:none">
-                          <div class="row">
-                            <span class="input_span_start">الكمية</span>
-                            <div class="div_input_sm hover scroll T" contenteditable="true" oninput="check_parse(this,'number')"></div>
-                          </div>
-                          <div class="row">
-                            <span class="input_span_start">موقع المخزون</span>
-                            <select name="" id="" class="select items_locations_select"></select>
-                            <div class="div_input_sm hover scroll T" contenteditable="true"></div> 
-                          </div>
-                       </div>
+            <div class="btn_container_top_border">
+              <button class="btn_save" id="btn_save" onclick="save('A')">حفظ</button>
+              <button class="btn_save" id="btn_save_and_add_another" onclick="save('B')">حفظ و إضافة أخر</button>
+            </div>
 
 
-                  </div>
-                    <div class="dropdown_menue hover scroll" id="" style="display: none;">
-                      <div class="dropdown_search">
-                        <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
-                          oninput="performSearch(this)" autocomplete="off">
-                      </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
-                        <!-- قائمة الخيارات تظهر هنا -->
-  
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" oninput="check_parse(this,'string')"></td>
-                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
-                <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)"></td>
-
-
-                <td style="width: auto;" class="">
-                  <div class="table_buttons_div">
-                    <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
-                    <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
-                  </div>
-                </td>
-
-              </tr>
-            </tbody>
-            <tfoot class="">
-
-
-
-              <tr class="table_total_row">
-                <td id="lengthColumn1"></td>
-                <td id="sumColumn1"></td>
-                <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
-                <td id="sumColumn3" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
-                <td id="sumColumn4" style="text-align: center">0</td>
-                <td id="sumColumn5" style="text-align: center">0</td>
-                <td id="sumColumn6"></td>
-                <td id="sumColumn7"></td>
-              </tr>
-
-              <tr>
-                <td colspan="4" class="">
-                  <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
-                    <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
-                    <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                    </select>
-                  </div>
-                </td>
-
-                <td id="difference_debet_cerdit" colspan="2" class="" style="text-align: center; opacity: 0.5; color: var(--Font_Color); transition: var(--transition);">0</td>
-
-                <td></td>
-                <td></td>
-                
-              </tr>
-
-            </tfoot>
-          </table>
-
-          <div class="btn_container_top_border">
-            <button class="btn_save" id="btn_save">حفظ</button>
           </div>
         </div>
       </div>
@@ -299,7 +130,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/accounts/transaction/transaction_add_ar copy.js"></script>
+  <script src="/public/scripts/ar/accounts/transaction/transaction_add_ar.js"></script>
+  <script src="/public/scripts/ar/accounts/transaction/transacion_multi_pages.js"></script>
 
 
 </body>

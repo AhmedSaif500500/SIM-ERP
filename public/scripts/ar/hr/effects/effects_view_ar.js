@@ -893,7 +893,7 @@ async function table_update_btn_fn(updateBtn) {
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
 
-    const employees_update_data = {
+    const effects_update_data = {
         x: row.cells[1].textContent,
         datex: row.cells[2].textContent,
         reference: row.cells[3].textContent,
@@ -911,7 +911,7 @@ async function table_update_btn_fn(updateBtn) {
 
     
 
-    const transferedData = { employees_update_data };
+    const transferedData = { effects_update_data };
     const encodedData = encodeURIComponent(JSON.stringify(transferedData));
  
 

@@ -26,7 +26,9 @@ const btn_delete = document.querySelector('#btn_delete');
 let effects_update_data = {}
 let is_coming_from_effects_view = false
 let urlData = getURLData('data','effects_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة المؤثرات')
-let effects_data = urlData.employees_update_data
+let effects_data = urlData.effects_update_data
+console.log(urlData);
+
 function CheckUrlParams (){
   try {
       if (effects_data && effects_data !== 'noParams'){
@@ -292,7 +294,7 @@ async function showData(){
     sub_h2_header.textContent = `تعديل /  ${effects_data.acc_name}`
     x_input.value = effects_data.x;
     date_input.value = effects_data.datex;
-    refrence_input.value = effects_data.referenceCONCAT;
+    reference_input.value = effects_data.referenceCONCAT;
     id_hidden_input.value = effects_data.emp_x;
     dropdown_select_input.value = effects_data.acc_name;
     days_input.value = !effects_data.days || effects_data.days === ''? 0 : effects_data.days; 

@@ -1013,24 +1013,24 @@ function performSearch() {
     slice_Array1 = array1.slice(0, 50);
 
     // ملء الجدول بالبيانات
-    await filleffectstable();
-    /*
+     filleffectstable();
+//     /*
                
-        const cumulativeBalanceColumnHeaders = document.querySelectorAll('#bread_table th:nth-child(7), #bread_table td:nth-child(7)');
+//         const cumulativeBalanceColumnHeaders = document.querySelectorAll('#bread_table th:nth-child(7), #bread_table td:nth-child(7)');
         
-        if (searchValue) {
-            // إذا كانت قيمة البحث موجودة، أخفِ عمود الجرد
-            cumulativeBalanceColumnHeaders.forEach(element => {
-                element.style.display = 'none';
-            });
-        } else {
-            // إذا لم تكن هناك قيمة في البحث، اعرض عمود الجرد
-            cumulativeBalanceColumnHeaders.forEach(element => {
-                element.style.display = 'table-cell';
-            });
-        }
-    */
-}
+//         if (searchValue) {
+//             // إذا كانت قيمة البحث موجودة، أخفِ عمود الجرد
+//             cumulativeBalanceColumnHeaders.forEach(element => {
+//                 element.style.display = 'none';
+//             });
+//         } else {
+//             // إذا لم تكن هناك قيمة في البحث، اعرض عمود الجرد
+//             cumulativeBalanceColumnHeaders.forEach(element => {
+//                 element.style.display = 'table-cell';
+//             });
+//         }
+//     */
+ }
 
 async function ShowAllDataIneffectsTable() {
     showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')

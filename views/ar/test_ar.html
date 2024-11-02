@@ -1,44 +1,43 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة Parameters للـ URL</title>
+    <title>Document</title>
+    <style>
+        #game-container {
+  width: 800px;
+  height: 600px;
+  border: 1px solid #000;
+  position: relative;
+}
+
+#game-board {
+  width: 100%;
+  height: 80%;
+  background-color: #f0f0f0;
+}
+
+#input-action {
+  width: 70%;
+}
+
+    </style>
 </head>
 <body>
-    <h1>إضافة Parameters للـ URL بدون إعادة تحميل الصفحة</h1>
-    <button id="addParamBtn">أضف Parameter</button>
+    <div id="game-container">
+        <div id="game-board"></div>
+        <input type="text" id="input-action" placeholder="أدخل أمرًا...">
+        <button id="submit-button">إرسال</button>
+      </div>
+      
+      <script>
+        document.getElementById('submit-button').addEventListener('click', function() {
+  const action = document.getElementById('input-action').value;
+  // معالجة الأمر (مثل الحركة، الهجوم، الخ)
+  console.log(`تم إدخال الأمر: ${action}`);
+});
 
-    <script>
-        // تعريف زر الإضافة
-        const addParamBtn = document.getElementById('addParamBtn');
-
-        // عندما يتم الضغط على الزر
-        addParamBtn.addEventListener('click', function() {
-            // الحصول على الـ URL الحالي
-            let currentUrl = new URL(window.location);
-
-            // إضافة أو تعديل parameter جديد
-            currentUrl.searchParams.set('user', '12345');
-
-            // تحديث الـ URL بدون إعادة تحميل الصفحة
-            window.history.pushState({}, '', currentUrl);
-
-            // عرض رسالة توضيحية
-            alert('تم إضافة parameter للـ URL بدون إعادة تحميل الصفحة!');
-        });
-
-        // يمكنك استخدام هذا الجزء لفحص الـ URL الحالي عند إعادة تحميل الصفحة
-        window.onload = function() {
-            let currentUrl = new URL(window.location);
-
-            // إذا كان الـ parameter موجوداً بالفعل
-            if (currentUrl.searchParams.has('user')) {
-                console.log('User parameter موجود في الـ URL: ', currentUrl.searchParams.get('user'));
-            } else {
-                console.log('لا يوجد parameter.');
-            }
-        }
-    </script>
+      </script>
 </body>
 </html>

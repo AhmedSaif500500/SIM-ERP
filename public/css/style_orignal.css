@@ -2416,7 +2416,7 @@ height: 100%;
   transition: var(--transition);
 }
 
-.refrence_input{
+.reference_input{
   position: relative;
   height: var(--input_height);
   width :10rem;
@@ -2430,7 +2430,7 @@ height: 100%;
   text-align: center;
 }
 
-.refrence_input_auto_mode{
+.reference_input_auto_mode{
   position: relative;
   height: var(--input_height);
   width :10rem;
@@ -2445,7 +2445,7 @@ height: 100%;
   text-align: center;
 }
 
-.refrence_input_checkbox{
+.reference_input_checkbox{
   display: flex; flex-direction: column; justify-content: center;
   background-color: var(--btn_search_backcolor);
   color: var(--btn_search_color);

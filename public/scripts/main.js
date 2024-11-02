@@ -10,31 +10,31 @@ let today = new Date().toISOString().split('T')[0]; // date in format (yyyy-mm-d
 let currentYear = new Date().getFullYear();
 let firstDayOfYear = new Date(currentYear, 0, 1).toLocaleDateString('en-CA');
 let lastDayOfYear = new Date(currentYear, 11, 31).toLocaleDateString('en-CA');
-let refrence_input_checkbox = document.querySelector(`#refrence_input_checkbox`);
-let refrence_input = document.querySelector(`#refrence_input`);
+let reference_input_checkbox = document.querySelector(`#reference_input_checkbox`);
+let reference_input = document.querySelector(`#reference_input`);
 let user_setting_btn = document.querySelector(`#user_setting_btn`);
 
 
 
-//   if (refrence_input_checkbox && refrence_input) {
-//     function is_checked_refrence_fn() {
-//     if (refrence_input_checkbox.checked){
-//       refrence_input.value = "تلقائى"
-//       refrence_input.classList.remove(`refrence_input`)
-//       refrence_input.classList.add(`refrence_input_auto_mode`)
+//   if (reference_input_checkbox && reference_input) {
+//     function is_checked_reference_fn() {
+//     if (reference_input_checkbox.checked){
+//       reference_input.value = "تلقائى"
+//       reference_input.classList.remove(`reference_input`)
+//       reference_input.classList.add(`reference_input_auto_mode`)
 //     }else{
-//       refrence_input.value = ""
-//       refrence_input.classList.remove(`refrence_input_auto_mode`)
-//       refrence_input.classList.add(`refrence_input`)
+//       reference_input.value = ""
+//       reference_input.classList.remove(`reference_input_auto_mode`)
+//       reference_input.classList.add(`reference_input`)
 //     }
 //   }
 
-//   refrence_input_checkbox.onchange = function(){
-//     is_checked_refrence_fn()
+//   reference_input_checkbox.onchange = function(){
+//     is_checked_reference_fn()
 //   }
   
 //   document.addEventListener('DOMContentLoaded', async function(){
-//      is_checked_refrence_fn()
+//      is_checked_reference_fn()
 //    })
   
 // }
@@ -61,12 +61,13 @@ function reverseDateFormatting(dateValue) {
 
 function formatToFiveDigits(num) {
 
+
 if (!num){
   return 0
 }
 
   // Check if the number is a valid integer and not negative
-  if (typeof num !== 'number' || num < 0 || num > 99999) {
+  if (typeof +num !== 'number' || +num < 0 || +num > 99999) {
       showAlert('fail', 'يوجد خطأ فى بيانات المرجع : برجاء التواصل مع احد المسؤليين')
       return
   }
@@ -219,7 +220,7 @@ function loadSidebarContents() {
       الحسابات
     </a>
 
-    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")};">
+    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")};" onclick="sessionStorage.removeItem('transactionViewArray')">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       القيود المحاسبية
     </a>
@@ -268,7 +269,6 @@ function module_display(string_perm_name) {
   const custom_permission = parseInt(sessionStorage.getItem(string_perm_name));
 
   if ((owner && owner === 'true') || (general_permission > 1 && general_permission < 7)) {
-    console.log(`yes`);
     
     return 'flex';
   } else if (custom_permission && (custom_permission > 0 && custom_permission < 5)) {
@@ -372,7 +372,7 @@ const history_setting_btn = document.querySelector('#history_setting_btn');
 if (history_setting_btn){
   history_setting_btn.onclick = function(){
   try {
-    sessionStorage.removeItem('historyViewArray');  ذ
+    sessionStorage.removeItem('historyViewArray');
     window.location.href = "history_view_ar";
   } catch (error) {
     catch_error(error)

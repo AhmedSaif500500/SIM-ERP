@@ -104,8 +104,8 @@ try {
                 <tr>
                   <td colspan="4" class="">
                     <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
-                    <button onclick="addRows()" class="btn_new" style="height: 100%;">سطر جديد</button>
-                    <select id="columnSelect" class="select_month m_0" style="width: fit-content; height: 2.9rem;">
+                    <button onclick="addRows()" class="btn_new">سطر جديد</button>
+                    <select id="columnSelect" class="select m_0" style="width: fit-content; height: 3.5rem;">
                       <option value="1">1</option>
                       <option value="2">2</option>
                       <option value="3">3</option>

@@ -574,12 +574,18 @@ async function newReference_fn(str_tableName, year, req) {
     const Params1 = [req.session.company_id];
     const result = await db.oneOrNone(query1, Params1);
 
+    
     let new_reference = 1;
     if (result && result.max && result.max > 0) {
-      new_reference = result.max + 1;
+      
+      new_reference = +result.max + 1;
     }
+    console.log(`new_reference : ${new_reference}`);
 
     return new_reference; // يجب إرجاع القيمة الجديدة
+
+    
+  
 
   } catch (error) {
     throw new Error(`Failed to retrieve reference: ${error.message}`);
@@ -715,13 +721,39 @@ async function check_settings_validation(options = {}, req) {
 }
 
 
-function turn_EmptyValues_TO_null(object_Var){
+// function turn_EmptyValues_TO_null(object_Var){
+//   for (let key in object_Var) {
+//     if (object_Var[key] === "") {
+//       object_Var[key] = null;
+//     }
+//   }
+// }
+
+
+function turn_EmptyValues_TO_null(object_Var) {
   for (let key in object_Var) {
-    if (object_Var[key] === "") {
-      object_Var[key] = null;
+    // إذا كانت القيمة عبارة عن مصفوفة
+    if (Array.isArray(object_Var[key])) {
+      // المرور عبر العناصر في المصفوفة
+      object_Var[key].forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+          // إذا كان العنصر كائن، نفحص خصائصه
+          turn_EmptyValues_TO_null(item); // استدعاء الدالة نفسها على الكائن
+        }
+      });
+    } else if (typeof object_Var[key] === 'object' && object_Var[key] !== null) {
+      // إذا كانت القيمة كائن، نفحص خصائصه
+      turn_EmptyValues_TO_null(object_Var[key]);
+    } else if (object_Var[key] === "" || object_Var[key] === 0) {
+      // طباعة القيمة القديمة
+      console.log(`Changing: ${key} = ${object_Var[key]}`);
+      object_Var[key] = null; // تغيير القيمة إلى null
+      // طباعة القيمة الجديدة
+      console.log(`Changed: ${key} = ${object_Var[key]}`);
     }
   }
 }
+
 
 // sql injection
 let sql_injection_message_ar = "تم الكشف عن مدخلات غير صالحة بسبب وجود رموز ممنوعة. يرجى مراجعة المدخلات والمحاولة مرة أخرى."
@@ -3288,7 +3320,7 @@ GROUP BY
     app.post("/get_All_human_resources_department_Data", async (req, res) => {
       try {
         //! Permission
-        await permissions(req, "human_resources_department", "view");
+        await permissions(req, "departments_permission", "view");
         if (!permissions) {
           return;
         }
@@ -4574,11 +4606,12 @@ app.post("/effects_add", async (req, res) => {
     const settings = await check_settings_validation({
       check_futureDate: true,
       check_closingDate: true,
-      type: 'add',
-      tableName: 'effects',
-      transaction_id: posted_elements.id_hidden_input_val,
       datex: posted_elements.date_input_val,
+      type: 'add',
+      tableName: 'effects', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.id_hidden_input_val, // if type = 'update' or 'delete' only
     }, req);
+
 
     if (!settings.valid) {
       return res.json({
@@ -4594,6 +4627,8 @@ app.post("/effects_add", async (req, res) => {
     const newId = await newId_fn("effects", 'id');
     const year = getYear(posted_elements.date_input_val)
     const newReference = await newReference_fn('effects', year, req);
+
+
 
     let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
     let params1 = [
@@ -4612,16 +4647,19 @@ app.post("/effects_add", async (req, res) => {
 
     await db.tx(async (tx) => {
       await tx.none(query1, params1);
+
+      //! history
       await history(16, 1, newId, newReference, req, tx);
     });
 
-  
+    await last_activity(req);
     // إرسال استجابة للواجهة الأمامية حول نجاح المعاملة
     res.json({
       success: true,
       message_ar: `تم إنشاء المؤثر بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
+    await last_activity(req);
     console.error("Error adding effects:", error);
     // إرسال استجابة للواجهة الأمامية حول فشل المعاملة
     res.status(500).json({
@@ -7274,7 +7312,7 @@ app.post("/api/transaction_accounts_types", async (req, res) => {
   try {
     let query1 = `select id, account_type_name
 from account_type
-where id > 0
+where id IN (1, 2, 3, 4 ,5, 6)
 order by id ASC ;`;  // in (1,2 ) ya3ny = 1 or 2 
 
     // استعلام SQL لجلب بيانات الشجرة
@@ -7315,29 +7353,52 @@ app.post("/get_All_transaction_Data", async (req, res) => {
       return;
     }
 
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
+
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `select
-	id,
-	refrence,
-	datex,	
-	general_note,
-	COALESCE(total_value, 0) AS total_value
-from transaction_header
-where company_id = $1 and transaction_type = 2
-ORDER BY datex DESC, refrence desc;
+    let query1 = `
+    select
+	    id,
+	    reference,
+	    datex,	
+	    COALESCE(general_note, '') AS general_note,
+	    COALESCE(total_value, 0) AS total_value
+    from
+      transaction_header
+    where
+      company_id = $1 AND
+      transaction_type = 2
+    ORDER BY
+      datex DESC,
+      reference desc;
 `;
-    let rows = await db.any(query1, [req.session.company_id]);
-
-    const data = rows.map((row) => ({
-      id: row.id,
-      refrence: row.refrence,
-      datex: row.datex,
-      note: row.general_note,
-      valuex: row.total_value,
-    }));
+    let data = await db.any(query1, [req.session.company_id]);
 
     res.json(data);
   } catch (error) {
@@ -7351,46 +7412,73 @@ ORDER BY datex DESC, refrence desc;
 //#region 2: add transaction
 app.post("/api/transaction_add", async (req, res) => {
   try {
-  const posted_elements = req.body;
-
-  const transaction_type = 2
-
-
 
     //! Permission
     await permissions(req, "transaction_permission", "add");
     if (!permissions) {
-      return;
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
     }
 
+    const posted_elements = req.body;
+    const transaction_type = 2
+  
 
-        //! Permission
-    // await permissions(req, 'bread_permission', 'view');
-    // if (!permissions) { return; };
     //! sql injection check
     let hasBadSymbols = sql_anti_injection([
       ...posted_elements.posted_array.map((obj) => obj.account_id + obj.note_row + obj.debt + obj.credit ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
       posted_elements.total,
-      posted_elements.is_refrence,
-      posted_elements.refrenc_value,
       posted_elements.general_note,
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
     if (hasBadSymbols) {
       return res.json({
         success: false,
-                message_ar: sql_injection_message_ar,
+        message_ar: sql_injection_message_ar,
         message_en: sql_injection_message_en,
       });
     }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'add',
+      tableName: false, // if type = 'update' or 'delete' only
+      transaction_id: false, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
 
     //! check diffrence between debit and credit
       let totalDebt = 0;
       let totalCredit = 0;
       // المرور على جميع الكائنات في المصفوفة
       posted_elements.posted_array.forEach(item => {
-          totalDebt += parseFloat(item.debt); // التأكد من تحويل القيم إلى أرقام
-          totalCredit += parseFloat(item.credit);
+          totalDebt += parseFloat(item.debt || 0); // التأكد من تحويل القيم إلى أرقام
+          totalCredit += parseFloat(item.credit || 0);
       });
       if (totalDebt !== totalCredit){
         return res.json({
@@ -7399,74 +7487,56 @@ app.post("/api/transaction_add", async (req, res) => {
         });
       }
 
-    //! check refrence
+
+        // //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1`;
+let rows02 = await db.any(query02, [req.session.company_id]);
+
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
+
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+
+  // فحص ما إذا كان account_id موجودًا في dbAccounts
+  const accountExists = dbAccounts.some(account => 
+    account.id === account_id && account.account_type_id === account_typeId
+  );
+
+
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Sta1')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+}
+
+
 
     
-    if (!posted_elements.is_refrence){
-         
-      if (posted_elements.refrenc_value <= 0){
-   
-        return res.json({
-          success: false,
-          message_ar: 'رجاء ادخال مرجع صحيح او تفعيل الوضع التلقائى',
-        });
-      }
+    const newId_transaction_header = await newId_fn("transaction_header", 'id');
+    const year = getYear(posted_elements.datex)
+    const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
 
-
-      
-
-      let query01 = `SELECT refrence from transaction_header where company_id = $1 AND transaction_type = $2`;
-      let rows01 = await db.any(query01, [
-        req.session.company_id,
-        transaction_type
-      ]);
-
-      if (rows01.length >0) {
-          return res.json({
-            success: false,
-            message_ar: 'هذا المرجع موجود بالفعل رجاء تفعيل الوضع التلقائى او ادخل مرجع صالح',
-          });
-      }
-    }
-
-        // //! Security hacking 
-        let query02 = `SELECT id from accounts_header where company_id = $1`;
-        let rows02 = await db.any(query02, [
-          req.session.company_id
-        ]);
-    
-        const deafult_accountsId_array = rows02.map((row) => parseInt(row.id));
-        const dataArray = posted_elements.posted_array.map((item) => parseInt(item.account_id));
-        const defrenceArray = dataArray.filter((accountId) => !deafult_accountsId_array.includes(accountId));
-        
-        if (defrenceArray.length > 0){
-
-
-          await block_user(req,'ta1')
-          return res.json({
-            success: false,
-            xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-          });
-        }
-
-        //* start--------------------------------------------
-
-
-  
-   
-    const newId_transaction_header = await newId_fn("transaction_header",'id');
-
-    const newRefrence = await newRefrence_fn(req,transaction_type)
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       let query1 = `INSERT INTO transaction_header
-                    (id, refrence,datex, company_id, transaction_type, total_value, general_note)
+                    (id, reference,datex, company_id, transaction_type, total_value, general_note)
                     VALUES($1, $2, $3, $4, $5, $6, $7);`;
 
       await tx.none(query1, [
         newId_transaction_header,
-        newRefrence,
+        newReference_transaction_header,
         posted_elements.datex,
         req.session.company_id,
         transaction_type,
@@ -7478,8 +7548,8 @@ app.post("/api/transaction_add", async (req, res) => {
       for (const element of posted_elements.posted_array) {
         const newId = parseInt(newId_transaction_body);
         let query2 = `INSERT INTO transaction_body
-                      (id, transaction_header_id, account_id, debit, credit, row_note)
-                      VALUES($1, $2, $3, $4, $5, $6);`;
+                      (id, transaction_header_id, account_id, debit, credit, row_note, item_amount, item_location_id)
+                      VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
 
         await tx.none(query2, [
           newId,
@@ -7487,19 +7557,28 @@ app.post("/api/transaction_add", async (req, res) => {
           element.account_id,
           element.debt,
           element.credit,
-          element.note_row
+          element.note_row,
+          element.item_amount,
+          element.items_location_id
         ]);
 
+        
         newId_transaction_body = parseInt(newId_transaction_body) + 1;
       }
+
+      //! history
+      await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
     });
 
+    const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم حفظ البيانات بنجاح",
+      message_ar: `تم إنشاء قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
+    await last_activity(req);
     console.error("Error adding transaction:", error);
 
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
@@ -7510,6 +7589,82 @@ app.post("/api/transaction_add", async (req, res) => {
   }
 });
 //#endregion
+
+//#region 3: get transaction data
+app.post("/get_transaction_Data", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "transaction_permission", "update");
+    if (!permissions) {
+      return;
+    }
+
+
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    const q1 = `
+  select 
+  	company_id,
+  	transaction_type
+  from
+  	transaction_header
+  where
+  	id = $1
+  	`;
+    const result = await db.oneOrNone(q1,[posted_elements.x])
+
+    if(!result || !result.company_id || !result.transaction_type || +result.company_id != +req.session.company_id || +result.transaction_type != 2){
+      await block_user(req,'Sgtu1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+//! مطلةب التاكد من  ترانكسشن هيدر اى دى يخص الشركه وانه عباره قيد محاسبى
+
+    let query1 = `
+SELECT
+    tb.debit,
+    tb.credit,
+    tb.row_note,
+    tb.items_amount,
+    tb.item_price,
+    tb.tax1_id,
+    tb.account_id,
+    ah.account_type_id 
+FROM 
+    transaction_body tb
+LEFT JOIN accounts_header ah on ah.id = tb.account_id
+WHERE
+    transaction_header_id = $1;
+
+`;
+    const data = await db.any(query1, [posted_elements.x]);
+    console.log(posted_elements.x);
+    
+    res.json(data);
+  } catch (error) {
+    console.error("Error get_All_bread_Data:", error);
+    res.status(500).send("Error:");
+  }
+});
+//#endregion
+
 
 
 //#endregion

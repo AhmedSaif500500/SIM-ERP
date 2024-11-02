@@ -59,7 +59,7 @@ async function filleffectstable() {
   // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
   // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
   // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
-
+    showLoadingIcon(page_content)
   // إعداد رأس الجدول
   let tableHTML = `<table id="employees_table" class="review_table">
                         <tbody>`;
@@ -111,7 +111,7 @@ async function filleffectstable() {
     document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='2' class="td_no_result">لا نتائج</td>`;
   };
 
-
+hideLoadingIcon(page_content)
 };
 
 
