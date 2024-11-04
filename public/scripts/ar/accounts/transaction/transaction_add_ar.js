@@ -20,7 +20,7 @@ async function save(A_OR_B) {
 
   const datex = date1.value;
   
-  const total = parseFloat(document.querySelector(`#myTable > tfoot .table_total_row #sumColumn4`).textContent)
+  const total = parseFloat(document.querySelector(`#myTable > tfoot .table_total_row #totalDebit`).textContent)
 
 
   const general_note = note_inpute.value
@@ -77,6 +77,12 @@ async function save(A_OR_B) {
         false,false,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
+
+      
+    if (post){
+      sessionStorage.removeItem('transactionViewArray')
+    }
+    
     }else{
 
     const post = await new_fetchData_postAndGet(
@@ -91,6 +97,11 @@ async function save(A_OR_B) {
       false,false,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
+
+    if (post){
+      sessionStorage.removeItem('transactionViewArray')
+    }
+    
   }
 
   } else {

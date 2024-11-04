@@ -1,43 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        #game-container {
-  width: 800px;
-  height: 600px;
-  border: 1px solid #000;
-  position: relative;
-}
 
-#game-board {
-  width: 100%;
-  height: 80%;
-  background-color: #f0f0f0;
-}
 
-#input-action {
-  width: 70%;
-}
+<tr>
+  <td style="width: auto;" class="">
+    <div class="dragbutton_table">
+        <button class="drag-handle">
+          <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+      </button>
+    </div>
+  </td>
 
-    </style>
-</head>
-<body>
-    <div id="game-container">
-        <div id="game-board"></div>
-        <input type="text" id="input-action" placeholder="أدخل أمرًا...">
-        <button id="submit-button">إرسال</button>
+  <td>
+    <select name="" id="" class="account_type select h_full" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
+  </td>         
+
+  <!-- dropdown -->
+  <td style="width: auto; height: var(--input_height);">
+    <div class="dropdown_container_input_table" id="">
+      <div class="row h_full">
+        <span class="input_span_start account_type_name T">حساب عام</span>
+        <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
+          <div id="" class="dropdown_select_input T hover">${account_name}</div>
+          <i class="fa-solid fa-caret-down left_icon"></i>
+          <input type="hidden" class="id_hidden_input x1 T" id="" readonly value="${+row.account_id}">
+        </div>
+        <!-- items -->
+        <div class="row items_div" style="gap:0.2rem; display:none">
+          <div class="row">
+            <span class="input_span_start">الكمية</span>
+            <div class="div_input_sm hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)">${row.item_amount ? row.item_amount : ""}</div>
+          </div>
+          <div class="row">
+            <span class="input_span_start">موقع المخزون</span>
+            <select name="" id="" class="select h_full items_locations_select">${get_items_locations_array}</select>
+          </div>
+        </div>
       </div>
-      
-      <script>
-        document.getElementById('submit-button').addEventListener('click', function() {
-  const action = document.getElementById('input-action').value;
-  // معالجة الأمر (مثل الحركة، الهجوم، الخ)
-  console.log(`تم إدخال الأمر: ${action}`);
-});
+      <div class="dropdown_menue hover scroll" id="" style="display: none;">
+        <div class="dropdown_search">
+          <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..." oninput="performSearch_accounts_table(this)" autocomplete="off">
+        </div>
+        <div class="inputTable_dropdown_tableContainer" id="">
+          <!-- قائمة الخيارات تظهر هنا   -->
+        </div>
+      </div>
+    </div>
+  </td>
 
-      </script>
-</body>
-</html>
+  <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" onkeydown="td_EnterkeypressEvent1(event)"></td>
+  <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
+  <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
+
+  <td style="width: auto;" class="">
+    <div class="table_buttons_div">
+      <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+      <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
+    </div>
+  </td>
+
+
+</tr>

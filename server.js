@@ -51,7 +51,7 @@ function getYear(dateString) {
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
   
   if (!datePattern.test(dateString)) {
-      throw new Error("Invalid date format. Please use YYYY-MM-DD.");
+      throw new Error("Invalid date format. Please use YYYY-MM-DD. code S-getYear01");
   }
 
   // تحويل السلسلة إلى كائن Date
@@ -580,7 +580,6 @@ async function newReference_fn(str_tableName, year, req) {
       
       new_reference = +result.max + 1;
     }
-    console.log(`new_reference : ${new_reference}`);
 
     return new_reference; // يجب إرجاع القيمة الجديدة
 
@@ -650,6 +649,8 @@ let closingDate_message_ar = `تم اغلاق جميع العمليات فى ا�
 
 async function check_settings_validation(options = {}, req) {
   try {
+
+    if (options.type === 'add' || options.type === 'update' || options.type === 'delete'){
     // جلب الإعدادات بناءً على الشركة
     const query1 = `SELECT * FROM settings WHERE company_id = $1`;
     const params1 = [req.session.company_id];
@@ -659,62 +660,114 @@ async function check_settings_validation(options = {}, req) {
       return { valid: false, message_ar: "حدث خطأ غير متوقع AR500، يرجى التواصل مع الدعم الفني" };
     }
 
-    const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
 
     // دالة للتحقق من تنسيق التاريخ
-    const isValidDateFormat = (date) => dateFormatRegex.test(date);
 
     // التحقق من التاريخ المستقبلي
-    if (options.check_futureDate && options.datex) {
       const isPreventFutureDate = result.find(item => item.setting_type_id === 2)?.boolean1;
 
-      if (isPreventFutureDate) {
-        const today = new Date();
-        const datex_As_Date = new Date(options.datex);
-
-        if (!isValidDateFormat(options.datex) || datex_As_Date > today) {
-          return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
-        }
-      }
-    }
-
-    // التحقق من تاريخ الإغلاق
-    if (options.check_closingDate && options.datex) {
       const closingDate = result.find(item => item.setting_type_id === 1)?.datex1;
-      if (!isValidDateFormat(closingDate) || !isValidDateFormat(options.datex)) {
-        return { valid: false, message_ar: "حدث خطأ غير متوقع AR527، يرجى التواصل مع الدعم الفني." };
+
+      const InValidDateFormat = isInValidDateFormat([closingDate])
+      if (InValidDateFormat){
+        return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
       }
 
-      const closingDate_As_Date = new Date(closingDate);
-      const datex_As_Date = new Date(options.datex);
 
-      if (options.type === 'add' && datex_As_Date <= closingDate_As_Date) {
-        return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
-      }
+          if (options.type === 'add'){
+            if (options.datex){
 
-      if ((options.type === 'update' || options.type === 'delete') && options.tableName && options.transaction_id) {
-        const query2 = `SELECT datex FROM ${options.tableName} WHERE id = $1 AND company_id = $2`;
-        const params2 = [options.transaction_id, req.session.company_id];
-        const result1 = await db.oneOrNone(query2, params2);
-        const originalDatex = result1?.datex;
+              const datex = options.datex
+              const InValidDateFormat = isInValidDateFormat([datex])
+              if (InValidDateFormat){
+                return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
+              }
 
-        if (!originalDatex || !isValidDateFormat(originalDatex)) {
-          return { valid: false, message_ar: "حدث خطأ غير متوقع AR517، يرجى التواصل مع الدعم الفني." };
-        }
+              /*
+              //! check if update date out of orignal year 
+              const originalYear = getYear(originalDatex)
+              const datex_year = getYear(datex)
+              if (options.type === 'update' && originalYear !== datex_year){
+                return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
+              }
+              */
 
-        const originalDatex_As_Date = new Date(originalDatex);
+              //! check closingDate
+              if (datex <= closingDate) {
+                return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+              }
 
-        if (options.type === 'update' && (originalDatex_As_Date <= closingDate_As_Date || datex_As_Date <= closingDate_As_Date)) {
-          return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
-        }
+              //! check futureDate prevent
+              if (options.check_futureDate && isPreventFutureDate) {
+                if (datex > today) {
+                  return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+                }
+              }
+              
+            }else{
+              return { valid: false, message_ar: "حدث خطأ غير متوقع AR525، يرجى التواصل مع الدعم الفني." };
+            }
+          }
 
-        if (options.type === 'delete' && originalDatex_As_Date <= closingDate_As_Date) {
-          return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
-        }
-      }
-    }
+
+
+          if (options.type === 'update' || options.type === 'delete'){
+            const query2 = `SELECT datex FROM ${options.tableName} WHERE id = $1 AND company_id = $2`;
+            const params2 = [options.transaction_id, req.session.company_id];
+            let result1 = await db.oneOrNone(query2, params2);
+          
+          const originalDatex = result1.datex
+          
+
+          const InValidDateFormat = isInValidDateFormat([originalDatex])
+          if (InValidDateFormat){
+            return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
+          }
+
+          if (options.type === 'update'){
+            if (options.tableName && options.transaction_id && options.datex){
+
+              const datex = options.datex
+              const InValidDateFormat = isInValidDateFormat([datex])
+              if (InValidDateFormat){
+                return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
+              }
+
+              //! check if update date out of orignal year 
+              const originalYear = getYear(originalDatex)
+              const datex_year = getYear(datex)
+              if (options.type === 'update' && originalYear !== datex_year){
+                return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
+              }
+
+              //! check closingDate
+              if (originalDatex <= closingDate || datex <= closingDate) {
+                return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+              }
+
+              //! check futureDate prevent
+              if (options.check_futureDate && isPreventFutureDate) {
+                if (datex > today) {
+                  return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+                }
+              }
+              
+            }else{
+              return { valid: false, message_ar: "حدث خطأ غير متوقع AR526، يرجى التواصل مع الدعم الفني." };
+            }
+          }
+          if(options.type === 'delete'){
+            if (originalDatex <= closingDate) {
+              return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+            }
+          }
+          }
+
 
     return { valid: true };
+  }else{
+    return { valid: false, message_ar: `An Error Accoured code AR530` };
+  }
   } catch (error) {
     throw new Error(`Error while checking settings: ${error.message}`);
   }
@@ -746,10 +799,10 @@ function turn_EmptyValues_TO_null(object_Var) {
       turn_EmptyValues_TO_null(object_Var[key]);
     } else if (object_Var[key] === "" || object_Var[key] === 0) {
       // طباعة القيمة القديمة
-      console.log(`Changing: ${key} = ${object_Var[key]}`);
+      // console.log(`Changing: ${key} = ${object_Var[key]}`);
       object_Var[key] = null; // تغيير القيمة إلى null
       // طباعة القيمة الجديدة
-      console.log(`Changed: ${key} = ${object_Var[key]}`);
+      // console.log(`Changed: ${key} = ${object_Var[key]}`);
     }
   }
 }
@@ -7394,6 +7447,7 @@ app.post("/get_All_transaction_Data", async (req, res) => {
     where
       company_id = $1 AND
       transaction_type = 2
+      AND (is_deleted IS NULL OR is_deleted != true)
     ORDER BY
       datex DESC,
       reference desc;
@@ -7429,6 +7483,7 @@ app.post("/api/transaction_add", async (req, res) => {
     //! sql injection check
     let hasBadSymbols = sql_anti_injection([
       ...posted_elements.posted_array.map((obj) => obj.account_id + obj.note_row + obj.debt + obj.credit ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.datex,
       posted_elements.total,
       posted_elements.general_note,
       // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
@@ -7503,12 +7558,12 @@ const dbAccounts = rows02.map(row => ({
 for (const rowData of posted_elements.posted_array) {
   const account_typeId = rowData.account_typeId;
   const account_id = rowData.account_id;
+  const items_location_id = rowData.items_location_id;
 
-  // فحص ما إذا كان account_id موجودًا في dbAccounts
-  const accountExists = dbAccounts.some(account => 
-    account.id === account_id && account.account_type_id === account_typeId
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
   );
-
 
   // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
   if (!accountExists) {
@@ -7519,6 +7574,20 @@ for (const rowData of posted_elements.posted_array) {
       message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
     });
   }
+
+  //! make sure from itemLocation It
+    const locationExists = dbAccounts.some(item => 
+      item.id === +items_location_id && +item.account_type_id === 7
+    );
+    if (!locationExists) {
+      await block_user(req,'Sta2')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+  
 }
 
 
@@ -7547,6 +7616,12 @@ for (const rowData of posted_elements.posted_array) {
       let newId_transaction_body = await newId_fn("transaction_body",'id');
       for (const element of posted_elements.posted_array) {
         const newId = parseInt(newId_transaction_body);
+
+        //! make sure if account id != item  then location and amount = null
+        const itemTypeId = 5
+        const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
+        const item_amount = +element.account_typeId === itemTypeId ? element.item_amount : null;
+
         let query2 = `INSERT INTO transaction_body
                       (id, transaction_header_id, account_id, debit, credit, row_note, item_amount, item_location_id)
                       VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
@@ -7558,8 +7633,8 @@ for (const rowData of posted_elements.posted_array) {
           element.debt,
           element.credit,
           element.note_row,
-          element.item_amount,
-          element.items_location_id
+          item_amount,
+          items_location_id
         ]);
 
         
@@ -7589,6 +7664,358 @@ for (const rowData of posted_elements.posted_array) {
   }
 });
 //#endregion
+
+
+//#region 2: update transaction
+app.post("/api/transaction_update", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "transaction_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 2
+  
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_id + obj.note_row + obj.debt + obj.credit ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.x,
+      posted_elements.total,
+      posted_elements.datex,
+      posted_elements.general_note,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'update',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+      let totalDebt = 0;
+      let totalCredit = 0;
+      // المرور على جميع الكائنات في المصفوفة
+      posted_elements.posted_array.forEach(item => {
+          totalDebt += parseFloat(item.debt || 0); // التأكد من تحويل القيم إلى أرقام
+          totalCredit += parseFloat(item.credit || 0);
+      });
+      if (totalDebt !== totalCredit){
+        return res.json({
+          success: false,
+          message_ar: "القيد غير متوازن",
+        });
+      }
+
+      //! Security hacking check id for company_name and transactio type
+      let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+      let rows01 = await db.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+      
+      
+
+      if (!rows01 || !rows01.id) {
+        return res.json({
+          success: false,
+          message_ar: 'هذا القيد غير موجود. برجاء اعادة تحميل الصفحه ',
+        });
+      }
+      const reference = rows01.reference
+
+        //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1`;
+let rows02 = await db.any(query02, [req.session.company_id]);
+
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+  const items_location_id = rowData.items_location_id;
+
+
+  
+  
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
+  );
+
+  
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Sta1')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+
+
+
+  //! make sure from itemLocation It
+  if (+account_typeId === 5){
+    const locationExists = dbAccounts.some(item => 
+      +item.id === +items_location_id && +item.account_type_id === 7
+    );
+    if (!locationExists) {
+      await block_user(req,'Sta2')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+  }
+}
+
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+
+      //? Clear transaction_body
+      let query0 = `Delete FROM transaction_body WHERE transaction_header_id = $1`
+      await tx.none(query0,[posted_elements.x])
+
+      //? update INTO transaction_header
+      let query1 = `update transaction_header set 
+                      datex = $1,
+                      total_value = $2,
+                      general_note = $3
+                    WHERE
+                      id = $4;`;
+
+      await tx.none(query1, [
+        posted_elements.datex,
+        posted_elements.total,
+        posted_elements.general_note,
+        posted_elements.x
+      ]);
+
+      let newId_transaction_body = await newId_fn("transaction_body",'id');
+      for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_transaction_body);
+
+        //! make sure if account id != item  then location and amount = null
+        const itemTypeId = 5
+        const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
+        const item_amount = +element.account_typeId === itemTypeId ? element.item_amount : null;
+
+        //? INSERT INTO transaction_body
+        let query2 = `INSERT INTO transaction_body
+                      (id, transaction_header_id, account_id, debit, credit, row_note, item_amount, item_location_id)
+                      VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
+
+        await tx.none(query2, [
+          newId,
+          posted_elements.x,
+          element.account_id,
+          element.debt,
+          element.credit,
+          element.note_row,
+          item_amount,
+          items_location_id
+        ]);
+
+        
+        newId_transaction_body = parseInt(newId_transaction_body) + 1;
+      }
+
+      //! history
+      await history(transaction_type,2,posted_elements.x,reference,req,tx);
+    });
+
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    const year = getYear(posted_elements.datex)
+
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم تعديل قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error updating transaction:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+//#endregion
+
+
+async function delete_transaction_fn(req,res, str_permissionName, int_transaction_type) {
+  try {
+
+    //! Permission
+    await permissions(req, str_permissionName, "delete");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+    const posted_elements = req.body;
+
+    const transaction_type = int_transaction_type
+  
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.datex])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
+
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: false, // if // if type = 'update' or 'add' only
+      type: 'delete',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+    
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+
+      //! Security hacking check id for company_name and transactio type
+      let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+      let rows01 = await db.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+            
+
+      if (!rows01 || !rows01.id) {
+        return res.json({
+          success: false,
+          message_ar: 'هذا القيد غير موجود. برجاء اعادة تحميل الصفحه ',
+        });
+      }
+      const reference = rows01.reference
+
+ 
+
+
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+
+      //? Clear transaction_body
+      let query0 = `Delete FROM transaction_body WHERE transaction_header_id = $1`
+      await tx.none(query0,[posted_elements.x])
+
+      //? update transaction_header
+      let query1 = `update transaction_header set 
+                      is_deleted = true
+                    WHERE
+                      id = $1;`;
+
+      await tx.none(query1, [
+        posted_elements.x
+      ]);
+
+
+      //! history
+      await history(transaction_type,3,posted_elements.x,reference,req,tx);
+    });
+
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    const year = getYear(posted_elements.datex)
+
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم حذف قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error delete transaction:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+    });
+  }
+};
+
+
+app.post("/api/transaction_delete", async (req, res) => {
+
+  await delete_transaction_fn(req, res,'transaction',2)
+});
 
 //#region 3: get transaction data
 app.post("/get_transaction_Data", async (req, res) => {
@@ -7642,9 +8069,8 @@ SELECT
     tb.debit,
     tb.credit,
     tb.row_note,
-    tb.items_amount,
-    tb.item_price,
-    tb.tax1_id,
+    tb.item_amount,
+    tb.item_location_id,
     tb.account_id,
     ah.account_type_id 
 FROM 
@@ -7655,7 +8081,6 @@ WHERE
 
 `;
     const data = await db.any(query1, [posted_elements.x]);
-    console.log(posted_elements.x);
     
     res.json(data);
   } catch (error) {

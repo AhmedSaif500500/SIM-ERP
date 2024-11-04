@@ -27,8 +27,6 @@ let effects_update_data = {}
 let is_coming_from_effects_view = false
 let urlData = getURLData('data','effects_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة المؤثرات')
 let effects_data = urlData.effects_update_data
-console.log(urlData);
-
 function CheckUrlParams (){
   try {
       if (effects_data && effects_data !== 'noParams'){

@@ -100,7 +100,7 @@ async function Execution(){
     try {
         showLoadingIcon(btn_do)
         searchInput.value = ""
-        await showFirst50RowAtTheBegening()
+        showFirst50RowAtTheBegening()
         hideLoadingIcon(btn_do) 
     } catch (error) {
         hideLoadingIcon(btn_do) 
@@ -153,7 +153,7 @@ filteredData_Array = data.filter(row => {
     array1 = filteredData_Array.slice();
     
     slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    await fillTable()
+    fillTable()
 
     
 } catch (error) {
@@ -388,6 +388,7 @@ function CheckUrlParams(){
             back_href.href = 'departments_view_ar';  back_href.title = 'الاقسام'
             QKey = departmentData.x
             document.querySelector(`#active_div`).style.display = 'none'
+            select_active.value = 1
             return true
         }else if(departmentData && departmentData === 'noParams'){
               back_href.href = 'hr_ar' ;  back_href.title = 'الموارد البشرية'

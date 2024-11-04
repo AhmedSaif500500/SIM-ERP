@@ -607,7 +607,7 @@ function CheckUrlParams_transaction_update_ar() {
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
 
-        if (!urlData || urlData.pageName !== "effects_update_ar") {
+        if (!urlData || urlData.pageName !== "transaction_update_ar") {
             return true;
         }
 

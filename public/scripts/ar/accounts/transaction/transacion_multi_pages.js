@@ -21,8 +21,8 @@ function build_table(){
       <td id="sumColumn1"></td>
       <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
       <td id="sumColumn3" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
-      <td id="sumColumn4" style="text-align: center">0</td>
-      <td id="sumColumn5" style="text-align: center">0</td>
+      <td id="totalDebit" style="text-align: center">0</td>
+      <td id="totalCredit" style="text-align: center">0</td>
       <td id="sumColumn6"></td>
       <td id="sumColumn7"></td>
   </tr>
@@ -436,10 +436,10 @@ function updateFooter() {
     // console.log(cellIndex);
     if (cellIndex === 4) {
       sum1 += cellValue;
-      document.getElementById("sumColumn4").textContent = sum1;
+      document.getElementById("totalDebit").textContent = sum1;
     } else if (cellIndex === 5) {
       sum2 += cellValue;
-      document.getElementById("sumColumn5").textContent = sum2;
+      document.getElementById("totalCredit").textContent = sum2;
     }
   });
 
