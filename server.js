@@ -6588,6 +6588,8 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
 
     // استعلام SQL لجلب بيانات الشجرة
     let data = await db.any(query1,[req.session.company_id]);
+    console.log(data);
+    
     res.json(data);
   } catch (error) {
     console.error("api/get_revenue_accounts:", error);
@@ -7341,7 +7343,7 @@ app.post("/api/delete-item", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم حذف الصنف بنجاح",
+      message_ar: "تم حذف البيانات بنجاح",
       message_en: "Account deleted successfully",
     });
   } catch (error) {

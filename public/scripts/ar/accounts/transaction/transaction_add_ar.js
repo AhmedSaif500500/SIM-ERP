@@ -78,7 +78,6 @@ async function save(A_OR_B) {
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
-      
     if (post){
       sessionStorage.removeItem('transactionViewArray')
     }

@@ -489,6 +489,32 @@ router.get('/items_view_ar', async (req, res) => {
         res.redirect('/login');
     }
 });
+
+router.get('/items_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_add_ar.html'));
+        }else{
+            res.redirect('/items_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/items_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_update_ar.html'));
+        }else{
+            res.redirect('/items_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
 //#endregion end - items
 
 //#region transaction

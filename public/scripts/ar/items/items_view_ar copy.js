@@ -84,14 +84,16 @@ async function get_revenue_accounts_fn() {
             false,'',
             'حدث خطأ اثناء معالجة البيانات'
         )
-        
+
+
+
 
         for (const row of data) {
-            const option = `<option value="${row.id}" ${row.global_id === 19 ? 'selected' : ''}>${row.account_name}</option>`;
+            const option = `<option value="${row.account_id}" ${row.global_id === 19 ? 'selected' : ''}>${row.account_name}</option>`;
             filterd_revenue_options_array.push(option);
         }
 
-        return filterd_revenue_options_array
+        revenue_account_select.innerHTML = filterd_revenue_options_array
     } catch (error) {
         catch_error(error)
     }
@@ -155,9 +157,8 @@ async function fetchTreeData() {
                             'label': ' عرض المعلومات', // إضافة أيقونة Font Awesome بجانب 
                             'icon': 'fa-duotone fa-question',
                             'action': async function () {
-                                try {
-                                      showLoadingIcon(content_space)  
 
+                                clear_inputs(`dialogOverlay_input`)
                                 if (is_main_account.includes(node.data.global_id)) {
                                     showAlert('warning', 'لا يمكن عرض معلومات عن الحساب المحدد')
                                     return
@@ -168,58 +169,50 @@ async function fetchTreeData() {
 
                                 if (node.data.final_account) {
 
-                                    const revenue_accounts_options = await get_revenue_accounts_fn()
-                                    
+                                    get_revenue_accounts_fn()
+                                    changeSelect('revenue_account_select', node.data.item_revenue_account)
 
-                                    const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
-                                    const obj_items_update_account = {
-                                        h2_header: node.text,
-                                        account_no_input: node.data.account_no ?? '',
-                                        account_name_input: node.text,
-                                        account_id_hidden: node.id,
-                                        item_unite_input: node.data.item_unite,
-                                        sales_price: node.data.item_sales_price,
-                                        purchase_price: node.data.item_purshas_price,
-                                        reorder_point: node.data.item_amount_reorder_point,
-                                        revenue_accounts_options: revenue_accounts_options,
-                                        nodeId: node.id,
-                                        parentNode : node.parent,
-                                        items_options: items_options,
-                                        item_revenue_account_id: node.data.item_revenue_account,
-                                        revenue_accounts_options: revenue_accounts_options,
-                                    };
-                                    clear_items_sessionsStorage()
-                                    sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
-                                    window.location.href = `items_update_ar`;
-                                    hideLoadingIcon(content_space)
+                                    h2_header.textContent = node.text;
+                                    account_no_input.value = node.data.account_no ?? '';
+                                    account_name_input.value = node.text;
+                                    account_id_hidden.value = node.id;
+                                    get_items_groups_options_fn(parents_group_select, node.id, false,'tree','');
+                                    changeSelect('parents_group_select', node.parent)
+                                    // parents_group_select.value = parentNode.id;
+                                    item_unite_input.value = node.data.item_unite;
+                                    sales_price.value = node.data.item_sales_price;
+                                    purchase_price.value = node.data.item_purshas_price;
+                                    reorder_point.value = node.data.item_amount_reorder_point;
+
+
+                                    btn_save.style.display = 'none'
+                                    btn_update.style.display = 'flex'
+                                    btn_delete.style.display = 'flex'
+                                    tree_group_div.style.display = 'none'
+                                    tree_rename_div.style.display = 'none'
+                                    tree_add_account.style.display = 'flex'
+                                    dialogOverlay_input.style.display = 'flex'
+
                                 } else {
 
+                                    h2_header.textContent = node.text;
+                                    // lbl_acc_name.textContent = 'اسم المجموعه';
                                     input_account_name_input_tree_group_div.value = node.text;
                                     account_id_hidden_tree_group_div.value = node.id;
 
-                                    const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
+                                    get_items_groups_options_fn(select_parent_gruop_name_tree_goup_div, node.id, false,'tree','');
+                                    changeSelect('select_parent_gruop_name_tree_goup_div', node.parent)
 
-                                    const obj_items_update_group = {
-                                        h2_header: node.text,
-                                        input_account_name_input_tree_group_div: node.text,
-                                        account_id_hidden_tree_group_div: node.id,
-                                        nodeId: node.id,
-                                        parentNode : node.parent,
-                                        items_options: items_options,
-                                    };
-                                    clear_items_sessionsStorage()
-                                    sessionStorage.setItem('obj_items_update_group', JSON.stringify(obj_items_update_group));                            
-                                    window.location.href = `items_update_ar`;
-                                    hideLoadingIcon(content_space)
 
-                                    hideLoadingIcon(content_space)
+                                    btn_save_tree_group_div.style.display = 'none';
+                                    btn_update_tree_group_div.style.display = 'flex';
+                                    btn_delete_tree_group_div.style.display = 'flex';
+                                    tree_rename_div.style.display = 'none';
+                                    tree_add_account.style.display = 'none';
+                                    tree_group_div.style.display = 'flex'
+                                    dialogOverlay_input.style.display = 'flex';
                                 }
-                            } catch (error) {
-                                hideLoadingIcon(content_space)
-                                catch_error(error)
                             }
-                            }
-                            
                         },
                         'create_group': {
                             'label': 'إضافة مجموعه فرعيه',
@@ -227,19 +220,31 @@ async function fetchTreeData() {
                             'action': async function () {
 
 
+                                clear_inputs(`dialogOverlay_input`)
                                 if (node.data.final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
                                     showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن المجموعة المجددة`)
                                     return;
                                 }
+                                input_account_name_input_tree_group_div.value = ''
+                                get_items_groups_options_fn(select_parent_gruop_name_tree_goup_div, node.id, true,'tree','');
 
-                                const itemsArray =  get_items_groups_options_fn(node.id, true,'tree','');
-                                const obj_items_create_group = {
-                                    itemsArray: itemsArray,
-                                    nodeId: node.id,
-                                };
-                                clear_items_sessionsStorage()
-                                sessionStorage.setItem('obj_items_create_group', JSON.stringify(obj_items_create_group));                            
-                                window.location.href = `items_add_ar`;
+                                changeSelect('select_parent_gruop_name_tree_goup_div', node.id)
+
+                                // h2
+                                h2_header.textContent = `اضافه مجموعه فرعيه داخل : ${node.text}`;
+                                lbl_acc_name.textContent = 'اسم المجموعه';
+
+
+                                btn_save_tree_group_div.style.display = 'flex';
+                                btn_update_tree_group_div.style.display = 'none';
+                                btn_delete_tree_group_div.style.display = 'none';
+                                tree_rename_div.style.display = 'none';
+                                tree_add_account.style.display = 'none';
+                                tree_group_div.style.display = 'flex'
+                                dialogOverlay_input.style.display = 'flex';
+
+
+                                //---------------------------------------------
                             }
                         },
                         'create': {
@@ -247,22 +252,30 @@ async function fetchTreeData() {
                             'icon': 'fa-duotone fa-clipboard',
                             'action': async function () {
 
+                                clear_inputs(`dialogOverlay_input`)
                                 if (node.data.final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
                                     showAlert(`warning`, `لا يمكن اضافة حساب فرعى ضمن الحساب المحدد`)
                                     return;
                                 }
 
-                                const revenue_accounts_options = await get_revenue_accounts_fn()
+                                get_revenue_accounts_fn()
 
-                                const items_options =  get_items_groups_options_fn(node.id, true,'tree','');
-                                const obj_items_create_account = {
-                                    items_options: items_options,
-                                    revenue_accounts_options: revenue_accounts_options,
-                                    nodeId: node.id,
-                                };
-                                clear_items_sessionsStorage()
-                                sessionStorage.setItem('obj_items_create_account', JSON.stringify(obj_items_create_account));                            
-                                window.location.href = `items_add_ar`;
+                                get_items_groups_options_fn(parents_group_select, node.id, true,'tree','');
+                                changeSelect('parents_group_select', node.id)
+
+
+                                // h2
+                                h2_header.textContent = `اضافه حساب فرعى داخل  ${node.text}`;
+
+
+                                // buttons
+                                btn_save.style.display = 'flex'
+                                btn_update.style.display = 'none'
+                                btn_delete.style.display = 'none'
+                                tree_group_div.style.display = 'none'
+                                tree_rename_div.style.display = 'none'
+                                tree_add_account.style.display = 'flex'
+                                dialogOverlay_input.style.display = 'flex'
 
                                 //---------------------------------------------
                             }
@@ -324,22 +337,16 @@ async function fetchTreeData() {
                                     }
 
                                     const account_id = parseInt(node.id);
-
-                                    const post = await new_fetchData_postAndGet(
+                                    await fetchData_post1(
                                         '/api/delete-item',
                                         { account_id },
                                         'items_permission', 'delete',
+                                        'هل تريد حذف الحساب الصنف من دليل الاصناف ؟',
                                         15,
-                                        true,"هل تريد حذف البيانات من دليل الاصناف ؟ ",
-                                        true,
-                                        false,false,
-                                        false,false,false,
-                                        true,"items_view_ar",
-                                        false,"",
-                                        "حدث خطأ اثناء معالجة البيانات"
-
-
+                                        'items_view_ar',
+                                        'حدث خطأ اثناء حذف الصنف المحدد'
                                     )
+
 
                                 } catch (error) {
                                     closeDialog();
@@ -423,7 +430,9 @@ function getSubChildIds_By_array(accountId, dataArray) {
 
 
 
-function get_items_groups_options_fn(accountId, is_Allow_To_show_The_Same_Account_In_Options,tree_or_array,Varuable_dataArray_if_it_is_array_only) {
+
+
+function get_items_groups_options_fn(selectVariableName, accountId, is_Allow_To_show_The_Same_Account_In_Options,tree_or_array,Varuable_dataArray_if_it_is_array_only) {
     try {
 
         let allChildIds
@@ -442,13 +451,208 @@ function get_items_groups_options_fn(accountId, is_Allow_To_show_The_Same_Accoun
         filterd_statement_options_array = statement_options_array.map(item => `
         <option value="${item.account_id}">${item.account_name}</option>
     `).join('');
-        return filterd_statement_options_array
+        selectVariableName.innerHTML = filterd_statement_options_array
     } catch (error) {
         catch_error(error)
     }
 
 }
 
+
+function clear_inputs(divID) {
+    // الحصول على كل العناصر input داخل div المحدد
+    const inputs = document.querySelector(`#${divID}`).querySelectorAll('input');
+
+
+    for (const input of inputs) {
+        input.value = ""
+    }
+}
+
+
+
+async function addnewaccountGroup() {
+    try {
+        const accountname = input_account_name_input_tree_group_div.value.trim();
+        const accountParent = select_parent_gruop_name_tree_goup_div.value;
+
+        await fetchData_post1(
+            '/api/addGroup-item',
+            { accountname, accountParent },
+            'items_permission', 'add',
+            'هل تريد حفظ البيانات ؟',
+            15,
+            'items_view_ar',
+            'حدث خطأ اثناء معالجة البيانات'
+        )
+    } catch (error) {
+        catch_error(error)
+    }
+
+
+}
+
+
+
+async function addNewAccount() {
+    try {
+
+        // prepare data
+        const item_unite_input = document.querySelector(`#item_unite_input`).value.trim();
+        const account_name = account_name_input.value.trim();
+
+        if (!item_unite_input || !account_name) {
+            showAlert('warning', 'تأكد من ادخال قيمه فى الحقول المطلوبه');
+            return;
+        }
+
+
+        const account_no = account_no_input.value.trim();
+
+        const account_parent_name_id = parseInt(parents_group_select.value);
+        const revenue_account_select_value = parseInt(revenue_account_select.value);
+        const sales_price = document.querySelector(`#sales_price`).value;
+        const purchase_price = document.querySelector(`#purchase_price`).value;
+        const reorder_point = document.querySelector(`#reorder_point`).value;
+
+        await fetchData_post1(
+            '/api/add-item',
+            {
+                account_no,
+                account_name,
+                item_unite_input,
+                account_parent_name_id,
+                revenue_account_select_value,
+                sales_price,
+                purchase_price,
+                reorder_point
+            },
+            'items_permission', 'add',
+            'هل تريد حفظ البيانات ؟',
+            20,
+            'items_view_ar',
+            'حدث خطأ اثناء اضافه البيانات'
+        )
+
+    } catch (error) {
+        catch_error(error)
+    }
+}
+
+
+
+async function updateGroup() {
+    try {
+
+
+        // prepare data
+        const account_id = parseInt(account_id_hidden_tree_group_div.value);
+        const account_name = input_account_name_input_tree_group_div.value.trim();
+        const parent_id = parseInt(select_parent_gruop_name_tree_goup_div.value);
+
+        await fetchData_post1(
+            '/api/update-group_items',
+            {
+                account_id,
+                account_name,
+                parent_id
+            },
+            'items_permission', 'update',
+            'هل تريد تعديل بيانات المجموعة ؟',
+            15,
+            'items_view_ar',
+            'حدث خطأ اثناء تعديل البيانات'
+        );
+
+    } catch (error) {
+        catch_error(error)
+    }
+
+}
+
+
+async function updateAccount() {
+    try {
+        // prepare data
+        const item_unite_input = document.querySelector(`#item_unite_input`).value.trim();
+        const account_name = account_name_input.value.trim();
+        const item_id = parseInt(account_id_hidden.value)
+
+
+        if (!item_unite_input || !account_name || !item_id || isNaN(item_id)) {
+            showAlert('warning', 'تأكد من ادخال قيمه فى الحقول المطلوبه');
+            return;
+        }
+
+
+        const account_no = account_no_input.value.trim();
+
+        const account_parent_id = parseInt(parents_group_select.value);
+        const revenue_account_select_value = parseInt(revenue_account_select.value);
+        const sales_price = document.querySelector(`#sales_price`).value;
+        const purchase_price = document.querySelector(`#purchase_price`).value;
+        const reorder_point = document.querySelector(`#reorder_point`).value;
+
+        await fetchData_post1(
+            '/api/update-item',
+            {
+                account_no,
+                item_id,
+                account_name,
+                item_unite_input,
+                account_parent_id,
+                revenue_account_select_value,
+                sales_price,
+                purchase_price,
+                reorder_point
+            },
+            'items_permission', 'update',
+            'هل تريد تعديل بيانات الحساب ؟',
+            15,
+            'items_view_ar',
+            'حدث خطأ اثناء تعديل البيانات'
+        );
+
+    } catch (error) {
+        catch_error(error)
+    }
+
+}
+
+
+async function deleteNode(type) {
+
+    try {
+
+        let account_id;
+        if (type === 'group') {
+            account_id = parseInt(account_id_hidden_tree_group_div.value);
+        } else if (type === 'item') {
+            account_id = parseInt(account_id_hidden.value);
+        }
+
+        if (is_forbidden_deletion.includes(account_id)) {
+            showAlert('warning', 'لا يمكن حذف المجموعه المحدده لانها من المجموعات الافتراضية')
+            return;
+        }
+        //preparing data
+
+        await fetchData_post1(
+            '/api/delete-item',
+            { account_id },
+            'items_permission', 'delete',
+            'هل تريد حذف الصنف الحالى من دليل الاصنفاف ؟',
+            15,
+            'items_view_ar',
+            'حدث خطأ اثناء حذف الصنف المحدد'
+        )
+
+
+    } catch (error) {
+        catch_error(error)
+    }
+
+}
 
 async function getParentNodesForDragAndDrop(currentNodeId) {
     const filteredParentAccountsArray = data.filter(item =>
@@ -571,6 +775,8 @@ $(tree).on('move_node.jstree', async function (e, data) {
 });
 
 
+
+
 noButtons.forEach(noButton => {
     noButton.onclick = function () {
         try {
@@ -591,6 +797,29 @@ noButtons.forEach(noButton => {
 });
 
 
+
+btn_save.addEventListener('click', async function () {
+    await addNewAccount();
+})
+
+
+btn_save_tree_group_div.onclick = async function () {
+    await addnewaccountGroup()
+}
+btn_update_tree_group_div.onclick = async function () {
+    await updateGroup()
+}
+btn_update.addEventListener('click', async function () {
+    await updateAccount();
+})
+
+btn_delete.addEventListener('click', async function () {
+    await deleteNode('item');
+})
+
+btn_delete_tree_group_div.addEventListener('click', async function () {
+    await deleteNode('group');
+})
 collapse_tree.addEventListener('click', async function () {
     $(tree).jstree('close_all')
 })
@@ -917,6 +1146,7 @@ document.querySelector(`#newGroupBtn_table`).onclick = async function () {
         );
 
 
+        console.log(`1`);
 
         filterd_statement_options_array = allItemsGroups.map(item => `
         <option value="${item.account_id}">${item.account_name}</option>
@@ -957,9 +1187,6 @@ searchInput.addEventListener('keydown', (event) => {
         performSearch();
     };
 });
-
-
-
 
 document.addEventListener('DOMContentLoaded', function () {
     showRedirectionReason();

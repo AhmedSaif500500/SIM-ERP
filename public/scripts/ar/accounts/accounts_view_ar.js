@@ -12,7 +12,7 @@ const statment_type_span_tree_group_div = document.querySelector(`#statment_type
 const cash_flow_statement = document.querySelector(`#cash_flow_statement`);
 const statment_type_span_hidden_value = document.querySelector(`#statment_type_span_hidden_value`);
 const parents_group_select = document.querySelector(`#parents_group_select`);
-const parent_gruop_name_tree_goup_div = document.querySelector(`#parent_gruop_name_tree_goup_div`);
+const select_parent_gruop_name_tree_goup_div = document.querySelector(`#select_parent_gruop_name_tree_goup_div`);
 const h2_header = document.querySelector(`#h2_header`);
 const btn_save = document.querySelector(`#btn_save`);
 const btn_update = document.querySelector(`#btn_update`);
@@ -24,7 +24,7 @@ const collapse_tree = document.querySelector(`#collapse_tree`);
 const tree_2div_container = document.querySelector(`#tree_2div_container`);
 const tree_rename_div = document.querySelector(`#tree_rename_div`);
 const tree_group_div = document.querySelector(`#tree_group_div`);
-const account_name_input_tree_group_div = document.querySelector(`#account_name_input_tree_group_div`);
+const input_account_name_input_tree_group_div = document.querySelector(`#input_account_name_input_tree_group_div`);
 const btn_save_tree_group_div = document.querySelector(`#btn_save_tree_group_div`);
 const account_id_hidden_tree_group_div = document.querySelector(`#account_id_hidden_tree_group_div`);
 const btn_update_tree_group_div = document.querySelector(`#btn_update_tree_group_div`);
@@ -127,11 +127,11 @@ async function fetchTreeData() {
                            
                                     h2_header.textContent = node.text;
                                     lbl_acc_name.textContent = 'اسم المجموعه';
-                                    account_name_input_tree_group_div.value = node.text;
+                                    input_account_name_input_tree_group_div.value = node.text;
                                     account_id_hidden_tree_group_div.value = node.id;
 
-                                    get_statemenet_options_fn(parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, false);
-                                    changeSelect('parent_gruop_name_tree_goup_div', node.parent)
+                                    get_statemenet_options_fn(select_parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, false);
+                                    changeSelect('select_parent_gruop_name_tree_goup_div', node.parent)
 
 
 
@@ -165,9 +165,9 @@ async function fetchTreeData() {
                                     showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الحساب المحدد`)
                                     return;
                                 }
-                                account_name_input_tree_group_div.value = ''
-                                get_statemenet_options_fn(parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, true);
-                                changeSelect('parent_gruop_name_tree_goup_div', node.id)
+                                input_account_name_input_tree_group_div.value = ''
+                                get_statemenet_options_fn(select_parent_gruop_name_tree_goup_div, node.id, node.data.finance_statement, true);
+                                changeSelect('select_parent_gruop_name_tree_goup_div', node.id)
 
                                 // h2
                                 h2_header.textContent = `اضافه مجموعه فرعيه داخل : ${node.text}`;
@@ -184,7 +184,7 @@ async function fetchTreeData() {
                                     }
                                 })();
                                 // account_parent_name_span.textContent = node.text;
-                                // parent_gruop_name_tree_goup_div.value = node.id;
+                                // select_parent_gruop_name_tree_goup_div.value = node.id;
 
                                 btn_save_tree_group_div.style.display = 'flex';
                                 btn_update_tree_group_div.style.display = 'none';
@@ -393,8 +393,8 @@ function get_statemenet_options_fn(selectVariableName, accountId, financeStatmen
 
 async function addnewaccountGroup() {
     try {
-        const accountname = account_name_input_tree_group_div.value.trim();
-        const accountParent = parent_gruop_name_tree_goup_div.value;
+        const accountname = input_account_name_input_tree_group_div.value.trim();
+        const accountParent = select_parent_gruop_name_tree_goup_div.value;
 
         await fetchData_post1(
             '/api/addGroup-account',
@@ -453,8 +453,8 @@ async function updateGroup() {
         let is_group = true
         // prepare data
         const account_id = parseInt(account_id_hidden_tree_group_div.value);
-        const account_name = account_name_input_tree_group_div.value.trim();
-        const parent_id = parseInt(parent_gruop_name_tree_goup_div.value);
+        const account_name = input_account_name_input_tree_group_div.value.trim();
+        const parent_id = parseInt(select_parent_gruop_name_tree_goup_div.value);
 
 
         await fetchData_post1(

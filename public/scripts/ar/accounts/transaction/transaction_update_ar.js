@@ -1,4 +1,4 @@
-setActiveSidebar('bread_view_ar');
+setActiveSidebar('transaction_view_ar');
 pagePermission("transaction_permission", "add");
 
 

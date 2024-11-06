@@ -32,7 +32,7 @@
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="items_add_ar" title="اعادة تحميل الصفحة">
+              <a id="h2_text_div" class="h2_text_div" href="items_update_ar" title="اعادة تحميل الصفحة">
                 الاصناف
               </a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
@@ -59,8 +59,8 @@
               </div>
     
               <div class="btn_container_top_border">
-                <button class="btn_save" id="btn_save_group" onclick="save_group('A')">حفظ</button>
-                <button class="btn_save" id="btn_save_and_add_another_group" onclick="save_group('B')">حفظ و إضافة أخر</button>
+                <button class="btn_update" id="btn_update_group">تعديل</button>
+                <button class="btn_cancel" id="btn_delete_group">حذف</button>
               </div>
   
             </div>
@@ -130,8 +130,8 @@
                   oninput="check_parse(this,'number')" autocomplete="off">
       
                   <div class="btn_container_top_border">
-                    <button class="btn_save" id="btn_save_account" onclick="save_account('A')">حفظ</button>
-                    <button class="btn_save" id="btn_save_and_add_another_account" onclick="save_account('B')">حفظ و إضافة أخر</button>
+                    <button class="btn_update" id="btn_update_account">تعديل</button>
+                    <button class="btn_cancel" id="btn_delete_account">حذف</button>
                   </div>
       
       
@@ -157,7 +157,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/items/items_add_ar.js"></script>
+  <script src="/public/scripts/ar/items/items_update_ar.js"></script>
   <script src="/public/scripts/ar/items/items_multi_pages_ar.js"></script>
 
 
