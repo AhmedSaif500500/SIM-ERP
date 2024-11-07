@@ -120,9 +120,6 @@ btn_update_account.onclick = async function updateAccount() {
 
 }
 
-
-
-
 async function deleteNode(type) {
 
     try {

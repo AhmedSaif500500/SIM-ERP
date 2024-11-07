@@ -465,9 +465,34 @@ router.get('/effects_report_ar', (req, res) => {
 
 router.get('/accounts_view_ar', async (req, res) => {
     if (req.session.isLoggedIn || req.session.general_permission > 1 ||  req.session.accounts_permission > 0) {  
-        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'accounts_view_ar.html'));
+        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_view_ar.html'));
     } else {
         res.redirect('/login');
+    }
+});
+
+router.get('/accounts_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.accounts_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_add_ar.html'));
+        }else{
+            res.redirect('/accounts_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/accounts_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.accounts_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_update_ar.html'));
+        }else{
+            res.redirect('/accounts_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
     }
 });
 

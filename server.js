@@ -6111,6 +6111,7 @@ app.post("/api/update-account", async (req, res) => {
     let query2_parameters;
     if (posted_elements.is_group){
 
+      
       query1 = `UPDATE accounts_header SET 
       account_name = $1
       WHERE company_id = $2 AND id = $3`;
