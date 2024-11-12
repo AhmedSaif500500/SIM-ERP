@@ -88,7 +88,7 @@ function build_table(){
                         <!-- items -->
                          <div class="row items_div" style="gap:0.2rem; display:none">
                             <div class="row">
-                              <span class="input_span_start">الكمية</span>
+                              <span class="input_span_start class_unite">الكمية</span>
                               <div class="div_input_sm hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
                             </div>
                             <div class="row">
@@ -182,7 +182,7 @@ async function get_accounts_type() {
       get_accounts_type_array.push(option);
     }
 
-    const accounts_types_array = document.querySelectorAll(`.account_type`)
+    const accounts_types_array = document.querySelectorAll(`.account_type_id`)
     for (const item of accounts_types_array) {
       item.innerHTML = get_accounts_type_array;
     }
@@ -247,8 +247,10 @@ function handle_input_event(input) {
 // تحديد الخيار المختار وإخفاء القائمة
 function selectedRow(row) {
   const td = row.closest("td")
+
   td.querySelector('.id_hidden_input').value = row.cells[0].textContent; // row.id
   td.querySelector('.dropdown_select_input').textContent = row.cells[1].textContent; // row.employee_name
+  td.querySelector('.class_unite').textContent = row.cells[2].textContent; // row.item_unite
   hideDropdown();
 };
 
@@ -290,8 +292,8 @@ async function toggleDropdown(dropdown) {
   const td = dropdown.closest("td");
   const dropdown_menue = td.querySelector(`.dropdown_menue`);
   if (dropdown_menue.style.display === "none") {
-    const account_type = parseInt(tr.querySelector(`.account_type`).value)    
-    data_filterd = await data_accounts.filter(item => item.account_type === account_type);
+    const account_type_id = parseInt(tr.querySelector(`.account_type`).value)    
+    data_filterd = await data_accounts.filter(item => item.account_type_id === account_type_id);
     array_accounts = data_filterd
     measureDistanceToBottom(td, dropdown_menue);
     await showDropdown(td, dropdown_menue);
@@ -545,6 +547,7 @@ async function fillAccountstable(td) {
     tableHTML += `<tr onclick="selectedRow(this)">
                           <td style="display: none;" >${row.id}</td>
                           <td style="width: auto;">${row.account_name}</td>
+                          <td style="display: none;;">${row.item_unite}</td>
                         </tr>`;
   });
 
@@ -552,12 +555,13 @@ async function fillAccountstable(td) {
       <tfoot> 
       <!--
           <tr class="table_totals_row">
-              <td id="tfooter1"></td>
+              <td id="tfooter1" style="display: none;"></td>
               <td id="tfooter2" style="display: none;"></td>
+              <td id="tfooter3" style="display: none;"></td>
           </tr>
         -->
           <tr id="table_fotter_buttons_row">
-              <td colspan="2">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
+              <td colspan="3">  <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
                   <div class='flex_H'>
                       <button class="table_footer_show_data"  id="w1" onclick="ShowAllDataInAccountsTable(this)">All</button>
                       <button class="table_footer_show_data"  id="w2" onclick="showFirst50RowInAccountsTable(this)">50</button>

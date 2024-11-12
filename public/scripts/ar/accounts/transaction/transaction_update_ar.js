@@ -1,5 +1,5 @@
 setActiveSidebar('transaction_view_ar');
-pagePermission("transaction_permission", "add");
+pagePermission("update", "transaction_permission");
 
 
 const date1 = document.querySelector('#date1');
@@ -139,7 +139,7 @@ async function getTransactionData_fn() {
                 <!-- items -->
                 <div class="row items_div" style="gap:0.2rem; display:none">
                   <div class="row">
-                    <span class="input_span_start">الكمية</span>
+                    <span class="input_span_start class_unite">الكمية</span>
                     <div class="div_input_sm hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)">${row.item_amount ? row.item_amount : ""}</div>
                   </div>
                   <div class="row">
@@ -196,11 +196,13 @@ async function getTransactionData_fn() {
     const span = tr.querySelector(`.account_type_name`);
     const item_div = tr.querySelector(`.items_div`)
     const select_itemLocation = tr.querySelector(`.items_locations_select`)
+    const span_unite = tr.querySelector(`.class_unite`)
 
 
     //1 :
       select_accountTpe.value = row.account_type_id;
       select_itemLocation.value = row.item_location_id;
+      span_unite.textContent = row.item_unite;
 
     //2 :
     const val = parseInt(select_accountTpe.value)
@@ -304,7 +306,6 @@ async function update() {
 btn_update.onclick = async function () {
   await update()
 }
-
 
 
 async function deleteX() {

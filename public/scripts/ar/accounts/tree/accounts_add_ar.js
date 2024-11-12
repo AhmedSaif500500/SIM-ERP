@@ -1,5 +1,5 @@
 setActiveSidebar('accounts_view_ar');
-pagePermission("accounts_permission", "add");
+pagePermission("add", "accounts_permission");
 
 
 const tree_group_div = document.querySelector(`#tree_group_div`);

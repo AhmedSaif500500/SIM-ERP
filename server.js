@@ -1391,9 +1391,10 @@ app.post("/company_login", async (req, res) => {
 
 
 
-
+//! Global Code permissions500 S-1
 // The SQL query remains the same
-const query_permissions = `select 
+const query_permissions = 
+`select
     c.company_name,
     uc.user_id,
     uc.company_id,
@@ -1405,16 +1406,17 @@ const query_permissions = `select
     uc.bread_permission,
     uc.acounts_permission,
     uc.transaction_permission,
-    uc.items_permissions,
     uc.customers_permission,
     uc.vendors_permission,
-    uc.hr_permission,
     uc.departments_permission,
-    uc.items_permission
-    from user_company uc 
+    uc.items_permission,
+    uc.itemsLocations_permission
+FROM user_company uc 
     left join companies c on uc.company_id = c.id
-    where uc.user_id = $1 and uc.company_id = $2
-    order BY c.company_name asc;
+WHERE
+    uc.user_id = $1
+    AND uc.company_id = $2
+order BY c.company_name asc;
   `;
 
 const data = await db.oneOrNone(query_permissions, [req.session.userId, posted_elements.c_id]);
@@ -1425,6 +1427,7 @@ if (data) {
 
   // Save all permissions dynamically
 
+  //! Global Code permissions500 S-2
   req.session.general_permission = data.general_permission
   req.session.employees_permission = data.employees_permission
   req.session.effects_permission = data.effects_permission
@@ -1433,12 +1436,11 @@ if (data) {
   req.session.bread_permission = data.bread_permission
   req.session.acounts_permission = data.acounts_permission
   req.session.transaction_permission = data.transaction_permission
-  req.session.items_permissions = data.items_permissions
   req.session.customers_permission = data.customers_permission
   req.session.vendors_permission = data.vendors_permission
-  req.session.hr_permission = data.hr_permission
   req.session.departments_permission = data.departments_permission
   req.session.items_permission = data.items_permission
+  req.session.itemsLocations_permission = data.itemsLocations_permission
 
 
   res.json(data);
@@ -2901,27 +2903,28 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       });
     }
 
-       
+       //! Global Code permissions500 S-3
         let query1 = `Update user_company set general_permission = $3,
                         users_permission = $4,
-                        hr_permission = $5,
-                        departments_permission = $6,
-                        employees_permission = $7,
-                        effects_permission = $8,
-                        production_permission = $9,
-                        bread_permission = $10,
-                        transaction_permission = $11,
-                        items_permission = $12,
-                        customers_permission = $13,
-                        vendors_permission = $14
+                        departments_permission = $5,
+                        employees_permission = $6,
+                        effects_permission = $7,
+                        production_permission = $8,
+                        bread_permission = $9,
+                        transaction_permission = $10,
+                        items_permission = $10,
+                        customers_permission = $12,
+                        vendors_permission = $13,
+                        itemsLocations_permission = $14
                       WHERE user_id = $1
                         AND company_id = $2`;
+
+         //! Global Code permissions500 S-4               
         await db.any(query1, [
           posted_elements.user_id,
           req.session.company_id,
           posted_elements.general_permission_select,
           posted_elements.table_permission_users,
-          posted_elements.table_permission_hr,
           posted_elements.table_permission_departments,
           posted_elements.table_permission_employees,
           posted_elements.table_permission_effects,
@@ -2931,6 +2934,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_items,
           posted_elements.table_permission_customers,
           posted_elements.table_permission_vendors,
+          posted_elements.table_permission_itemsLocations,
         ]);
 
         return res.json({
@@ -3009,7 +3013,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
 //#region cutomers
 
 //#region get customers data
-app.get("/get_All_customers_Data", async (req, res) => {
+app.post("/get_All_customers_Data", async (req, res) => {
   try {
     //! Permission
     await permissions(req, "customers_permission", "view");
@@ -3021,39 +3025,31 @@ app.get("/get_All_customers_Data", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT 
+    let query1 = `
+  SELECT 
     A.id, 
-    A.account_name, 
-    A.account_no, 
-    A.credit_limit, 
-    A.email, 
-    A.tasgel_darepy, 
-    A.legal_info, 
-    A.contact_info, 
-    A.delivery_adress, 
-    A.banking_info,
-    COALESCE(SUM(T.debit) - SUM(T.credit), 0) AS balance
-FROM 
+    COALESCE(A.account_name, '') as account_name,  
+    COALESCE(A.account_no, '') as account_no,  
+    COALESCE(A.credit_limit, 0) as credit_limit,  
+    COALESCE(A.email, '') as email,
+    COALESCE(A.tasgel_darepy, '') as tasgel_darepy,
+    COALESCE(A.legal_info, '') as legal_info,   
+    COALESCE(A.contact_info, '') as contact_info,  
+    COALESCE(A.delivery_adress, '') as delivery_adress,  
+    COALESCE(A.banking_info, '') as banking_info,
+    COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance
+  FROM 
     accounts_header A
-LEFT JOIN 
+  LEFT JOIN 
     transaction_body T ON A.id = T.account_id
-WHERE
+  WHERE
     A.company_id = $1
     AND A.account_type_id = 2
-GROUP BY
-    A.id, 
-    A.account_name, 
-    A.account_no, 
-    A.credit_limit, 
-    A.email, 
-    A.tasgel_darepy, 
-    A.legal_info, 
-    A.contact_info, 
-    A.delivery_adress, 
-    A.banking_info;
+  GROUP BY
+    A.id;
 `;
     let data = await db.any(query1, [req.session.company_id]);
-
+    last_activity(req)
     res.json(data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -3162,15 +3158,13 @@ GROUP BY
           posted_elements.banking_info_input_value,
         ]);
 
-        await tx.none(query2,[
-          newId_body,
-          result.parent_id,
-          newId_header
-        ])
+        await tx.none(query2,[newId_body,result.parent_id,newId_header])
+
+        await history(18,1,newId_header,0,req,tx)
       })
 
 
-  
+      last_activity(req)
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
@@ -3196,7 +3190,7 @@ GROUP BY
       const posted_elements = req.body;
   
       //! Permission
-      await permissions(req, "customers_permission", "add");
+      await permissions(req, "customers_permission", "update");
       if (!permissions) {
         return;
       }
@@ -3246,11 +3240,13 @@ GROUP BY
         });
       }
   
-      let query = `
+      let query1 = `
     UPDATE accounts_header set account_name = $1, account_no = $2, credit_limit = $3, email = $4, tasgel_darepy = $5, legal_info = $6, contact_info = $7, delivery_adress = $8, banking_info = $9
     WHERE company_id = $10 AND account_type_id = 2 AND id = $11
   `;
-      await db.none(query, [
+
+  
+      const params1 =  [
         posted_elements.account_name_input_value,
         posted_elements.acc_no_div_value,
         posted_elements.credit_limit_value,
@@ -3262,8 +3258,13 @@ GROUP BY
         posted_elements.banking_info_input_value,
         req.session.company_id,
         posted_elements.account_id_hidden_value
-      ]);
+      ];
   
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(18,2,posted_elements.account_id_hidden_value,0,req,tx);
+      })
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
@@ -3314,10 +3315,11 @@ GROUP BY
       }
   
       let query0 = `
-              select
-              (select count(account_id) from transaction_body where account_id = $1) as count_account_id,
-              (select count(id) from accounts_header where company_id = $2 AND account_type_id = 2) as count_id
-      `
+      select
+      (select count(account_id) from transaction_body where account_id = $1) as count_account_id,
+      (select count(id) from accounts_header where company_id = $2 AND account_type_id = 2) as count_id
+  `;
+  
 
       let result = await db.oneOrNone(query0,[
         posted_elements.account_id_hidden_value,
@@ -3342,17 +3344,25 @@ GROUP BY
       }
 
       let query1 = `DELETE FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 2`;
-      await db.none(query1, [
+      let params1 =  [
         req.session.company_id,
         posted_elements.account_id_hidden_value,
-      ]);
+      ];
   
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(18,3,posted_elements.account_id_hidden_value,0,req,tx);
+      })
+
+      await last_activity(req)
       return res.json({
         success: true,
         message_ar:
           "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
       });
     } catch (error) {
+      last_activity(req)
       console.error("Error get customer data:", error);
       res.status(500).json({
         success: false,
@@ -3373,7 +3383,7 @@ GROUP BY
     app.post("/get_All_human_resources_department_Data", async (req, res) => {
       try {
         //! Permission
-        await permissions(req, "departments_permission", "view");
+        await permissions(req, "employees_permission", "view");
         if (!permissions) {
           return;
         }
@@ -4263,7 +4273,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
 //#region vendors
 
 //#region get vendor data
-app.get("/get_All_vendors_Data", async (req, res) => {
+app.post("/get_All_vendors_Data", async (req, res) => {
   try {
     //! Permission
     await permissions(req, "vendors_permission", "view");
@@ -4275,41 +4285,34 @@ app.get("/get_All_vendors_Data", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT 
+    let query1 = `
+      SELECT 
     A.id, 
-    A.account_name, 
-    A.account_no, 
-    A.credit_limit, 
-    A.email, 
-    A.tasgel_darepy, 
-    A.legal_info, 
-    A.contact_info, 
-    A.delivery_adress, 
-    A.banking_info,
-    COALESCE(SUM(T.debit) - SUM(T.credit), 0) AS balance
-FROM 
+    COALESCE(A.account_name, '') as account_name,  
+    COALESCE(A.account_no, '') as account_no,  
+    COALESCE(A.credit_limit, 0) as credit_limit,  
+    COALESCE(A.email, '') as email,
+    COALESCE(A.tasgel_darepy, '') as tasgel_darepy,
+    COALESCE(A.legal_info, '') as legal_info,   
+    COALESCE(A.contact_info, '') as contact_info,  
+    COALESCE(A.delivery_adress, '') as delivery_adress,  
+    COALESCE(A.banking_info, '') as banking_info,
+    COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance
+  FROM 
     accounts_header A
-LEFT JOIN 
+  LEFT JOIN 
     transaction_body T ON A.id = T.account_id
-WHERE
+  WHERE
     A.company_id = $1
     AND A.account_type_id = 3
-GROUP BY
-    A.id, 
-    A.account_name, 
-    A.account_no, 
-    A.credit_limit, 
-    A.email, 
-    A.tasgel_darepy, 
-    A.legal_info, 
-    A.contact_info, 
-    A.delivery_adress, 
-    A.banking_info;
+  GROUP BY
+    A.id;
 `;
     let data = await db.any(query1, [req.session.company_id]);
-
+    last_activity(req)
     res.json(data);
   } catch (error) {
+    last_activity(req)
     console.error("Error fetching data:", error);
     res.status(500).send("Error: getVendorsData");
   }
@@ -4413,20 +4416,18 @@ GROUP BY
       posted_elements.banking_info_input_value,
     ]);
 
-    await tx.none(query2,[
-      newId_body,
-      result.parent_id,
-      newId_header
-    ])
+    await tx.none(query2,[newId_body,result.parent_id,newId_header])
+    await history(19,1,newId_header,0,req,tx)
   })
 
-  
+  last_activity(req)
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
         message_ar: "تم حفظ بيانات المورد بنجاح",
       });
     } catch (error) {
+      last_activity(req)
       console.error("Error adding vendors:", error);
       // send a response to frontend about fail transaction
       res.status(500).json({
@@ -4446,7 +4447,7 @@ GROUP BY
       const posted_elements = req.body;
   
       //! Permission
-      await permissions(req, "vendors_permission", "add");
+      await permissions(req, "vendors_permission", "update");
       if (!permissions) {
         return;
       }
@@ -4477,10 +4478,12 @@ GROUP BY
       // );
   
 
-      let query0 = ` select
-                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3 AND account_name = $3 AND id != $2) as count_account_name_exist,
-                      (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3) as count_id
-      `
+      let query0 = `
+      select
+      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3 AND account_name = $3 AND id != $2) as count_account_name_exist,
+      (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3) as count_id
+  `;
+  
       let result = await db.oneOrNone(query0, [
         req.session.company_id,
         posted_elements.account_id_hidden_value,
@@ -4502,11 +4505,11 @@ GROUP BY
         });
       }
   
-      let query = `
+      let query1 = `
     UPDATE accounts_header set account_name = $1, account_no = $2, credit_limit = $3, email = $4, tasgel_darepy = $5, legal_info = $6, contact_info = $7, delivery_adress = $8, banking_info = $9
     WHERE company_id = $10 AND account_type_id = 2 AND id = $11
   `;
-      await db.none(query, [
+      let params1 =  [
         posted_elements.account_name_input_value,
         posted_elements.acc_no_div_value,
         posted_elements.credit_limit_value,
@@ -4518,14 +4521,22 @@ GROUP BY
         posted_elements.banking_info_input_value,
         req.session.company_id,
         posted_elements.account_id_hidden_value
-      ]);
+      ];
   
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(19,2,posted_elements.account_id_hidden_value,0,req,tx);
+      })
+
+      last_activity(req)
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
         message_ar: "تم تحديث بيانات المورد بنجاح",
       });
     } catch (error) {
+      last_activity(req)
       console.error("Error adding vendors:", error);
       // send a response to frontend about fail transaction
       res.status(500).json({
@@ -4597,17 +4608,25 @@ GROUP BY
       }
 
       let query1 = `DELETE FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 3`;
-      await db.none(query1, [
+      let params1 =  [
         req.session.company_id,
         posted_elements.account_id_hidden_value,
-      ]);
+      ];
   
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(19,3,posted_elements.account_id_hidden_value,0,req,tx);
+      })
+
+      last_activity(req)
       return res.json({
         success: true,
         message_ar:
           "تم حذف بيانات المورد بنجاح : سيتم تحويلك الان الى صفحه الموردين الرئيسيه",
       });
     } catch (error) {
+      last_activity(req)
       console.error("Error get vendor data:", error);
       res.status(500).json({
         success: false,
@@ -6503,14 +6522,24 @@ app.post("/getAccountsData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT A.id, A.account_name, A.account_type_id FROM accounts_header A where A.company_id = 1 AND is_final_account = true AND (global_id != 8 OR global_id IS NULL)`;
-    let rows = await db.any(query1, [req.session.company_id]);
+    let query1 = `
+    SELECT
+      A.id,
+      A.account_name,
+      A.account_type_id,
+      COALESCE(A.item_unite, 'الكمية') as item_unite 
+    FROM
+      accounts_header A
+    where
+      A.company_id = 1
+      AND is_final_account = true AND (global_id != 8 OR global_id IS NULL)`;
+    let data = await db.any(query1, [req.session.company_id]);
 
-    const data = rows.map((row) => ({
-      id: row.id,
-      account_name: row.account_name,
-      account_type: row.account_type_id
-    }));
+    // const data = rows.map((row) => ({
+    //   id: row.id,
+    //   account_name: row.account_name,
+    //   account_type: row.account_type_id
+    // }));
     res.json(data);
   } catch (error) {
     console.error("Error while get accounts Data", error);
@@ -6525,9 +6554,315 @@ app.post("/getAccountsData1", async (req, res) => {
 
 
 
-//#region items
+//#region itemsLocations
 
-  //#region tree
+  //#region 1 : get itemsLocations Data
+  app.post("/itemsLocations_view", async (req, res) => {
+    try {
+
+            //! Permission
+            await permissions(req, "itemsLocations_permission", "view");
+            if (!permissions) {
+              return res.status(403).json({
+                success: false,
+                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+              });
+            }
+  
+            
+      let query1 = `select id, account_name
+  from accounts_header
+  where company_id = $1 AND account_type_id = 7 
+  order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2 
+  
+      // استعلام SQL لجلب بيانات الشجرة
+      let data = await db.any(query1,[req.session.company_id]);
+      await last_activity(req);
+
+      res.json(data);
+    } catch (error) {
+      console.error("itemsLocations ERROR:", error);
+      res.status(500).send("Server Error");
+    }
+  });
+  //#endregion end items locations data
+
+  //#region 2: add itemslocations
+  app.post("/itemsLocations_add", async (req, res) => {
+    try {
+      //! Permission
+      await permissions(req, "effects_permission", "add");
+      if (!permissions) {
+        return res.status(403).json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+        });
+      }
+  
+      const posted_elements = req.body;
+  
+  
+  
+      // سرد كل القيم مره واحده
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+      if (hasBadSymbols) {
+        return res.status(400).json({
+          success: false,
+          message_ar: "تم اكتشاف أحرف غير مسموح بها في المدخلات. يرجى مراجعة المدخلات والمحاولة مرة أخرى.",
+        });
+      }
+  
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+
+      if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
+        return res.json({ success: false, message_ar: "ادخل اسم موقع المخزون" });
+      }
+  
+      //* Start Transaction --------------------------------------------------
+  
+      const query01 = `select count(account_name) as count_account_name from accounts_header where trim(account_name) = $1 and company_id = $2`;
+      const result = await db.oneOrNone(query01,[posted_elements.account_name_input_value.trim(), req.session.company_id])
+
+      if (result.count_account_name > 0){
+        return res.json({
+          success: false,
+          message_ar: `هذا الاسم موجود من قبل `,
+        });
+      }
+
+      const newId = await newId_fn("accounts_header", 'id');
+
+  
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_type_id, company_id) VALUES ($1, $2, $3, $4)`;
+      let params1 = [
+        newId,
+        posted_elements.account_name_input_value,
+        7,
+        req.session.company_id,
+      ];
+  
+  
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+  
+        //! history
+        await history(17, 1, newId, 0, req, tx);
+      });
+  
+      await last_activity(req);
+      // إرسال استجابة للواجهة الأمامية حول نجاح المعاملة
+      res.json({
+        success: true,
+        message_ar: `تم إنشاء موقع المخزون بنجاح`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error adding item location:", error);
+      // إرسال استجابة للواجهة الأمامية حول فشل المعاملة
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء الإضافة",
+      });
+    }
+  });
+  
+  //#endregion  end add itemsLocations
+
+  //#region items location update
+  app.post("/itemsLocations_update", async (req, res) => {
+    try {
+          // // إرسال رسالة إلى العميل عبر WebSocket
+          // io.emit('blockUser', { userId: req.session.userId });
+          
+      const posted_elements = req.body;
+  
+      //! Permission
+      await permissions(req, "itemsLocations_permission", "update");
+      if (!permissions) {
+        return;
+      }
+  
+      //! sql injection check
+      
+      // سرد كل القيم مره واحده 
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '' || !posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value) ) {
+        return res.json({ success: false, message_ar: "ادخل اسم موقع المخزون" });
+      }
+      //* Start--------------------------------------------------------------
+  
+      //2: validation data befor inserting to db
+      // const rows = await db.any(
+      //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+      //   [posted_elements.employee_name_input]
+      // );
+  
+
+      let query0 = ` select
+                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 7 AND account_name = $3 AND id != $2) as count_account_name_exist,
+                      (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 7) as count_id
+      `
+      let result = await db.oneOrNone(query0, [
+        req.session.company_id,
+        posted_elements.account_id_hidden_value,
+        posted_elements.account_name_input_value,
+      ]);
+  
+      if (result.count_id === 0) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.count_account_name_exist > 0) {
+        return res.json({
+          success: false,
+          message_ar: "اسم موقع المخزون موجود بالفعل"
+        });
+      }
+  
+      let query1 = `
+    UPDATE accounts_header set account_name = $1
+    WHERE id = $2 
+  `;
+      let params1 =  [
+        posted_elements.account_name_input_value,
+        posted_elements.account_id_hidden_value
+      ];
+  
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(17,2,posted_elements.account_id_hidden_value,0,req,tx);
+      })
+
+      last_activity(req)
+      //4: send a response to frontend about success transaction
+      res.json({
+        success: true,
+        message_ar: "تم تحديث بيانات موقع المخزون بنجاح",
+      });
+    } catch (error) {
+      last_activity(req)
+      console.error("Error updating itemsLocations:", error);
+      // send a response to frontend about fail transaction
+      res.status(500).json({
+        success: false,
+        message_ar: "حدث خطأ أثناء تحديث بيانات المورد",
+      });
+    }
+  });
+  //#endregion end items location update 
+
+
+  //#region itemslocation delete
+  app.post("/itemsLocations_delete", async (req, res) => {
+    try {
+      //! Permission
+      await permissions(req, "itemsLocations_permission", "delete");
+      if (!permissions) {
+        return;
+      }
+  
+      const posted_elements = req.body;
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection([
+        posted_elements.account_id_hidden_value,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      //* Start--------------------------------------------------------------
+  
+      if (!posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value)) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+  
+      let query0 = `
+      select
+      (select count(account_id) from transaction_body where account_id = $1) as count_account_id,
+      (select count(id) from accounts_header where company_id = $2 AND account_type_id = 7) as count_id
+  `;
+  
+      let result = await db.oneOrNone(query0,[
+        posted_elements.account_id_hidden_value,
+        req.session.company_id
+      ])
+
+
+
+      if (result.count_id === 0) {
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      if (result.count_account_id > 0) {
+        return res.json({
+          success: false,
+          message_ar: 'يوجد حركات على الحساب : تم الغاء الحذف',
+        });
+      }
+
+
+      let query1 = `DELETE FROM accounts_header WHERE id = $1`;
+      let params1 =  [
+        posted_elements.account_id_hidden_value,
+      ];
+  
+
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+        await history(17,3,posted_elements.account_id_hidden_value,0,req,tx);
+      })
+
+      last_activity(req)
+      return res.json({
+        success: true,
+        message_ar:
+          "تم حذف بيانات موقع المخزون بنجاح  : سيتم تحويلك الان الى صفحه مواقع المخزون الرئيسيه",
+      });
+    } catch (error) {
+      last_activity(req)
+      console.error("Error get vendor data:", error);
+      res.status(500).json({
+        success: false,
+        message_ar:
+          "لا يمكن حذف بيانات المورد : قد تكون هناك عمليات مرتبطه بالمورد يجب حذفها اولا",
+      });
+    }
+  });
+  //#endregion end itemsLocations delete
+
+
+  //#region items
 
  //#region 1 : view items - tree
  app.get("/api/tree/items", async (req, res) => {
@@ -6554,7 +6889,7 @@ app.post("/getAccountsData1", async (req, res) => {
     h1.item_sales_price AS item_sales_price,
     h1.item_purshas_price AS item_purshas_price,
     h1.item_amount_reorder_point AS item_amount_reorder_point,
-    h1.item_unite AS item_unite,
+    COALESCE(h1.item_unite, 'الكمية') AS item_unite,
       CASE
         WHEN h1.id = $2 THEN NULL
         ELSE h2.id
@@ -8066,7 +8401,6 @@ app.post("/get_transaction_Data", async (req, res) => {
     }
 
 //! مطلةب التاكد من  ترانكسشن هيدر اى دى يخص الشركه وانه عباره قيد محاسبى
-
     let query1 = `
 SELECT
     tb.debit,
@@ -8075,7 +8409,8 @@ SELECT
     tb.item_amount,
     tb.item_location_id,
     tb.account_id,
-    ah.account_type_id 
+    ah.account_type_id,
+    COALESCE(ah.item_unite, 'الكمية') as item_unite 
 FROM 
     transaction_body tb
 LEFT JOIN accounts_header ah on ah.id = tb.account_id

@@ -1,6 +1,5 @@
 setActiveSidebar('bread_view_ar');
-//check permissions
-pagePermission('bread_permission','view');
+pagePermission('view', 'bread_permission');
 
 
 // إعلان المتغير على مستوى الـ script  

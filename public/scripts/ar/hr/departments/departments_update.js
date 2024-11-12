@@ -1,7 +1,7 @@
 
 setActiveSidebar('hr_ar');
 //check permissions
-pagePermission('departments_permission','add');
+pagePermission('update', 'departments_permission');
 
 // let Authentication = true;
 // //#region  Authentication

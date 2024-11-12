@@ -1,6 +1,6 @@
 setActiveSidebar('hr_ar');
 //check permissions
-pagePermission('hr_permission','view');
+pagePermission("view", "employees_permission", "effects_permission", "departments_permission");
 
 const departments_btn = document.querySelector(`#departments_btn`)
 const employees_btn = document.querySelector(`#employees_btn`)

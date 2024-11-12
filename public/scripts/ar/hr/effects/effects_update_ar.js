@@ -2,8 +2,7 @@
 
 
 setActiveSidebar('hr_ar');
-
-pagePermission('attendace_permission','add');
+pagePermission('update', 'effects_permission');
 
 page_content.style.display = 'none';
 showLoadingIcon(content_space) 

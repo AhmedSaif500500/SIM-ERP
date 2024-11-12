@@ -68,11 +68,11 @@ async function get_user_data_fn() {
     sub_h2_header.textContent = `المستخدم : ${array1.user_full_name}`
     const optionValue = array1.general_permission;
 
+    //! Global Code permissions500 F-3
     document.querySelector(`#user_name_input`).value = array1.user_full_name || 0;
     // document.querySelector('#general_permission_select').value = document.querySelector('#general_permission_select').options[optionValue].value || 0;
     document.querySelector('#general_permission_select').value = array1.general_permission || 0;
     document.querySelector("#table_permission_users").value = array1.users_permission || 0;
-    document.querySelector("#table_permission_hr").value = array1.hr_permission || 0;
     document.querySelector("#table_permission_departments").value = array1.departments_permission || 0;
     document.querySelector("#table_permission_employees").value = array1.employees_permission || 0;
     document.querySelector("#table_permission_effects").value = array1.effects_permission || 0;
@@ -82,6 +82,7 @@ async function get_user_data_fn() {
     document.querySelector("#table_permission_items").value = array1.items_permission || 0;
     document.querySelector("#table_permission_customers").value = array1.customers_permission || 0;
     document.querySelector("#table_permission_vendors").value = array1.vendors_permission || 0;
+    document.querySelector("#table_permission_itemsLocations").value = array1.itemsLocations_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -202,9 +203,9 @@ try {
       return element.value == 0 ? '' : element.value;
   }
   
+  //! Global Code permissions500 F-4
   let general_permission_select = A("#general_permission_select");
   let table_permission_users = A("#table_permission_users");
-  let table_permission_hr = A("#table_permission_hr");
   let table_permission_departments = A("#table_permission_departments");
   let table_permission_employees = A("#table_permission_employees");
   let table_permission_effects = A("#table_permission_effects");
@@ -214,12 +215,13 @@ try {
   let table_permission_items = A("#table_permission_items");
   let table_permission_customers = A("#table_permission_customers");
   let table_permission_vendors = A("#table_permission_vendors");
+  let table_permission_itemsLocations = A("#table_permission_itemsLocations");
 
     // ضبط قيم الصلاحيات
     if (general_permission_select != "1" || general_permission_select == '') {
 
+      //! Global Code permissions500 F-5
       table_permission_users = '';
-      table_permission_hr = '';
       table_permission_departments = '';
       table_permission_employees = '';
       table_permission_effects = '';
@@ -229,19 +231,19 @@ try {
       table_permission_items = '';
       table_permission_customers = '';
       table_permission_vendors = '';
+      table_permission_itemsLocations = '';
       // add here all tables select permission id
     };
 
 
     // تجهيز البيانات للإرسال إلى الخادم
   
-
+    //! Global Code permissions500 F-6
       const post = await new_fetchData_postAndGet(
         '/update_User_from_user_update_ar',
         { user_id,
           general_permission_select,
           table_permission_users,
-          table_permission_hr,
           table_permission_departments,
           table_permission_employees,
           table_permission_effects,
@@ -250,7 +252,9 @@ try {
           table_permission_transaction,
           table_permission_items,
           table_permission_customers,
-          table_permission_vendors},
+          table_permission_vendors,
+          table_permission_itemsLocations
+        },
         'users_permission','update',
         20,
         true,"هل تريد تعديل صلاحيات المستخدم ؟ ",

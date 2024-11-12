@@ -1,6 +1,6 @@
 
 setActiveSidebar('hr_ar');
-pagePermission('employees_permission','view');
+pagePermission('view', 'employees_permission');
 
 
 
@@ -356,6 +356,9 @@ async function table_update_btn_fn(updateBtn) {
 
     const row  = updateBtn.closest("tr")
 
+    let is_inactive = row.cells[12].querySelector('span').textContent;
+    is_inactive =  is_inactive === 'نشط' ? 0 : 1
+
     const employees_update_data = {
         id : row.cells[1].textContent,
         account_no : row.cells[2].textContent,
@@ -367,7 +370,7 @@ async function table_update_btn_fn(updateBtn) {
         another_info : row.cells[8].textContent,
         start_date : row.cells[9].textContent,
         end_date : row.cells[10].textContent,
-        is_inactive : row.cells[11].textContent,
+        is_inactive : is_inactive,
 
     }
   

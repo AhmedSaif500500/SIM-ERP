@@ -44,68 +44,110 @@ async function openPage(dirPageName, perm_name, perm_type) {
 }
 
 //check Permissions in the begninng of js page
-async function pagePermission(perm_name, perm_type) {
+// async function pagePermission(perm_name, perm_type) {
+//   const owner = sessionStorage.getItem('owner');
+//   if (!owner) {
+//     const X1 = sessionStorage.getItem('general_permission');
+//     const X2 = sessionStorage.getItem(perm_name);
+//     const dirPageName = 'notes_ar';
+//     const body_content = document.querySelector('#body_content');
+//     switch (perm_type) {
+//       case 'view':
+//         if (X1 > 1 || X2 > 0) {
+
+//         } else {
+//           showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
+//           body_content.style.display = 'none'
+//           setTimeout(() => {
+//             window.location.replace(dirPageName);
+//           }, 4000);
+//         }
+//         break;
+//       case 'view':
+//         if (X1 > 1 || X2 > 0) {
+
+//         } else {
+//           showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
+//           setTimeout(() => {
+//             window.location.replace(dirPageName);
+//           }, 4000);
+//         }
+//         break;
+//       case 'add':
+//         if (X1 > 2 || X2 > 1) {
+
+//         } else {
+//           showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
+//           setTimeout(() => {
+//             window.location.replace(dirPageName);
+//           }, 4000);
+//         }
+//         break;
+//       case 'update':
+//         if (X1 > 3 || X2 > 2) {
+
+//         } else {
+//           showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
+//           setTimeout(() => {
+//             window.location.replace(dirPageName);
+//           }, 4000);
+//         }
+//         break;
+//       case 'delete':
+//         if (X1 > 4 || X2 > 3) {
+//           break;
+//         } else {
+//           showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
+//           setTimeout(() => {
+//             window.location.replace(dirPageName);
+//           }, 4000);
+//         }
+//         break;
+//     }
+//   }
+// }
+
+
+
+async function pagePermission(perm_type, ...perm_names) {
   const owner = sessionStorage.getItem('owner');
   if (!owner) {
-    const X1 = sessionStorage.getItem('general_permission');
-    const X2 = sessionStorage.getItem(perm_name);
+    const X1 = parseInt(sessionStorage.getItem('general_permission'));
     const dirPageName = 'notes_ar';
     const body_content = document.querySelector('#body_content');
-    switch (perm_type) {
-      case 'view':
-        if (X1 > 1 || X2 > 0) {
+    let hasPermission = false;
 
-        } else {
-          showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
-          body_content.style.display = 'none'
-          setTimeout(() => {
-            window.location.replace(dirPageName);
-          }, 4000);
-        }
-        break;
-      case 'view':
-        if (X1 > 1 || X2 > 0) {
+    for (let perm_name of perm_names) {
+      const X2 = parseInt(sessionStorage.getItem(perm_name));
 
-        } else {
-          showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
-          setTimeout(() => {
-            window.location.replace(dirPageName);
-          }, 4000);
-        }
-        break;
-      case 'add':
-        if (X1 > 2 || X2 > 1) {
-
-        } else {
-          showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
-          setTimeout(() => {
-            window.location.replace(dirPageName);
-          }, 4000);
-        }
-        break;
-      case 'update':
-        if (X1 > 3 || X2 > 2) {
-
-        } else {
-          showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
-          setTimeout(() => {
-            window.location.replace(dirPageName);
-          }, 4000);
-        }
-        break;
-      case 'delete':
-        if (X1 > 4 || X2 > 3) {
+      switch (perm_type) {
+        case 'view':
+          if (X1 > 1 || X2 > 0) hasPermission = true;
           break;
-        } else {
-          showAlert('fail', ' عفوًا لا تملك صلاحية الدخول لهذه الصفحه , سيتم توجيهك الى الصفحه الرئيسيه');
-          setTimeout(() => {
-            window.location.replace(dirPageName);
-          }, 4000);
-        }
-        break;
+        case 'add':
+          if (X1 > 2 || X2 > 1) hasPermission = true;
+          break;
+        case 'update':
+          if (X1 > 3 || X2 > 2) hasPermission = true;
+          break;
+        case 'delete':
+          if (X1 > 4 || X2 > 3) hasPermission = true;
+          break;
+      }
+
+      if (hasPermission) break; // إذا تحققت الصلاحية، أوقف التحقق
+    }
+
+    if (!hasPermission) {
+      showAlert('fail', 'عفوًا لا تملك صلاحية الدخول لهذه الصفحه، سيتم توجيهك الى الصفحه الرئيسيه');
+      body_content.style.display = 'none';
+      setTimeout(() => {
+        window.location.replace(dirPageName);
+      }, 4000);
     }
   }
 }
+
 
 
 async function btn_permission(perm_name, perm_type) {

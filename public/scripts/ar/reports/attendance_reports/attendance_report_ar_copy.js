@@ -1,9 +1,6 @@
 
 setActiveSidebar('effects_view_ar');
 
-//check permissions
-// pagePermission('effects_permission','view');
-
 //#region table
 
 // إعلان المتغير على مستوى الـ script  

@@ -1,5 +1,5 @@
 // setActiveSidebar("notes_ar");
-// pagePermission("effects_permission", "view");
+pagePermission("view", "users_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);

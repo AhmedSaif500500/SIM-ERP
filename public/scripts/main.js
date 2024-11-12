@@ -161,6 +161,9 @@ function loadSidebarContents() {
 
     return;
   }
+
+  //!Global Code permissions500 F-7
+
   // الكود HTML كمتغير نصي
   const sidebarContent = `
       <div id="closeMenueIcon" class="closeMenueIcon">
@@ -173,7 +176,7 @@ function loadSidebarContents() {
 </a>
 
 
-    <a href="hr_ar" target="_self" class="" style="display: ${module_display("hr_permission")}">
+    <a href="hr_ar" target="_self" class="" style="display: ${module_display("departments_permission","employees_permission","effects_permission")}">
       <i class="fa-duotone fa-user-tie"></i>
       الموارد البشريه
     </a>
@@ -189,22 +192,22 @@ function loadSidebarContents() {
       العيش
     </a>
 
-    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}">
+    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}" onclick="sessionStorage.removeItem('customersViewArray')">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       العملاء
     </a>
 
-    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}">
+    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}" onclick="sessionStorage.removeItem('vendorsViewArray')">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       الموردين
     </a>
 
-    <a href="items_view_ar" target="_self" class="" style="display: ${module_display("items_permission")}">
+    <a href="itemsMain_view_ar" target="_self" class="" style="display: ${module_display("items_permission","itemsLocations_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
-      اصناف المخزون
+       إدارة المخزون
     </a>
 
-    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("items_permission")}">
+    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       شطب المخزون
     </a>
@@ -263,21 +266,38 @@ loadSidebarContents();
 
 
 
-function module_display(string_perm_name) {
+// function module_display(string_perm_name) {
+//   const owner = sessionStorage.getItem('owner');
+//   const general_permission = parseInt(sessionStorage.getItem('general_permission'));
+//   const custom_permission = parseInt(sessionStorage.getItem(string_perm_name));
+
+//   if ((owner && owner === 'true') || (general_permission > 1 && general_permission < 7)) {
+    
+//     return 'flex';
+//   } else if (custom_permission && (custom_permission > 0 && custom_permission < 5)) {
+//     return 'flex';
+//   } else {
+//     return 'none';
+//   }
+// }
+
+function module_display(...permissions) {
   const owner = sessionStorage.getItem('owner');
   const general_permission = parseInt(sessionStorage.getItem('general_permission'));
-  const custom_permission = parseInt(sessionStorage.getItem(string_perm_name));
 
   if ((owner && owner === 'true') || (general_permission > 1 && general_permission < 7)) {
-    
     return 'flex';
-  } else if (custom_permission && (custom_permission > 0 && custom_permission < 5)) {
-    return 'flex';
-  } else {
-    return 'none';
   }
-}
 
+  for (let perm of permissions) {
+    const custom_permission = parseInt(sessionStorage.getItem(perm));
+    if (custom_permission && custom_permission > 0 && custom_permission < 5) {
+      return 'flex';
+    }
+  }
+
+  return 'none';
+}
 
 
 const fn_container_div = document.querySelector(`#fn_container_div`)
@@ -2752,10 +2772,10 @@ function textareaFormat(string_td_or_textarea, value) {
 
 }
 
+//!Global Code permissions500 F-1
 const internal_permissions = [
   "general_permission",
   "accounts_permission",
-  "hr_permission",
   "departments_permission",
   "employees_permission",
   "effects_permission",
@@ -2766,6 +2786,7 @@ const internal_permissions = [
   "items_permission",
   "customers_permission",
   "vendors_permission",
+  "itemsLocations_permission",
 ];
 
 

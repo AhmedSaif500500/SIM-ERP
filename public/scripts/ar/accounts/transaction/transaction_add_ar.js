@@ -1,5 +1,5 @@
 setActiveSidebar('bread_view_ar');
-pagePermission("transaction_permission", "add");
+pagePermission("add","transaction_permission");
 
 
 const date1 = document.querySelector('#date1');

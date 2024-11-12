@@ -7,6 +7,7 @@
   <title>Document</title>
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
 </head>
 
 <body class="body scroll">
@@ -17,31 +18,35 @@
     <button id="scrollToTopBtn">&#9650;</button>
 
     <!-- start ------------------------------------------------------------------------------------------>
+
     <div class="header" id="header_div"></div>
 
     <div class="sub_container">
       <div id="sidebar" class="sidebar scroll"></div>
 
-
       <div id="white_backcolor" class="white_backcolor">
         <!-- content -->
-                <div id="content_space" class="scroll">
+        <div id="content_space" class="scroll">
 
-          <div id ="fn_container_div" class="fn_container_div"></div>
-          <h2 class="h2" id="">
-            <a href="notes_ar" id="back_icon_to_home">
+          <div id="fn_container_div" class="fn_container_div"></div>
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="hr_ar" title="الرئيسية">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
-            <div id="back_icon_to_table_view" style="display: none;"><i class="fa-solid fa-arrow-right back_icon"></i>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="vendors_view_ar" title="اعادة تحميل الصفحة">الموردين</a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
-            <div id="page_adress_h2">الموردين</div>
           </h2>
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-          <div class="flex_column" id="table_div">
+          <div id="page_content" style="display: none;">
             <div class="btn_container">
-              <button id="btn_new" class="btn_new">جديد</button>
+              <a href="/vendors_add_ar" class="btn_new" id="newBtn">جديد</a>
+              <!-- <a href="/effects_report_ar" class="btn_update" id="newBtn">تقارير</a> -->
             </div>
+
             <!-- search in table -->
             <div class="search_in_table_div">
               <div class="input_with_icon_div">
@@ -50,85 +55,252 @@
                 <i class="fa-light fa-magnifying-glass left_icon"></i>
               </div>
               <button id="searchBtn" class="btn_search hover">search</button>
+              <i id="filter_icon" class="fa-duotone fa-solid fa-filter-list filer_icon" title="تصفية متقدمة"></i>
+              <i id="filter_icon_cancel" class="fa-duotone fa-solid fa-filter-slash fa-bounce filer_icon_cancel"
+                style="display: none;" title="الغاء التصفية ( الحالة الافتراضية )"></i>
             </div>
 
-            <!-- table container filled by js -->
-            <div id="tableContainer" class="tableContainer"></div>
-          </div>
+        
+          <div id="filter_div" class="filter_div hidden_height">
 
-          <!-- new vendors -------------------------------------------------------------------------------------------- -->
-          <div class="flex_column" id="new_vendor_div" style="display: none;">
-            <!-- معرف المورد -->
-            <div id="acc_no_div" class="flex_column">
-              <label for="account_no_input" class="lbl_sm">معرف المورد</label>
-              <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختياري"
-                autocomplete="off" oninput="check_parse(this,'string')">
-              <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
+
+
+
+            <!-- account_no  -->
+            <div class="filter_div_sub" id="f1_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f1_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">المعرف</div>
+              </div>
+              <div id="f1_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f1_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f1_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
             </div>
 
-            <!-- اسم المورد -->
-            <label for="account_name_input" class="lbl_sm">اسم المورد</label>
-            <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب"
-              autocomplete="off" oninput="check_parse(this,'string')">
-            <input type="hidden" id="account_id_hidden">
+            <!-- accountName_dive  -->
+            <div class="filter_div_sub" id="f2_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f2_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked disabled></span>
+                <div class="checkbox_label">اسم المورد</div>
+              </div>
+              <div id="f2_selectAndInput_div" class="select_and_input_div">
+                <select id="f2_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f2_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
+
+            <!-- credit_limit_dive  -->
+            <div class="filter_div_sub" id="f3_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">الحد الائتمانى</div>
+              </div>
+              <div id="f3_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f3_select" class="dark_select hover"
+                onchange="filter_insideSelect_number_column_with_input(this)">
+                <option value="0" selected>اظهار الكل</option>
+                <option value="1">اكبر من</option>
+                <option value="2">اصغر من</option>
+                <option value="3">تساوى</option>
+                <option value="4">صفر</option>
+                <option value="5">ليس صفر</option>
+                </select>
+                <input id="f3_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
+              </div>
+            </div>
 
 
-            <!-- الحد الائتمانى -->
-            <label for="credit_limit" class="lbl_sm">الحد الائتمانى</label>
-            <input type="search" id="credit_limit" class="input_text_sm hover" placeholder="اختياري"
-              autocomplete="off" oninput="check_parse(this,'number')">
+            <!-- email  -->
+            <div class="filter_div_sub" id="f4_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f4_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">البريد الالكترونى</div>
+              </div>
+              <div id="f4_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f4_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f4_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
 
-            <!-- البريد الالكترونى -->
-            <label for="email_input" class="lbl_sm">البريد الالكترونى</label>
-            <input type="search" id="email_input" class="input_text_md hover" placeholder="اختياري"
-              autocomplete="off" oninput="check_parse(this,'string')">
-
-            <!-- رقم التسجيل الضريبيى -->
-            <label for="tasgel_darepy_input" class="lbl_sm">رقم التسجيل الضريبيى</label>
-            <input type="search" id="tasgel_darepy_input" class="input_text_md hover" placeholder="اختياري"
-              autocomplete="off" oninput="check_parse(this,'string')">
-
-            <!-- بيانات قانونية اخرى -->
-            <label for="legal_info_input" class="lbl_sm">بيانات قانونية اخرى</label>
-            <textarea name="" id="legal_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
-              style="margin-block-end: 1rem;"></textarea>
 
 
-            <!-- بيانات التواصل الاخرى -->
-            <label for="contact_info_input" class="lbl_sm">بيانات التواصل الاخرى</label>
-            <textarea name="" id="contact_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')"  placeholder="اختياري"
-              style="margin-block-end: 1rem;"></textarea>
+            <!-- tasgel_darepy  -->
+            <div class="filter_div_sub" id="f5_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f5_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">رقم التسجيل الضريبى</div>
+              </div>
+              <div id="f5_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f5_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f5_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
 
-            <!-- بيانات التواصل الاخرى -->
-            <label for="banking_info_input" class="lbl_sm">بيانات بنكية</label>
-            <textarea name="" id="banking_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
-              style="margin-block-end: 1rem;"></textarea>
+            <!-- legal_info  -->
+            <div class="filter_div_sub" id="f6_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f6_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">البيانات القانونية</div>
+              </div>
+              <div id="f6_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f6_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f6_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
 
-            <label for="delivery_adress_input" class="lbl_sm">العنواين</label>
-            <textarea name="" id="delivery_adress_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
-              style="margin-block-end: 1rem;"></textarea>
+            
 
-            <!-- <div id="checked_div" class="column x_start y_start" style="display: none">
-              <label for="note_textarea" class="lbl_sm">الحالة</label>
-              <input id="checked_input" type="checkbox">
-            </div> -->
+            <!-- contact_info  -->
+            <div class="filter_div_sub" id="f7_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f7_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">بيانات التواصل</div>
+              </div>
+              <div id="f7_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f7_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f7_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
+
+           
+
+            <!-- delivery_adress  -->
+            <div class="filter_div_sub" id="f8_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f8_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">عنوان الاستلام</div>
+              </div>
+              <div id="f8_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f8_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f8_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
+
+            <!-- banking_info  -->
+            <div class="filter_div_sub" id="f9_div">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f9_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">البيانات البنكية</div>
+              </div>
+              <div id="f9_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f9_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f9_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
+
+           
+            
+            <!-- balance  -->
+            <div id="f10_div" class="filter_div_sub">
+              <div class="flex_row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f10_checkbox" checked
+                    title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">الرصيد</div>
+              </div>
+              <div id="f10_selectAndInput_div" class="select_and_input_div">
+                <select id="f10_select" class="dark_select hover"
+                  onchange="filter_insideSelect_number_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">اكبر من</option>
+                  <option value="2">اصغر من</option>
+                  <option value="3">تساوى</option>
+                  <option value="4">صفر</option>
+                  <option value="5">ليس صفر</option>
+                </select>
+                <input id="f10_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
+              </div>
+            </div>
+
 
             <div class="btn_container_top_border">
-              <button id="save_btn" class="btn_save">حفظ</button>
-              <button id="update_btn" class="btn_update">تعديل</button>
-              <button id="btn_cancel" class="btn_cancel">حذف</button>
+              <button id="btn_do" class="btn_do">تطبيق</button>
             </div>
-          </div> <!-- end new vendor div-->
 
-
-
-        </div> <!-- end content space -->
+          </div>
+          <div id="tableContainer" class="tableContainer"></div>
+        </div>
       </div>
     </div>
-
+  </div>
 
   </div> <!-- end body content -->
-
   <!-- scripts------------------------------------------------------------------------------ -->
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>

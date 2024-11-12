@@ -1,7 +1,5 @@
 setActiveSidebar('hr_ar');
-
-
-pagePermission('employees_permission','add');
+pagePermission('update', 'employees_permission');
 
 // let Authentication = true;
 let employees_update_data = getURLData('data','employees_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الموظفين')
@@ -53,16 +51,18 @@ const h2_header = document.querySelector(`#h2_header`)
 
 async function loadDeapartmentsOptions(){
 
-  const data = await fetchData_postAndGet(
+  const data = await new_fetchData_postAndGet(
     '/get_All_human_resources_department_Data',
     {},
     'employees_permission','update',
     15,
-    false,'',
-    false,
+    false,"",
+    true,
     true,content_space,
-    false,'',
-    'حدث خطأ اثناء معالجة البيانات'
+    false,false,false,
+    false,"",
+    false,"",
+    "حدث خطأ اثناء معالجة البيانات"
   )
 
   const optionsArray = []
@@ -105,13 +105,9 @@ function show_data() {
       other_info_input.value = employees_update_data.another_info
       employee_start_date_input.value = employees_update_data.start_date
       employee_leave_date_input.value = employees_update_data.end_date
-
-
-      console.log(employees_update_data.department_id);
-      
       select_department.value = employees_update_data.department_id
+      inactive_select.value = employees_update_data.is_inactive 
       
-      inactive_select.value = +employees_update_data.is_inactive == 1 ? 1 :0 
       active_color(inactive_select)
       
     } catch (error) {

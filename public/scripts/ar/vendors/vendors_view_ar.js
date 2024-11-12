@@ -1,229 +1,595 @@
+setActiveSidebar("vendors_view_ar");
+pagePermission("view", "vendors_permission");
 
-setActiveSidebar('vendors_view_ar');
-//check permissions
-pagePermission('vendors_permission','view');
+const h2_text_div = document.querySelector(`#h2_text_div`);
+const sub_h2_header = document.querySelector(`#sub_h2_header`);
+let is_filter = false;
+const back_href = document.querySelector(`#back_href`);
+
+let startDate = firstDayOfYear;
+let endDate = lastDayOfYear;
+let is_recieved_params_from_effects_update = false;
+let is_recieved_params_from_department_view = false;
+
+const tableContainer = document.querySelector("#tableContainer");
+const searchBtn = document.querySelector("#searchBtn");
+const searchInput = document.querySelector("#searchInput");
+
+//! account no
+let f1_div = filter_div.querySelector(`#f1_div`);
+let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
+let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
+let f1_select = filter_div.querySelector(`#f1_select`);
+let f1_input = filter_div.querySelector(`#f1_input`);
+
+//! account name
+let f2_div = filter_div.querySelector(`#f2_div`);
+let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_input = filter_div.querySelector(`#f2_input`);
+
+//! credit limit
+let f3_div = filter_div.querySelector(`#f3_div`);
+let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
+let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
+let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_input = filter_div.querySelector(`#f3_input`);
+
+//! email
+let f4_div = filter_div.querySelector(`#f4_div`);
+let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
+let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
+let f4_select = filter_div.querySelector(`#f4_select`);
+let f4_input = filter_div.querySelector(`#f4_input`);
+
+//! tasgel darepy
+let f5_div = filter_div.querySelector(`#f5_div`);
+let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
+let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
+let f5_select = filter_div.querySelector(`#f5_select`);
+let f5_input = filter_div.querySelector(`#f5_input`);
+
+//! legal_info
+let f6_div = filter_div.querySelector(`#f6_div`);
+let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
+let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
+let f6_select = filter_div.querySelector(`#f6_select`);
+let f6_input = filter_div.querySelector(`#f6_input`);
+
+//! contact_info
+let f7_div = filter_div.querySelector(`#f7_div`);
+let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
+let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
+let f7_select = filter_div.querySelector(`#f7_select`);
+let f7_input = filter_div.querySelector(`#f7_input`);
 
 
-const btn_new = document.querySelector(`#btn_new`);
-const table_div = document.querySelector(`#table_div`);
-const new_vendor_div = document.querySelector(`#new_vendor_div`);
-const back_icon_to_home = document.querySelector(`#back_icon_to_home`);
-const back_icon_to_table_view = document.querySelector(`#back_icon_to_table_view`);
-const page_adress_h2 = document.querySelector(`#page_adress_h2`);
-const save_btn = document.querySelector(`#save_btn`);
-const update_btn = document.querySelector(`#update_btn`);
-const btn_cancel = document.querySelector(`#btn_cancel`);
-const account_no_input = document.querySelector(`#account_no_input`);
-const account_name_input = document.querySelector(`#account_name_input`);
-const credit_limit = document.querySelector(`#credit_limit`);
-const email_input = document.querySelector(`#email_input`);
-const tasgel_darepy_input = document.querySelector(`#tasgel_darepy_input`);
-const legal_info_input = document.querySelector(`#legal_info_input`);
-const contact_info_input = document.querySelector(`#contact_info_input`);
-const banking_info_input = document.querySelector(`#banking_info_input`);
-const delivery_adress_input = document.querySelector(`#delivery_adress_input`);
-const account_id_hidden = document.querySelector(`#account_id_hidden`);
+//! delivery_adress
+let f8_div = filter_div.querySelector(`#f8_div`);
+let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
+let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
+let f8_select = filter_div.querySelector(`#f8_select`);
+let f8_input = filter_div.querySelector(`#f8_input`);
 
 
-// إعلان المتغير على مستوى الـ script  
-const tableContainer = document.getElementById('tableContainer');
-const searchBtn = document.getElementById('searchBtn');
-const searchInput = document.getElementById('searchInput');
+//! banking_info
+let f9_div = filter_div.querySelector(`#f9_div`);
+let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
+let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
+let f9_select = filter_div.querySelector(`#f9_select`);
+let f9_input = filter_div.querySelector(`#f9_input`);
 
 
+//! balance
+let f10_div = filter_div.querySelector(`#f10_div`);
+let f10_checkbox = filter_div.querySelector(`#f10_checkbox`);
+let f10_selectAndInput_div = filter_div.querySelector(`#f10_selectAndInput_div`);
+let f10_select = filter_div.querySelector(`#f10_select`);
+let f10_input = filter_div.querySelector(`#f10_input`);
 
-//#region  ( baynat el vendors mn el database )
-// get data from db and store it in array1
-let data = [];
-let array1 = [];
-let slice_Array1 = [];
 
+const btn_do = filter_div.querySelector(`#btn_do`);
 
-async function getvendorsData_fn() {
-    const response = await fetch('/get_All_vendors_Data');
-     data = await response.json();
+function backUp_filter_div_conditions() {
+    const indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
+    const conditions = {};
 
-    // تحديث array1 بنتيجة الـ slice
-    array1 = data.slice();
-    
+    indices.forEach(index => {
+        // بناء الأسماء تلقائيًا باستخدام template literals
+        conditions[`f${index}_div_display`] = window.getComputedStyle(window[`f${index}_div`]).display;
+        conditions[`f${index}_input_display`] = window.getComputedStyle(window[`f${index}_input`]).display;
+        conditions[`f${index}_selectAndInput_div_isHidden`] = window[`f${index}_selectAndInput_div`].classList.contains('hidden_select_and_input_div');
+        conditions[`f${index}_checkbox`] = window[`f${index}_checkbox`].checked;
+        conditions[`f${index}_select`] = window[`f${index}_select`].value;
+        conditions[`f${index}_input`] = window[`f${index}_input`].value;
+    });
+
+    // الشروط الأخرى
+    Object.assign(conditions, {
+        is_filter: is_filter,
+        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
+        sub_h2_header: sub_h2_header.textContent,
+        back_href: back_href.href,
+        back_title: back_href.title
+    });
+
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    const conditionsArray = JSON.parse(sessionStorage.getItem('vendorsViewArray')) || [];
+
+    // إضافة الكائن الجديد إلى المصفوفة
+    conditionsArray.push(conditions);
+
+    // حفظ المصفوفة المحدثة في sessionStorage
+    sessionStorage.setItem('vendorsViewArray', JSON.stringify(conditionsArray));
 }
 
-async function showFirst50RowAtTheBegening() {
-    await getvendorsData_fn()
-    slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
-}
+back_href.onclick = async function (event) {
+    event.preventDefault();
+   
 
-document.addEventListener("DOMContentLoaded", function () {
-    // استدعاء الدالة عندما تكتمل تحميل الصفحة
-    showFirst50RowAtTheBegening();
-});
+    const array = JSON.parse(sessionStorage.getItem(`vendorsViewArray`)) || [];
 
-async function filleffectstable() {
-    //  @@ هاااااام جدا 
-    // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
-    // el properties hya :
-    // 1 : display: none; > fe 7alt enak ardt e5fa2 el 3amod -- display: ; hatspha fadya fe7alt enak ardt tezhr el 3amod
-    // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
-    // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
-    // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
+    if (!array || array.length <= 1) {
     
-        //* Prepare GLOBAL variables Befor sum functions
-        total_column1.value = 0
-        // إعداد رأس الجدول
-        let tableHTML = `<table id="vendors_table" class="review_table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th style="display: none" >ID</th>
-                                <th>الاسم</th>
-                                <th style="display: none">account_no</th>
-                                <th style="display: none">credit_limit</th>
-                                <th style="display: none">email</th>
-                                <th style="display: none">tasgel_darepy</th>
-                                <th style="display: none">legal_info</th>
-                                <th style="display: none">delivery_adress</th>
-                                <th style="display: none">banking_info</th>
-                                <th style="width: auto">الرصيد</th>
-                            </tr>
-                            </thead>
-                            <tbody>`;
+   
+            window.location.href = `notes_ar`;
+       
+    }else{
 
-        // إضافة صفوف الجدول بناءً على البيانات
-        // slice_Array1 = ""; // تفريغ المصفوفه
-        slice_Array1.forEach(row => {
-            tableHTML += `<tr>
-                            <td> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
-                            <td style="display: none">${row.id}</td>
-                            <td style="width: 100%;">${row.account_name}</td>
-                            <td style="display: none">${row.account_no}</td>
-                            <td style="display: none">${row.credit_limit}</td>
-                            <td style="display: none">${row.email}</td>
-                            <td style="display: none">${row.tasgel_darepy}</td>
-                            <td style="display: none">${row.legal_info}</td>
-                            <td style="display: none">${row.contact_info}</td>
-                            <td style="display: none">${row.delivery_adress}</td>
-                            <td style="display: none">${row.banking_info}</td>
-                            <td style="width: auto;" class="table_number">${total_column(total_column1,row.balance)}</td>
-                          </tr>`;
+        restore_filter_div_conditions(2)
+        await getData_fn();
+
+    }
+};
+
+function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
+    let conditions;
+
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    let conditionsArray = JSON.parse(sessionStorage.getItem("vendorsViewArray")) || [];
+    
+
+    // التحقق إذا كانت المصفوفة تحتوي على عناصر
+    if (conditionsArray.length > 0) {
+        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
+        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
+
+        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
+        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
+            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
+            sessionStorage.setItem("vendorsViewArray", JSON.stringify(conditionsArray));
+        }
+    } else {
+        return;
+    }
+
+    if (conditions) {
+        const indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // الأرقام التي تريد استرجاعها
+
+        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
+        indices.forEach(index => {
+            window[`f${index}_div`].style.display = conditions[`f${index}_div_display`];
+            window[`f${index}_input`].style.display = conditions[`f${index}_input_display`];
+            window[`f${index}_checkbox`].checked = conditions[`f${index}_checkbox`];
+            if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
+                window[`f${index}_selectAndInput_div`].classList.add('hidden_select_and_input_div');
+            } else {
+                window[`f${index}_selectAndInput_div`].classList.remove('hidden_select_and_input_div');
+            }
+            window[`f${index}_select`].value = conditions[`f${index}_select`];
+            window[`f${index}_input`].value = conditions[`f${index}_input`];
         });
 
-        tableHTML += `</tbody>
-        <tfoot>
-            <tr class="table_totals_row";>
-            <td id="tfooter1" ></td>
-            <td id="tfooter2" style="display: none" ></td>
-            <td id="tfooter3"></td>
-            <td id="tfooter4" style="display: none;"></td>
-            <td id="tfooter5" style="display: none;"></td>
-            <td id="tfooter6" style="display: none;"></td>
-            <td id="tfooter7" style="display: none;"></td>
-            <td id="tfooter8" style="display: none;"></td>
-            <td id="tfooter9" style="display: none;"></td>
-            <td id="tfooter10" style="display: none;"></td>
-            <td id="tfooter11" style="display: none;"></td>
-            <td id="tfooter12" style="width: auto;"></td>
-            </tr>
-                        <tr id="table_fotter_buttons_row">
-                            <td colspan="12">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
-                                <div class='flex_H'>
-                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
-                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tfoot>`;
+        // استرجاع الشروط الأخرى
+        sub_h2_header.textContent = conditions.sub_h2_header;
+        is_filter = conditions.is_filter;
+        if (conditions.is_filter_div_hidden) {
+            hidden_filter_div();
+        } else {
+            show_filter_div();
+        }
 
-        // إغلاق الجدول
-        tableHTML += '</table>';
+        back_href.title = conditions.back_title;
+        back_href.href = conditions.back_href;
+    }
+}
+
+
+filter_icon.onclick = () => {
+    try {
+        show_filter_div();
+    } catch (error) {
+        catch_error;
+    }
+};
+
+
+function call_default_checkbox(str_f, is_showDiv, is_checkBox) {
+    // Check if the elements exist to avoid errors
+    const divElement = window[`${str_f}_div`];
+    const checkbox = window[`${str_f}_checkbox`];
+    const selectElement = window[`${str_f}_select`];
+    const inputElement = window[`${str_f}_input`];
+    const selectAndInputDiv = window[`${str_f}_selectAndInput_div`];
+
+    
+    if (divElement) {
+        divElement.style.display = is_showDiv ? 'flex' : 'none';
+    }
+    
+    if (selectElement) {
+        selectElement.value = 0;
+    }
+
+    if (inputElement) {
+        inputElement.value = '';
+        inputElement.style.display = 'none';
+    }
+
+    if (selectAndInputDiv) {
+        if (is_checkBox) {
+            selectAndInputDiv.classList.remove('hidden_select_and_input_div');
+            checkbox.checked = true
+        } else {
+            selectAndInputDiv.classList.add('hidden_select_and_input_div');
+            checkbox.checked = false
+        }
+    }
+}
+
+
+function deafult_checkbox() {
+    call_default_checkbox('f1',true,false)
+    call_default_checkbox('f2',true,true)
+    call_default_checkbox('f3',true,false)
+    call_default_checkbox('f4',true,false)
+    call_default_checkbox('f5',true,false)
+    call_default_checkbox('f6',true,false)
+    call_default_checkbox('f7',true,false)
+    call_default_checkbox('f8',true,false)
+    call_default_checkbox('f9',true,false)
+    call_default_checkbox('f10',true,true)
+}
+
+async function filter_icon_cancel_fn() {
+    try {
+
+        if(is_filter){
+
+            await showDialog("","هل تريد الغاء التصفية والرجوع الى الحالة الافتراضية ؟","");
+            if (!dialogAnswer) {
+                return;
+            }
+    
+            deafult_checkbox();
+            
+            showFirst50RowAtTheBegening()
+            closeDialog();
+            sessionStorage.removeItem('vendorsViewArray');
+            conditionsArray = []
+            
+        }
+
+        hidden_filter_div();
+        is_filter = false;
+    } catch (error) {
+        closeDialog();
+        catch_error;
+    }
+}
+
+filter_icon_cancel.onclick = async () => {
+    await filter_icon_cancel_fn();
+};
+
+
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
+
+async function getData_fn() {
+    try {
+
+        data = await new_fetchData_postAndGet(
+            '/get_All_vendors_Data',
+            {},
+            'vendors_permission','view',
+            15,
+            false,"",
+            true,
+            true,content_space,
+            false,false,false,
+            false,false,
+            false,false,
+            "حدث خطأ اثناء معالجه البيانات"
+        )
+
+
+        showFirst50RowAtTheBegening();
+    } catch (error) {
+      catch_error(error)
+    }
+}
+
+
+
+
+async function Execution() {
+    try {
+        showLoadingIcon(content_space);
+        is_filter = true
+        searchInput.value = "";
+        showFirst50RowAtTheBegening();
+
+        backUp_filter_div_conditions();
+        hideLoadingIcon(content_space);
+
+    } catch (error) {
+        hideLoadingIcon(content_space);
+        catch_error(error);
+    }
+}
+
+const inside_input_search_array = filter_div.querySelectorAll(`[name="inside_input_search"]`);
+
+for (const input of inside_input_search_array) {
+    try {
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                Execution();
+            }
+        });
+    } catch (error) {
+        catch_error(error);
+    }
+}
+
+btn_do.onclick = async () => {
+    await Execution();
+};
+
+
+
+
+function fillTable() {
+    try {
+        //  @@ هاااااام جدا
+        // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
+        // el properties hya :
+        // 1 : display: none; > fe 7alt enak ardt e5fa2 el 3amod -- display: ; hatspha fadya fe7alt enak ardt tezhr el 3amod
+        // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
+        // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
+        // 4 : text-align: center / start / end / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
+
+        page_content.style.display = "none";
+        showLoadingIcon(content_space);
+
+        let style_button = `width: auto; white-space: nowrap; text-align: center;`;
+        let style_id = `display: none;`;
+        let account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        let account_name = `display: table-cell ; width: 100%; white-space: nowrap; text-align: start;`;
+        let credit_limit = `display:${f3_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let email = `display:${f4_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let tasgel_darepy = `display:${f5_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        let legal_info = `display:${f6_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let contact_info = `display:${f7_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let delivery_adress = `display:${f8_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let banking_info = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        let balance = `display:${f10_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+
+
+        total_column1.value = 0;
+        let fn = `onclick = "table_update_btn_fn(this)"`;
+
+        // إعداد رأس الجدول
+        // هنا بناء الجدول بدون صف الأزرار
+        let tableHTML = `<table id="review_table" class="review_table">
+                        <thead>
+                            <tr>
+                                <th style="${style_button}"></th>
+                                <th style="${style_id}">ID</th>
+                                <th style="${account_no}">#</th>
+                                <th style="${account_name}">الاسم</th>
+                                <th style="${credit_limit}">حد الائتمان</th>
+                                <th style="${email}">البريد الالكتورةنى</th>
+                                <th style="${tasgel_darepy}">رقم التسجيل الضريبى</th>
+                                <th style="${legal_info}">بيانات قانونية</th>
+                                <th style="${contact_info}">بيانات التواصل</th>
+                                <th style="${delivery_adress}">عنوان التسليم</th>
+                                <th style="${banking_info}">بيانات بنكية</th>
+                                <th style="${balance}">الرصيد</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+        slice_array1.forEach((row) => {
+                
+
+            tableHTML +=
+                     `<tr>
+                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                        <td style="${style_id}">${row.id}</td>
+                        <td style="${account_no}">${row.account_no}</td>
+                        <td style="${account_name}">${row.account_name}</td>
+                        <td style="${credit_limit}">${row.credit_limit}</td>
+                        <td style="${email}">${row.email}</td>
+                        <td style="${tasgel_darepy}">${row.tasgel_darepy}</td>
+                        <td style="${legal_info}">${row.legal_info}</td>
+                        <td style="${contact_info}">${row.contact_info}</td>
+                        <td style="${delivery_adress}">${row.delivery_adress}</td>
+                        <td style="${banking_info}">${row.banking_info}</td>
+                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn)}                        
+                      </tr>`;
+        });
+
+        tableHTML += `
+                    <tr class="table_totals_row">
+                        <td id="footer_style_button" style="${style_button}"></td>
+                        <td id="footer_style_id" style="${style_id}"></td>
+                        <td id="footer_style_account_no" style="${account_no}"></td>
+                        <td id="footer_style_account_name" style="${account_name}"></td>
+                        <td id="footer_style_credit_limit" style="${credit_limit}"></td>
+                        <td id="footer_style_email" style="${email}"></td>
+                        <td id="footer_style_tasgel_darepy" style="${tasgel_darepy}"></td>
+                        <td id="footer_style_legal_info" style="${legal_info}"></td>
+                        <td id="footer_style_contact_info" style="${contact_info}"></td>
+                        <td id="footer_style_delivery_adress" style="${delivery_adress}"></td>
+                        <td id="footer_style_banking_info" style="${banking_info}"></td>
+                        <td id="footer_style_balance" style="${balance}"></td>
+                    </tr>
+                </tbody>
+            </table>`;
+
+        // هنا إضافة صف الأزرار بعد إغلاق الجدول
+        tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row_div">
+                    <div id="table_footer_showRows_div" class='flex_H'>
+                        <button class="table_footer_show_data" id="" onclick="ShowAllDataInTable()">الكل</button>
+                        <button class="table_footer_show_data" id="" onclick="showFirst50RowInTable()">50</button>
+                    </div>    
+                    <div id="table_footer_showRows_div" class='flex_H'>
+                        <button class="table_footer_show_data" id="copy" onclick="copyTableToClipboard(this,'review_table')">نسخ الى الحافظة</button>
+                    </div>
+                 </div>`;
 
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
-          //  عمليات صف الاجمالى 
-          // جمع القيم في العمود رقم 6
-          
+        setupColumnSorting("review_table");
+        hideLoadingIcon(content_space);
+        page_content.style.display = "flex";
+        //  عمليات صف الاجمالى
+        // جمع القيم في العمود رقم 6
 
-// document.getElementById("tFooter6").textContent = totalColumn_Valuu;
-document.getElementById("tfooter1").textContent = slice_Array1.length; //  عدد الصفوف
-document.getElementById("tfooter12").textContent = floatToString(false,total_column1.value);
+        // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
+        tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-if (array1.length > 0 && array1.length <= 50) {
-    document.querySelector('#table_fotter_buttons_row').style.display = "none";
-} else if (array1.length < 1) {
-    document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='12' class="td_no_result">لا نتائج</td>`;
-};
+        tableContainer.querySelector(`#footer_style_balance`).textContent = floatToString(true,total_column1.value);
 
-
-};
+        if (array1.length > 0 && array1.length <= 50) {
+            document.querySelector("#table_footer_showRows_div").style.display ="none";
+        }
 
 
-// search in effectsTable
+    } catch (error) {
+        hideLoadingIcon(content_space);
+        catch_error(error);
+    }
+}
+
+
+function showFirst50RowAtTheBegening() {
+    try {
+        page_content.style.display = "none";
+        
+        filteredData_Array = data.filter((row) => {
+
+            const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"account_no",row);
+            const f2_match = filterData_string_column_with_showAndHiddenCheckbox(f2_checkbox,f2_select,f2_input,"account_name",row);
+            const f3_match = filterData_number_column_with_showAndHiddenCheckbox(f3_checkbox,f3_select,f3_input,"credit_limit",row);
+            const f4_match = filterData_string_column_with_showAndHiddenCheckbox(f4_checkbox,f4_select,f4_input,"email",row);
+            const f5_match = filterData_string_column_with_showAndHiddenCheckbox(f5_checkbox,f5_select,f5_input,"tasgel_darepy",row);
+            const f6_match = filterData_string_column_with_showAndHiddenCheckbox(f6_checkbox,f6_select,f6_input,"legal_info",row);
+            const f7_match = filterData_string_column_with_showAndHiddenCheckbox(f7_checkbox,f7_select,f7_input,"contact_info",row);
+            const f8_match = filterData_string_column_with_showAndHiddenCheckbox(f8_checkbox,f8_select,f8_input,"delivery_adress",row);
+            const f9_match = filterData_string_column_with_showAndHiddenCheckbox(f9_checkbox,f9_select,f9_input,"banking_info",row);
+            const f10_match = filterData_number_column_with_showAndHiddenCheckbox(f10_checkbox,f10_select,f10_input,"balance",row);
+
+
+            return (
+                f1_match &&
+                f2_match &&
+                f3_match &&
+                f4_match &&
+                f5_match &&
+                f6_match &&
+                f7_match &&
+                f8_match &&
+                f9_match &&
+                f10_match
+            ); // && otherCondition;
+        });
+
+
+        array1 = filteredData_Array.slice();
+
+        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+        fillTable();
+
+    } catch (error) {
+        catch_error(error);
+    }
+}
+
 function performSearch() {
-    // الحصول على قيمة البحث
-    const searchValue = searchInput.value.trim().toLowerCase();
+    try {
+        // الحصول على قيمة البحث
+        const searchValue = searchInput.value.trim().toLowerCase();
 
-    // فلترة البيانات بناءً على قيمة البحث
-    array1 = data.filter(row => {
-        // التحقق من أن employee.id و employee.name ليستان فارغتين
-        // const idMatch = row.id && row.id.toString().toLowerCase().includes(searchValue);
-        const nameMatch = row.account_name && row.account_name.toString().toLowerCase().includes(searchValue);
-        return nameMatch // || nameMatch;
-    });
+        // فلترة البيانات بناءً على قيمة البحث
 
-    slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
+        array1 = filteredData_Array.filter((row) => {
+            const f1Match = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
+            const f2Match = performSearch_Row(f2_checkbox,"account_name",searchValue,row);
+            const f3Match = performSearch_Row(f3_checkbox,"credit_limit",searchValue,row);
+            const f4Match = performSearch_Row(f4_checkbox,"email",searchValue,row);
+            const f5Match = performSearch_Row(f5_checkbox,"tasgel_darepy",searchValue,row);
+            const f6Match = performSearch_Row(f6_checkbox,"legal_info",searchValue,row);
+            const f7Match = performSearch_Row(f7_checkbox,"contact_info",searchValue,row);
+            const f8Match = performSearch_Row(f8_checkbox,"delivery_adress",searchValue,row);
+            const f9Match = performSearch_Row(f9_checkbox,"banking_info",searchValue,row);
+            const f10Match = performSearch_Row(f10_checkbox,"balance",searchValue,row);
+
+            // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
+            return (
+                f1Match ||
+                f2Match ||
+                f3Match ||
+                f4Match ||
+                f5Match ||
+                f6Match ||
+                f7Match ||
+                f8Match ||
+                f9Match ||
+                f10Match
+            );
+        });
+
+        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+        fillTable();
+    } catch (error) {
+        catch_error;
+    }
 }
 
-async function ShowAllDataIneffectsTable(){
-    showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
-    slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
+function ShowAllDataInTable() {
+    showAlert(
+        "info",
+        "ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات"
+    );
+    slice_array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+    fillTable();
 }
 
-async function showFirst50RowIneffectsTable(){
-    slice_Array1 = array1.slice(0,50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
+function showFirst50RowInTable() {
+    slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+    fillTable();
 }
-
 
 // عند الضغط على زر البحث
-searchBtn.addEventListener('click',  performSearch);
+searchBtn.addEventListener("click", performSearch);
 
 // حدث عن الضغط على زر المسح الخاص ب الانبوت سيرش الى بيظهر لما بنكتب بيانات
-searchInput.addEventListener('search', function () {
+searchInput.addEventListener("search", function () {
     performSearch();
 });
 
 // عند الضغط على زرار انتر وانت واقف فى مربع البحث
-searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
+searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
         performSearch();
-    };
+    }
 });
-
-
-btn_new.onclick = function (){
-    page_adress_h2.textContent = 'مورد جديد'
-    update_btn.style.display = 'none'
-    btn_cancel.style.display = 'none'
-    table_div.style.display = 'none'
-    new_vendor_div.style.display = 'flex'
-    back_icon_to_table_view.style.display = 'flex'
-    back_icon_to_home.style.display = 'none'
-}
-
-back_icon_to_table_view.onclick = function (){
-    try {
-    page_adress_h2.textContent = 'الموردين'
-    table_div.style.display = 'flex'
-    new_vendor_div.style.display = 'none'
-    back_icon_to_table_view.style.display = 'none'
-    back_icon_to_home.style.display = 'flex'
-    clear_inputs();
-} catch (error) {
-    catch_error(error)
-}
-}
 
 async function table_update_btn_fn(updateBtn) {
     try {
@@ -233,28 +599,24 @@ async function table_update_btn_fn(updateBtn) {
         return;
     };
 
-    clear_inputs();
+    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row  = updateBtn.closest("tr")
-
-    account_id_hidden.value = row.cells[1].textContent;
-    account_name_input.value = row.cells[2].textContent;
-    account_no_input.value = row.cells[3].textContent;
-    credit_limit.value = row.cells[4].textContent;
-    email_input.value = row.cells[5].textContent;
-    tasgel_darepy_input.value = row.cells[6].textContent;
-    legal_info_input.value = row.cells[7].textContent;
-    contact_info_input.value = row.cells[8].textContent;
-    delivery_adress_input.value = row.cells[9].textContent;
-    banking_info_input.value = row.cells[10].textContent;
     
-    page_adress_h2.textContent = `تعديل : ${account_name_input.value}`
-    save_btn.style.display = 'none'
-    update_btn.style.display = 'flex'
-    btn_cancel.style.display = 'flex'
-    table_div.style.display = 'none'
-    new_vendor_div.style.display = 'flex'
-    back_icon_to_table_view.style.display = 'flex'
-    back_icon_to_home.style.display = 'none'
+    const obj_vendors_view = {
+    x: row.cells[1].textContent,
+    account_no_input: row.cells[2].textContent,
+    account_name_input: row.cells[3].textContent,
+    credit_limit: row.cells[4].textContent,
+    email_input: row.cells[5].textContent,
+    tasgel_darepy_input: row.cells[6].textContent,
+    legal_info_input: row.cells[7].textContent,
+    contact_info_input: row.cells[8].textContent,
+    delivery_adress_input:  row.cells[9].textContent,
+    banking_info_input: row.cells[10].textContent
+}
+
+    sessionStorage.setItem('obj_vendors_view', JSON.stringify(obj_vendors_view));                            
+    window.location.href = `vendors_update_ar`;
 } catch (error) {
     catch_error(error)
 }
@@ -262,170 +624,59 @@ async function table_update_btn_fn(updateBtn) {
 
 
 
-
-//#region 
-save_btn.onclick = async function (){
-try {
-
-    const acc_no_div_value = account_no_input.value.trim();
-    const account_name_input_value = account_name_input.value.trim();
-    const credit_limit_value = parseFloat(credit_limit.value);
-    const email_input_value = email_input.value.trim();
-    const tasgel_darepy_input_value = tasgel_darepy_input.value.trim();
-    const legal_info_input_value = legal_info_input.value.trim();
-    const contact_info_input_value = contact_info_input.value.trim();
-    const banking_info_input_value = banking_info_input.value.trim();
-    const delivery_adress_input_value = delivery_adress_input.value.trim();
-
-
-    if (!account_name_input_value) {
-        showAlert('warning','برجاء ادخال اسم المورد');
-        return
-    }
-
-    const post =  await fetchData_postAndGet(
-        "/addNewVendor",
-        {acc_no_div_value,
-            account_name_input_value,
-            credit_limit_value,
-            email_input_value,
-            tasgel_darepy_input_value,
-            legal_info_input_value,
-            contact_info_input_value,
-            banking_info_input_value,
-            delivery_adress_input_value
-        },
-        'vendors_permission','add',
-        15,
-        true,'هل تريد حفظ البيانات ؟',
-        true,
-        false,'',
-        false,'',
-        'حدث خطأ اثناء معالجة البيانات'
-    )
-
-    if (post) {
-        clear_inputs()    
-    }
-    
-
-} catch (error) {
-    catch_error(error)
-}
-}
-
-
-update_btn.onclick = async function () {
+function CheckUrlParams_vendors_update_ar() {
     try {
+        const urlData = getURLData(
+            "data",
+            "transaction_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
+        );
 
         
-        const account_id_hidden_value = account_id_hidden.value;
-        const acc_no_div_value = account_no_input.value.trim();
-        const account_name_input_value = account_name_input.value.trim();
-        const credit_limit_value = parseFloat(credit_limit.value);
-        const email_input_value = email_input.value.trim();
-        const tasgel_darepy_input_value = tasgel_darepy_input.value.trim();
-        const legal_info_input_value = legal_info_input.value.trim();
-        const contact_info_input_value = contact_info_input.value.trim();
-        const banking_info_input_value = banking_info_input.value.trim();
-        const delivery_adress_input_value = delivery_adress_input.value.trim();
-    
-        if (!account_id_hidden_value) {
-            redirection('vendors_view_ar','fail','حدث خطأ اثناء معالجة البيانات : سيم توجيهك لصفحة الموردين')
-            return;
-        }
-        
-        if (!account_name_input_value) {
-            showAlert('warning','برجاء ادخال اسم الموردين');
-            return;
+        if (!urlData || urlData.pageName !== "vendors_update_ar") {
+            return true;
         }
 
-        const post =  await fetchData_postAndGet(
-            "/updateVendor",   
-            {   
-                account_id_hidden_value,
-                acc_no_div_value,
-                account_name_input_value,
-                credit_limit_value,
-                email_input_value,
-                tasgel_darepy_input_value,
-                legal_info_input_value,
-                contact_info_input_value,
-                banking_info_input_value,
-                delivery_adress_input_value
-            },
-            'vendors_permission','update',
-            15,
-            true,'هل تريد تعديل بيانات المورد ؟',
-            true,
-            false,'',
-            true,'vendors_view_ar',
-            'حدث خطأ اثناء معالجة البيانات'
-        )
     
-        
-    } catch (error) {
-        catch_error(error)
-    }
-}
+        if (urlData !== "noParams") {
 
-btn_cancel.onclick = async function () {
-    try {
-   
-        const account_id_hidden_value = account_id_hidden.value;
+            restore_filter_div_conditions(2)
 
-        if (!account_id_hidden_value) {
-            redirection('vendors_view_ar','fail','حدث خطأ اثناء معالجة البيانات : سيم توجيهك لصفحة الموردين')
-            return;
+            return true;
+        } else if (urlData === "noParams") {
+            return true;
+        } else {
+            return false;
         }
-        
-        const post =  await fetchData_postAndGet(
-            "/delete_vendor",
-            {   
-                account_id_hidden_value
-            },
-            'vendors_permission','delete',
-            15,
-            true,'هل تريد حذف البيانات ؟',
-            true,
-            false,'',
-            true,'vendors_view_ar',
-            'حدث خطأ اثناء معالجة البيانات'
-        )
-    
-        
     } catch (error) {
-        catch_error(error)
+        catch_error(error);
+        return false;
     }
 }
 
 
-function clear_inputs (){
-    try {
-        const inputs = new_vendor_div.querySelectorAll(`input, textarea`)
 
-         for ( const input of inputs){
-            input.value = '';
-         }   
-
-    } catch (error) {
-        catch_error(error)
-    }
-}
-
-//#region new cutsomer
-
-
-
-//#endregion
-
-
-
-//#region showReason of redirection
-//! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
-
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", async function () {
     showRedirectionReason();
-  });
-  
-  //#endregion End - showReason of redirection
+
+    
+    const result2 = CheckUrlParams_vendors_update_ar();
+    if (!result2) {
+        return;
+    }
+
+    await getData_fn();
+    const conditionsArray = sessionStorage.getItem(`vendorsViewArray`);
+
+    if (!conditionsArray){
+     
+        backUp_filter_div_conditions();
+    }
+
+});
+
+window.addEventListener("beforeprint", function () {
+    beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني
+});
+
+/*--------------------------------------------------------------------------------*/

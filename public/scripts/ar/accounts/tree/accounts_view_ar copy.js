@@ -160,7 +160,6 @@ async function fetchTreeData() {
                             'action': async function () {
 
 
-
                                 if (node.data.is_final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
                                     showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الحساب المحدد`)
                                     return;
@@ -193,7 +192,6 @@ async function fetchTreeData() {
                                 tree_add_account.style.display = 'none';
                                 tree_group_div.style.display = 'flex'
                                 dialogOverlay_input.style.display = 'flex';
-
 
                                 //---------------------------------------------
                             }

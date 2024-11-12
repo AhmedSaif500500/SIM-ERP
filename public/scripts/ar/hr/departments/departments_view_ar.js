@@ -1,6 +1,6 @@
 
 setActiveSidebar('hr_ar');
-pagePermission('departments_permission','view');
+pagePermission('view', 'departments_permission');
 
 
 

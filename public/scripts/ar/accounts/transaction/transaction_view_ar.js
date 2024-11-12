@@ -1,5 +1,5 @@
-setActiveSidebar("hr_ar");
-pagePermission("transaction_permission", "view");
+setActiveSidebar("transaction_view_ar");
+pagePermission("view", "transaction_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);

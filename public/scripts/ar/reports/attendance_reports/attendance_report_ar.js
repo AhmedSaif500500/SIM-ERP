@@ -1,6 +1,6 @@
 
-setActiveSidebar('hr_ar');
-pagePermission('effects_permission','view');
+// setActiveSidebar('hr_ar');
+// pagePermission('effects_permission','view');
 
 
 const h2_text_div = document.querySelector(`#h2_text_div`);

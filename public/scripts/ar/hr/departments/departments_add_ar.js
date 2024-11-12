@@ -1,7 +1,7 @@
 
 setActiveSidebar('hr_ar');
 //check permissions
-pagePermission('departments_permission','add');
+pagePermission('add', 'departments_permission');
 
 
 const department_name_input = document.querySelector(`#department_name_input`)
