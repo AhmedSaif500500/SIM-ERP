@@ -37,7 +37,7 @@
             <i class="fa-solid fa-arrow-right back_icon"></i>
           </a>
           <div class="h2_main_text_div">
-            <span id="h2_text_div" class="h2_text_div">الموظفين / تعديل</span>
+            <span id="h2_text_div" class="h2_text_div">الموظفين</span>
             <span id="sub_h2_header" class="sub_h2_header"></span>
           </div>
         </h2>
@@ -92,6 +92,15 @@
           <input type="search" id="employee_leave_date_input" class="hover input_date datepicker"
             placeholder="التاريخ..." readonly autocomplete="off">
           <i class="fa-regular fa-calendar left_icon"></i>
+        </div>
+
+        <div class="column x_start y_start w_fit">
+          <label for="reference_input" class="lbl_sm">تفعيل كبائع ؟</label>
+          <div class="input_with_icon_div">
+            <span class="reference_input_checkbox"><input type="checkbox" id="is_salesman" title="تفعيل هذه الخاصية يسمح باختيار الموظف كبائع  فى فواتير المبيعات"></span>
+            <input type="search" id="reference_input" class="reference_input reference_input_auto_mode hover"
+              oninput="check_parse(this,'number')" placeholder="تفعيل" autocomplete="off">
+          </div>
         </div>
 
 

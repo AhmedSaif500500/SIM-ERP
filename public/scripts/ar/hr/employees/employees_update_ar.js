@@ -1,14 +1,28 @@
 setActiveSidebar('hr_ar');
-pagePermission('update', 'employees_permission');
+pagePermission('update', 'employees_permission','salesman_permissions');
 
-// let Authentication = true;
-let employees_update_data = getURLData('data','employees_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الموظفين')
+
+let isUrlParams_salesman = false
+let urlData = getURLData('data','notes_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الرئيسية')
 
 function CheckUrlParams (){
   try {
-      if (employees_update_data && employees_update_data !== 'noParams'){
+      if (urlData && urlData !== 'noParams'){
+        if (urlData.pageName === "employees_view_ar"){
           return true
-      }else if(employees_update_data && employees_update_data === 'noParams'){
+        }
+        if (urlData.pageName === "salesman_view_ar"){
+          back_href.href = 'salesman_view_ar';  back_href.title = 'البائعين'
+          // is_salesman.checked = true
+          isUrlParams_salesman = true
+          // is_salesman_div.style.pointerEvents = "none";
+          // is_salesman_div.title = "هذه الخاصية لا يمكن تعطيلها عند إنشاء بائع جديد."
+          setActiveSidebar('salesMain_view_ar');
+          showAlert("info","يرجى ملاحظة أن البائعين هم جزء من طاقم الموظفين، إلا أن لديهم ميزة إضافية تمكنهم من القيام بمهام البيع")
+          return true
+        }    
+
+      }else if(urlData && urlData === 'noParams'){
             return true
       }else{
           return false
@@ -21,6 +35,7 @@ function CheckUrlParams (){
 }
 
 
+
 document.addEventListener('DOMContentLoaded', async () =>{
   const result = CheckUrlParams(); if (!result) {return}
   await loadDeapartmentsOptions()
@@ -28,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () =>{
 })
 
 
-const id = employees_update_data.id;
+const id = urlData.id;
 
 
 const h2_text_div = document.querySelector(`#h2_text_div`)
@@ -97,16 +112,17 @@ inactive_select.onchange = function (){
 
 function show_data() {
     try {
-      sub_h2_header.textContent = `${employees_update_data.account_name}`
-      account_no_input.value = employees_update_data.account_no
-      employee_name_input.value = employees_update_data.account_name
-      employee_job_input.value = employees_update_data.job
-      email_input.value = employees_update_data.email
-      other_info_input.value = employees_update_data.another_info
-      employee_start_date_input.value = employees_update_data.start_date
-      employee_leave_date_input.value = employees_update_data.end_date
-      select_department.value = employees_update_data.department_id
-      inactive_select.value = employees_update_data.is_inactive 
+      sub_h2_header.textContent = `  تعديل موظف : ${urlData.account_name}`
+      account_no_input.value = urlData.account_no
+      employee_name_input.value = urlData.account_name
+      employee_job_input.value = urlData.job
+      email_input.value = urlData.email
+      other_info_input.value = urlData.another_info
+      employee_start_date_input.value = urlData.start_date
+      employee_leave_date_input.value = urlData.end_date
+      select_department.value = urlData.department_id
+      is_salesman.checked = urlData.is_salesman  
+      inactive_select.value = urlData.is_inactive
       
       active_color(inactive_select)
       
@@ -125,7 +141,7 @@ btn_update.onclick = async function update_employee_data() {
     };
 
 
-    const id_value = employees_update_data.id;
+    const id_value = urlData.id;
     const employee_name_value = employee_name_input.value.trim();
     const account_no_value = account_no_input.value.trim();
     const employee_job_value = employee_job_input.value.trim();
@@ -134,17 +150,24 @@ btn_update.onclick = async function update_employee_data() {
     const other_info_value = other_info_input.value.trim();
     const employee_start_date_value = employee_start_date_input.value;
     const employee_leave_date_value = employee_leave_date_input.value;
+    const is_salesman_value = is_salesman.checked;
     const inactive_select_value = inactive_select.value;
 
-    const post = await fetchData_postAndGet(
+    
+    const post = await new_fetchData_postAndGet(
       '/update_employee',
-      {id_value,employee_name_value,account_no_value,employee_job_value,select_department_value,email_value,other_info_value,employee_start_date_value,employee_leave_date_value,inactive_select_value},
-      'employees_permission','update',
+      {id_value,employee_name_value,account_no_value,employee_job_value,select_department_value,email_value,other_info_value,employee_start_date_value,employee_leave_date_value,is_salesman_value,inactive_select_value,isUrlParams_salesman},
+      isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','update',
       15,
       true,'هل تريد تعديل بيانات الموظف ؟',
-      false,false,'',
-      true,'employees_view_ar',
+      true,
+      false,"",
+      false,false,false,
+      true,isUrlParams_salesman ? "salesman_view_ar" : "employees_view_ar",
+      false,false,
       'حدث خطأ اثناء معالجة البيانات'
+
+
     )
 
   } catch (error) {
@@ -156,13 +179,13 @@ btn_update.onclick = async function update_employee_data() {
 btn_delete.onclick = async function () {
   try {
 
-    const id_value = employees_update_data.id;
+    const id_value = urlData.id;
 
 
     const deleteData = await fetchData_postAndGet(
       '/delete_employee',
-      {id_value},
-      'employees_permission','delete',
+      {id_value,isUrlParams_salesman},
+      isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','delete',
       15,
       true,'هل تريد حذف بيانات الموظف ؟',
       false,false,'',

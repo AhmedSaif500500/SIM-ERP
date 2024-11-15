@@ -1078,9 +1078,22 @@ input[type="checkbox"]:hover {
   border-block-start: var(--h2_border_bottom);
 }
 
+.btn_container_bottom_border {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  line-height: 3.2rem;
+  padding-block-end: 1.5rem;
+  width: 100%;
+  margin-block-start: 1rem;
+  margin-block-end: 1rem;
+  border-block-end: var(--h2_border_bottom);
+}
+
 @media print {
   .btn_container,
-  .btn_container_top_border {
+  .btn_container_top_border,
+  .btn_container_bottom_border {
     display: none !important;
     border: none !important;
   }
@@ -1089,7 +1102,9 @@ input[type="checkbox"]:hover {
 .btn_container a,
 .btn_container button,
 .btn_container_top_border a,
-.btn_container_top_border button {
+.btn_container_top_border button,
+.btn_container_bottom_border a,
+.btn_container_bottom_border button {
   margin-inline-end: 1rem;
 }
 
@@ -3620,4 +3635,30 @@ html[dir="rtl"] {
     background-color 0.5s ease 0s, color 0.5s ease 0s, box-shadow 0.5s ease 0s,
     border 0.5s ease 0s, opacity 0.5s ease, transform 0.5s ease;
   overflow: hidden;
+}
+
+
+.custom_button {
+  /* background: linear-gradient(to bottom, #d1d1d1, #a0a0a0); */
+  background: linear-gradient(to bottom, #bebebe, #808080); /* تغميق الألوان */  
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 1.5rem 1rem; /* طول كبير وعرض صغير */
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* تأثير الظل */
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.custom_button:hover {
+  transform: translateY(-4px); /* تأثير البروز عند التمرير */
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); /* تأثير الظل عند التمرير */
+}
+
+.custom_button:active {
+  transform: translateY(2px); /* تأثير الضغط على الزر */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
 }

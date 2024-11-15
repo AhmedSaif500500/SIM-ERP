@@ -231,9 +231,104 @@
             
 
 
+            <!-- customers -->
+            <tr>
+              <td style="width: auto;">10</td>
+              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+              <td style="width: auto; text-wrap: nowrap;">العملاء</td>
+              <td style="width: auto;">
+                <select class="select hover s" id="table_permission_customers"
+                  onchange="updatePermissionLevel(this)">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </td>
+              <td style="width: 100%; text-wrap: nowrap;"></td>
+            </tr>
+
+
+              <!-- salesman-->
+              <tr>
+                <td style="width: auto;">11</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">البائعين</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_salesman"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+                        
+              <!-- sales-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+
+                     
+              <!-- vendors -->
+              <tr>
+                <td style="width: auto;">13</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الموردين</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_vendors"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+
+              <!-- purchases-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purchases"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+
               <!-- itemsLocations-->
               <tr>
-                <td style="width: auto;">10</td>
+                <td style="width: auto;">15</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">مواقع المخزون</td>
                 <td style="width: auto;">
@@ -250,41 +345,7 @@
               </tr>
               
               
-            <!-- customers -->
-            <tr>
-               <td style="width: auto;">11</td>
-               <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
-               <td style="width: auto; text-wrap: nowrap;">العملاء</td>
-               <td style="width: auto;">
-                 <select class="select hover s" id="table_permission_customers"
-                   onchange="updatePermissionLevel(this)">
-                   <option value="0" selected>0</option>
-                   <option value="1">1</option>
-                   <option value="2">2</option>
-                   <option value="3">3</option>
-                   <option value="4">4</option>
-                 </select>
-               </td>
-               <td style="width: 100%; text-wrap: nowrap;"></td>
-             </tr>
-                     
-              <!-- vendors -->
-              <tr>
-                <td style="width: auto;">12</td>
-                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
-                <td style="width: auto; text-wrap: nowrap;">الموردين</td>
-                <td style="width: auto;">
-                  <select class="select hover s" id="table_permission_vendors"
-                    onchange="updatePermissionLevel(this)">
-                    <option value="0" selected>0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                  </select>
-                </td>
-                <td style="width: 100%; text-wrap: nowrap;"></td>
-              </tr>
+
 
               
             </tbody>

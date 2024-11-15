@@ -428,7 +428,7 @@ function fillTable() {
         let style_timex = `display:${checkbox_balance1.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_transactiontype_id = `display: none;`;
         let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_note = `display: table-cell; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`;
+        let style_note = `display: table-cell; width: 100%; min-width: 2rem; white-space: nowrap; text-align: start;`;
         let style_crud = `width: auto; white-space: nowrap; text-align: center;`;
 
 
@@ -476,7 +476,7 @@ function fillTable() {
                 }
     
             
-           let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
+           let referenceCONCAT = +row.reference === 0 ? '' : `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
             tableHTML += `
                     <tr>
                         <td style="${style_id}">${row.id}</td>

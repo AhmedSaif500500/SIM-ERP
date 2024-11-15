@@ -207,6 +207,12 @@ function loadSidebarContents() {
        إدارة المخزون
     </a>
 
+    <a href="salesMain_view_ar" target="_self" class="" style="display: ${module_display("salesman_permission","sales_permission")}">
+      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+       إدارة المبيعات
+    </a>
+
+
     <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
       شطب المخزون
@@ -239,7 +245,7 @@ function loadSidebarContents() {
       test
     </a>
 
-    <a href="test_ar" target="_self" class="" style="display: ${module_display("0")};">
+    <a href="general_settings_ar" target="_self" class="" style="display: ${module_display("0")};">
        <i class="fa-duotone fa-gear"></i>
       الاعدادت
     </a>
@@ -2787,6 +2793,9 @@ const internal_permissions = [
   "customers_permission",
   "vendors_permission",
   "itemsLocations_permission",
+  "salesman_permission",
+  "sales_permission",
+  "purchases_permission",
 ];
 
 
@@ -2802,3 +2811,4 @@ function clear_sub_sessionStorage(){
   });
   
 }
+

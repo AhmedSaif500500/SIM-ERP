@@ -1410,7 +1410,10 @@ const query_permissions =
     uc.vendors_permission,
     uc.departments_permission,
     uc.items_permission,
-    uc.itemsLocations_permission
+    uc.itemsLocations_permission,
+    uc.salesman_permission,
+    uc.sales_permission,
+    uc.purchases_permission
 FROM user_company uc 
     left join companies c on uc.company_id = c.id
 WHERE
@@ -1441,6 +1444,9 @@ if (data) {
   req.session.departments_permission = data.departments_permission
   req.session.items_permission = data.items_permission
   req.session.itemsLocations_permission = data.itemsLocations_permission
+  req.session.salesman_permission = data.salesman_permission
+  req.session.sales_permission = data.sales_permission
+  req.session.purchases_permission = data.purchases_permission
 
 
   res.json(data);
@@ -2915,7 +2921,10 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
                         items_permission = $10,
                         customers_permission = $12,
                         vendors_permission = $13,
-                        itemsLocations_permission = $14
+                        itemsLocations_permission = $14,
+                        salesman_permission = $15,
+                        sales_permission = $16,
+                        purchases_permission = $17
                       WHERE user_id = $1
                         AND company_id = $2`;
 
@@ -2935,6 +2944,9 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_customers,
           posted_elements.table_permission_vendors,
           posted_elements.table_permission_itemsLocations,
+          posted_elements.table_permission_salesman,
+          posted_elements.table_permission_sales,
+          posted_elements.table_permission_purchases
         ]);
 
         return res.json({
@@ -3782,10 +3794,18 @@ app.post("/employee_add", async (req, res) => {
     
 
     //! Permission
-    await permissions(req, "employees_permission", "add");
-    if (!permissions) {
-      return;
+    if (posted_elements.isUrlParams_salesman){
+      await permissions(req, "salesman_permission", "add");
+      if (!permissions) {
+        return;
+      }  
+    }else{
+      await permissions(req, "employees_permission", "add");
+      if (!permissions) {
+        return;
+      }  
     }
+
 
     //! sql injection check
 
@@ -3878,9 +3898,10 @@ app.post("/employee_add", async (req, res) => {
     const newId_header = await newId_fn("accounts_header",'id');
     const newId_body = await newId_fn("accounts_body",'id');
 
+
     let query1 = `
-  INSERT INTO accounts_header (id, account_name, account_no, legal_info, email, contact_info, delivery_adress, banking_info, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+  INSERT INTO accounts_header (id, account_name, account_no, legal_info, email, contact_info, delivery_adress, banking_info, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id, is_salesman)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 `;
 
   let params1 =[newId_header,
@@ -3896,7 +3917,8 @@ app.post("/employee_add", async (req, res) => {
     1,
     req.session.company_id,
     4,
-    2
+    2,
+    posted_elements.is_salesman_value ? true : null
   ]
 
 
@@ -3912,14 +3934,18 @@ app.post("/employee_add", async (req, res) => {
   await db.tx(async (tx) => {
     await tx.none(query1, params1);
     await tx.none(query2, params2);
+    history(posted_elements.isUrlParams_salesman ? 21 : 20, 1, newId_header, 0, req, tx)
+
   })
 
+  await last_activity(req)
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
       message_ar: "تم حفظ الموظف بنجاح",
     });
   } catch (error) {
+    await last_activity(req)
     console.error("Error adding employee:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
@@ -3940,10 +3966,18 @@ app.post("/update_employee", async (req, res) => {
     const posted_elements = req.body;
 
     //! Permission
-    await permissions(req, "employees_permission", "update");
-    if (!permissions) {
-      return;
+    if (posted_elements.isUrlParams_salesman){
+      await permissions(req, "salesman_permission", "update");
+      if (!permissions) {
+        return;
+      }  
+    }else{
+      await permissions(req, "employees_permission", "update");
+      if (!permissions) {
+        return;
+      }  
     }
+
 
     //! sql injection check
 
@@ -4045,7 +4079,7 @@ app.post("/update_employee", async (req, res) => {
     
 
     let query1 = `
-    UPDATE accounts_header set account_name = $1, account_no = $2, legal_info = $3, email = $4, contact_info = $5, delivery_adress = $6, banking_info = $7, is_inactive = $8 WHERE company_id = $9 AND id = $10;
+    UPDATE accounts_header set account_name = $1, account_no = $2, legal_info = $3, email = $4, contact_info = $5, delivery_adress = $6, banking_info = $7, is_inactive = $8, is_salesman = $9 WHERE company_id = $10 AND id = $11;
     `;
 
   let params1 =[
@@ -4057,6 +4091,7 @@ app.post("/update_employee", async (req, res) => {
     posted_elements.employee_start_date_value,
     posted_elements.employee_leave_date_value,
     active_value,
+    posted_elements.is_salesman_value? true : null,
     req.session.company_id,
     posted_elements.id_value,
   ]
@@ -4073,14 +4108,18 @@ app.post("/update_employee", async (req, res) => {
   await db.tx(async (tx) => {
     await tx.none(query1, params1);
     await tx.none(query2, params2);
+    history(posted_elements.isUrlParams_salesman ? 21 : 20, 2, posted_elements.id_value, 0, req, tx)
+
   })
 
+  await last_activity(req)
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
       message_ar: "تم تعديل بيانات الموظف بنجاح : سيتم تحويلك الى صفحة الموظفين الرئيسية",
     });
   } catch (error) {
+    await last_activity(req)
     console.error("Error updating employee:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
@@ -4099,9 +4138,16 @@ app.post("/delete_employee", async (req, res) => {
     const posted_elements = req.body;
 
     //! Permission
-    await permissions(req, "employees_permission", "delete");
-    if (!permissions) {
-      return;
+    if (posted_elements.isUrlParams_salesman){
+      await permissions(req, "salesman_permission", "delete");
+      if (!permissions) {
+        return;
+      }  
+    }else{
+      await permissions(req, "employees_permission", "delete");
+      if (!permissions) {
+        return;
+      }  
     }
 
     //! sql injection check
@@ -4163,15 +4209,17 @@ app.post("/delete_employee", async (req, res) => {
 
     await db.tx(async (tx) => {
       await tx.none(query1, params1);
+      history(posted_elements.isUrlParams_salesman ? 21 : 20, 3, posted_elements.id_value, 0, req, tx)
     })
 
-
+    await last_activity(req)
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
       message_ar: "تم حذف بيانات الموظف بنجاح",
     });
   } catch (error) {
+    await last_activity(req)
     console.error("Error deleting employee:", error);
     // send a response to frontend about fail transaction
     res.status(500).json({
@@ -4208,7 +4256,8 @@ app.post("/get_All_Employees_Data", async (req, res) => {
       
 
     //* Start--------------------------------------------------------------
-
+    let is_salesman = posted_elements.salesman
+    is_salesman = is_salesman? true : false
    
     let query1 = `
     SELECT 
@@ -4220,6 +4269,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         COALESCE(A.contact_info, '') as another_info,
         COALESCE(A.delivery_adress, '') as start_date,
         COALESCE(A.banking_info, '') as end_date,
+        COALESCE(A.is_salesman, false) as is_salesman,
         CASE 
             WHEN A.is_inactive = 1 THEN 'غير نشط'
             ELSE 'نشط'
@@ -4227,6 +4277,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         COALESCE(SUM(T.credit) - SUM(T.debit), 0) AS balance,
         B.parent_id as department_id,
         COALESCE(ParentAccount.account_name, '') AS department_name
+        
     FROM 
         accounts_header A
     LEFT JOIN 
@@ -4240,6 +4291,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         AND A.account_type_id = 4
         AND A.is_final_account = true
         AND (B.parent_id = $2 OR $2 IS NULL)  -- هذا الشرط الجديد للتحقق من department_id
+        AND (A.is_salesman = true OR $3 = false)  -- if is_salesman variable  = true it will returm only data when is is_salesman field = true  if the variable = false it wi;; return  all data
     GROUP BY
         A.id, 
         A.account_name, 
@@ -4254,7 +4306,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         ParentAccount.account_name;
     `;
     
-    let data = await db.any(query1, [req.session.company_id,posted_elements.QKey]);
+    let data = await db.any(query1, [req.session.company_id,posted_elements.QKey,is_salesman]);
     res.json(data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -6531,7 +6583,7 @@ app.post("/getAccountsData1", async (req, res) => {
     FROM
       accounts_header A
     where
-      A.company_id = 1
+      A.company_id = $1
       AND is_final_account = true AND (global_id != 8 OR global_id IS NULL)`;
     let data = await db.any(query1, [req.session.company_id]);
 
@@ -8430,7 +8482,201 @@ WHERE
 
 
 
+//#region sales
+//#region 1: sales_review
+app.post("/get_All_sales_Data", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "sales_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+    SELECT
+        TH.id,
+        TH.reference,
+        TH.datex,    
+        COALESCE(TH.general_note, '') AS general_note,
+        COALESCE(TH.total_value, 0) AS total_value,
+        TH.account_id,
+        AH1.account_name AS account_name,
+        TH.salesman_id,
+        AH2.account_name AS salesman_name
+    FROM
+        transaction_header TH
+    LEFT JOIN accounts_header AH1 ON AH1.id = TH.account_id   
+    LEFT JOIN accounts_header AH2 ON AH2.id = TH.salesman_id   
+    WHERE
+        TH.company_id = $1
+        AND TH.transaction_type = 3
+        AND (TH.is_deleted IS NULL OR TH.is_deleted != true)
+    ORDER BY
+        TH.datex DESC,
+        TH.reference DESC;
+`;
+
+    let data = await db.any(query1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error get_All_sales_Data:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+app.post("/getItemssData1", async (req, res) => {
+  try {
+    // //! Permission
+    // await permissions(req, "effects_permission", "view");
+    // if (!permissions) {
+    //   return;
+    // }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+    SELECT
+      A.id,
+      A.account_name,
+      A.account_type_id,
+      COALESCE(A.item_unite, 'الكمية') as item_unite 
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      AND account_type_id IN (5, 8)
+    `;
+    
+    let data = await db.any(query1, [req.session.company_id]);
+
+    // const data = rows.map((row) => ({
+    //   id: row.id,
+    //   account_name: row.account_name,
+    //   account_type: row.account_type_id
+    // }));
+    res.json(data);
+  } catch (error) {
+    console.error("Error while get accounts Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get accounts Data" });
+  }
+});
+
 //#endregion
+
+
+//#endregion
+
+
+//#endregion
+
+
+//#region  settings Taxes
+
+  //#region settings Taxes view
+  app.post("/get_settings_taxes_Data", async (req, res) => {
+    try {
+
+      // //! Permission
+      // await permissions(req, "sales_permission", "view");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      const posted_elements = req.body;
+  
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+        
+            // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+            // if (InValidDateFormat){
+            //   return res.json({
+            //     success: false,
+            //     message_ar: InValidDateFormat_message_ar,
+            //   });
+            // }
+          
+  
+  
+        turn_EmptyValues_TO_null(posted_elements);
+      //* Start--------------------------------------------------------------
+  
+  
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `
+select 
+	sth.id,
+	sth.tax_group_reference,
+	sth.tax_group_name,
+	CASE 
+    WHEN
+       sth.is_inactive = true THEN 'غير نشط'
+    ELSE
+      'نشط'
+  END as is_inactive
+from
+	settings_tax_header sth
+where 
+	sth.company_id = $1;
+  `;
+  
+      let data = await db.any(query1, [req.session.company_id]);
+  
+      res.json(data);
+    } catch (error) {
+      console.error("Error get_All_sales_Data:", error);
+      res.status(500).send("Error:");
+    }
+  });
+  
+  //#endregion
+
+//#endregion
+
+
 //*-- server----------------------------------------------
 //#region started server functions
 

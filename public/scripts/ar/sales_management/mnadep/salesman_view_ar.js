@@ -1,12 +1,13 @@
 
-setActiveSidebar('hr_ar');
-pagePermission('view', 'employees_permission');
+setActiveSidebar('salesMain_view_ar');
+// pagePermission('view', 'employees_permission');
 
 
 
 
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 const back_href = document.querySelector(`#back_href`);
+const btn_new_salesman = document.querySelector(`#btn_new_salesman`);
 
 
 
@@ -23,9 +24,9 @@ let checkbox_another_info = filter_div.querySelector(`#checkbox_another_info`) ;
 let checkbox_start_date = filter_div.querySelector(`#checkbox_start_date`) ; let select_start_date = filter_div.querySelector(`#select_start_date`); let input_start_date1 = filter_div.querySelector(`#input_start_date1`); input_start_date1.value = today; let input_end_date1 = filter_div.querySelector(`#input_end_date1`); input_end_date1.value = today; 
 let checkbox_end_date = filter_div.querySelector(`#checkbox_end_date`) ; let select_end_date = filter_div.querySelector(`#select_end_date`); let input_start_date2 = filter_div.querySelector(`#input_start_date2`); input_start_date2.value = today; let input_end_date2 = filter_div.querySelector(`#input_end_date2`); input_end_date2.value = today;
 let check_balance = filter_div.querySelector(`#check_balance`) ; let select_balance = filter_div.querySelector(`#select_balance`); let input_balance = filter_div.querySelector(`#input_balance`);
-let checkbox_active = filter_div.querySelector(`#checkbox_active`) ; let select_active = filter_div.querySelector(`#select_active`); select_active.value = 1
+let checkbox_active = filter_div.querySelector(`#checkbox_active`) ; let select_active = filter_div.querySelector(`#select_active`);
 
-const btn_do = filter_div.querySelector(`#btn_do`);
+const btn_do = filter_div.querySelector(`#btn_do`)
 
 
 
@@ -71,11 +72,11 @@ let filteredData_Array = [];
 
 async function getData_fn() {
    try {
-        
+        const salesman = true
         data = await fetchData_postAndGet(
         '/get_All_Employees_Data',
-        {QKey},
-        'employees_permission','view',
+        {QKey,salesman},
+        '','',
         15,
         false,'',
         false,
@@ -198,8 +199,8 @@ let tableHTML = `<table id="review_table" class="review_table">
                         <tr>
                             <th style="${style_button}"></th>
                             <th style="${style_id}">ID</th>
-                            <th style="${style_account_no}">معرف الموظف</th>
-                            <th style="${style_name}">اسم الموظف</th>
+                            <th style="${style_account_no}">معرف البائع</th>
+                            <th style="${style_name}">اسم البائع</th>
                             <th style="${style_job}">الوظيفة</th>
                             <th style="${style_department_id}">معرف القسم</th>
                             <th style="${style_department_name}">القسم</th>
@@ -362,8 +363,8 @@ async function table_update_btn_fn(updateBtn) {
     let is_inactive = row.cells[13].querySelector('span').textContent;
     is_inactive =  is_inactive === 'نشط' ? 0 : 1
     
-    const employees_update_data = {
-        pageName : 'employees_view_ar',
+    const salesman_update_data = {
+        pageName : 'salesman_view_ar',
         id : row.cells[1].textContent,
         account_no : row.cells[2].textContent,
         account_name : row.cells[3].textContent,
@@ -379,7 +380,7 @@ async function table_update_btn_fn(updateBtn) {
 
     }
   
-    const encodedData = encodeURIComponent(JSON.stringify(employees_update_data));
+    const encodedData = encodeURIComponent(JSON.stringify(salesman_update_data));
     // نقل البيانات عبر الـ URL
     window.location.href = `employees_update_ar?data=${encodedData}`;
 
@@ -388,18 +389,31 @@ async function table_update_btn_fn(updateBtn) {
 };
 
 
+btn_new_salesman.onclick = function(){
+
+        
+    const salesman_data = {
+        pageName : 'salesman_view_ar'
+    }
+  
+    const encodedData = encodeURIComponent(JSON.stringify(salesman_data));
+        
+    // نقل البيانات عبر الـ URL
+    window.location.href = `employees_add_ar?data=${encodedData}`;
+}
+
 function CheckUrlParams(){
     try {
       const departmentData = getURLData('data','departments_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاقسام')
         if (departmentData && departmentData !== 'noParams'){
             sub_h2_header.textContent = ` قسم : ${departmentData.n}`
-            back_href.href = 'departments_view_ar';  back_href.title = 'الاقسام'
+            // back_href.href = 'departments_view_ar';  back_href.title = 'الاقسام'
             QKey = departmentData.x
             document.querySelector(`#active_div`).style.display = 'none'
             select_active.value = 1
             return true
         }else if(departmentData && departmentData === 'noParams'){
-              back_href.href = 'hr_ar' ;  back_href.title = 'الموارد البشرية'
+            //   back_href.href = 'hr_ar' ;  back_href.title = 'الموارد البشرية'
               QKey = null
               document.querySelector(`#active_div`).style.display = 'flex'
               return true
@@ -421,6 +435,7 @@ function CheckUrlParams(){
 
     showRedirectionReason();
     await getData_fn()
+    showAlert("info", "يرجى ملاحظة أن البائعين هم جزء من طاقم الموظفين، إلا أن لديهم ميزة إضافية تمكنهم من القيام بمهام البيع")
   });
   
 

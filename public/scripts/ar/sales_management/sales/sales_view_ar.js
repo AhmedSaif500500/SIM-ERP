@@ -1,5 +1,5 @@
-setActiveSidebar("customers_view_ar");
-pagePermission("view", "customers_permission");
+setActiveSidebar("salesMain_view_ar");
+pagePermission("view", "sales_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
@@ -15,95 +15,78 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! account no
+let f0_div = filter_div.querySelector(`#f0_div`);
+let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
+let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
+let f0_select = filter_div.querySelector(`#f0_select`);
+let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
+
+//! reference
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! account name
+//! salesman
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
 let f2_select = filter_div.querySelector(`#f2_select`);
 let f2_input = filter_div.querySelector(`#f2_input`);
 
-//! credit limit
+//! accountName
 let f3_div = filter_div.querySelector(`#f3_div`);
 let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
 let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
 let f3_select = filter_div.querySelector(`#f3_select`);
 let f3_input = filter_div.querySelector(`#f3_input`);
 
-//! email
+//! note
 let f4_div = filter_div.querySelector(`#f4_div`);
 let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
 let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
 let f4_select = filter_div.querySelector(`#f4_select`);
 let f4_input = filter_div.querySelector(`#f4_input`);
 
-//! tasgel darepy
+//! balance
 let f5_div = filter_div.querySelector(`#f5_div`);
 let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
 let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
 let f5_select = filter_div.querySelector(`#f5_select`);
 let f5_input = filter_div.querySelector(`#f5_input`);
 
-//! legal_info
-let f6_div = filter_div.querySelector(`#f6_div`);
-let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
-let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
-let f6_select = filter_div.querySelector(`#f6_select`);
-let f6_input = filter_div.querySelector(`#f6_input`);
-
-//! contact_info
-let f7_div = filter_div.querySelector(`#f7_div`);
-let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
-let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
-let f7_select = filter_div.querySelector(`#f7_select`);
-let f7_input = filter_div.querySelector(`#f7_input`);
-
-
-//! delivery_adress
-let f8_div = filter_div.querySelector(`#f8_div`);
-let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
-let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
-let f8_select = filter_div.querySelector(`#f8_select`);
-let f8_input = filter_div.querySelector(`#f8_input`);
-
-
-//! banking_info
-let f9_div = filter_div.querySelector(`#f9_div`);
-let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
-let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
-let f9_select = filter_div.querySelector(`#f9_select`);
-let f9_input = filter_div.querySelector(`#f9_input`);
-
-
-//! balance
-let f10_div = filter_div.querySelector(`#f10_div`);
-let f10_checkbox = filter_div.querySelector(`#f10_checkbox`);
-let f10_selectAndInput_div = filter_div.querySelector(`#f10_selectAndInput_div`);
-let f10_select = filter_div.querySelector(`#f10_select`);
-let f10_input = filter_div.querySelector(`#f10_input`);
-
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-
 const indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
+
 function backUp_filter_div_conditions() {
-    
     const conditions = {};
 
     indices.forEach(index => {
         // بناء الأسماء تلقائيًا باستخدام template literals
-        conditions[`f${index}_div_display`] = window.getComputedStyle(window[`f${index}_div`]).display;
-        conditions[`f${index}_input_display`] = window.getComputedStyle(window[`f${index}_input`]).display;
-        conditions[`f${index}_selectAndInput_div_isHidden`] = window[`f${index}_selectAndInput_div`].classList.contains('hidden_select_and_input_div');
-        conditions[`f${index}_checkbox`] = window[`f${index}_checkbox`].checked;
-        conditions[`f${index}_select`] = window[`f${index}_select`].value;
-        conditions[`f${index}_input`] = window[`f${index}_input`].value;
+        const fDiv = window[`f${index}_div`];
+        const fInput = window[`f${index}_input`];
+        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+        const fCheckbox = window[`f${index}_checkbox`];
+        const fSelect = window[`f${index}_select`];
+        const fCheckboxDiv = window[`f${index}_checkbox_div`];
+        const fInputStartDate1 = window[`f${index}_input_start_date1`];
+        const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+        // التحقق من وجود كل عنصر قبل تخزين قيمته
+        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
+        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
+        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
+        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
+        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
+        if (fInput) conditions[`f${index}_input`] = fInput.value;
+        
+        // التحقق من العناصر الإضافية
+        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
+        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
+        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
     });
 
     // الشروط الأخرى
@@ -116,25 +99,26 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('customersViewArray')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('salesViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('customersViewArray', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('salesViewArray', JSON.stringify(conditionsArray));
 }
+
 
 back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`customersViewArray`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`salesViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `notes_ar`;
+            window.location.href = `salesMain_view_ar`;
        
     }else{
 
@@ -148,9 +132,8 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("customersViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("salesViewArray")) || [];
     
-
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
         // استرجاع العنصر المطلوب بناءً على الرقم المحدد
@@ -159,26 +142,40 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("customersViewArray", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("salesViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
     }
 
     if (conditions) {
-
         // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
         indices.forEach(index => {
-            window[`f${index}_div`].style.display = conditions[`f${index}_div_display`];
-            window[`f${index}_input`].style.display = conditions[`f${index}_input_display`];
-            window[`f${index}_checkbox`].checked = conditions[`f${index}_checkbox`];
-            if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
-                window[`f${index}_selectAndInput_div`].classList.add('hidden_select_and_input_div');
-            } else {
-                window[`f${index}_selectAndInput_div`].classList.remove('hidden_select_and_input_div');
+            const fDiv = window[`f${index}_div`];
+            const fInput = window[`f${index}_input`];
+            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+            const fCheckbox = window[`f${index}_checkbox`];
+            const fSelect = window[`f${index}_select`];
+            const fCheckboxDiv = window[`f${index}_checkbox_div`];
+            const fInputStartDate1 = window[`f${index}_input_start_date1`];
+            const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
+            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
+            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
+            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
+            if (fSelect) fSelect.value = conditions[`f${index}_select`];
+            if (fInput) fInput.value = conditions[`f${index}_input`];
+            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
+            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
+            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
+            if (fSelectAndInputDiv) {
+                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
+                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
+                } else {
+                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
+                }
             }
-            window[`f${index}_select`].value = conditions[`f${index}_select`];
-            window[`f${index}_input`].value = conditions[`f${index}_input`];
         });
 
         // استرجاع الشروط الأخرى
@@ -204,8 +201,7 @@ filter_icon.onclick = () => {
     }
 };
 
-
-function call_default_checkbox(str_f, is_showDiv, is_checkBox) {
+function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
     // Check if the elements exist to avoid errors
     const divElement = window[`${str_f}_div`];
     const checkbox = window[`${str_f}_checkbox`];
@@ -236,21 +232,40 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox) {
             checkbox.checked = false
         }
     }
+
+    if (is_datex){
+        
+        const datex_checkbox_div = window[`${str_f}_checkbox_div`];
+        const datex_input_start_date1 = window[`${str_f}_input_start_date1`];
+        const datex_input_end_date1 = window[`${str_f}_input_end_date1`];
+    
+        if(datex_checkbox_div){
+            datex_checkbox_div.style.display = 'flex'
+        }
+    
+        if(datex_input_start_date1){
+            datex_input_start_date1.value = firstDayOfYear
+        }
+        if(datex_input_end_date1){
+            datex_input_end_date1.value = lastDayOfYear
+    
+        }
+    
+        }
+    
 }
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f1',true,false)
-    call_default_checkbox('f2',true,true)
-    call_default_checkbox('f3',true,false)
-    call_default_checkbox('f4',true,false)
-    call_default_checkbox('f5',true,false)
-    call_default_checkbox('f6',true,false)
-    call_default_checkbox('f7',true,false)
-    call_default_checkbox('f8',true,false)
-    call_default_checkbox('f9',true,false)
-    call_default_checkbox('f10',true,true)
+    call_default_checkbox('f0',true,true,true)
+    call_default_checkbox('f1',true,true,false)
+    call_default_checkbox('f2',true,false,false)
+    call_default_checkbox('f3',true,true,false)
+    call_default_checkbox('f4',true,true,false)
+    call_default_checkbox('f5',true,true,false)
+
 }
+
 
 async function filter_icon_cancel_fn() {
     try {
@@ -263,10 +278,11 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
+            sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
             
-            showFirst50RowAtTheBegening()
+            await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('customersViewArray');
+            sessionStorage.removeItem('salesViewArray');
             conditionsArray = []
             
         }
@@ -291,20 +307,27 @@ let filteredData_Array = [];
 
 async function getData_fn() {
     try {
+        let start_date;
+        let end_date;
 
+        start_date = f0_input_start_date1.value;
+        end_date = f0_input_end_date1.value;
+       
+    
         data = await new_fetchData_postAndGet(
-            '/get_All_customers_Data',
-            {},
-            'customers_permission','view',
+            "/get_All_sales_Data",
+            {start_date, end_date},
+            "transaction_permission","view",
             15,
-            false,"",
-            true,
+            false,'',
+            false,
             true,content_space,
-            false,false,false,
-            false,false,
-            false,false,
-            "حدث خطأ اثناء معالجه البيانات"
+            false,false,'',
+            false,'',
+            false,'notes_ar',
+            'حدث خطأ اثناء معالجة البيانات'
         )
+
 
         showFirst50RowAtTheBegening();
     } catch (error) {
@@ -313,6 +336,17 @@ async function getData_fn() {
 }
 
 
+function is_datexChanged() {
+    if (
+        f0_input_start_date1.value !== startDate ||
+        f0_input_end_date1.value !== endDate
+    ) {
+
+        return true;
+    } else {
+        return false;
+    }
+}
 
 
 async function Execution() {
@@ -320,7 +354,13 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        showFirst50RowAtTheBegening();
+        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+        const datechange = is_datexChanged()
+        if (datechange){
+            await getData_fn();
+        }else{
+            showFirst50RowAtTheBegening();
+        }
 
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
@@ -331,7 +371,9 @@ async function Execution() {
     }
 }
 
-const inside_input_search_array = filter_div.querySelectorAll(`[name="inside_input_search"]`);
+const inside_input_search_array = filter_div.querySelectorAll(
+    `[name="inside_input_search"]`
+);
 
 for (const input of inside_input_search_array) {
     try {
@@ -351,6 +393,91 @@ btn_do.onclick = async () => {
 
 
 
+function showFirst50RowAtTheBegening() {
+    try {
+        page_content.style.display = "none";
+
+        filteredData_Array = data.filter((row) => {
+
+            const isdatexMatch = 
+            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
+                f0_checkbox,
+                f0_select,
+                f0_input_start_date1,
+                f0_input_end_date1,
+                "datex",
+                row
+            );
+
+            const isReferenceMatch =
+            filterData_number_column_with_showAndHiddenCheckbox(
+                f1_checkbox,
+                f1_select,
+                f1_input,
+                "reference",
+                row
+            );
+
+
+            const isSalesmanMatch =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f2_checkbox,
+                    f2_select,
+                    f2_input,
+                    "salesman_name",
+                    row
+                );
+
+                const isSAccountNameMatch =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f3_checkbox,
+                    f3_select,
+                    f3_input,
+                    "account_name",
+                    row
+                );                
+
+            const isNoteMatch =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f4_checkbox,
+                    f4_select,
+                    f4_input,
+                    "general_note",
+                    row
+                );
+
+            const isBalanceMatch =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
+                    "total_value",
+                    row
+                );
+
+
+            return (
+
+                isdatexMatch &&
+                isReferenceMatch &&
+                isSalesmanMatch &&
+                isSAccountNameMatch &&
+                isNoteMatch &&
+                isBalanceMatch
+            ); // && otherCondition;
+        });
+
+        // QKey = null;
+
+        array1 = filteredData_Array.slice();
+
+        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+        fillTable();
+
+    } catch (error) {
+        catch_error(error);
+    }
+}
 
 function fillTable() {
     try {
@@ -367,17 +494,13 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let account_name = `display: table-cell ; width: 100%; white-space: nowrap; text-align: start;`;
-        let credit_limit = `display:${f3_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let email = `display:${f4_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let tasgel_darepy = `display:${f5_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let legal_info = `display:${f6_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let contact_info = `display:${f7_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let delivery_adress = `display:${f8_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let banking_info = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let balance = `display:${f10_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-
+        let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_reference = `display: none;`; 
+        let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f3_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
+        let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 25rem; width: 100%; white-space: wrap; text-align: start;`;
+        let style_balance = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
         let fn = `onclick = "table_update_btn_fn(this)"`;
@@ -389,54 +512,47 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${account_no}">#</th>
-                                <th style="${account_name}">الاسم</th>
-                                <th style="${credit_limit}">حد الائتمان</th>
-                                <th style="${email}">البريد الالكتورةنى</th>
-                                <th style="${tasgel_darepy}">رقم التسجيل الضريبى</th>
-                                <th style="${legal_info}">بيانات قانونية</th>
-                                <th style="${contact_info}">بيانات التواصل</th>
-                                <th style="${delivery_adress}">عنوان التسليم</th>
-                                <th style="${banking_info}">بيانات بنكية</th>
-                                <th style="${balance}">الرصيد</th>
+                                <th style="${style_datex}">التاريخ</th>
+                                <th style="${style_reference}">#</th>
+                                <th style="${style_referenceCONCAT}">#</th>
+                                <th style="${style_salesman}">البائع</th>
+                                <th style="${style_accountName}">العميل</th>
+                                <th style="${style_note}">البيان</th>
+                                <th style="${style_balance}">قيمة</th>
+                                
                             </tr>
                         </thead>
                         <tbody>`;
 
         slice_array1.forEach((row) => {
                 
+            let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
 
             tableHTML +=
                      `<tr>
                         <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
                         <td style="${style_id}">${row.id}</td>
-                        <td style="${account_no}">${row.account_no}</td>
-                        <td style="${account_name}">${row.account_name}</td>
-                        <td style="${credit_limit}">${row.credit_limit}</td>
-                        <td style="${email}">${row.email}</td>
-                        <td style="${tasgel_darepy}">${row.tasgel_darepy}</td>
-                        <td style="${legal_info}">${row.legal_info}</td>
-                        <td style="${contact_info}">${row.contact_info}</td>
-                        <td style="${delivery_adress}">${row.delivery_adress}</td>
-                        <td style="${banking_info}">${row.banking_info}</td>
-                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn)}                        
+                        <td style="${style_datex}">${row.datex}</td>
+                        <td style="${style_reference}">${row.reference}</td>
+                        <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
+                        <td style="${style_salesman}">${row.salesman_name}</td>
+                        <td style="${style_accountName}">${row.account_name}</td>
+                        <td style="${style_note}">${row.general_note}</td>
+                        ${tdNumber(true,false,true,row.total_value,style_balance,total_column1,fn)}                        
                       </tr>`;
         });
 
         tableHTML += `
                     <tr class="table_totals_row">
                         <td id="footer_style_button" style="${style_button}"></td>
-                        <td id="footer_style_id" style="${style_id}"></td>
-                        <td id="footer_style_account_no" style="${account_no}"></td>
-                        <td id="footer_style_account_name" style="${account_name}"></td>
-                        <td id="footer_style_credit_limit" style="${credit_limit}"></td>
-                        <td id="footer_style_email" style="${email}"></td>
-                        <td id="footer_style_tasgel_darepy" style="${tasgel_darepy}"></td>
-                        <td id="footer_style_legal_info" style="${legal_info}"></td>
-                        <td id="footer_style_contact_info" style="${contact_info}"></td>
-                        <td id="footer_style_delivery_adress" style="${delivery_adress}"></td>
-                        <td id="footer_style_banking_info" style="${banking_info}"></td>
-                        <td id="footer_style_balance" style="${balance}"></td>
+                        <td id="footer_style_id1" style="${style_id}"></td>
+                        <td id="footer_style_datex" style="${style_datex}"></td>
+                        <td id="footer_style_reference" style="${style_reference}"></td>
+                        <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
+                        <td id="footer_style_salesman" style="${style_salesman}"></td>
+                        <td id="footer_style_accountName" style="${style_accountName}"></td>
+                        <td id="footer_style_note" style="${style_note}"></td>
+                        <td id="footer_style_balance" style="${style_balance}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -469,55 +585,10 @@ function fillTable() {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
 
-
+        startDate = f0_input_start_date1.value;
+        endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
-        catch_error(error);
-    }
-}
-
-
-function showFirst50RowAtTheBegening() {
-    try {
-        page_content.style.display = "none";
-
-
-        filteredData_Array = data.filter((row) => {
-
-            const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"account_no",row);
-            const f2_match = filterData_string_column_with_showAndHiddenCheckbox(f2_checkbox,f2_select,f2_input,"account_name",row);
-            const f3_match = filterData_number_column_with_showAndHiddenCheckbox(f3_checkbox,f3_select,f3_input,"credit_limit",row);
-            const f4_match = filterData_string_column_with_showAndHiddenCheckbox(f4_checkbox,f4_select,f4_input,"email",row);
-            const f5_match = filterData_string_column_with_showAndHiddenCheckbox(f5_checkbox,f5_select,f5_input,"tasgel_darepy",row);
-            const f6_match = filterData_string_column_with_showAndHiddenCheckbox(f6_checkbox,f6_select,f6_input,"legal_info",row);
-            const f7_match = filterData_string_column_with_showAndHiddenCheckbox(f7_checkbox,f7_select,f7_input,"contact_info",row);
-            const f8_match = filterData_string_column_with_showAndHiddenCheckbox(f8_checkbox,f8_select,f8_input,"delivery_adress",row);
-            const f9_match = filterData_string_column_with_showAndHiddenCheckbox(f9_checkbox,f9_select,f9_input,"banking_info",row);
-            const f10_match = filterData_number_column_with_showAndHiddenCheckbox(f10_checkbox,f10_select,f10_input,"balance",row);
-
-
-            return (
-                f1_match &&
-                f2_match &&
-                f3_match &&
-                f4_match &&
-                f5_match &&
-                f6_match &&
-                f7_match &&
-                f8_match &&
-                f9_match &&
-                f10_match
-            ); // && otherCondition;
-        });
-
-        // QKey = null;
-
-        array1 = filteredData_Array.slice();
-
-        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-        fillTable();
-
-    } catch (error) {
         catch_error(error);
     }
 }
@@ -530,29 +601,21 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const f1Match = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
-            const f2Match = performSearch_Row(f2_checkbox,"account_name",searchValue,row);
-            const f3Match = performSearch_Row(f3_checkbox,"credit_limit",searchValue,row);
-            const f4Match = performSearch_Row(f4_checkbox,"email",searchValue,row);
-            const f5Match = performSearch_Row(f5_checkbox,"tasgel_darepy",searchValue,row);
-            const f6Match = performSearch_Row(f6_checkbox,"legal_info",searchValue,row);
-            const f7Match = performSearch_Row(f7_checkbox,"contact_info",searchValue,row);
-            const f8Match = performSearch_Row(f8_checkbox,"delivery_adress",searchValue,row);
-            const f9Match = performSearch_Row(f9_checkbox,"banking_info",searchValue,row);
-            const f10Match = performSearch_Row(f10_checkbox,"balance",searchValue,row);
+            const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
+            const reference_Match = performSearch_Row(f1_checkbox,"reference",searchValue,row);
+            const salesman_Match = performSearch_Row(f2_checkbox,"salesman_name",searchValue,row);
+            const AccountName_Match = performSearch_Row(f3_checkbox,"account_name",searchValue,row);
+            const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
+            const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                f1Match ||
-                f2Match ||
-                f3Match ||
-                f4Match ||
-                f5Match ||
-                f6Match ||
-                f7Match ||
-                f8Match ||
-                f9Match ||
-                f10Match
+                datexInfoMatch ||
+                reference_Match ||
+                salesman_Match ||
+                AccountName_Match ||
+                noteMatch ||
+                balanceMatch
             );
         });
 
@@ -593,39 +656,36 @@ searchInput.addEventListener("keydown", (event) => {
 });
 
 async function table_update_btn_fn(updateBtn) {
-    try {
-    const permission = await btn_permission('customers_permission','update');
+    const permission = await btn_permission("transaction_permission", "update");
 
-    if (!permission){ // if false
+    if (!permission) {
+        // if false
         return;
-    };
+    }
+
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row  = updateBtn.closest("tr")
+    const row = updateBtn.closest("tr");
+
+    const transaction_update_data = {
+        x: row.cells[1].textContent,
+        datex: row.cells[2].textContent,
+        reference: row.cells[3].textContent,
+        referenceCONCAT: row.cells[4].textContent,
+        values: row.cells[6].textContent,
+        note: row.cells[5].textContent,        
+    };
+
     
-    const obj_customers_view = {
-    x: row.cells[1].textContent,
-    account_no_input: row.cells[2].textContent,
-    account_name_input: row.cells[3].textContent,
-    credit_limit: row.cells[4].textContent,
-    email_input: row.cells[5].textContent,
-    tasgel_darepy_input: row.cells[6].textContent,
-    legal_info_input: row.cells[7].textContent,
-    contact_info_input: row.cells[8].textContent,
-    delivery_adress_input:  row.cells[9].textContent,
-    banking_info_input: row.cells[10].textContent
+
+    const transferedData = { transaction_update_data };
+    const encodedData = encodeURIComponent(JSON.stringify(transferedData));
+ 
+
+    window.location.href = `transaction_update_ar?data=${encodedData}`;
 }
 
-    sessionStorage.setItem('obj_customers_view', JSON.stringify(obj_customers_view));                            
-    window.location.href = `customers_update_ar`;
-} catch (error) {
-    catch_error(error)
-}
-};
-
-
-
-function CheckUrlParams_customers_update_ar() {
+function CheckUrlParams_transaction_update_ar() {
     try {
         const urlData = getURLData(
             "data",
@@ -633,8 +693,7 @@ function CheckUrlParams_customers_update_ar() {
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
 
-        
-        if (!urlData || urlData.pageName !== "customers_update_ar") {
+        if (!urlData || urlData.pageName !== "transaction_update_ar") {
             return true;
         }
 
@@ -656,18 +715,18 @@ function CheckUrlParams_customers_update_ar() {
 }
 
 
-
 document.addEventListener("DOMContentLoaded", async function () {
     showRedirectionReason();
 
+    sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
     
-    const result2 = CheckUrlParams_customers_update_ar();
+    const result2 = CheckUrlParams_transaction_update_ar();
     if (!result2) {
         return;
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`customersViewArray`);
+    const conditionsArray = sessionStorage.getItem(`salesViewArray`);
 
     if (!conditionsArray){
      

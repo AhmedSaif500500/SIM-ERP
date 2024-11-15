@@ -2,6 +2,7 @@ const closingDate_input = document.querySelector(`#closingDate_input`);
 const prevent_futureDate_checkbox = document.querySelector(`#prevent_futureDate_checkbox`);
 const prevent_futureDate_input = document.querySelector(`#prevent_futureDate_checkbox`);
 const btn_save = document.querySelector(`#btn_save`);
+const btn_tax = document.querySelector(`#btn_tax`);
 
 let data = []
 
@@ -94,6 +95,10 @@ btn_save.onclick = async function () {
     await savesettingsChanges()
 }
 
+btn_tax.onclick = function(){
+    sessionStorage.removeItem(`settings_taxes_ViewArray`);
+    window.location.href = `settings_taxes_view_ar`;
+}
 document.addEventListener("DOMContentLoaded", async function () {
     await getData()
     show_data()

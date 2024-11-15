@@ -1,4 +1,4 @@
-setActiveSidebar('transaction_view_ar');
+setActiveSidebar('bread_view_ar');
 pagePermission("add","transaction_permission");
 
 
@@ -115,10 +115,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
   await getAccounsData_fn() // *
-  await get_accounts_type()
   await get_items_locations()
   build_table()
-  addRow()
   addRow()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)

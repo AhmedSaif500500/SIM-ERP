@@ -1,6 +1,7 @@
 
     //#region  save function
     setActiveSidebar('hr_ar');
+    pagePermission('add', 'employees_permission', 'salesman_permissions');
 
 
 
@@ -21,7 +22,10 @@
     const inactive_select = document.querySelector(`#inactive_select`)
     const btn_save = document.querySelector(`#btn_save`)
     const btn_save_and_add_another = document.querySelector(`#btn_save_and_add_another`)
+    const is_salesman = document.querySelector(`#is_salesman`)
+    const is_salesman_div = document.querySelector(`#is_salesman_div`)
 
+    let isUrlParams_salesman = false
 
 
     document.addEventListener('DOMContentLoaded', async () =>{
@@ -79,7 +83,6 @@
       active_color(inactive_select)
     }
 
-
     async function save(A_or_B) {
       const account_no_value = account_no_input.value.trim()
       const employee_name_value = employee_name_input.value.trim()
@@ -90,6 +93,7 @@
       const employee_start_date_value = employee_start_date_input.value
       const employee_leave_date_value = employee_leave_date_input.value
       const inactive_select_value = inactive_select.value
+      const is_salesman_value = is_salesman.checked
 
 
       if (!employee_name_value){
@@ -97,29 +101,49 @@
         return
       }
 
+      const posted_elements = {
+        account_no_value,
+        employee_name_value,
+        employee_job_value,
+        select_department_value,
+        email_input_value,
+        other_info_value,
+        employee_start_date_value,
+        employee_leave_date_value,
+        inactive_select_value,
+        is_salesman_value
+      }
 
       if (A_or_B == 'A'){
 
-        const post = await fetchData_postAndGet(
+        const post = await new_fetchData_postAndGet(
           '/employee_add',
-          {account_no_value,employee_name_value,employee_job_value,select_department_value,email_input_value,other_info_value,employee_start_date_value,employee_leave_date_value,inactive_select_value},
-          'employees_permission','add',
-          15,true,'هل تريد حفظ بيانات الموظف الجديد ؟',
-          true,false,'',
-          true,'employees_view_ar',
-          'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+          posted_elements,
+          isUrlParams_salesman? 'salesman_permission' : 'employees_permission','add',
+          15,
+          true,'هل تريد حفظ بيانات الموظف الجديد ؟',
+          true,
+          false,"",
+          false,false,false,
+          true,isUrlParams_salesman ? "salesman_view_ar" : "employees_view_ar",
+          false,false,
+          "حدث حطأ اثناء معالجة البيانات"
         )
 
       } else if(A_or_B == 'B'){
 
-        const post = await fetchData_postAndGet(
+        const post = await new_fetchData_postAndGet(
           '/employee_add',
-          {account_no_value,employee_name_value,employee_job_value,select_department_value,email_input_value,other_info_value,employee_start_date_value,employee_leave_date_value,inactive_select_value},
-          'employees_permission','add',
-          15,true,'هل تريد حفظ بيانات الموظف الجديد ؟',
-          true,false,'',
-          false,'',
-          'حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه'
+          posted_elements,
+          isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','add',
+          15,
+          true,'هل تريد حفظ بيانات الموظف الجديد ؟',
+          true,
+          false,"",
+          false,false,false,
+          false,"",
+          false,false,
+          "حدث حطأ اثناء معالجة البيانات"
         )
 
         if (post) {
@@ -129,6 +153,40 @@
     }
 
     
+    function CheckUrlParams(){
+      try {
+        const salesmanData = getURLData('data','salesman_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاقسام')
+          if (salesmanData && salesmanData !== 'noParams'){
+              // sub_h2_header.textContent = ` قسم : ${salesmanData.n}`
+              back_href.href = 'salesman_view_ar';  back_href.title = 'البائعين'
+              is_salesman.checked = true
+              isUrlParams_salesman = true
+              is_salesman_div.style.pointerEvents = "none";
+              is_salesman_div.title =
+                "هذه الخاصية لا يمكن تعطيلها عند إنشاء بائع جديد.";
+              setActiveSidebar('salesMain_view_ar');
+              showAlert("info","لإضافة بائع جديد، يرجى أولاً تسجيل الموظف في النظام، ثم تفعيل ميزة البيع له لضمان ظهوره كبائع.")
+              return true
+          }else if(salesmanData && salesmanData === 'noParams'){
+                // back_href.href = 'hr_ar' ;  back_href.title = 'الموارد البشرية'
+                return true
+          }else{
+              return false
+          }
+                  
+      } catch (error) {
+          catch_error(error)
+          return false
+      }
+  }
+
+  
+
+document.addEventListener('DOMContentLoaded', async function() {
+    const result = CheckUrlParams(); if (!result) {return}
+});
+
+
           //#endregion End save Function
       
       

@@ -83,6 +83,9 @@ async function get_user_data_fn() {
     document.querySelector("#table_permission_customers").value = array1.customers_permission || 0;
     document.querySelector("#table_permission_vendors").value = array1.vendors_permission || 0;
     document.querySelector("#table_permission_itemsLocations").value = array1.itemsLocations_permission || 0;
+    document.querySelector("#table_permission_salesman").value = array1.salesman_permission || 0;
+    document.querySelector("#table_permission_sales").value = array1.sales_permission || 0;
+    document.querySelector("#table_permission_purchases").value = array1.purchases_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -216,6 +219,9 @@ try {
   let table_permission_customers = A("#table_permission_customers");
   let table_permission_vendors = A("#table_permission_vendors");
   let table_permission_itemsLocations = A("#table_permission_itemsLocations");
+  let table_permission_salesman = A("#table_permission_salesman");
+  let table_permission_sales = A("#table_permission_sales");
+  let table_permission_purchases = A("#table_permission_purchases");
 
     // ضبط قيم الصلاحيات
     if (general_permission_select != "1" || general_permission_select == '') {
@@ -232,6 +238,9 @@ try {
       table_permission_customers = '';
       table_permission_vendors = '';
       table_permission_itemsLocations = '';
+      table_permission_salesman = '';
+      table_permission_sales = '';
+      table_permission_purchases = '';
       // add here all tables select permission id
     };
 
@@ -253,7 +262,10 @@ try {
           table_permission_items,
           table_permission_customers,
           table_permission_vendors,
-          table_permission_itemsLocations
+          table_permission_itemsLocations,
+          table_permission_salesman,
+          table_permission_sales,
+          table_permission_purchases
         },
         'users_permission','update',
         20,

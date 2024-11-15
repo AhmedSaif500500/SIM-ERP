@@ -289,7 +289,76 @@ router.get('/departments_update_ar', (req, res) => {
 
 //#endregion
 
+//#region sales mangement
 
+router.get('/salesMain_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.salesman_permission > 0 || req.session.sales_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'salesMain_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/salesman_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.salesman_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'mnadep', 'salesman_view_ar.html'));
+        }else{
+            res.redirect('/salesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+//#region sales
+router.get('/sales_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales' ,'sales_view_ar.html'));
+        }else{
+            res.redirect('/salesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/sales_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales' ,'sales_add_ar.html'));
+        }else{
+            res.redirect('/sales_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/sales_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales' ,'sales_update_ar.html'));
+        }else{
+            res.redirect('/sales_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion
+
+
+//#endregion
 
 
 //#region cutomers 
@@ -697,6 +766,46 @@ router.get('/transaction_update_ar', (req, res) => {
 
 //#endregion
 
+
+//! suspense - need to put right permission for  settings tax 3 pages
+//#region settings tax
+router.get('/settings_taxes_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'taxes' ,'settings_taxes_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/settings_taxes_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'taxes' ,'settings_taxes_add_ar.html'));
+        }else{
+            res.redirect('/settings_taxes_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/settings_taxes_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'taxes' ,'settings_taxes_update_ar.html'));
+        }else{
+            res.redirect('/settings_taxes_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+//#endregion
 //#region owners_and_companies
 router.get('/companies_ar', async (req, res) => {
     if (req.session.isLoggedIn) {  

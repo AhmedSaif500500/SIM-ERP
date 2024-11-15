@@ -1,61 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>زر بروز مع تأثير تدريجي</title>
 
+    <style>
+      body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
 
-<tr>
-  <td style="width: auto;" class="">
-    <div class="dragbutton_table">
-        <button class="drag-handle">
-          <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
-      </button>
-    </div>
-  </td>
+.custom-button {
+    background: linear-gradient(to bottom, #d1d1d1, #a0a0a0);
+    color: #fff;
+    font-size: 18px;
+    padding: 25px 10px; /* طول كبير وعرض صغير */
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* تأثير الظل */
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+}
 
-  <td>
-    <select name="" id="" class="account_type select h_full" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
-  </td>         
+.custom-button:hover {
+    transform: translateY(-4px); /* تأثير البروز عند التمرير */
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); /* تأثير الظل عند التمرير */
+}
 
-  <!-- dropdown -->
-  <td style="width: auto; height: var(--input_height);">
-    <div class="dropdown_container_input_table" id="">
-      <div class="row h_full">
-        <span class="input_span_start account_type_name T">حساب عام</span>
-        <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-          <div id="" class="dropdown_select_input T hover">${account_name}</div>
-          <i class="fa-solid fa-caret-down left_icon"></i>
-          <input type="hidden" class="id_hidden_input x1 T" id="" readonly value="${+row.account_id}">
-        </div>
-        <!-- items -->
-        <div class="row items_div" style="gap:0.2rem; display:none">
-          <div class="row">
-            <span class="input_span_start">الكمية</span>
-            <div class="div_input_sm hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)">${row.item_amount ? row.item_amount : ""}</div>
-          </div>
-          <div class="row">
-            <span class="input_span_start">موقع المخزون</span>
-            <select name="" id="" class="select h_full items_locations_select">${get_items_locations_array}</select>
-          </div>
-        </div>
-      </div>
-      <div class="dropdown_menue hover scroll" id="" style="display: none;">
-        <div class="dropdown_search">
-          <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..." oninput="performSearch_accounts_table(this)" autocomplete="off">
-        </div>
-        <div class="inputTable_dropdown_tableContainer" id="">
-          <!-- قائمة الخيارات تظهر هنا   -->
-        </div>
-      </div>
-    </div>
-  </td>
+.custom-button:active {
+    transform: translateY(2px); /* تأثير الضغط على الزر */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
+}
 
-  <td style="width: 100%;" class="inputTable_noteTd hover" contenteditable="true" onkeydown="td_EnterkeypressEvent1(event)"></td>
-  <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
-  <td style="width: auto;" class="inputTable_NumberTd sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
-
-  <td style="width: auto;" class="">
-    <div class="table_buttons_div">
-      <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
-      <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
-    </div>
-  </td>
-
-
-</tr>
+    </style>
+</head>
+<body>
+    <button class="custom-button">اضغط هنا</button>
+</body>
+</html>

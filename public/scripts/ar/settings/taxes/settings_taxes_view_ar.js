@@ -1,13 +1,12 @@
-setActiveSidebar("customers_view_ar");
-pagePermission("view", "customers_permission");
+setActiveSidebar("general_settings_ar");
+// pagePermission("view", "customers_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
-let startDate = firstDayOfYear;
-let endDate = lastDayOfYear;
+
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
@@ -22,76 +21,28 @@ let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! account name
+//! is_active
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
 let f2_select = filter_div.querySelector(`#f2_select`);
 let f2_input = filter_div.querySelector(`#f2_input`);
 
-//! credit limit
+
+//! is_active
 let f3_div = filter_div.querySelector(`#f3_div`);
 let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
 let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
-let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_select = filter_div.querySelector(`#f3_select`); f3_select.value = 1
 let f3_input = filter_div.querySelector(`#f3_input`);
 
-//! email
-let f4_div = filter_div.querySelector(`#f4_div`);
-let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
-let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
-let f4_select = filter_div.querySelector(`#f4_select`);
-let f4_input = filter_div.querySelector(`#f4_input`);
-
-//! tasgel darepy
-let f5_div = filter_div.querySelector(`#f5_div`);
-let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
-let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
-let f5_select = filter_div.querySelector(`#f5_select`);
-let f5_input = filter_div.querySelector(`#f5_input`);
-
-//! legal_info
-let f6_div = filter_div.querySelector(`#f6_div`);
-let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
-let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
-let f6_select = filter_div.querySelector(`#f6_select`);
-let f6_input = filter_div.querySelector(`#f6_input`);
-
-//! contact_info
-let f7_div = filter_div.querySelector(`#f7_div`);
-let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
-let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
-let f7_select = filter_div.querySelector(`#f7_select`);
-let f7_input = filter_div.querySelector(`#f7_input`);
 
 
-//! delivery_adress
-let f8_div = filter_div.querySelector(`#f8_div`);
-let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
-let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
-let f8_select = filter_div.querySelector(`#f8_select`);
-let f8_input = filter_div.querySelector(`#f8_input`);
-
-
-//! banking_info
-let f9_div = filter_div.querySelector(`#f9_div`);
-let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
-let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
-let f9_select = filter_div.querySelector(`#f9_select`);
-let f9_input = filter_div.querySelector(`#f9_input`);
-
-
-//! balance
-let f10_div = filter_div.querySelector(`#f10_div`);
-let f10_checkbox = filter_div.querySelector(`#f10_checkbox`);
-let f10_selectAndInput_div = filter_div.querySelector(`#f10_selectAndInput_div`);
-let f10_select = filter_div.querySelector(`#f10_select`);
-let f10_input = filter_div.querySelector(`#f10_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
 
-const indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [1]; // ضع هنا الأرقام التي تريد تضمينها
 function backUp_filter_div_conditions() {
     
     const conditions = {};
@@ -116,25 +67,25 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('customersViewArray')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('settings_taxes_ViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('customersViewArray', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('settings_taxes_ViewArray', JSON.stringify(conditionsArray));
 }
 
 back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`customersViewArray`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`settings_taxes_ViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `notes_ar`;
+            window.location.href = `general_settings_ar`;
        
     }else{
 
@@ -148,7 +99,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("customersViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("settings_taxes_ViewArray")) || [];
     
 
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
@@ -159,7 +110,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("customersViewArray", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("settings_taxes_ViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -242,14 +193,8 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox) {
 function deafult_checkbox() {
     call_default_checkbox('f1',true,false)
     call_default_checkbox('f2',true,true)
-    call_default_checkbox('f3',true,false)
-    call_default_checkbox('f4',true,false)
-    call_default_checkbox('f5',true,false)
-    call_default_checkbox('f6',true,false)
-    call_default_checkbox('f7',true,false)
-    call_default_checkbox('f8',true,false)
-    call_default_checkbox('f9',true,false)
-    call_default_checkbox('f10',true,true)
+    call_default_checkbox('f3',true,true)
+
 }
 
 async function filter_icon_cancel_fn() {
@@ -266,7 +211,7 @@ async function filter_icon_cancel_fn() {
             
             showFirst50RowAtTheBegening()
             closeDialog();
-            sessionStorage.removeItem('customersViewArray');
+            sessionStorage.removeItem('settings_taxes_ViewArray');
             conditionsArray = []
             
         }
@@ -293,9 +238,9 @@ async function getData_fn() {
     try {
 
         data = await new_fetchData_postAndGet(
-            '/get_All_customers_Data',
+            '/get_settings_taxes_Data',
             {},
-            'customers_permission','view',
+            'pass','pass',
             15,
             false,"",
             true,
@@ -305,7 +250,7 @@ async function getData_fn() {
             false,false,
             "حدث خطأ اثناء معالجه البيانات"
         )
-
+        
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -367,20 +312,11 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let account_name = `display: table-cell ; width: 100%; white-space: nowrap; text-align: start;`;
-        let credit_limit = `display:${f3_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let email = `display:${f4_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let tasgel_darepy = `display:${f5_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let legal_info = `display:${f6_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let contact_info = `display:${f7_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let delivery_adress = `display:${f8_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
-        let banking_info = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let balance = `display:${f10_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let style_reference = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        let style_account_name = `display: table-cell ; width: 100%; white-space: nowrap; text-align: start;`;
+        let style_active = `display:${f3_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: center;`
 
 
-        total_column1.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -389,37 +325,24 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${account_no}">#</th>
-                                <th style="${account_name}">الاسم</th>
-                                <th style="${credit_limit}">حد الائتمان</th>
-                                <th style="${email}">البريد الالكتورةنى</th>
-                                <th style="${tasgel_darepy}">رقم التسجيل الضريبى</th>
-                                <th style="${legal_info}">بيانات قانونية</th>
-                                <th style="${contact_info}">بيانات التواصل</th>
-                                <th style="${delivery_adress}">عنوان التسليم</th>
-                                <th style="${banking_info}">بيانات بنكية</th>
-                                <th style="${balance}">الرصيد</th>
+                                <th style="${style_reference}">#</th>
+                                <th style="${style_account_name}">الاسم</th>
+                                <th style="${style_active}">الحالة</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
         slice_array1.forEach((row) => {
                 
+            let activeClass = row.is_inactive == 'غير نشط' ? 'table_red_condition' : 'table_green_condition';
 
             tableHTML +=
                      `<tr>
                         <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
                         <td style="${style_id}">${row.id}</td>
-                        <td style="${account_no}">${row.account_no}</td>
-                        <td style="${account_name}">${row.account_name}</td>
-                        <td style="${credit_limit}">${row.credit_limit}</td>
-                        <td style="${email}">${row.email}</td>
-                        <td style="${tasgel_darepy}">${row.tasgel_darepy}</td>
-                        <td style="${legal_info}">${row.legal_info}</td>
-                        <td style="${contact_info}">${row.contact_info}</td>
-                        <td style="${delivery_adress}">${row.delivery_adress}</td>
-                        <td style="${banking_info}">${row.banking_info}</td>
-                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn)}                        
+                        <td style="${style_reference}">${row.tax_group_reference ? row.tax_group_reference : ''}</td>
+                        <td style="${style_account_name}">${row.tax_group_name}</td>
+                        <td style="${style_active}"><span class="${activeClass}">${row.is_inactive}</span></td>
                       </tr>`;
         });
 
@@ -427,16 +350,9 @@ function fillTable() {
                     <tr class="table_totals_row">
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id" style="${style_id}"></td>
-                        <td id="footer_style_account_no" style="${account_no}"></td>
-                        <td id="footer_style_account_name" style="${account_name}"></td>
-                        <td id="footer_style_credit_limit" style="${credit_limit}"></td>
-                        <td id="footer_style_email" style="${email}"></td>
-                        <td id="footer_style_tasgel_darepy" style="${tasgel_darepy}"></td>
-                        <td id="footer_style_legal_info" style="${legal_info}"></td>
-                        <td id="footer_style_contact_info" style="${contact_info}"></td>
-                        <td id="footer_style_delivery_adress" style="${delivery_adress}"></td>
-                        <td id="footer_style_banking_info" style="${banking_info}"></td>
-                        <td id="footer_style_balance" style="${balance}"></td>
+                        <td id="footer_style_style_reference" style="${style_reference}"></td>
+                        <td id="footer_style_account_name" style="${style_account_name}"></td>
+                        <td id="footer_style_active" style="${style_active}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -463,8 +379,6 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_balance`).textContent = floatToString(true,total_column1.value);
-
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
@@ -484,29 +398,15 @@ function showFirst50RowAtTheBegening() {
 
         filteredData_Array = data.filter((row) => {
 
-            const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"account_no",row);
-            const f2_match = filterData_string_column_with_showAndHiddenCheckbox(f2_checkbox,f2_select,f2_input,"account_name",row);
-            const f3_match = filterData_number_column_with_showAndHiddenCheckbox(f3_checkbox,f3_select,f3_input,"credit_limit",row);
-            const f4_match = filterData_string_column_with_showAndHiddenCheckbox(f4_checkbox,f4_select,f4_input,"email",row);
-            const f5_match = filterData_string_column_with_showAndHiddenCheckbox(f5_checkbox,f5_select,f5_input,"tasgel_darepy",row);
-            const f6_match = filterData_string_column_with_showAndHiddenCheckbox(f6_checkbox,f6_select,f6_input,"legal_info",row);
-            const f7_match = filterData_string_column_with_showAndHiddenCheckbox(f7_checkbox,f7_select,f7_input,"contact_info",row);
-            const f8_match = filterData_string_column_with_showAndHiddenCheckbox(f8_checkbox,f8_select,f8_input,"delivery_adress",row);
-            const f9_match = filterData_string_column_with_showAndHiddenCheckbox(f9_checkbox,f9_select,f9_input,"banking_info",row);
-            const f10_match = filterData_number_column_with_showAndHiddenCheckbox(f10_checkbox,f10_select,f10_input,"balance",row);
-
+            
+            const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"tax_group_reference",row);
+            const f2_match = filterData_string_column_with_showAndHiddenCheckbox(f2_checkbox,f2_select,f2_input,"tax_group_name",row);
+            const f3_match = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f3_checkbox, f3_select, 'is_inactive', row);
 
             return (
                 f1_match &&
                 f2_match &&
-                f3_match &&
-                f4_match &&
-                f5_match &&
-                f6_match &&
-                f7_match &&
-                f8_match &&
-                f9_match &&
-                f10_match
+                f3_match
             ); // && otherCondition;
         });
 
@@ -530,29 +430,15 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const f1Match = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
-            const f2Match = performSearch_Row(f2_checkbox,"account_name",searchValue,row);
-            const f3Match = performSearch_Row(f3_checkbox,"credit_limit",searchValue,row);
-            const f4Match = performSearch_Row(f4_checkbox,"email",searchValue,row);
-            const f5Match = performSearch_Row(f5_checkbox,"tasgel_darepy",searchValue,row);
-            const f6Match = performSearch_Row(f6_checkbox,"legal_info",searchValue,row);
-            const f7Match = performSearch_Row(f7_checkbox,"contact_info",searchValue,row);
-            const f8Match = performSearch_Row(f8_checkbox,"delivery_adress",searchValue,row);
-            const f9Match = performSearch_Row(f9_checkbox,"banking_info",searchValue,row);
-            const f10Match = performSearch_Row(f10_checkbox,"balance",searchValue,row);
+            const f1Match = performSearch_Row(f1_checkbox,"tax_group_reference",searchValue,row);
+            const f2Match = performSearch_Row(f2_checkbox,"tax_group_name",searchValue,row);
+            const f3Match = performSearch_Row(f3_checkbox,"is_inactive",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 f1Match ||
                 f2Match ||
-                f3Match ||
-                f4Match ||
-                f5Match ||
-                f6Match ||
-                f7Match ||
-                f8Match ||
-                f9Match ||
-                f10Match
+                f3Match
             );
         });
 
@@ -667,7 +553,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`customersViewArray`);
+    const conditionsArray = sessionStorage.getItem(`settings_taxes_ViewArray`);
 
     if (!conditionsArray){
      
