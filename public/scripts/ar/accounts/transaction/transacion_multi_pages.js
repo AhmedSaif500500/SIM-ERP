@@ -104,7 +104,6 @@ function build_table(){
                         </div>
                         <div class="inputTable_dropdown_tableContainer" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
-    
                         </div>
                       </div>
                     </div>

@@ -28,12 +28,12 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="customers_view_ar" title="المؤثرات">
+            <a id="back_href" class="back_href" href="settings_taxes_view_ar" title="الرموز الضريبيه">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="customers_add_ar" title="اعادة تحميل الصفحة">
-                العملاء
+              <a id="h2_text_div" class="h2_text_div" href="settings_taxes_add_ar" title="اعادة تحميل الصفحة">
+                الرموز الضريبيه
               </a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
             </div>
@@ -44,60 +44,71 @@
 
                 <!-- معرف العميل -->
                 <div id="acc_no_div" class="flex_column">
-                  <label for="account_no_input" class="lbl_sm">معرف العميل</label>
+                  <label for="account_no_input" class="lbl_sm">المعرف</label>
                   <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختياري"
                     autocomplete="off" oninput="check_parse(this,'string')">
                   <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
                 </div>
     
                 <!-- اسم العميل -->
-                <label for="account_name_input" class="lbl_sm">اسم العميل</label>
-                <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب"
+                <label for="tax_name_input" class="lbl_sm">اسم الضريبه</label>
+                <input type="search" id="tax_name_input" class="input_text_md hover" placeholder="مطلوب"
                   autocomplete="off" oninput="check_parse(this,'string')">
                 <input type="hidden" id="account_id_hidden">
     
     
                 <!-- الحد الائتمانى -->
-                <label for="credit_limit" class="lbl_sm">الحد الائتمانى</label>
-                <input type="search" id="credit_limit" class="input_text_sm hover" placeholder="اختياري"
-                  autocomplete="off" oninput="check_parse(this,'number')">
-    
-                <!-- البريد الالكترونى -->
-                <label for="email_input" class="lbl_sm">البريد الالكترونى</label>
-                <input type="search" id="email_input" class="input_text_md hover" placeholder="اختياري"
-                  autocomplete="off" oninput="check_parse(this,'string')">
-                <input type="hidden" id="account_id_hidden">
-    
-                <!-- رقم التسجيل الضريبيى -->
-                <label for="tasgel_darepy_input" class="lbl_sm">رقم التسجيل الضريبيى</label>
-                <input type="search" id="tasgel_darepy_input" class="input_text_md hover" placeholder="اختياري"
+                <label for="short_name_input" class="lbl_sm">الاسم المختصر</label>
+                <input type="search" id="short_name_input" class="input_text_sm hover" placeholder="مثال : VAT 14%"
                   autocomplete="off" oninput="check_parse(this,'string')">
     
-                <!-- بيانات قانونية اخرى -->
-                <label for="legal_info_input" class="lbl_sm">بيانات قانونية اخرى</label>
-                <textarea name="" id="legal_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
-                  style="margin-block-end: 1rem;"></textarea>
-    
-    
-                <!-- بيانات التواصل الاخرى -->
-                <label for="contact_info_input" class="lbl_sm">بيانات التواصل الاخرى</label>
-                <textarea name="" id="contact_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')"  placeholder="اختياري"
-                  style="margin-block-end: 1rem;"></textarea>
-    
-                <!-- بيانات التواصل الاخرى -->
-                <label for="banking_info_input" class="lbl_sm">بيانات بنكية</label>
-                <textarea name="" id="banking_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
-                  style="margin-block-end: 1rem;"></textarea>
-    
-                <label for="delivery_adress_input" class="lbl_sm">عنوان التسليم</label>
-                <textarea name="" id="delivery_adress_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
-                  style="margin-block-end: 1rem;"></textarea>
-    
-                <!-- <div id="checked_div" class="column x_start y_start" style="display: none">
-                  <label for="note_textarea" class="lbl_sm">الحالة</label>
-                  <input id="checked_input" type="checkbox">
-                </div> -->
-    
+          <!--   القائمة والمجموعه-->
+          <label for="tax_rate_input" class="lbl_sm">المعدل</label>
+          <div class="flex_row x_start y_center mb_10">
+            <span id="statment_type_span" class="span mb_10">%</span>
+            <input type="search" id="tax_rate_input" class="input_text_sm hover" placeholder="مثال : 14" autocomplete="off" oninput="check_parse(this,'number')">
+          </div>
+
+                      <!-- dropdown -->
+                      <div class="dropdown_container" id="dropdown_container">
+                        <div class="dropdown_select" id="dropdown_select">
+                          <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة"
+                            class="dropdown_select_input hover" readonly autocomplete="off" oninput="check_parse(this,'string')">
+                          <i class="fa-solid fa-caret-down left_icon"></i>
+                          <input type="hidden" id="id_hidden_input" readonly>
+                        </div>
+                        <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
+                          <div class="dropdown_search">
+                            <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
+                              oninput="performSearch()" autocomplete="off" oninput="check_parse(this,'string')">
+                          </div>
+                          <div class="dropdown_menue-items" id="dropdownItems">
+                            <!-- قائمة الخيارات تظهر هنا -->
+                          </div>
+                        </div>
+                      </div>
+          
+          <!-- النوع -->
+          <label for="is_reverse_select" class="lbl_sm">النوع</label>
+          <div class="flex_row x_start y_center mb_10">
+            <select id="is_reverse_select" class="select">
+              <option value="1">إضافة</option>
+              <option value="2">خصم</option>
+            </select>
+          </div>
+
+
+          <label for="inactive_select" class="lbl_sm">الحالة</label>
+          <select name="" id="inactive_select" class="select hover">
+            <option value="0" selected>نشط</option>
+            <option value="1" >غير نشط</option>
+          </select>
+          
+        
+
+
+
+
                 <div class="btn_container_top_border">
                     <button class="btn_save" id="btn_save_accounts" onclick="save('A')">حفظ</button>
                     <button class="btn_save" id="btn_save_and_add_another_accounts" onclick="save('B')">حفظ و إضافة أخر</button>

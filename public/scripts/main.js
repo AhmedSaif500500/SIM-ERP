@@ -181,8 +181,7 @@ function loadSidebarContents() {
       الموارد البشريه
     </a>
 
-
-    <a href="production_view_ar" target="_self" class="" style="display: ${module_display("production_permission")}">
+    <a href="production_view_ar" target="_self" class="" onclick="sessionStorage.removeItem('productionViewArray')" style="display: ${module_display("production_permission")}">
       <i class="fa-duotone fa-industry"></i>
       الانتاج
     </a>
@@ -2812,3 +2811,346 @@ function clear_sub_sessionStorage(){
   
 }
 
+
+
+async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionName, str_permissionType) {
+  const dropDownDiv = document.querySelector(`#${str_dropDownDivId}`);
+  // dropDownDiv.style.width = '20rem'
+  
+  if (!dropDownDiv) {
+    console.error(`Element with ID '${str_dropDownDivId}' not found.`);
+    return;
+  }
+
+  // تعريف هيكل القائمة المنسدلة
+  const dropDownDiv_structure = `
+    <div class="dropdown_select" id="${str_dropDownDivId}_select">
+      <input 
+        type="search" 
+        id="${str_dropDownDivId}_select_input" 
+        placeholder="اختر من القائمة"
+        class="dropdown_select_input hover" 
+        readonly 
+        autocomplete="off">
+      <i class="fa-solid fa-caret-down left_icon"></i>
+      <input type="hidden" id="${str_dropDownDivId}_hidden_input" readonly>
+    </div>
+    <div class="dropdown_menue hover scroll" id="${str_dropDownDivId}_menue" style="display: none;">
+
+      <div class="dropdown_menue-items" id="${str_dropDownDivId}_items">
+        <!-- قائمة الخيارات تظهر هنا -->
+
+              <table id="${str_dropDownDivId}_table" class="review_table">
+        <thead>
+          <tr>
+            <th style="display: none;">ID</th>
+            <th>
+                <input 
+                  type="search" 
+                    class="search_input hover" 
+                    id="${str_dropDownDivId}_search_input" 
+                    placeholder="ابحث هنا..."
+                    autocomplete="off">
+            </th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr id="${str_dropDownDivId}_table_footer_buttons_row">
+            <td colspan="2">
+              <div class="flex_H">
+                <button class="table_footer_show_data" id="showAll_${str_dropDownDivId}">All</button>
+                <button class="table_footer_show_data" id="show50_${str_dropDownDivId}">50</button>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+      </div>
+    </div>
+  `;
+  dropDownDiv.innerHTML = ''
+  dropDownDiv.insertAdjacentHTML("beforeend", dropDownDiv_structure);
+
+
+  // عناصر DOM الخاصة بالقائمة
+  const dropdown_select = dropDownDiv.querySelector(`#${str_dropDownDivId}_select`);
+  const dropdown_select_input = dropDownDiv.querySelector(`#${str_dropDownDivId}_select_input`);
+  const icon = dropdown_select.querySelector(`i`)
+  const id_hidden_input = dropDownDiv.querySelector(`#${str_dropDownDivId}_hidden_input`);
+  const dropdown_menue = dropDownDiv.querySelector(`#${str_dropDownDivId}_menue`);
+  const dropdown_search_input = dropDownDiv.querySelector(`#${str_dropDownDivId}_search_input`);
+  const dropdownItems = dropDownDiv.querySelector(`#${str_dropDownDivId}_items`);
+  const showAlldata_btn = dropDownDiv.querySelector(`#showAll_${str_dropDownDivId}`);
+  const Show50_btn = dropDownDiv.querySelector(`#show50_${str_dropDownDivId}`);
+
+
+  let data = [];
+  let array1 = [];
+  let slice_Array1 = [];
+
+  // دالة لجلب البيانات
+  async function getData_fn() {
+    data = await new_fetchData_postAndGet(
+      str_ApiUrl,
+      {},
+      str_permissionName,
+      str_permissionType,
+      15,
+      false, "", true, false, false, false, false,
+      false, false, false, "", "حدث خطأ اثناء معالجة البيانات"
+    );
+    // array1 = data.slice(); // نسخ البيانات
+  }
+
+  await getData_fn();
+
+  // دالة عرض أول 50 صف
+  function showFirst50RowAtTheBeginning() {
+    slice_Array1 = data.slice(0, 50); // أول 50 صف
+    fillTable();
+    showAlldata_btn.style.display = 'flex'
+    Show50_btn.style.display = 'none'
+  }
+
+  function showFirst50RowInTable(){
+    
+    slice_Array1 = data.slice(0, 50); // أول 50 صف
+    fillTable();
+    showAlldata_btn.style.display = 'flex'
+    Show50_btn.style.display = 'none'
+  }
+  
+  function ShowAllDataInTable(){
+    slice_Array1 = data
+    showAlldata_btn.style.display = 'none'
+    Show50_btn.style.display = 'flex'
+
+    fillTable();
+  }
+
+  // دالة تعبئة الجدول
+  function fillTable() {
+  
+    
+    
+  
+    const tbody = dropdownItems.querySelector("tbody");
+    tbody.innerHTML = ''
+    
+    slice_Array1.forEach(row => {
+      const new_tr = `
+        <tr tabindex="0" class="dropdown_table_tr"> <!-- إضافة tabindex لجعل الصف قابل للتركيز -->
+          <td style="display: none;" class="row1">${row.id}</td>
+          <td style="width: 100%;" class="row2">${row.account_name}</td>
+        </tr>
+      `;
+      tbody.insertAdjacentHTML("beforeend", new_tr);
+    });
+  
+    const rows = tbody.querySelectorAll("tr");
+  
+    // تعيين أول صف كـ Focused
+    if (rows.length > 0) {
+      setFocusedRow(rows[0]);
+    }
+  
+    // إضافة أحداث النقر على الصفوف
+    rows.forEach(tr => {
+      tr.addEventListener("click", () => selectedRow(tr));
+    });
+  }
+  
+  function handleKeyboardNavigation(event) {
+    const focusedRow = dropdownItems.querySelector(".focused");
+    const allRows = Array.from(dropdownItems.querySelectorAll("tbody tr"));
+    const currentIndex = allRows.indexOf(focusedRow);
+  
+    if (event.key === "ArrowDown") {
+      // التنقل إلى الصف التالي
+      if (currentIndex < allRows.length - 1) {
+        setFocusedRow(allRows[currentIndex + 1]);
+      }
+      event.preventDefault(); // منع السلوك الافتراضي (مثل التمرير)
+    } else if (event.key === "ArrowUp") {
+      // التنقل إلى الصف السابق
+      if (currentIndex > 0) {
+        setFocusedRow(allRows[currentIndex - 1]);
+      }
+      event.preventDefault();
+    } else if (event.key === "Enter" && focusedRow) {
+      // اختيار الصف الحالي عند الضغط على Enter
+      selectedRow(focusedRow);
+      event.preventDefault();
+    } else if (event.key === "Escape") {
+      hideDropdown();
+    }
+  
+    // أعد التركيز على حقل البحث عند استخدام الأسهم
+    dropdown_search_input.focus();
+  }
+  
+  
+  // إضافة مستمع أحداث لوحة المفاتيح عند فتح القائمة
+  dropdown_menue.addEventListener("keydown", handleKeyboardNavigation);
+  
+  // تعيين فئة التركيز على صف معين
+  function setFocusedRow(row) {
+    const allRows = dropdownItems.querySelectorAll("tbody tr");
+    allRows.forEach(tr => tr.classList.remove("focused")); // إزالة التركيز
+    row.classList.add("focused"); // إضافة التركيز
+    row.focus(); // تعيين التركيز للصف
+}
+
+  // دالة البحث
+  function performSearch() {
+    
+    const searchValue = dropdown_search_input.value.trim().toLowerCase();
+    
+  
+    // تصفية البيانات بناءً على البحث
+    const filteredData = data.filter(row => {
+        const nameMatch = row.account_name && row.account_name.toString().toLowerCase().includes(searchValue);
+        return nameMatch;
+    });
+
+    // تحديث array1 و slice_Array1 بالبيانات المصفاة
+    // array1 = filteredData;
+    slice_Array1 = filteredData.slice(0, 50);
+
+    
+    // تعبئة الجدول بالنتائج الجديدة
+    fillTable();
+
+    dropdown_search_input.focus();
+}
+
+  // دالة اختيار صف
+  function selectedRow(row) {
+    id_hidden_input.value = row.cells[0].textContent; // ID
+    dropdown_select_input.value = row.cells[1].textContent; // الاسم
+    hideDropdown();
+  }
+
+  // عرض/إخفاء القائمة
+  function toggleDropdown() {
+    
+    if (dropdown_menue.style.display === "none") {
+      
+      measureDistanceToBottom();
+      showDropdown();
+    } else {
+      
+      hideDropdown();
+    }
+  }
+
+  function showDropdown() {
+    showFirst50RowAtTheBeginning(); // عرض أول 50 صف
+    dropdown_menue.style.display = "block";
+  
+    // ضع التركيز داخل حقل البحث عند فتح القائمة
+    dropdown_search_input.focus();
+  
+    // إذا كنت بحاجة إلى أن يكون الصف الأول محددًا (ولكن لا يفقد التركيز من حقل البحث)،
+    // يمكنك تنفيذ التالي:
+    // const firstRow = dropdownItems.querySelector("tbody tr");
+    // if (firstRow) {
+    //   setFocusedRow(firstRow); // التركيز على الصف الأول
+    // }
+  }
+  
+  
+  function hideDropdown() {
+    dropdown_menue.style.display = "none";
+    dropdown_search_input.value = "";
+    
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
+  }
+
+  dropdown_select.addEventListener("click", toggleDropdown);
+  dropdown_search_input.addEventListener("input", performSearch);
+  Show50_btn.addEventListener("click", showFirst50RowInTable);
+  showAlldata_btn.addEventListener("click", ShowAllDataInTable);
+
+  // إخفاء القائمة عند النقر خارجها
+  document.addEventListener("click", (event) => {
+    if (
+      !dropdown_select.contains(event.target) &&
+      !dropdown_menue.contains(event.target)
+    ) {
+      hideDropdown();
+    }
+  });
+
+  // دالة قياس المسافة إلى أسفل الشاشة
+  function measureDistanceToBottom() {
+    const rect = dropDownDiv.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const distanceToBottom = windowHeight - rect.bottom;
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const distanceToBottomRem = distanceToBottom / fontSize;
+
+    if (distanceToBottomRem < 21) {
+      icon.classList.remove('fa-caret-down');
+      icon.classList.add('fa-caret-up');
+      dropdown_menue.classList.add("dropdown_menue_Open_top");
+      dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
+    } else {
+      icon.classList.add('fa-caret-down');
+      icon.classList.remove('fa-caret-up');
+      dropdown_menue.classList.add("dropdown_menue_Open_bottom");
+      dropdown_menue.classList.remove("dropdown_menue_Open_top");
+    }
+
+    window.addEventListener('scroll', measureDistanceToBottom);
+    window.addEventListener('resize', measureDistanceToBottom);
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      hideDropdown();
+    }
+  });
+
+  return {
+    showDropdown,
+    hideDropdown,
+    performSearch,
+    ShowAllDataInTable,
+    showFirst50RowInTable
+  };
+}
+
+
+
+function get_cumulative_balance_fn(orignalArray,sliceArray,opening_balance, AllRows_or_50) {
+
+  if (AllRows_or_50 === 50) {
+    
+      let totalDifference = 0;  // لحساب مجموع الفرق بين production_amount و sales_amount بعد الأوبجكت رقم 50
+      
+      // نبدأ من الأوبجكت رقم 51 (أي الأوبجكت الذي يلي الأوبجكت رقم 50)
+      for (let i = 50; i < orignalArray.length; i++) {
+          const currentObj = orignalArray[i];
+          
+          totalDifference += currentObj.procution_amount - currentObj.sales_amount;
+      }
+      
+      opening_balance += totalDifference
+      
+      
+
+  }
+      // حساب cumulative_balance كما في الكود السابق
+      for (let i = sliceArray.length - 1; i >= 0; i--) {
+          const currentObj = sliceArray[i];
+          currentObj.cumulative_balance = (i === sliceArray.length - 1)
+              ? opening_balance + currentObj.procution_amount - currentObj.sales_amount
+              : sliceArray[i + 1].cumulative_balance + currentObj.procution_amount - currentObj.sales_amount;
+      }
+      
+      return opening_balance
+}

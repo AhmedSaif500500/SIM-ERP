@@ -1,47 +1,69 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en" dir="rtl">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>زر بروز مع تأثير تدريجي</title>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/css/style.css" />
+    <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+    <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
     <style>
-      body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
-}
-
-.custom-button {
-    background: linear-gradient(to bottom, #d1d1d1, #a0a0a0);
-    color: #fff;
-    font-size: 18px;
-    padding: 25px 10px; /* طول كبير وعرض صغير */
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* تأثير الظل */
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    outline: none;
-}
-
-.custom-button:hover {
-    transform: translateY(-4px); /* تأثير البروز عند التمرير */
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); /* تأثير الظل عند التمرير */
-}
-
-.custom-button:active {
-    transform: translateY(2px); /* تأثير الضغط على الزر */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
-}
 
     </style>
 </head>
-<body>
-    <button class="custom-button">اضغط هنا</button>
+
+<body class="body scroll">
+    <script src="/public/scripts/darkmode.js"></script>
+    <div id="alert-container" class="alert-container"></div>
+    <div id="body_content">
+        <script src="/public/scripts/ar/Authentication_ar.js"></script>
+        <button id="scrollToTopBtn">&#9650;</button>
+
+        <!-- start ------------------------------------------------------------------------------------------>
+
+        <div class="header" id="header_div"></div>
+
+        <div class="sub_container">
+            <div id="sidebar" class="sidebar scroll"></div>
+
+            <div id="white_backcolor" class="white_backcolor">
+                <!-- content -->
+                <div id="content_space" class="scroll">
+
+                    <div id="fn_container_div" class="fn_container_div"></div>
+
+                    <h2 id="h2" class="h2">
+                        <a id="back_href" class="back_href" href="hr_ar" title="general_settings_ar">
+                            <i class="fa-solid fa-arrow-right back_icon"></i>
+                        </a>
+                        <div class="h2_main_text_div">
+                            <a id="h2_text_div" class="h2_text_div" href="settings_taxes_view_ar"
+                                title="اعادة تحميل الصفحة">الرمز الضريبية</a>
+                            <span id="sub_h2_header" class="sub_h2_header"></span>
+                        </div>
+                    </h2>
+                    <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+                    <div id="page_content">
+
+                        <div id="dropdown_div" class="dropdown_container"></div>
+                        <div id="dropdown_div2" class="dropdown_container"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- end body content -->
+    <!-- scripts------------------------------------------------------------------------------ -->
+    <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+    <script src="/public/socket/socket.io.min.js"></script>
+    <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+    <script src="/public/scripts/ar/test.js"></script>
+
+
+
 </body>
+
 </html>

@@ -2137,7 +2137,8 @@ html[dir="rtl"] {
   color: var(--Font_Color);
   border-radius: 0.3rem;
   transition: var(--transition);
-  z-index: 1;
+  /*z-index: 1; */ /* canceled */
+  
 }
 
 /* @media screen and (max-width: 750px) {
@@ -3661,4 +3662,10 @@ html[dir="rtl"] {
 .custom_button:active {
   transform: translateY(2px); /* تأثير الضغط على الزر */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
+}
+
+
+.dropdown_table_tr.focused {
+  background-color: var(--table_row_alternative_background_color_while_hover) !important;
+  color: var(--table_row_alternative_color_while_hover) !important;
 }

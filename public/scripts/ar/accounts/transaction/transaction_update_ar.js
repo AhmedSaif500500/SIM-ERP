@@ -125,7 +125,6 @@ async function getTransactionData_fn() {
           <td>
             <select name="" id="" class="account_type select h_full" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
           </td>         
-
           <!-- dropdown -->
           <td style="width: auto; height: var(--input_height);">
             <div class="dropdown_container_input_table" id="">
@@ -170,7 +169,6 @@ async function getTransactionData_fn() {
             </div>
           </td>
   
-
         </tr>`;
 
         tableBody.insertAdjacentHTML('beforeend', newTr);
@@ -223,7 +221,6 @@ async function getTransactionData_fn() {
 
 
   }
-
 
 
 //!----------------------------------------------------------------------------

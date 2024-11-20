@@ -3,11 +3,8 @@ setActiveSidebar('hr_ar');
 pagePermission('view', 'employees_permission');
 
 
-
-
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 const back_href = document.querySelector(`#back_href`);
-
 
 
 const tableContainer = document.querySelector('#tableContainer');
@@ -26,9 +23,6 @@ let check_balance = filter_div.querySelector(`#check_balance`) ; let select_bala
 let checkbox_active = filter_div.querySelector(`#checkbox_active`) ; let select_active = filter_div.querySelector(`#select_active`); select_active.value = 1
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-
-
-
 
 filter_icon.onclick = () =>{
     try {
@@ -93,7 +87,6 @@ async function getData_fn() {
    } 
 
 }
-
 
 
 async function Execution(){

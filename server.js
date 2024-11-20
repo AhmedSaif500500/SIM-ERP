@@ -5264,9 +5264,44 @@ app.post("/get_All_production_Data", async (req, res) => {
       return;
     }
 
+    const posted_elements = req.body;
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+    if (InValidDateFormat){
+      return res.json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+  
+    turn_EmptyValues_TO_null(posted_elements);
+
+
     //* Start--------------------------------------------------------------
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query0 = `SELECT 
+        COALESCE(SUM(procution_amount - sales_amount), 0) AS opening_balance
+    FROM 
+        production
+    WHERE 
+        company_id = $1 
+        AND datex < $2; `
+        let result = await db.oneOrNone(query0,[req.session.company_id,posted_elements.start_date])
+        let opening_balance = result.opening_balance
+        
 
     let query1 = `SELECT
     id,
@@ -5274,29 +5309,26 @@ app.post("/get_All_production_Data", async (req, res) => {
     note,
     procution_amount,
     sales_amount,
-    SUM(procution_amount - sales_amount) OVER (ORDER BY datex ASC, id ASC) AS cumulative_balance
+    '' as cumulative_balance
 FROM
     production
  WHERE
- company_id = $1   
+ company_id = $2
+ AND (datex BETWEEN $3 AND $4 )
 ORDER BY
     datex DESC, id DESC;
 ;`;
-    let rows = await db.any(query1, [req.session.company_id]);
 
-    const data = rows.map((row) => ({
-      id: row.id,
-      datex: row.datex,
-      note: row.note,
-      procution_amount: row.procution_amount,
-      sales_amount: row.sales_amount,
-      cumulative_balance: row.cumulative_balance,
-    }));
+    let data = await db.any(query1, [opening_balance,req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
 
-    res.json(data);
+    let ServerData = {data,opening_balance}
+
+// دمج صف الرصيد الافتتاحي مع السجلات الرئيسية
+
+    res.json(ServerData);
   } catch (error) {
     console.error("Error fetching data:", error);
-    res.status(500).send("Error: getEmployeesData");
+    res.status(500).send("Error: getProductionData");
   }
 });
 
@@ -8539,13 +8571,14 @@ app.post("/get_All_sales_Data", async (req, res) => {
     WHERE
         TH.company_id = $1
         AND TH.transaction_type = 3
+        AND (TH.datex BETWEEN $2 AND $3 )
         AND (TH.is_deleted IS NULL OR TH.is_deleted != true)
     ORDER BY
         TH.datex DESC,
         TH.reference DESC;
 `;
 
-    let data = await db.any(query1, [req.session.company_id]);
+    let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
 
     res.json(data);
   } catch (error) {
@@ -8648,19 +8681,30 @@ app.post("/getItemssData1", async (req, res) => {
   
       let query1 = `
 select 
-	sth.id,
-	sth.tax_group_reference,
-	sth.tax_group_name,
+	st.id,
+  st.tax_reference,
+  st.tax_name,
+  st.tax_short_name,
+	st.tax_rate,
+  CASE 
+    WHEN
+       st.is_tax_reverse = true THEN 'خصم'
+    ELSE
+      'إضافة'
+  END as is_tax_reverse,
+	st.tax_account_id,
+	ah.account_name,
 	CASE 
     WHEN
-       sth.is_inactive = true THEN 'غير نشط'
+       st.is_inactive = true THEN 'غير نشط'
     ELSE
       'نشط'
   END as is_inactive
 from
-	settings_tax_header sth
+	settings_tax st
+LEFT JOIN accounts_header ah on ah.id = st.tax_account_id  
 where 
-	sth.company_id = $1;
+	st.company_id = $1;
   `;
   
       let data = await db.any(query1, [req.session.company_id]);
