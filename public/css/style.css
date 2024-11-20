@@ -926,7 +926,8 @@ input[type="checkbox"]:hover {
   padding-inline-end: 2.7rem;
   padding-block-end: 0.7rem;
   padding-inline-start: 0.7rem;
-  width: 22rem;
+  /* width: 22rem; */
+  width: 100%;
   height: var(--input_height);
   transition: var(--transition);
   text-align: start;
@@ -2130,7 +2131,8 @@ html[dir="rtl"] {
   flex-direction: column;
   position: relative;
   border: none;
-  width: 25rem;
+  /* width: 25rem; */
+  width: fit-content;
   height: var(--input_height);
   margin-block-end: 1rem;
   background-color: var(--input_text_background_color);

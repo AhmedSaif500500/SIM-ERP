@@ -69,26 +69,9 @@
             </div>
 
             <!-- employee name -->
-            <label for="employee_name_input" class="lbl_sm">اسم الموظف</label>
+            <label for="dropdown_div" class="lbl_sm">اسم الموظف</label>
             <!-- dropdown -->
-            <div class="dropdown_container" id="dropdown_container">
-              <div class="dropdown_select" id="dropdown_select">
-                <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة"
-                  class="dropdown_select_input hover" readonly autocomplete="off">
-                <i class="fa-solid fa-caret-down left_icon"></i>
-                <input type="hidden" id="id_hidden_input" readonly>
-              </div>
-              <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
-                <div class="dropdown_search">
-                  <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
-                    oninput="performSearch()" autocomplete="off">
-                </div>
-                <div class="dropdown_menue-items" id="dropdownItems">
-                  <!-- قائمة الخيارات تظهر هنا -->
-                </div>
-              </div>
-            </div>
-
+            <div id="dropdown_div" class="dropdown_container"></div>
 
 
             <label for="employee_job_input" class="lbl_sm">القيم</label>

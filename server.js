@@ -1174,11 +1174,11 @@ return res.json({
       const main_account_id = [
         null,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        1,
+        2,
+        3,
+        4,
+        5,
         3,
         1,
         2,
@@ -4807,7 +4807,13 @@ app.post("/getEmployeesData1", async (req, res) => {
     //* Start--------------------------------------------------------------
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT id, account_name FROM accounts_header where company_id = $1 AND account_type_id = 4 AND is_final_account IS TRUE`;
+    let query1 = `SELECT id, account_name 
+FROM accounts_header 
+WHERE company_id = $1 
+  AND account_type_id = 4 
+  AND is_final_account IS TRUE 
+  AND is_inactive IS NULL;
+`;
     let data = await db.any(query1, [req.session.company_id]);
 
     res.json(data);
@@ -6064,8 +6070,8 @@ app.post("/api/add-account", async (req, res) => {
     await db.tx(async (tx) => {
       // أدخل into accounts_header
       let new_account_id = await newId_fn("accounts_header",'id');
-      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, cashflow_statement, main_account_id, company_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7,$8)`;
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, cashflow_statement, account_type_id, main_account_id, company_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7,$8, $9)`;
       await tx.none(query1, [
         new_account_id,
         posted_elements.account_name,
@@ -6073,6 +6079,7 @@ app.post("/api/add-account", async (req, res) => {
         true,
         result.finance_statement,
         posted_elements.cash_flow_statement_value,
+        1,
         result.main_account_id,
         req.session.company_id,
       ]);
@@ -6192,6 +6199,7 @@ app.post("/api/update-account", async (req, res) => {
     }
 
     
+    //! معلق -- مطلوب تعديل الماين اكونتس فى جدول الاكونت هيدرز بناء  على الحساب الاب
     if (result.global_id !== null && is_forbidden_adding_branches.includes(result.global_id)) {
       return res.json({
         success: false,
@@ -8717,6 +8725,38 @@ where
   });
   
   //#endregion
+
+  //#region get accounts for taxes add
+  app.post("/getAccountsDataForTaxesAdd", async (req, res) => {
+    try {
+      //! Permission
+      // await permissions(req, "effects_permission", "view");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+
+      //* Start--------------------------------------------------------------
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `SELECT id, account_name FROM accounts_header where company_id = $1 AND account_type_id = 1 AND is_final_account IS TRUE AND main_account_id in(1,2)`;
+      let data = await db.any(query1, [req.session.company_id]);
+  
+
+      res.json(data);
+      await last_activity(req)
+    } catch (error) {
+      await last_activity(req)
+      console.error("Error while get Accounts data for taxes add page Data", error);
+      res.join;
+      res
+        .status(500)
+        .json({ success: false, message_ar: "Error while get Accounts data for taxes add page Data" });
+    }
+  });
+
+  //#endregion
+
 
 //#endregion
 

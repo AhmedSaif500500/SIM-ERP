@@ -2858,7 +2858,10 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
         <tfoot>
           <tr id="${str_dropDownDivId}_table_footer_buttons_row">
             <td colspan="2">
-              <div class="flex_H">
+              <div id="none_Data_${str_dropDownDivId}" style="pointer-events: none;">
+                  لا توجد بيانات...
+              </div>
+              <div id="footer_btn_${str_dropDownDivId}"  class="flex_H">
                 <button class="table_footer_show_data" id="showAll_${str_dropDownDivId}">All</button>
                 <button class="table_footer_show_data" id="show50_${str_dropDownDivId}">50</button>
               </div>
@@ -2884,6 +2887,9 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
   const dropdownItems = dropDownDiv.querySelector(`#${str_dropDownDivId}_items`);
   const showAlldata_btn = dropDownDiv.querySelector(`#showAll_${str_dropDownDivId}`);
   const Show50_btn = dropDownDiv.querySelector(`#show50_${str_dropDownDivId}`);
+  const tableFooterdiv = dropDownDiv.querySelector(`#${str_dropDownDivId}_table_footer_buttons_row`);
+  const footer_btn = dropDownDiv.querySelector(`#footer_btn_${str_dropDownDivId}`);
+  const none_Data = dropDownDiv.querySelector(`#none_Data_${str_dropDownDivId}`);
 
 
   let data = [];
@@ -2934,6 +2940,17 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
   function fillTable() {
   
     
+    if (slice_Array1.length === 0) {
+      tableFooterdiv.style.display = 'flex'
+      footer_btn.style.display = 'none';
+      none_Data.style.display = 'flex';
+    } else if(slice_Array1.length <= 50) {
+      tableFooterdiv.style.display = 'none'
+    } else if(slice_Array1.length > 50){
+      tableFooterdiv.style.display = 'flex'
+      none_Data.style.display = 'none';
+      footer_btn.style.display = 'flex';
+    }
     
   
     const tbody = dropdownItems.querySelector("tbody");
@@ -3122,6 +3139,14 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
     ShowAllDataInTable,
     showFirst50RowInTable
   };
+
+
+  /*
+  HOW TO USE 
+  create_drop_down(`dropdown_div`,'/getEmployeesData1','effects_permission','view')
+  create_drop_down(`dropdown_div2`,'/getEmployeesData1','effects_permission','view')
+  */
+
 }
 
 
@@ -3153,4 +3178,18 @@ function get_cumulative_balance_fn(orignalArray,sliceArray,opening_balance, AllR
       }
       
       return opening_balance
+}
+
+
+
+function active_color(select_variable) {
+  try {
+              if (select_variable.value == 1){
+                  select_variable.classList.add(`inactive_color`);
+              }else{
+                  select_variable.classList.remove(`inactive_color`);
+              }
+  } catch (error) {
+      catch_error(error)
+  }
 }

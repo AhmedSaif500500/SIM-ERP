@@ -42,7 +42,7 @@
           <div id="page_content" style="display: none;">
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-                <!-- معرف العميل -->
+                <!-- معرف الضريبة -->
                 <div id="acc_no_div" class="flex_column">
                   <label for="account_no_input" class="lbl_sm">المعرف</label>
                   <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختياري"
@@ -50,14 +50,14 @@
                   <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
                 </div>
     
-                <!-- اسم العميل -->
+                <!-- اسم الضريبة -->
                 <label for="tax_name_input" class="lbl_sm">اسم الضريبه</label>
                 <input type="search" id="tax_name_input" class="input_text_md hover" placeholder="مطلوب"
                   autocomplete="off" oninput="check_parse(this,'string')">
                 <input type="hidden" id="account_id_hidden">
     
     
-                <!-- الحد الائتمانى -->
+                <!-- الاسم المختصر -->
                 <label for="short_name_input" class="lbl_sm">الاسم المختصر</label>
                 <input type="search" id="short_name_input" class="input_text_sm hover" placeholder="مثال : VAT 14%"
                   autocomplete="off" oninput="check_parse(this,'string')">
@@ -69,24 +69,10 @@
             <input type="search" id="tax_rate_input" class="input_text_sm hover" placeholder="مثال : 14" autocomplete="off" oninput="check_parse(this,'number')">
           </div>
 
-                      <!-- dropdown -->
-                      <div class="dropdown_container" id="dropdown_container">
-                        <div class="dropdown_select" id="dropdown_select">
-                          <input type="search" id="dropdown_select_input" placeholder="اختر من القائمة"
-                            class="dropdown_select_input hover" readonly autocomplete="off" oninput="check_parse(this,'string')">
-                          <i class="fa-solid fa-caret-down left_icon"></i>
-                          <input type="hidden" id="id_hidden_input" readonly>
-                        </div>
-                        <div class="dropdown_menue hover scroll" id="dropdown_menue" style="display: none;">
-                          <div class="dropdown_search">
-                            <input type="search" class="hover" id="dropdown_search_input" placeholder="ابحث هنا..."
-                              oninput="performSearch()" autocomplete="off" oninput="check_parse(this,'string')">
-                          </div>
-                          <div class="dropdown_menue-items" id="dropdownItems">
-                            <!-- قائمة الخيارات تظهر هنا -->
-                          </div>
-                        </div>
-                      </div>
+
+          <label for="dropdown_div" class="lbl_sm">الحساب</label>
+                      <!-- dropdown الحساب -->
+          <div id="dropdown_div" class="dropdown_container"></div>
           
           <!-- النوع -->
           <label for="is_reverse_select" class="lbl_sm">النوع</label>
@@ -130,8 +116,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/customers/customers_add_ar.js"></script>
-  <script src="/public/scripts/ar/customers/customers_multiPages_ar.js"></script>
+  <script src="/public/scripts/ar/settings/taxes/settings_taxes_add_ar.js"></script>
+  <!-- <script src="/public/scripts/ar/customers/customers_multiPages_ar.js"></script> -->
 
 
 </body>
