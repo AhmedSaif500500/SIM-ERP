@@ -1487,6 +1487,8 @@ function makeTableRowsDraggable(tableId) {
       draggedRow = null;
       initialY = null;
     }
+    reset_rowcount_in_table(tableId)
+
   };
 
   table.addEventListener('mousedown', startDragHandler);
@@ -1676,7 +1678,6 @@ function hideMenue() {
 }
 
 //#endregion Open Menue
-
 
 
 //#endregion
@@ -1932,7 +1933,8 @@ function check_parse(inputid, type) {
 
 
   // احصل على قيمة حقل الإدخال
-  const specialCharRegex = /['";$%&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة
+  // const specialCharRegex = /['";$%&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة
+  const specialCharRegex = /['";$&<>]/; // التعبير المنتظم للتحقق من الرموز الخاصة  تم ازالة علامه ال %
 
   // إذا كان حقل الإدخال فارغًا، أعد null
   if (!value || value.trim() === '') {
@@ -2619,6 +2621,7 @@ document.onkeydown = function (event) {
     closeDialog_input()
     hide_User_options();
     hide_fn_options_div();
+    tableDropdownList_hideDropdown()
   }
 }
 
@@ -3126,11 +3129,7 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
     window.addEventListener('resize', measureDistanceToBottom);
   }
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      hideDropdown();
-    }
-  });
+
 
   return {
     showDropdown,
@@ -3148,6 +3147,329 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
   */
 
 }
+
+
+async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataArray) {
+  const dropDownDiv = document.querySelector(`#${str_dropDownDivId}`);
+  // dropDownDiv.style.width = '20rem'
+  
+  if (!dropDownDiv) {
+    console.error(`Element with ID '${str_dropDownDivId}' not found.`);
+    return;
+  }
+
+  // تعريف هيكل القائمة المنسدلة
+  const dropDownDiv_structure = `
+    <div class="dropdown_select" id="${str_dropDownDivId}_select">
+      <input 
+        type="search" 
+        id="${str_dropDownDivId}_select_input" 
+        placeholder="اختر من القائمة"
+        class="dropdown_select_input hover" 
+        readonly 
+        autocomplete="off">
+      <i class="fa-solid fa-caret-down left_icon"></i>
+      <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon2(event)"></i>
+      <input type="hidden" id="${str_dropDownDivId}_hidden_input" class="idHidden_dropdown_select_input"readonly>
+    </div>
+    <div class="dropdown_menue hover scroll" id="${str_dropDownDivId}_menue" style="display: none;">
+
+      <div class="dropdown_menue-items" id="${str_dropDownDivId}_items">
+        <!-- قائمة الخيارات تظهر هنا -->
+
+              <table id="${str_dropDownDivId}_table" class="review_table">
+        <thead>
+          <tr>
+            <th style="display: none;">ID</th>
+            <th>
+                <input 
+                  type="search" 
+                    class="search_input hover" 
+                    id="${str_dropDownDivId}_search_input" 
+                    placeholder="ابحث هنا..."
+                    autocomplete="off">
+            </th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr id="${str_dropDownDivId}_table_footer_buttons_row">
+            <td colspan="2">
+              <div id="none_Data_${str_dropDownDivId}" style="pointer-events: none;">
+                  لا توجد بيانات...
+              </div>
+              <div id="footer_btn_${str_dropDownDivId}"  class="flex_H">
+                <button class="table_footer_show_data" id="showAll_${str_dropDownDivId}">All</button>
+                <button class="table_footer_show_data" id="show50_${str_dropDownDivId}">50</button>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+      </div>
+    </div>
+  `;
+  dropDownDiv.innerHTML = ''
+  dropDownDiv.insertAdjacentHTML("beforeend", dropDownDiv_structure);
+
+
+  // عناصر DOM الخاصة بالقائمة
+  const dropdown_select = dropDownDiv.querySelector(`#${str_dropDownDivId}_select`);
+  const dropdown_select_input = dropDownDiv.querySelector(`#${str_dropDownDivId}_select_input`);
+  const icon = dropdown_select.querySelector(`i`)
+  const id_hidden_input = dropDownDiv.querySelector(`#${str_dropDownDivId}_hidden_input`);
+  const dropdown_menue = dropDownDiv.querySelector(`#${str_dropDownDivId}_menue`);
+  const dropdown_search_input = dropDownDiv.querySelector(`#${str_dropDownDivId}_search_input`);
+  const dropdownItems = dropDownDiv.querySelector(`#${str_dropDownDivId}_items`);
+  const showAlldata_btn = dropDownDiv.querySelector(`#showAll_${str_dropDownDivId}`);
+  const Show50_btn = dropDownDiv.querySelector(`#show50_${str_dropDownDivId}`);
+  const tableFooterdiv = dropDownDiv.querySelector(`#${str_dropDownDivId}_table_footer_buttons_row`);
+  const footer_btn = dropDownDiv.querySelector(`#footer_btn_${str_dropDownDivId}`);
+  const none_Data = dropDownDiv.querySelector(`#none_Data_${str_dropDownDivId}`);
+
+
+  
+  let slice_Array1 = [];
+
+
+  function showFirst50RowAtTheBeginning() {
+    slice_Array1 = DataArray.slice(0, 50); // أول 50 صف
+    fillTable();
+    showAlldata_btn.style.display = 'flex'
+    Show50_btn.style.display = 'none'
+  }
+
+  function showFirst50RowInTable(){
+    
+    slice_Array1 = DataArray.slice(0, 50); // أول 50 صف
+    fillTable();
+    showAlldata_btn.style.display = 'flex'
+    Show50_btn.style.display = 'none'
+  }
+  
+  function ShowAllDataInTable(){
+    slice_Array1 = DataArray
+    showAlldata_btn.style.display = 'none'
+    Show50_btn.style.display = 'flex'
+
+    fillTable();
+  }
+
+  // دالة تعبئة الجدول
+  function fillTable() {
+  
+    
+    if (slice_Array1.length === 0) {
+      tableFooterdiv.style.display = 'flex'
+      footer_btn.style.display = 'none';
+      none_Data.style.display = 'flex';
+    } else if(slice_Array1.length <= 50) {
+      tableFooterdiv.style.display = 'none'
+    } else if(slice_Array1.length > 50){
+      tableFooterdiv.style.display = 'flex'
+      none_Data.style.display = 'none';
+      footer_btn.style.display = 'flex';
+    }
+    
+  
+    const tbody = dropdownItems.querySelector("tbody");
+    tbody.innerHTML = ''
+    
+    slice_Array1.forEach(row => {
+      const new_tr = `
+        <tr tabindex="0" class="dropdown_table_tr"> <!-- إضافة tabindex لجعل الصف قابل للتركيز -->
+          <td style="display: none;" class="row1">${row.id}</td>
+          <td style="width: 100%;" class="row2">${row.account_name}</td>
+        </tr>
+      `;
+      tbody.insertAdjacentHTML("beforeend", new_tr);
+    });
+  
+    const rows = tbody.querySelectorAll("tr");
+  
+    // تعيين أول صف كـ Focused
+    if (rows.length > 0) {
+      setFocusedRow(rows[0]);
+    }
+  
+    // إضافة أحداث النقر على الصفوف
+    rows.forEach(tr => {
+      tr.addEventListener("click", () => selectedRow(tr));
+    });
+  }
+  
+  function handleKeyboardNavigation(event) {
+    const focusedRow = dropdownItems.querySelector(".focused");
+    const allRows = Array.from(dropdownItems.querySelectorAll("tbody tr"));
+    const currentIndex = allRows.indexOf(focusedRow);
+  
+    if (event.key === "ArrowDown") {
+      // التنقل إلى الصف التالي
+      if (currentIndex < allRows.length - 1) {
+        setFocusedRow(allRows[currentIndex + 1]);
+      }
+      event.preventDefault(); // منع السلوك الافتراضي (مثل التمرير)
+    } else if (event.key === "ArrowUp") {
+      // التنقل إلى الصف السابق
+      if (currentIndex > 0) {
+        setFocusedRow(allRows[currentIndex - 1]);
+      }
+      event.preventDefault();
+    } else if (event.key === "Enter" && focusedRow) {
+      // اختيار الصف الحالي عند الضغط على Enter
+      selectedRow(focusedRow);
+      event.preventDefault();
+    } else if (event.key === "Escape") {
+      hideDropdown();
+    }
+  
+    // أعد التركيز على حقل البحث عند استخدام الأسهم
+    dropdown_search_input.focus();
+  }
+  
+  
+  // إضافة مستمع أحداث لوحة المفاتيح عند فتح القائمة
+  dropdown_menue.addEventListener("keydown", handleKeyboardNavigation);
+  
+  // تعيين فئة التركيز على صف معين
+  function setFocusedRow(row) {
+    const allRows = dropdownItems.querySelectorAll("tbody tr");
+    allRows.forEach(tr => tr.classList.remove("focused")); // إزالة التركيز
+    row.classList.add("focused"); // إضافة التركيز
+    row.focus(); // تعيين التركيز للصف
+}
+
+  // دالة البحث
+  function performSearch() {
+    
+    const searchValue = dropdown_search_input.value.trim().toLowerCase();
+    
+  
+    // تصفية البيانات بناءً على البحث
+    const filteredData = DataArray.filter(row => {
+        const nameMatch = row.account_name && row.account_name.toString().toLowerCase().includes(searchValue);
+        return nameMatch;
+    });
+
+    // تحديث array1 و slice_Array1 بالبيانات المصفاة
+    // array1 = filteredData;
+    slice_Array1 = filteredData.slice(0, 50);
+
+    
+    // تعبئة الجدول بالنتائج الجديدة
+    fillTable();
+
+    dropdown_search_input.focus();
+}
+
+  // دالة اختيار صف
+  function selectedRow(row) {
+    id_hidden_input.value = row.cells[0].textContent; // ID
+    dropdown_select_input.value = row.cells[1].textContent; // الاسم
+
+    row.closest(`.dropdown_menue-items`).parentElement.parentElement.querySelector(`.clear_icon`).style.display = 'flex'
+    
+    
+    hideDropdown();
+  }
+
+  // عرض/إخفاء القائمة
+  function toggleDropdown() {
+    
+    if (dropdown_menue.style.display === "none") {
+      
+      measureDistanceToBottom();
+      showDropdown();
+    } else {
+      
+      hideDropdown();
+    }
+  }
+
+  function showDropdown() {
+    showFirst50RowAtTheBeginning(); // عرض أول 50 صف
+    dropdown_menue.style.display = "block";
+  
+    // ضع التركيز داخل حقل البحث عند فتح القائمة
+    dropdown_search_input.focus();
+  
+    // إذا كنت بحاجة إلى أن يكون الصف الأول محددًا (ولكن لا يفقد التركيز من حقل البحث)،
+    // يمكنك تنفيذ التالي:
+    // const firstRow = dropdownItems.querySelector("tbody tr");
+    // if (firstRow) {
+    //   setFocusedRow(firstRow); // التركيز على الصف الأول
+    // }
+  }
+  
+  
+  function hideDropdown() {
+    dropdown_menue.style.display = "none";
+    dropdown_search_input.value = "";
+    
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
+  }
+
+  dropdown_select.addEventListener("click", toggleDropdown);
+  dropdown_search_input.addEventListener("input", performSearch);
+  Show50_btn.addEventListener("click", showFirst50RowInTable);
+  showAlldata_btn.addEventListener("click", ShowAllDataInTable);
+
+  // إخفاء القائمة عند النقر خارجها
+  document.addEventListener("click", (event) => {
+    if (
+      !dropdown_select.contains(event.target) &&
+      !dropdown_menue.contains(event.target)
+    ) {
+      hideDropdown();
+    }
+  });
+
+  // دالة قياس المسافة إلى أسفل الشاشة
+  function measureDistanceToBottom() {
+    
+    const rect = dropDownDiv.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const distanceToBottom = windowHeight - rect.bottom;
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    
+    const distanceToBottomRem = distanceToBottom / fontSize;
+
+    if (distanceToBottomRem < 21) {
+      icon.classList.remove('fa-caret-down');
+      icon.classList.add('fa-caret-up');
+      dropdown_menue.classList.add("dropdown_menue_Open_top");
+      dropdown_menue.classList.remove("dropdown_menue_Open_bottom");
+    } else {
+      icon.classList.add('fa-caret-down');
+      icon.classList.remove('fa-caret-up');
+      dropdown_menue.classList.add("dropdown_menue_Open_bottom");
+      dropdown_menue.classList.remove("dropdown_menue_Open_top");
+    }
+
+    window.addEventListener('scroll', measureDistanceToBottom);
+    window.addEventListener('resize', measureDistanceToBottom);
+  }
+
+
+  return {
+    showDropdown,
+    hideDropdown,
+    performSearch,
+    ShowAllDataInTable,
+    showFirst50RowInTable
+  };
+
+
+  /*
+  HOW TO USE 
+  create_drop_down(`dropdown_div`,'/getEmployeesData1','effects_permission','view')
+  create_drop_down(`dropdown_div2`,'/getEmployeesData1','effects_permission','view')
+  */
+
+}
+
 
 
 
@@ -3192,4 +3514,417 @@ function active_color(select_variable) {
   } catch (error) {
       catch_error(error)
   }
+}
+
+function reset_rowcount_in_table(str_tablename){
+  const table = document.getElementById(`${str_tablename}`)
+  if (!table) {
+    return
+  }
+  const rows = table.querySelectorAll(`.rowCount`)
+  if (!rows) {
+    return
+  }
+  let x = 1
+  for (const row of rows){
+    row.textContent = x
+    x +=1
+  }
+}
+
+
+//#region fill dropdown  ------------------------------------------
+
+
+let tableDropdownList_DataFilterdArray = []
+let tableDropdownList_Array1 = [];
+let slice_tableDropdownList_Array1 = [];
+let tableDropdownList_TableMainTr;
+let tableDropdownList_TableMainTd;
+let tableDropdownList_DropdownMenue;
+let tableDropdownList_ClassName_ThatYouWantToShow_thirdCoumnValue;
+let tableDropdownList_ArraycolumnsNameToSHow = [];
+
+
+async function tableDropdownList(dropdown, dataArray,Array_columnsNameToSHow, typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse, Type_ClassName_ThatYouWantToShow_thirdCoumnValueInsideIt) {
+
+  tableDropdownList_DataFilterdArray = []
+  tableDropdownList_Array1 = [];
+  slice_tableDropdownList_Array1 = [];
+  tableDropdownList_TableMainTr = ""
+  tableDropdownList_TableMainTd = ""
+  tableDropdownList_DropdownMenue = ""
+  tableDropdownList_ClassName_ThatYouWantToShow_thirdCoumnValue = Type_ClassName_ThatYouWantToShow_thirdCoumnValueInsideIt  
+  tableDropdownList_ArraycolumnsNameToSHow = JSON.parse(decodeURIComponent(Array_columnsNameToSHow));
+
+  // تحويل البيانات النصية إلى بيانات أصلية
+  dataArray = JSON.parse(decodeURIComponent(dataArray));
+
+
+  tableDropdownList_TableMainTr = dropdown.closest('tr');
+  tableDropdownList_TableMainTd = dropdown.closest("td");
+  tableDropdownList_DropdownMenue = tableDropdownList_TableMainTd.querySelector(".dropdown_menue");
+
+  if (tableDropdownList_DropdownMenue.style.display === "none") {
+    if (typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse){
+      const account_type_id = parseInt(tableDropdownList_TableMainTr.querySelector(`.${typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse}`).value);
+      tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id);
+      tableDropdownList_Array1 = tableDropdownList_DataFilterdArray;
+    }else{
+      tableDropdownList_DataFilterdArray = dataArray
+      tableDropdownList_Array1 = tableDropdownList_DataFilterdArray;
+    }
+    
+    
+    
+
+    tableDropdownList_measureDistanceToBottom();
+    tableDropdownList_showDropdown();
+  } else {
+    tableDropdownList_measureDistanceToBottom();
+    tableDropdownList_hideDropdown();
+  }
+
+  // إضافة مستمعين للأحداث مع تمرير المعاملات الصحيحة
+  window.addEventListener('scroll', tableDropdownList_handleResizeOrScroll());
+  window.addEventListener('resize', tableDropdownList_handleResizeOrScroll());
+}
+
+
+function tableDropdownList_measureDistanceToBottom() {
+  
+  
+  const dropdown_container = tableDropdownList_TableMainTd.querySelector('.dropdown_container_input_table'); // el main container
+  // const dropdownList_heigh = dropdown_container.querySelector(`.inputTable_dropdown_tableContainer`).offsetHeight;
+  // const dropdownList_heigh = window.getComputedStyle(dropdown_container.querySelector(`.inputTable_dropdown_tableContainer`)).height;
+  // console.log(dropdownList_heigh);
+  
+  
+  const icon = dropdown_container.querySelector('i'); // تعديل هذا السطر للتأكد من العثور على العنصر الصحيح
+
+  // الحصول على معلومات الحجم والموقع النسبي للعنصر
+  const rect = dropdown_container.getBoundingClientRect();
+
+  
+  // الحصول على ارتفاع النافذة الرئيسية للمتصفح
+  const windowHeight = window.innerHeight;
+
+  // حساب المسافة بين العنصر والحافة السفلية للشاشة
+  const distanceToBottom = windowHeight - rect.bottom;
+
+  // حساب المسافة بوحدة REM
+  // الحصول على حجم الخط الأساسي وتحويل المسافة إلى REM
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  
+  const distanceToBottomRem = distanceToBottom / fontSize;
+  
+  if (distanceToBottomRem < 21) { // 5aleh nafs rl hight beta3 el drop_menue + 1
+    icon.classList.remove('fa-caret-down');
+    icon.classList.add('fa-caret-up');
+    tableDropdownList_DropdownMenue.classList.add("dropdown_menue_Open_top");
+    tableDropdownList_DropdownMenue.classList.remove("dropdown_menue_Open_bottom");
+  } else {
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
+    tableDropdownList_DropdownMenue.classList.add("dropdown_menue_Open_bottom");
+    tableDropdownList_DropdownMenue.classList.remove("dropdown_menue_Open_top");
+  }
+}
+
+
+
+
+async function tableDropdownList_showDropdown() {
+  tableDropdownList_hideDropdown()
+  await tableDropdownList_showFirst50RowAtTheBegening();
+  const dropdown_search_input = tableDropdownList_TableMainTd.querySelector('.dropdown_search_input')
+  dropdown_search_input.value = ""
+  tableDropdownList_DropdownMenue.style.display = "block";
+  tableDropdownList_handle_dropdown_row_selection()
+
+  const icon = dropdown_search_input.closest(`td`).querySelector(`i`)      
+  icon.classList.remove('fa-caret-down');
+  icon.classList.add('fa-caret-up');
+}
+
+
+let keydownHandler = null;
+
+function tableDropdownList_handle_dropdown_row_selection() {
+  try {
+    const dropdown_search_input = tableDropdownList_TableMainTd.querySelector('.dropdown_search_input');
+    dropdown_search_input.focus();
+    
+    const rows = tableDropdownList_TableMainTd.querySelectorAll(`.inputTable_dropdown_tableContainer table > tbody > tr`);
+    if (rows.length > 0) {
+      let currentIndex = 0;
+
+      rows[currentIndex].classList.add('custom_tr_hover');
+
+      function updateHighlight(newIndex) {
+        if (newIndex >= 0 && newIndex < rows.length) {
+          rows.forEach(row => row.classList.remove('custom_tr_hover'));
+          currentIndex = newIndex;
+          rows[currentIndex].classList.add('custom_tr_hover');
+        }
+      }
+
+      // تعريف مستمع الحدث الجديد
+      const newKeydownHandler = (event) => {
+        switch (event.key) {
+          case 'ArrowDown':
+            updateHighlight(currentIndex + 1);
+            event.preventDefault(); // Prevent the input cursor from moving
+            break;
+          case 'ArrowUp':
+            updateHighlight(currentIndex - 1);
+            event.preventDefault(); // Prevent the input cursor from moving
+            break;
+          case 'Enter':
+                 
+            if (slice_tableDropdownList_Array1.length > 0) {
+              const currentRow = rows[currentIndex];              
+              tableDropdownList_selectedRow(currentRow)
+            }
+            break;
+        }
+      };
+
+      // إزالة المستمع القديم إذا كان موجودًا
+      if (keydownHandler) {
+        dropdown_search_input.removeEventListener('keydown', keydownHandler);
+      }
+
+      // إضافة المستمع الجديد
+      dropdown_search_input.addEventListener('keydown', newKeydownHandler);
+
+      // تحديث المتغير لمستمع الحدث
+      keydownHandler = newKeydownHandler;
+    }
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+
+function tableDropdownList_hideDropdown() {
+  try {
+
+    const All_dropdown_menue = document.querySelectorAll(`table .dropdown_menue`);
+    All_dropdown_menue.forEach(dropdown_menue => {
+      dropdown_menue.style.display = "none";
+      const icon = dropdown_menue.closest(`td`).querySelector(`i`)      
+      icon.classList.add('fa-caret-down');
+      icon.classList.remove('fa-caret-up');
+
+      const dropdown_search_input = dropdown_menue.querySelector('.dropdown_search_input');
+      if (dropdown_search_input) {
+        dropdown_search_input.removeEventListener('keydown', keydownHandler);
+      }
+    })
+
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
+async function tableDropdownList_showFirst50RowAtTheBegening() {
+  slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice(0, 50);
+  tableDropdownList_fillTable()
+}
+
+
+async function tableDropdownList_fillTable() {
+  if (!slice_tableDropdownList_Array1 || slice_tableDropdownList_Array1.length === 0) {
+    tableDropdownList_TableMainTd.querySelector('.inputTable_dropdown_tableContainer').innerHTML = `<p class="no_data">لا توجد بيانات لعرضها</p>`;
+    return;
+  }
+
+  // استخراج أسماء الأعمدة التي ستظهر فقط
+  const columnNames = Object.keys(slice_tableDropdownList_Array1[0]).filter(colName =>
+    tableDropdownList_ArraycolumnsNameToSHow.includes(colName)
+  );
+
+  if (columnNames.length === 0) {
+    console.error("لا توجد أعمدة تطابق الأسماء المحددة.");
+    return;
+  }
+
+  // إنشاء هيكل الجدول
+  let tableHTML = `<table id="accounts_table" class="inputTable_dropdown_table">
+                    <thead style='display: none;'>
+                      <tr>`;
+
+  // إنشاء الأعمدة في رأس الجدول
+  columnNames.forEach((colName, index) => {
+    const displayStyle = index === 1 ? "" : "style='display: none;'"; // إخفاء الأعمدة ما عدا العمود الثاني
+    tableHTML += `<th ${displayStyle}>${colName}</th>`;
+  });
+
+  tableHTML += `</tr>
+                </thead>
+                <tbody>`;
+
+  // إنشاء الصفوف بناءً على البيانات
+  slice_tableDropdownList_Array1.forEach(row => {
+    tableHTML += `<tr onclick="tableDropdownList_selectedRow(this)">`;
+
+    columnNames.forEach((colName, index) => {
+      const displayStyle = index === 1 ? "" : "style='display: none;'"; // إخفاء الأعمدة ما عدا العمود الثاني
+      tableHTML += `<td ${displayStyle}>${row[colName] || ""}</td>`;
+    });
+
+    tableHTML += `</tr>`;
+  });
+
+  tableHTML += `</tbody>
+                <tfoot>
+                  <tr id="table_fotter_buttons_row">
+                    <td colspan="${columnNames.length}">
+                      <div class='flex_H'>
+                        <button class="table_footer_show_data" id="w1" onclick="tableDropdownList_ShowAllDataInTable(this)">All</button>
+                        <button class="table_footer_show_data" id="w2" onclick="tableDropdownList_showFirst50RowInTable(this)">50</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>`;
+
+  // تحديث محتوى الصفحة بالجدول
+  tableDropdownList_TableMainTd.querySelector('.inputTable_dropdown_tableContainer').innerHTML = tableHTML;
+
+  // إخفاء أزرار التذييل إذا كانت الصفوف أقل من 50
+  if (tableDropdownList_Array1.length > 0 && tableDropdownList_Array1.length <= 50) {
+    tableDropdownList_DropdownMenue.querySelector('#table_fotter_buttons_row').style.display = "none";
+  } else if (tableDropdownList_Array1.length < 1) {
+    tableDropdownList_TableMainTd.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan="${columnNames.length}" class="td_no_result">لا نتائج</td>`;
+  }
+}
+
+
+async function tableDropdownList_ShowAllDataInTable(button) {
+  const td = button.closest("td");
+  showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
+  slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice();
+  await tableDropdownList_fillTable()
+};
+
+async function tableDropdownList_showFirst50RowInTable(button) {
+  const td = button.closest("td");
+  slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice(0, 50);
+  await tableDropdownList_fillTable();
+}
+
+
+async function tableDropdownList_performSearch(input) {
+  const td = input.closest("td");
+  const searchValue = td.querySelector('.dropdown_search_input').value.trim().toLowerCase();
+  if (!tableDropdownList_Array1 || !Array.isArray(tableDropdownList_Array1)) {
+    console.error("tableDropdownList_Array1 غير معرّف أو ليس مصفوفة.");
+    return;
+  }
+  tableDropdownList_Array1 = tableDropdownList_DataFilterdArray.filter(row => {
+    const secondColumnValue = Object.values(row)[1];
+    return secondColumnValue && secondColumnValue.toString().toLowerCase().includes(searchValue);
+  });
+  slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice(0, 50);
+  await tableDropdownList_fillTable();
+  if (slice_tableDropdownList_Array1.length > 0) {
+    tableDropdownList_handle_dropdown_row_selection();
+  }
+}
+
+
+function tableDropdownList_handleResizeOrScroll() {
+  return function () {
+    tableDropdownList_measureDistanceToBottom();
+  };
+}
+
+
+
+// إخفاء القائمة عند الضغط على مفتاح الهروب
+// document.addEventListener("keydown", (event) => {
+//   if (event.key === "Escape") {
+//     tableDropdownList_hideDropdown();
+//   }
+// });
+
+
+
+function tableDropdownList_selectedRow(row) {
+
+
+  const mainTd = row.closest("td")
+  const mainRow = row.closest(`.mainTr`)
+
+  mainTd.querySelector('.id_hidden_input').value = row.cells[0].textContent; // row.id
+  mainTd.querySelector('.dropdown_select_input').textContent = row.cells[1].textContent; // row.employee_name
+  
+  if (tableDropdownList_ClassName_ThatYouWantToShow_thirdCoumnValue){
+    mainRow.querySelector('.tbody_itemUniteName').textContent = row.cells[2].textContent || 'الكمية'; // row.employee_name
+  }
+
+  mainTd.querySelector('.clear_icon').style.display = 'flex'; // row.id
+
+  tableDropdownList_hideDropdown();
+};
+
+
+
+document.addEventListener("click", (event) => {
+  // console.log('Clicked element:', event.target);
+  const classesToCheck = ['dropdown_select_input_table', 'dropdown_menue', 'dropdown_search_input', 'table_footer_show_data'];
+
+  const clickedInside = classesToCheck.some(className => {
+    return event.target.classList.contains(className) || event.target.closest(`.${className}`);
+  });
+
+  if (!clickedInside) {
+    tableDropdownList_hideDropdown();
+  }
+});
+
+
+
+
+//#endregion
+
+
+function clear_icon1(event) {
+  event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأب
+    const clickedIcon = event.target;
+    td = clickedIcon.closest(`td`)
+    td.querySelector(`.dropdown_select_input`).textContent = ""
+    td.querySelector(`.id_hidden_input`).value = ""
+
+        
+
+    
+    td.querySelector(`.dropdown_menue`).style.display = "none" // hide menue
+    const icon = td.querySelector(`.left_icon`)
+    
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
+
+    clickedIcon.style.display = 'none'
+}
+
+function clear_icon2(event) {
+  event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأب
+    const clickedIcon = event.target;
+    dropDownSelect = clickedIcon.closest(`.dropdown_select`)
+    dropDownSelect.querySelector(`.dropdown_select_input`).value = ""
+    dropDownSelect.querySelector(`.idHidden_dropdown_select_input`).value = ""
+
+    
+    
+    const x = dropDownSelect.parentElement;
+    x.querySelector(`.dropdown_menue`).style.display = "none" // hide menue
+    const icon = x.querySelector(`.left_icon`)
+    
+    icon.classList.add('fa-caret-down');
+    icon.classList.remove('fa-caret-up');
+
+    clickedIcon.style.display = 'none'
 }

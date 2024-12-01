@@ -14,57 +14,21 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! reference
+
+//! tax_name
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! tax_name
+
+//! active
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
-let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_select = filter_div.querySelector(`#f2_select`); f2_select.value = 0
 let f2_input = filter_div.querySelector(`#f2_input`);
-
-
-//! tax_short_name
-let f3_div = filter_div.querySelector(`#f3_div`);
-let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
-let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
-let f3_select = filter_div.querySelector(`#f3_select`);
-let f3_input = filter_div.querySelector(`#f3_input`);
-
-//! tax_rate
-let f4_div = filter_div.querySelector(`#f4_div`);
-let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
-let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
-let f4_select = filter_div.querySelector(`#f4_select`);
-let f4_input = filter_div.querySelector(`#f4_input`);
-
-
-//! is_tax_reverse
-let f5_div = filter_div.querySelector(`#f5_div`);
-let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
-let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
-let f5_select = filter_div.querySelector(`#f5_select`); f5_select.value = 0
-let f5_input = filter_div.querySelector(`#f5_input`);
-
-
-//! account_name
-let f6_div = filter_div.querySelector(`#f6_div`);
-let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
-let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
-let f6_select = filter_div.querySelector(`#f6_select`);
-let f6_input = filter_div.querySelector(`#f6_input`);
-
-//! active
-let f7_div = filter_div.querySelector(`#f7_div`);
-let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
-let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
-let f7_select = filter_div.querySelector(`#f7_select`); f7_select.value = 0
-let f7_input = filter_div.querySelector(`#f7_input`);
 
 
 
@@ -220,12 +184,8 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, int_select_value)
 
 function deafult_checkbox() {
     call_default_checkbox('f1',true,true,0)
-    call_default_checkbox('f2',true,true,0)
-    call_default_checkbox('f3',true,false,0)
-    call_default_checkbox('f4',true,true,0)
-    call_default_checkbox('f5',true,true,0)
-    call_default_checkbox('f6',true,false,0)
-    call_default_checkbox('f7',true,true,0)
+    call_default_checkbox('f2',true,true,1)
+
 
 }
 
@@ -344,14 +304,8 @@ function fillTable() {
 
         let style_button = `width: fit-content; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_tax_reference = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let style_tax_name = `display:${f2_checkbox.checked ? "table-cell" : "none"} ; width: 100%; white-space: nowrap; text-align: start;`;
-        let style_tax_short_name = `display:${f3_checkbox.checked ? "table-cell" : "none"} ; width: ${f2_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
-        let style_tax_rate = `display:${f4_checkbox.checked ? "table-cell" : "none"} ; width: auto; white-space: nowrap; text-align: start;`;
-        let style_is_tax_reverse = `display:${f5_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: center;`
-        let style_tax_account_id = `display: none;`;
-        let style_account_name = `display:${f6_checkbox.checked ? "table-cell" : "none"} ; width: auto; white-space: nowrap; text-align: start;`;
-        let style_is_inactive = `display:${f7_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: center;`
+        let style_taxe_package_name = `display: table-cell; width: 100%; white-space: nowrap; text-align: start;`;
+        let style_is_inactive = `display:${f2_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: center;`
 
 
 
@@ -362,13 +316,7 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${style_tax_reference}">#</th>
-                                <th style="${style_tax_name}">اسم الضريبة</th>
-                                <th style="${style_tax_short_name}">الاسم المختصر</th>
-                                <th style="${style_tax_rate}">المعدل</th>
-                                <th style="${style_is_tax_reverse}">النوع</th>
-                                <th style="${style_tax_account_id}">accId</th>
-                                <th style="${style_account_name}">الحساب</th>
+                                <th style="${style_taxe_package_name}">الاسم</th>
                                 <th style="${style_is_inactive}">الحالة</th>
                             </tr>
                         </thead>
@@ -382,13 +330,7 @@ function fillTable() {
                      `<tr>
                         <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
                         <td style="${style_id}">${row.id}</td>
-                        <td style="${style_tax_reference}">${row.tax_reference ? row.tax_reference : ''}</td>
-                        <td style="${style_tax_name}">${row.tax_name}</td>
-                        <td style="${style_tax_short_name}">${row.tax_short_name ? row.tax_short_name : ''}</td>
-                        <td style="${style_tax_rate}">${row.tax_rate}%</td>
-                        <td style="${style_is_tax_reverse}">${row.is_tax_reverse}</td>
-                        <td style="${style_tax_account_id}">${row.tax_account_id}</td>
-                        <td style="${style_account_name}">${row.account_name}</td>
+                        <td style="${style_taxe_package_name}">${row.taxe_package_name}</td>
                         <td style="${style_is_inactive}"><span class="${activeClass}">${row.is_inactive}</span></td>
                       </tr>`;
         });
@@ -397,13 +339,7 @@ function fillTable() {
                     <tr class="table_totals_row">
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id" style="${style_id}"></td>
-                        <td id="footer_style_tax_reference" style="${style_tax_reference}"></td>
-                        <td id="footer_style_tax_name" style="${style_tax_name}"></td>
-                        <td id="footer_style_tax_short_name" style="${style_tax_short_name}"></td>
-                        <td id="footer_style_style_tax_rate" style="${style_tax_rate}"></td>
-                        <td id="footer_style_style_is_tax_reverse" style="${style_is_tax_reverse}"></td>
-                        <td id="footer_style_style_tax_account_id" style="${style_tax_account_id}"></td>
-                        <td id="footer_style_style_account_name" style="${style_account_name}"></td>
+                        <td id="footer_style_tax_name" style="${style_taxe_package_name}"></td>
                         <td id="footer_style_style_is_inactive" style="${style_is_inactive}"></td>
                     </tr>
                 </tbody>
@@ -451,23 +387,13 @@ function showFirst50RowAtTheBegening() {
         filteredData_Array = data.filter((row) => {
 
             
-            const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"tax_reference",row);
-            const f2_match = filterData_string_column_with_showAndHiddenCheckbox(f2_checkbox,f2_select,f2_input,"tax_name",row);
-            const f3_match = filterData_string_column_with_showAndHiddenCheckbox(f3_checkbox,f3_select,f3_input,"tax_short_name",row);
-            const f4_match = filterData_number_column_with_showAndHiddenCheckbox(f4_checkbox,f4_select,f4_input,"tax_rate",row);
-            const f5_match = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f5_checkbox,f5_select,"is_tax_reverse",row);
-            const f6_match = filterData_string_column_with_showAndHiddenCheckbox(f6_checkbox,f6_select,f6_input,"account_name",row);
-            const f7_match = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f7_checkbox,f7_select, "is_inactive",row);
+            const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"taxe_package_name",row);
+            const f2_match = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f2_checkbox,f2_select, "is_inactive",row);
 
 
             return (
                 f1_match &&
-                f2_match &&
-                f3_match &&
-                f4_match &&
-                f5_match &&
-                f6_match &&
-                f7_match
+                f2_match
             ); // && otherCondition;
         });
 
@@ -491,24 +417,14 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const f1Match = performSearch_Row(f1_checkbox,"tax_reference",searchValue,row);
-            const f2Match = performSearch_Row(f2_checkbox,"tax_name",searchValue,row);
-            const f3Match = performSearch_Row(f3_checkbox,"tax_short_name",searchValue,row);
-            const f4Match = performSearch_Row(f4_checkbox,"tax_rate",searchValue,row);
-            const f5Match = performSearch_Row(f5_checkbox,"is_tax_reverse",searchValue,row);
-            const f6Match = performSearch_Row(f6_checkbox,"account_name",searchValue,row);
-            const f7Match = performSearch_Row(f7_checkbox,"is_inactive",searchValue,row);
+            const f1Match = performSearch_Row(f1_checkbox,"taxe_package_name",searchValue,row);
+            const f2Match = performSearch_Row(f2_checkbox,"is_inactive",searchValue,row);
 
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 f1Match ||
-                f2Match ||
-                f3Match ||
-                f4Match ||
-                f5Match ||
-                f6Match ||
-                f7Match
+                f2Match
             );
         });
 
@@ -550,30 +466,23 @@ searchInput.addEventListener("keydown", (event) => {
 
 async function table_update_btn_fn(updateBtn) {
     try {
-    const permission = await btn_permission('customers_permission','update');
+    // const permission = await btn_permission('customers_permission','update');
 
-    if (!permission){ // if false
-        return;
-    };
+    // if (!permission){ // if false
+    //     return;
+    // };
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row  = updateBtn.closest("tr")
     
-    const obj_customers_view = {
-    x: row.cells[1].textContent,
-    account_no_input: row.cells[2].textContent,
-    account_name_input: row.cells[3].textContent,
-    credit_limit: row.cells[4].textContent,
-    email_input: row.cells[5].textContent,
-    tasgel_darepy_input: row.cells[6].textContent,
-    legal_info_input: row.cells[7].textContent,
-    contact_info_input: row.cells[8].textContent,
-    delivery_adress_input:  row.cells[9].textContent,
-    banking_info_input: row.cells[10].textContent
-}
+    const obj_settings_tax_view = {
+        x: row.cells[1].textContent,
+        taxe_package_name: row.cells[2].textContent,
+        is_inactive: row.cells[3].querySelector(`span`).textContent
+    }
 
-    sessionStorage.setItem('obj_customers_view', JSON.stringify(obj_customers_view));                            
-    window.location.href = `customers_update_ar`;
+    sessionStorage.setItem('obj_settings_tax_view', JSON.stringify(obj_settings_tax_view));                            
+    window.location.href = `settings_taxes_update_ar`;
 } catch (error) {
     catch_error(error)
 }

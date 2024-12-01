@@ -262,6 +262,12 @@ function formatFromFiveDigits(num) {
 async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transaction_id, reference, req, tx) {
   // احسب الوقت الحالي
   try {
+
+    console.log(int_transactionTypeId);
+    console.log(int_1Add_2Update_3Delete);
+    console.log(transaction_id);
+    console.log(reference);
+    
     const timex = timeNow();
     const id = await newId_fn('history', 'id');
 
@@ -271,12 +277,20 @@ async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transac
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     `;
 
-    const params = [id, req.session.userId, int_transactionTypeId, int_1Add_2Update_3Delete, today, timex, transaction_id, reference, req.session.company_id];
+    const params = [id,
+                    req.session.userId,
+                    int_transactionTypeId,
+                    int_1Add_2Update_3Delete,
+                    today,
+                    timex,
+                    transaction_id,
+                    reference,
+                    req.session.company_id];
 
     await tx.none(query, params);
   } catch (error) {
     console.error("Error while inserting history:", error);
-    throw new Error("حدث خطأ أثناء معالجة البيانات وتم إلغاء العملية."); // إلقاء خطأ مع رسالة مخصصة
+    throw new Error("Error while inserting history Code-S-history1"); // إلقاء خطأ مع رسالة مخصصة
   }
 }
 
@@ -829,7 +843,8 @@ function sql_anti_injection(values) {
     if (typeof value === "string") {      
       // قم بإزالة المسافات الزائدة وتعقيمها
       // وتحقق من وجود رموز ضارة
-      if (value.trim().match(/['";$%&<>]/)) {
+      // if (value.trim().match(/['";$%&<>]/)) {
+      if (value.trim().match(/['";$&<>]/)) { // تم ازالى علامه % من الكود
         return true; // عثر على رمز ضار
       }
     }
@@ -4108,7 +4123,7 @@ app.post("/update_employee", async (req, res) => {
   await db.tx(async (tx) => {
     await tx.none(query1, params1);
     await tx.none(query2, params2);
-    history(posted_elements.isUrlParams_salesman ? 21 : 20, 2, posted_elements.id_value, 0, req, tx)
+    await history(posted_elements.isUrlParams_salesman ? 21 : 20, 2, posted_elements.id_value, 0, req, tx)
 
   })
 
@@ -8640,6 +8655,108 @@ app.post("/getItemssData1", async (req, res) => {
 //#endregion
 
 
+//#region get itemsLocations and salesman
+app.post("/get_itemsLocation_And_salesman", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "sales_permission", "add");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+     -- مواقع المخزون
+select
+	id as id,
+	account_name as  account_name
+from
+	accounts_header 
+WHERE company_id = $1 
+  AND account_type_id = 7
+  ;
+`;
+let params1 = [req.session.company_id]
+
+let query2 = `
+  select
+	id as id,
+	account_name as  account_name
+from
+	accounts_header 
+WHERE company_id = $1 
+  AND account_type_id = 4
+  AND is_final_account IS true
+  and is_salesman IS true
+  AND is_inactive IS null
+  ;
+`
+let params2 = [req.session.company_id]
+
+let query3 = `
+    select 
+	th.id,
+	th.taxe_package_name
+from
+ 	settings_tax_header th
+where
+	th.company_id = $1
+	and th.is_inactive is null
+order by
+	th.taxe_package_name asc 
+ 
+`
+let params3 = [req.session.company_id]
+
+let query4 = `
+select
+    tb.id,
+    tb.tax_name,
+    tb.tax_rate,
+    tb.is_tax_reverse,
+    tb.tax_account_id,
+    ah.account_name,
+    tb.settings_tax_header_id
+from
+    settings_tax_body tb
+left join accounts_header ah on ah.id = tb.tax_account_id    
+where
+    tb.settings_tax_header_id = ANY($1::int[])
+`;
+
+
+
+
+await db.tx(async (tx) => {
+
+  const itemslocationsArray = await tx.any(query1, params1);
+  const salesmanArray = await tx.any(query2, params2);
+  const taxHeaderArray = await tx.any(query3, params3);
+
+  // استخراج IDs من الاستعلام الثالث
+  const settings_tax_header_id_Array = taxHeaderArray.map(row => row.id);
+
+  // تمرير القائمة إلى الاستعلام الرابع
+  const taxBodyArray = await tx.any(query4, [settings_tax_header_id_Array]);
+
+  const postedData = { itemslocationsArray, salesmanArray, taxHeaderArray, taxBodyArray };
+  res.json(postedData);
+})
+
+
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while get Employees Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get Employees Data" });
+  }
+});
+//#endregion end get itemslocations and salesman
 //#endregion
 
 
@@ -8689,37 +8806,27 @@ app.post("/getItemssData1", async (req, res) => {
   
       let query1 = `
 select 
-	st.id,
-  st.tax_reference,
-  st.tax_name,
-  st.tax_short_name,
-	st.tax_rate,
-  CASE 
-    WHEN
-       st.is_tax_reverse = true THEN 'خصم'
-    ELSE
-      'إضافة'
-  END as is_tax_reverse,
-	st.tax_account_id,
-	ah.account_name,
+	id,
+  	taxe_package_name,
 	CASE 
-    WHEN
-       st.is_inactive = true THEN 'غير نشط'
-    ELSE
-      'نشط'
-  END as is_inactive
+    	WHEN
+      		is_inactive = true THEN 'غير نشط'
+    	ELSE
+     		'نشط'
+  	END as is_inactive
 from
-	settings_tax st
-LEFT JOIN accounts_header ah on ah.id = st.tax_account_id  
+	settings_tax_header
 where 
-	st.company_id = $1;
+	company_id = $1
+ORDER BY
+  id DESC;
   `;
   
       let data = await db.any(query1, [req.session.company_id]);
   
       res.json(data);
     } catch (error) {
-      console.error("Error get_All_sales_Data:", error);
+      console.error("Error get_settings_taxes_data:", error);
       res.status(500).send("Error:");
     }
   });
@@ -8758,6 +8865,609 @@ where
   //#endregion
 
 
+  //#region add tax
+  app.post("/api/tax_add", async (req, res) => {
+    try {
+  
+      //! Permission
+      // await permissions(req, "transaction_permission", "add");
+      // if (!permissions) {
+      //   return res.status(403).json({
+      //     success: false,
+      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      //   });
+      // }
+  
+      const posted_elements = req.body;
+      const transaction_type = 22
+    
+  
+      //! sql injection check
+      let hasBadSymbols = sql_anti_injection([
+        ...posted_elements.posted_array.map((obj) => obj.Desc + obj.rate + obj.reverse_type + obj.account_id ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+        posted_elements.tax_package_name,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+  
+  
+      // const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+      // if (InValidDateFormat) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message_ar: InValidDateFormat_message_ar,
+      //   });
+      // }
+  
+      // //! settings
+      // const settings = await check_settings_validation({
+      //   check_futureDate: true,
+      //   check_closingDate: true,
+      //   datex: posted_elements.datex,
+      //   type: 'add',
+      //   tableName: false, // if type = 'update' or 'delete' only
+      //   transaction_id: false, // if type = 'update' or 'delete' only
+      // }, req);
+  
+      
+      // if (!settings.valid) {
+      //   return res.json({
+      //     success: false,
+      //     message_ar: settings.message_ar,
+      //   });
+      // }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      //* Start Transaction --------------------------------------------------
+  
+      //! check diffrence between debit and credit
+        // المرور على جميع الكائنات في المصفوفة
+        posted_elements.posted_array.forEach(item => {
+
+          if(!item.Desc || item.Desc === '' || !item.rate || isNaN(item.rate) || !item.reverse_type || !item.account_id || isNaN(item.account_id)){
+            return res.json({
+              success: false,
+              message_ar: "برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
+            });
+          } 
+        });
+  
+  
+          // //! Security hacking  accounts id
+  // جلب الحسابات من قاعدة البيانات
+  let query02 = `SELECT id
+                  FROM
+                    accounts_header
+                  WHERE
+                  company_id = $1
+                  AND is_final_account = true
+                  AND main_account_id in (1,2)`;
+  let rows02 = await db.any(query02, [req.session.company_id]);
+  
+  // تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+  const dbAccounts = rows02.map(row => ({
+    id: parseInt(row.id)
+    // account_type_id: row.account_type_id
+  }));
+  
+  // المرور على كل كائن في posted_elements.posted_array
+  for (const rowData of posted_elements.posted_array) {
+    const account_id = rowData.account_id;
+  
+    //! make sure from every account_id
+    const accountExists = dbAccounts.some(item => 
+      +item.id === +account_id
+    );
+  
+    // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+    if (!accountExists) {
+      await block_user(req,'Sta1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    
+  }
+  
+  
+  
+      
+      const newId_tax_header = await newId_fn("settings_tax_header", 'id');
+
+  
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+        let query1 = `INSERT INTO settings_tax_header
+                      (id, taxe_package_name, is_inactive, company_id)
+                      VALUES($1, $2, $3, $4);`;
+  
+        await tx.none(query1, [
+          newId_tax_header,
+          posted_elements.tax_package_name,
+          +posted_elements.inactive_select_val === 0 ? null : true, 
+          req.session.company_id
+        ]);
+  
+        let newId_tax_body = await newId_fn("settings_tax_body",'id');
+        for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_tax_body);
+  
+          //! make sure if account id != item  then location and amount = null
+
+  
+          let query2 = `INSERT INTO settings_tax_body
+                        (id, tax_name, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id)
+                        VALUES($1, $2, $3, $4, $5, $6);`;
+  
+          await tx.none(query2, [
+            newId,
+            element.Desc,
+            +element.rate,
+            +element.reverse_type === 1? null : true,
+            element.account_id,
+            newId_tax_header
+          ]);
+  
+          
+          newId_tax_body = parseInt(newId_tax_body) + 1;
+        }
+  
+        //! history
+        await history(transaction_type,1,newId_tax_header,0,req,tx);
+      });
+  
+      // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+      await last_activity(req);
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+        success: true,
+        message_ar: `تم الحفظ بناج`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error adding tax:", error);
+  
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+        success: false,
+        message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      });
+    }
+  });
+
+  app.post("/get_settings_update_Data", async (req, res) => {
+    try {
+      // //! Permission
+      // await permissions(req, "transaction_permission", "update");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+  
+      const posted_elements = req.body;
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+      //* Start--------------------------------------------------------------
+  
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+      const q1 = `
+    select 
+      count(id) as id_count
+    from
+      settings_tax_header
+    where
+      id = $1
+      `;
+      const result = await db.oneOrNone(q1,[posted_elements.x])
+  
+      if(result.id_count < 1){
+        await block_user(req,'gsud1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+  
+  //! مطلةب التاكد من  ترانكسشن هيدر اى دى يخص الشركه وانه عباره قيد محاسبى
+      let query1 = `
+  SELECT
+      tb.id,
+      tb.tax_name,
+      tb.tax_rate,
+      tb.is_tax_reverse,
+      tb.tax_account_id,
+      ah.account_name
+  FROM 
+      settings_tax_body tb
+  LEFT JOIN accounts_header as ah on ah.id = tb.tax_account_id    
+  WHERE
+      tb.settings_tax_header_id = $1
+  ORDER BY
+      tb.id ASC;
+
+  
+  `;
+      const data = await db.any(query1, [posted_elements.x]);
+      
+      res.json(data);
+      await last_activity(req)
+    } catch (error) {
+      await last_activity(req)
+      console.error("Error get_settings_update_Data:", error);
+      res.status(500).send("Error:");
+    }
+  });
+  //#endregion
+
+
+  app.post("/api/tax_update", async (req, res) => {
+    try {
+  
+      //! Permission
+      // await permissions(req, "transaction_permission", "add");
+      // if (!permissions) {
+      //   return res.status(403).json({
+      //     success: false,
+      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      //   });
+      // }
+  
+      const posted_elements = req.body;
+      const transaction_type = 22
+    
+  
+      //! sql injection check
+      let hasBadSymbols = sql_anti_injection([
+        ...posted_elements.posted_array.map((obj) => obj.rowId + obj.Desc + obj.rate + obj.reverse_type + obj.account_id ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+        posted_elements.tax_package_name,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+  
+  
+      // const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+      // if (InValidDateFormat) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message_ar: InValidDateFormat_message_ar,
+      //   });
+      // }
+  
+      // //! settings
+      // const settings = await check_settings_validation({
+      //   check_futureDate: true,
+      //   check_closingDate: true,
+      //   datex: posted_elements.datex,
+      //   type: 'add',
+      //   tableName: false, // if type = 'update' or 'delete' only
+      //   transaction_id: false, // if type = 'update' or 'delete' only
+      // }, req);
+  
+      
+      // if (!settings.valid) {
+      //   return res.json({
+      //     success: false,
+      //     message_ar: settings.message_ar,
+      //   });
+      // }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      //* Start Transaction --------------------------------------------------
+  
+      //! check diffrence between debit and credit
+        // المرور على جميع الكائنات في المصفوفة
+        posted_elements.posted_array.forEach(item => {
+
+          if(!item.rowId || isNaN(item.rowId) || !item.Desc || item.Desc === '' || !item.rate || isNaN(item.rate) || !item.reverse_type || !item.account_id || isNaN(item.account_id)){
+            return res.json({
+              success: false,
+              message_ar: "برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
+            });
+          } 
+        });
+  
+  
+          // //! Security hacking  accounts id
+  // جلب الحسابات من قاعدة البيانات
+  let query02 = `SELECT id
+                  FROM
+                    accounts_header
+                  WHERE
+                  company_id = $1
+                  AND is_final_account = true
+                  AND main_account_id in (1,2)`;
+  let rows02 = await db.any(query02, [req.session.company_id]);
+  
+  // تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+  const dbAccounts = rows02.map(row => ({
+    id: parseInt(row.id)
+    // account_type_id: row.account_type_id
+  }));
+  
+  // المرور على كل كائن في posted_elements.posted_array
+  for (const rowData of posted_elements.posted_array) {
+    const account_id = rowData.account_id;
+  
+    //! make sure from every account_id
+    const accountExists = dbAccounts.some(item => 
+      +item.id === +account_id
+    );
+  
+    // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+    if (!accountExists) {
+      await block_user(req,'Sta1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    
+  }
+  
+  
+  
+      
+      const newId_tax_header = await newId_fn("settings_tax_header", 'id');
+
+  
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+        let query1 = `update
+                        settings_tax_header
+                      set
+                        taxe_package_name = $1,
+                        is_inactive = $2
+                      WHERE
+                        id = $3
+                        AND company_id = $4`;
+  
+         const resultQ1 = await tx.result(query1, [
+            posted_elements.tax_package_name,
+            +posted_elements.inactive_select_val === 0 ? null : true,
+            posted_elements.header_Id,
+            req.session.company_id,
+          ]);
+        
+
+
+          if (resultQ1.rowCount === 0) {
+            throw new Error("No rows were updated, rolling back transaction.");
+          }
+        
+
+
+  
+        for (const element of posted_elements.posted_array) {
+  
+          //! make sure if account id != item  then location and amount = null
+
+  
+          let query2 = `update settings_tax_body set
+                            tax_name = $1,        
+                            tax_rate = $2,    
+                            is_tax_reverse = $3,    
+                            tax_account_id = $4
+                          WHERE
+                            id = $5
+                            AND settings_tax_header_id = $6;`;
+
+          const resultQ2 = await tx.result(query2, [
+            element.Desc,
+            +element.rate,
+            +element.reverse_type === 1? null : true,
+            element.account_id,
+            element.rowId,
+            posted_elements.header_Id
+
+          ]);
+  
+          if (resultQ2.rowCount === 0) {
+            throw new Error("No rows were updated, rolling back transaction.");
+          }
+        
+        }
+  
+        //! history
+        await history(transaction_type,2,posted_elements.header_Id,0,req,tx);
+      });
+  
+      // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+      await last_activity(req);
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+        success: true,
+        message_ar: `تم التعديل بنجاح`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error adding tax:", error);
+  
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+        success: false,
+        message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      });
+    }
+  });
+
+
+  app.post("/api/tax_delete", async (req, res) => {
+    try {
+  
+      //! Permission
+      // await permissions(req, "transaction_permission", "add");
+      // if (!permissions) {
+      //   return res.status(403).json({
+      //     success: false,
+      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      //   });
+      // }
+  
+      const posted_elements = req.body;
+      const transaction_type = 22
+    
+  
+      //! sql injection check
+      let hasBadSymbols = sql_anti_injection([
+        ...posted_elements.posted_array.map((obj) => obj.rowId), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+        posted_elements.tax_package_name,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+  
+  
+      // const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+      // if (InValidDateFormat) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message_ar: InValidDateFormat_message_ar,
+      //   });
+      // }
+  
+      // //! settings
+      // const settings = await check_settings_validation({
+      //   check_futureDate: true,
+      //   check_closingDate: true,
+      //   datex: posted_elements.datex,
+      //   type: 'add',
+      //   tableName: false, // if type = 'update' or 'delete' only
+      //   transaction_id: false, // if type = 'update' or 'delete' only
+      // }, req);
+  
+      
+      // if (!settings.valid) {
+      //   return res.json({
+      //     success: false,
+      //     message_ar: settings.message_ar,
+      //   });
+      // }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      //* Start Transaction --------------------------------------------------
+  
+      //! check diffrence between debit and credit
+        // المرور على جميع الكائنات في المصفوفة
+        posted_elements.posted_array.forEach(item => {
+
+          if(!item.rowId || isNaN(item.rowId)){
+            return res.json({
+              success: false,
+              message_ar: "برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
+            });
+          } 
+        });
+  
+        const query = `
+        SELECT
+          (SELECT COUNT(id) FROM settings_tax_header WHERE id = $1 AND company_id = $2) AS count_id,
+          (SELECT COUNT(settings_tax_header_id) FROM transaction_body WHERE settings_tax_header_id = $1) as settings_tax_header_id_count
+      `;
+  
+      const result = await db.oneOrNone(query, [
+        posted_elements.header_Id,
+        req.session.company_id
+      ]);
+  
+      if (result.count_id === 0){
+        await block_user(req,'S-td1')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+
+      if (result.settings_tax_header_id_count > 0){
+        return res.json({
+          success: false,
+          message_ar: 'توجد حركات تتعلق بهذا الرمز الضريبى',
+        });
+      }
+              
+  
+          // //! Security hacking  accounts id
+
+      
+      const newId_tax_header = await newId_fn("settings_tax_header", 'id');
+
+  
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+        let query1 = `delete from
+                        settings_tax_header
+                      WHERE
+                        id = $1
+                        AND company_id = $2`;
+  
+         const resultQ1 = await tx.result(query1, [
+            posted_elements.header_Id,
+            req.session.company_id
+          ]);
+        
+
+
+          if (resultQ1.rowCount === 0) {
+            throw new Error("No rows were delete, rolling back transaction.");
+          }
+        
+
+        //! history
+        await history(transaction_type,3,posted_elements.header_Id,0,req,tx);
+      });
+  
+      // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+      await last_activity(req);
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+        success: true,
+        message_ar: `تم حذف البيانات`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error Deleting tax:", error);
+  
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+        success: false,
+        message_ar: "حدث خطأ أثناء عملية حذف البيانات وتم إلغاء العملية",
+      });
+    }
+  });
 //#endregion
 
 

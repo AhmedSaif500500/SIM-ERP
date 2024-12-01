@@ -1,69 +1,106 @@
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
+<html lang="ar">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="/public/css/style.css" />
-    <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
-    <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
-    <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>قائمة منسدلة داخل جدول مع بحث</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-    </style>
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .dropdown-cell {
+      position: relative;
+    }
+
+    .search-input {
+      width: 90%;
+      padding: 5px;
+      margin-bottom: 5px;
+      box-sizing: border-box;
+    }
+
+    select {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 
-<body class="body scroll">
-    <script src="/public/scripts/darkmode.js"></script>
-    <div id="alert-container" class="alert-container"></div>
-    <div id="body_content">
-        <script src="/public/scripts/ar/Authentication_ar.js"></script>
-        <button id="scrollToTopBtn">&#9650;</button>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>اسم الموظف</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <tr>
+        <td class="dropdown-cell">
+          <input type="text" class="search-input" oninput="filterOptions(this)" placeholder="بحث...">
+          <select>
+            <!-- الخيارات سيتم تعبئتها ديناميكيًا -->
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-        <!-- start ------------------------------------------------------------------------------------------>
+  <script>
+    // البيانات الأساسية
+    const Array1 = [
+      { id: 1, name: "Ahmed" },
+      { id: 2, name: "Mohamed" },
+      { id: 3, name: "Fatma" },
+      { id: 4, name: "Sara" },
+      { id: 5, name: "Khaled" }
+    ];
 
-        <div class="header" id="header_div"></div>
+    // مرجع للجدول
+    const tableBody = document.getElementById("table-body");
 
-        <div class="sub_container">
-            <div id="sidebar" class="sidebar scroll"></div>
+    // تعبئة الخلايا بالبيانات
+    function populateDropdowns() {
+      const rows = tableBody.querySelectorAll(".dropdown-cell");
+      rows.forEach(cell => {
+        const select = cell.querySelector("select");
+        // تفريغ الخيارات السابقة
+        select.innerHTML = "";
+        // تعبئة الخيارات
+        Array1.forEach(item => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.name;
+          select.appendChild(option);
+        });
+      });
+    }
 
-            <div id="white_backcolor" class="white_backcolor">
-                <!-- content -->
-                <div id="content_space" class="scroll">
+    // فلترة الخيارات بناءً على المدخلات
+    function filterOptions(inputElement) {
+      const filterText = inputElement.value.toLowerCase();
+      const select = inputElement.nextElementSibling; // القائمة المنسدلة
+      const options = select.options;
 
-                    <div id="fn_container_div" class="fn_container_div"></div>
+      for (let i = 0; i < options.length; i++) {
+        const optionText = options[i].textContent.toLowerCase();
+        options[i].style.display = optionText.includes(filterText) ? "" : "none";
+      }
+    }
 
-                    <h2 id="h2" class="h2">
-                        <a id="back_href" class="back_href" href="hr_ar" title="general_settings_ar">
-                            <i class="fa-solid fa-arrow-right back_icon"></i>
-                        </a>
-                        <div class="h2_main_text_div">
-                            <a id="h2_text_div" class="h2_text_div" href="settings_taxes_view_ar"
-                                title="اعادة تحميل الصفحة">الرمز الضريبية</a>
-                            <span id="sub_h2_header" class="sub_h2_header"></span>
-                        </div>
-                    </h2>
-                    <!-- ________________________________________________CONTENT_____________________________________________________________ -->
-
-                    <div id="page_content">
-
-                        <div id="dropdown_div" class="dropdown_container"></div>
-                        <div id="dropdown_div2" class="dropdown_container"></div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div> <!-- end body content -->
-    <!-- scripts------------------------------------------------------------------------------ -->
-    <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
-    <script src="/public/socket/socket.io.min.js"></script>
-    <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-    <script src="/public/scripts/ar/test.js"></script>
-
-
-
+    // تعبئة القائمة المنسدلة عند تحميل الصفحة
+    populateDropdowns();
+  </script>
 </body>
 
 </html>

@@ -7,6 +7,7 @@ const note_inpute = document.querySelector(`#note_inpute`);
 const btn_newRow = document.querySelector(`#btn_newRow`);
 const table = document.querySelector(`#myTable`);
 
+
 date1.value = today
 
 
@@ -110,16 +111,42 @@ async function save(A_OR_B) {
 }
 
 
+let salesAndLocationsData = [];
+let accountsDataArray = []
+let taxHeaderArray = [] ;
 
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
-  await getAccounsData_fn() // *
-  await get_items_locations()
+
+  salesAndLocationsData =  await get_salesmanAndItemslocations_fn()
+  accountsDataArray =  await getAccounsData_fn()
+
+    if (!salesAndLocationsData || !accountsDataArray){
+      await redirection('sales_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
+      return
+    }
+    
+  create_drop_down_with_External_DataArray(`dropdown_div`,salesAndLocationsData.salesmanArray)
+  create_drop_down_with_External_DataArray(`dropdown_div2`,salesAndLocationsData.itemslocationsArray)
+
+
+    
+  // taxHeaderArray.push(`<option value="0"></option>`);
+  // for (const row of salesAndLocationsData.taxHeaderArray) {
+  //   const option = `<option value="${row.id}">${row.taxe_package_name}</option>`;
+  //   taxHeaderArray.push(option);
+  // }
+
+  
+
+  
+  // await get_items_locations()
   build_table()
-  addRow()
+  addRow(accountsDataArray, salesAndLocationsData.taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
+  
 } catch (error) {
   hideLoadingIcon(content_space)
   catch_error(error)

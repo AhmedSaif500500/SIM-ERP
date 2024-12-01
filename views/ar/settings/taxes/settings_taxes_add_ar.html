@@ -8,6 +8,37 @@
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+  <style>
+    .unit {
+      /* padding: 0.2rem; */
+      border-radius: 3px;
+      pointer-events: none;
+      background-color: var(--btn_search_backcolor);
+      height: 100%;
+      width: fit-content;
+      padding: .5rem;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .myTable {
+      width: auto;
+    }
+
+    .myTable td {
+      width: auto;
+      /* يضمن أن العرض تلقائي بناءً على المحتوى */
+    }
+  </style>
+
+  <style>
+    .highlight {
+      background-color: yellow;
+    }
+  </style>
+
 </head>
 
 <body class="body scroll">
@@ -28,13 +59,12 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="settings_taxes_view_ar" title="الرموز الضريبيه">
+            <a id="back_href" class="back_href" href="settings_taxes_view_ar" title="الرموز الضريبية">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="settings_taxes_add_ar" title="اعادة تحميل الصفحة">
-                الرموز الضريبيه
-              </a>
+              <a id="h2_text_div" class="h2_text_div" href="settings_taxes_add_ar" title="اعادة تحميل الصفحة">الرموز
+                الضريبية</a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
             </div>
           </h2>
@@ -42,64 +72,40 @@
           <div id="page_content" style="display: none;">
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
-                <!-- معرف الضريبة -->
-                <div id="acc_no_div" class="flex_column">
-                  <label for="account_no_input" class="lbl_sm">المعرف</label>
-                  <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختياري"
-                    autocomplete="off" oninput="check_parse(this,'string')">
-                  <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
-                </div>
-    
-                <!-- اسم الضريبة -->
-                <label for="tax_name_input" class="lbl_sm">اسم الضريبه</label>
-                <input type="search" id="tax_name_input" class="input_text_md hover" placeholder="مطلوب"
-                  autocomplete="off" oninput="check_parse(this,'string')">
-                <input type="hidden" id="account_id_hidden">
-    
-    
-                <!-- الاسم المختصر -->
-                <label for="short_name_input" class="lbl_sm">الاسم المختصر</label>
-                <input type="search" id="short_name_input" class="input_text_sm hover" placeholder="مثال : VAT 14%"
-                  autocomplete="off" oninput="check_parse(this,'string')">
-    
-          <!--   القائمة والمجموعه-->
-          <label for="tax_rate_input" class="lbl_sm">المعدل</label>
-          <div class="flex_row x_start y_center mb_10">
-            <span id="statment_type_span" class="span mb_10">%</span>
-            <input type="search" id="tax_rate_input" class="input_text_sm hover" placeholder="مثال : 14" autocomplete="off" oninput="check_parse(this,'number')">
-          </div>
 
 
-          <label for="dropdown_div" class="lbl_sm">الحساب</label>
-                      <!-- dropdown الحساب -->
-          <div id="dropdown_div" class="dropdown_container"></div>
-          
-          <!-- النوع -->
-          <label for="is_reverse_select" class="lbl_sm">النوع</label>
-          <div class="flex_row x_start y_center mb_10">
-            <select id="is_reverse_select" class="select">
-              <option value="1">إضافة</option>
-              <option value="2">خصم</option>
+            <!-- اسم الضريبة  -->
+            <label id="lbl_tax_name_input" for="tax_name_input" class="lbl_sm">الاسم</label>
+            <input type="search" id="tax_name_input" class="input_text_md hover" placeholder="مثال : VAT 14%"
+              autocomplete="off" oninput="check_parse(this,'string')">
+
+            <label for="taxe_multi_type_select" class="lbl_sm">النوع</label>
+            <select name="" id="taxe_multi_type_select" class="select">
+              <option value="1">ضريبة واحده</option>
+              <option value="2">ضرائب متعدده</option>
             </select>
-          </div>
+            <!-- table -->
 
+            <table id="myTable" class="input_table" style="margin: 0; width: fit-content;">
+              <thead class=""></thead>
+              <tbody class=""></tbody>
+              <tfoot class="tfoot_hiddenCell" style="display: none;"></tfoot>
+            </table>
 
-          <label for="inactive_select" class="lbl_sm">الحالة</label>
-          <select name="" id="inactive_select" class="select hover">
-            <option value="0" selected>نشط</option>
-            <option value="1" >غير نشط</option>
-          </select>
+            <label for="inactive_select" class="lbl_sm">الحالة</label>
+            <select name="" id="inactive_select" class="select hover">
+              <option value="0" selected>نشط</option>
+              <option value="1" >غير نشط</option>
+            </select>
+            
           
-        
+
+            <div class="btn_container_top_border">
+              <button class="btn_save" id="btn_save" onclick="save('A')">حفظ</button>
+              <button class="btn_save" id="btn_save_and_add_another" onclick="save('B')">حفظ و إضافة أخر</button>
+            </div>
 
 
-
-
-                <div class="btn_container_top_border">
-                    <button class="btn_save" id="btn_save_accounts" onclick="save('A')">حفظ</button>
-                    <button class="btn_save" id="btn_save_and_add_another_accounts" onclick="save('B')">حفظ و إضافة أخر</button>
-                </div>
-            <!-- ______________________________________________________________________________________________________ -->
           </div>
         </div>
       </div>
@@ -117,7 +123,7 @@
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
   <script src="/public/scripts/ar/settings/taxes/settings_taxes_add_ar.js"></script>
-  <!-- <script src="/public/scripts/ar/customers/customers_multiPages_ar.js"></script> -->
+  <script src="/public/scripts/ar/settings/taxes/settings_taxes_multi_pages.js"></script>
 
 
 </body>
