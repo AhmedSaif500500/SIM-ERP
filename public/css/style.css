@@ -32,7 +32,7 @@
   --btn_delete_backcolor: #f44336;
   --btn_color: rgb(255, 255, 255);
 
-  --btn_search_backcolor: rgb(229, 229, 229);
+  --btn_search_backcolor: rgb(237, 237, 237);
   --btn_search_color: rgb(51, 51, 51);
 
   --btn_hover_opacity: 0.8;
@@ -121,7 +121,7 @@
   --btn_delete_backcolor: #f44336;
   --btn_color: rgb(255, 255, 255);
 
-  --btn_search_backcolor: rgb(67, 67, 67);
+  --btn_search_backcolor: rgb(81, 81, 81);
   --btn_search_color: #f1f1f1;
 
   --btn_hover_opacity: 0.8;
@@ -679,6 +679,10 @@ input[type="checkbox"]:hover {
 /*! end margin*/
 
 /** padding*/
+.p_0{
+  padding: 0 !important;
+}
+
 .p_05 {
   padding: 0.5rem !important;
 }
@@ -2073,7 +2077,7 @@ html[dir="rtl"] {
 .clear_icon {
   display: none; /*Default*/
   position: absolute !important;
-  inset-inline-end: 1.7rem !important;
+  inset-inline-end: 1.9rem !important;
   font-size: 1.2rem;
   cursor: pointer;
   /* background-color: white; */
@@ -2249,7 +2253,7 @@ html[dir="rtl"] {
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
   padding-inline-start: 0.5rem;
-  padding-inline-end: 3.5rem;
+  padding-inline-end: 3.8rem;
   padding-block-start: 0.5rem;
   padding-block-end: 0.5rem;
   cursor: pointer;
@@ -2915,10 +2919,15 @@ html[dir="rtl"] {
 }
 
 .input_span_start {
+  border-start-start-radius: 0.3rem;
+  border-end-start-radius: 0.3rem;
   border-inline-end: none;
 }
 
+
 .input_span_end {
+  border-end-end-radius: 0.3rem;
+  border-start-end-radius: 0.3rem;
   border-inline-start: none;
 }
 .input_table_normal_input_text {
@@ -3450,6 +3459,7 @@ html[dir="rtl"] {
 
 .td_negative_number {
   color: var(--btn_delete_backcolor) !important;
+  /* color: red; */
 }
 
 .td_link_number,
@@ -3459,6 +3469,11 @@ html[dir="rtl"] {
   padding: 1rem;
   transition: var(--transition);
 }
+
+.color_negative{
+  color: var(--btn_delete_backcolor) !important;
+}
+
 
 .table_number {
   color: var(--font_link_number_color); /* لون النص الأساسي */
@@ -3655,7 +3670,7 @@ html[dir="rtl"] {
   justify-content: start;
   align-items: center;
   inset-block-start: 9rem;
-  inset-inline-end: 4rem;
+  inset-inline-end: 2rem;
 }
 
 @media screen and (max-width: 750px) {

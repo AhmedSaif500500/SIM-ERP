@@ -3949,7 +3949,7 @@ app.post("/employee_add", async (req, res) => {
   await db.tx(async (tx) => {
     await tx.none(query1, params1);
     await tx.none(query2, params2);
-    history(posted_elements.isUrlParams_salesman ? 21 : 20, 1, newId_header, 0, req, tx)
+    await history(posted_elements.isUrlParams_salesman ? 21 : 20, 1, newId_header, 0, req, tx)
 
   })
 

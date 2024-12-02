@@ -152,16 +152,16 @@ function build_table(){
                   
                   <td style="width: auto;">
                         <div class="row h_full">
-                          <span class="input_span_start tbody_itemUniteName">الكمية</span>
                           <div class="div_input_sm  hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number'),update_table('myTable')" onkeydown="td_EnterkeypressEvent1(event)"></div>
-                        </div>
+                          <span class="input_span_end tbody_itemUniteName">الكمية</span>
+                          </div>
                   </td>
 
                   <td style="width: auto;" class="div_input_sm UnitePrice hover" oninput="check_parse(this,'number'),update_table('myTable')" contenteditable="true"></td>
                   
                   <td style="display: ${is_column_discount_show}; width: auto;" class="Xdsicount">
                         <div class="row h_full">
-                        <select class="span_Total_In_Table tbody_discountType">
+                        <select class="span_Total_In_Table tbody_discountType" onchange="update_table('myTable')">
                           <option value="1">نسبه %</option>
                           <option value="2">مبلغ</option>
                         </select>
@@ -339,7 +339,7 @@ function update_table(str_tableName){
         ? +((discountValueElement / 100) * (amount * UnitePrice)).toFixed(2)
         : +discountValueElement.toFixed(2);
         const Val_beforTax = +((amount * UnitePrice) - Xrow_discount_value).toFixed(2);
-        tbody_totalBeforTax.textContent = Val_beforTax
+        tbody_totalBeforTax.textContent = Val_beforTax.toFixed(2)
         
         update_totalsArray(false,'الاجمالى',Val_beforTax)
 
@@ -360,18 +360,18 @@ function update_table(str_tableName){
               update_totalsArray(taxAccount_id,tax_name,taxValue)
             }
           }
-          tbody_taxValue.textContent = Val_rowTax
+          tbody_taxValue.textContent = Val_rowTax.toFixed(2)
         }else{
-          tbody_taxValue.textContent = 0
+          tbody_taxValue.textContent = 0.00
         }
     
-        totalAfterTax.textContent =  Val_beforTax + Val_rowTax
+        totalAfterTax.textContent =  (Val_beforTax + Val_rowTax).toFixed(2)
   }
 
   totalsArray.forEach((obj, index) => {
 
     tfoot_totalDiv_note.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}">${obj.name}</span>`
-    tfoot_totalDiv_Values.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}" class="${obj.val < 0? 'td_negative_number' : ''}">${obj.val}</span>`
+    tfoot_totalDiv_Values.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}" class="${obj.val < 0? 'color_negative' : ''}">${obj.val}</span>`
   })
   if (totalsArray.length > 1){
     tfoot_totalDiv_note.innerHTML += `<span style="font-weight: bold;font-size:1.6rem;">الاجمالى</span>`
