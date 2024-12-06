@@ -2,17 +2,21 @@ setActiveSidebar('salesMain_view_ar');
 pagePermission('view', 'sales_permission','salesman_permissions');
 
 
-const sales_btn = document.querySelector(`#sales_btn`)
+const sales_qutation_btn = document.querySelector(`#sales_qutation_btn`)
+const sales_order_btn = document.querySelector(`#sales_order_btn`)
+const sales_invoice_btn = document.querySelector(`#sales_invoice_btn`)
 const mnadep_btn = document.querySelector(`#mnadep_btn`)
 
 
 function showData(){
-  sales_btn.style.display = style= module_display("sales_permission")
-  mnadep_btn.style.display = style= module_display("salesman_permissions")
+  sales_qutation_btn.style.display = style= module_display("sales_permission") // معلق
+  sales_order_btn.style.display = style= module_display("sales_permission") // معلق
+  sales_invoice_btn.style.display = style= module_display("sales_permission") // معلق
+  mnadep_btn.style.display = style= module_display("salesman_permissions") // معلق
    
-  sales_btn.onclick = function(){
-    sessionStorage.removeItem('salesViewArray');
-    window.location.href = "/sales_view_ar";
+  sales_qutation_btn.onclick = function(){
+    sessionStorage.removeItem('sales_qutation_Array');
+    window.location.href = "/sales_qutation_view_ar";
   }
   
   mnadep_btn.onclick = function(){

@@ -309,8 +309,9 @@ const fn_container_div = document.querySelector(`#fn_container_div`)
 if (fn_container_div) {
   const fn_innerHTML = `
             <i id="fn_icon" class="fa-light fa-ellipsis"></i>
-            <div id="fn_options_div" class="fn_options_div hidden_height">
-              <i class="fa-sharp-duotone fa-solid fa-print" title="طباعه" onclick = "window.print();"></i>
+            <div id="fn_options_div" class="fn_options_div hover hidden_height">
+
+              <div onclick = "window.print();" style="border: none">طباعه</div>
             </div>
 `
 
@@ -324,7 +325,7 @@ content_space.addEventListener("scroll", () => {
   if (currentScroll > 50) {  // إذا كان التمرير أكبر من 50 بكسل
     fn_container_div.style.display = "none";
   } else {
-    fn_container_div.style.display = "block";
+    fn_container_div.style.display = "flex";
   }
 })
 }
@@ -840,7 +841,7 @@ function total_column(totalVariable, rowData) {
 //#endregion END - total column
 
 
-function tdNumber(is_link,is_bold,is_showZero,number,style_class,var_total_column,string_eventWithFunction,){
+function tdNumber(is_link,is_bold,is_showZero,number,style_class,var_total_column,string_eventWithFunction,idClassName){
   try {
     let num = +number;
     let fontweight;
@@ -875,7 +876,7 @@ if (!var_total_column || !var_total_column) {
   value = total_column(var_total_column,num)
 }
 
-    return `<td style="min-width: 1rem; width: auto; font-weight: ${fontweight}; ${style_class}" class="${classX}" ${string_eventWithFunction}>${value}</td>`;
+    return `<td style="min-width: 1rem; width: auto; font-weight: ${fontweight}; ${style_class}" class="${classX} ${idClassName}" ${string_eventWithFunction}>${value}</td>`;
 
   } catch (error) {
     catch_error(error);
@@ -1662,12 +1663,18 @@ if (closeMenueIcon){
 
 
 function showMenue() {
+  if (!sidebar){
+    return
+  }
   sidebar.classList.add("sidebar_Media_Show");
   sidebar.classList.add("show");
   body.classList.add('no_scroll');
 };
 
 function hideMenue() {
+  if (!sidebar){
+    return
+  }
   sidebar.classList.remove("show");
   sidebar.classList.add("hide");
   setTimeout(() => {
@@ -2730,7 +2737,7 @@ const fn_icon = document.querySelector(`#fn_icon`)
 const fn_options_div = document.querySelector(`#fn_options_div`)
 
 function hide_fn_options_div(){
-  if (fn_options_div){
+  if (fn_options_div){    
     hideHeight(fn_options_div)
   }
 }
@@ -2860,7 +2867,7 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
         <tbody></tbody>
         <tfoot>
           <tr id="${str_dropDownDivId}_table_footer_buttons_row">
-            <td colspan="2">
+            <td colspan="2" style="border: none; padding-inline-sratrt: 1rem;">
               <div id="none_Data_${str_dropDownDivId}" style="pointer-events: none;">
                   لا توجد بيانات...
               </div>
@@ -3194,7 +3201,7 @@ async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataA
         <tbody></tbody>
         <tfoot>
           <tr id="${str_dropDownDivId}_table_footer_buttons_row">
-            <td colspan="2">
+            <td colspan="2" style="border: none; padding-inline-sratrt: 1rem;">
               <div id="none_Data_${str_dropDownDivId}" style="pointer-events: none;">
                   لا توجد بيانات...
               </div>
@@ -3471,6 +3478,22 @@ async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataA
 }
 
 
+function selectedRow_dropdownDiv(str_dropdown_div,dataArray,id) {
+try {
+  const dropdown_div = document.getElementById(str_dropdown_div)
+  const id_hidden_input = dropdown_div.querySelector(`.idHidden_dropdown_select_input`)
+  const dropdown_select_input = dropdown_div.querySelector(`.dropdown_select_input`)
+  const clear_icon = dropdown_div.querySelector(`.clear_icon`)
+  const filteredData = dataArray.filter(item => +item.id === +id);
+
+  id_hidden_input.value = filteredData[0].id; // ID
+  dropdown_select_input.value = filteredData[0].account_name; // الاسم  
+
+  clear_icon.style.display = 'flex'
+} catch (error) {
+  catch_error(error)
+}
+}
 
 
 function get_cumulative_balance_fn(orignalArray,sliceArray,opening_balance, AllRows_or_50) {
@@ -3736,7 +3759,7 @@ async function tableDropdownList_showFirst50RowAtTheBegening() {
 
 async function tableDropdownList_fillTable() {
   if (!slice_tableDropdownList_Array1 || slice_tableDropdownList_Array1.length === 0) {
-    tableDropdownList_TableMainTd.querySelector('.inputTable_dropdown_tableContainer').innerHTML = `<p class="no_data">لا توجد بيانات لعرضها</p>`;
+    tableDropdownList_TableMainTd.querySelector('.inputTable_dropdown_tableContainer').innerHTML = `<p class="no_data" style="line-height: 3.2rem; padding-inline-start: 0.6rem;">لا توجد بيانات..</p>`;
     return;
   }
 
@@ -3891,7 +3914,7 @@ document.addEventListener("click", (event) => {
 //#endregion
 
 
-function clear_icon1(event) {
+function clear_icon_on_table_td(event) {
   event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأب
     const clickedIcon = event.target;
     td = clickedIcon.closest(`td`)
@@ -3927,4 +3950,39 @@ function clear_icon2(event) {
     icon.classList.remove('fa-caret-up');
 
     clickedIcon.style.display = 'none'
+}
+
+async function viewMode(is_hidden, permName, permType) {
+  try {
+    
+    const permission = await btn_permission(permName,permType)
+    if (!permission){
+      return
+    }
+    showLoadingIcon(content_space);
+
+    const elements = document.querySelectorAll(`.notView, .notViewTd`);
+    const displayStyles = {
+      notView: is_hidden ? 'none' : 'flex',
+      notViewTd: is_hidden ? 'none' : 'table-cell',
+    };
+
+    elements.forEach(element => {
+      const className = element.classList.contains('notView') ? 'notView' : 'notViewTd';
+      element.style.display = displayStyles[className];
+    });
+
+    // تحديث النص وأسلوب المؤشر
+    sub_h2_header.textContent = is_hidden ? 'عرض' : 'تحديث';
+    page_content.style.pointerEvents = is_hidden ? 'none' : 'auto';
+    fn_container_div.querySelector(`#fn_option_update_btn`).style.display = is_hidden ? 'flex' : 'none'
+    fn_container_div.querySelector(`#fn_option_view_btn`).style.display = is_hidden ? 'none' : 'flex'
+
+    hide_fn_options_div()
+    hideLoadingIcon(content_space);
+  } catch (error) {
+    hide_fn_options_div()
+    hideLoadingIcon(content_space);
+    catch_error(error);
+  }
 }

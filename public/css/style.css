@@ -757,6 +757,10 @@ input[type="checkbox"]:hover {
 }
 
 .h2_text_div {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
   cursor: pointer;
   color: inherit;
 }
@@ -1609,11 +1613,12 @@ html[dir="rtl"] {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  min-width: 17rem;
-  width: 17rem;
-  background-color: var(--bg_sidebar);
-  padding: 1rem;
+  min-width: 15rem;
+  width: 15rem;
+  /* background-color: var(--bg_sidebar); */
+  /* padding: 1rem; */
   transition: var(--transition);
+  margin-inline-end: 0.5rem;
   height: 100%; /* تأكد من أن sidebar تملأ الحيز العمودي */
   overflow: auto;
 }
@@ -1787,7 +1792,7 @@ html[dir="rtl"] {
   /* width: 100%; */
   background-color: var(--bg_white_backcolor);
   border-radius: 0.1rem;
-  /* padding: 2rem;  معلق تم الغاءه وهو مهم */
+  /* padding: 2rem; معلق تم الغاءه وهو مهم */
   transition: var(--transition);
   overflow: hidden;
   /* overflow: auto; */
@@ -2263,6 +2268,22 @@ html[dir="rtl"] {
 }
 
 
+.td_number{
+    color: var(--Font_Color);
+    background-color: var(--input_text_background_color);
+    border-radius: 0.3rem;
+    border: var(--border_normal);
+    padding: 0.5rem;
+    min-width: 5rem;
+    max-width: 10rem;
+    width: 100%;
+    height: var(--input_height);
+    transition: var(--transition);
+    text-align: start;
+    text-wrap: wrap;
+    white-space: wrap;
+}
+
 .div_input_md, .div_input_sm{
   display: flex;
   flex-direction: row;
@@ -2612,6 +2633,11 @@ html[dir="rtl"] {
   /* لون خلفية الزر عند التحويل إليه */
 }
 
+
+.table_blue_condition {
+  color: var(--btn_new_backcolor);
+}
+
 .table_green_condition {
   color: var(--btn_save_backcolor);
 }
@@ -2624,24 +2650,28 @@ html[dir="rtl"] {
   color: var(--btn_delete_backcolor);
 }
 
-.table_blue_backgrouund_condition {
+
+.table_blue_backgrouund_condition,
+.table_green_backgrouund_condition,
+.table_orange_backgrouund_condition,
+.table_red_backgrouund_condition {
   color: var(--btn_color);
+}
+
+.table_blue_backgrouund_condition {
   background-color: (var(--btn_new_backcolor));
 }
 
 .table_green_backgrouund_condition {
-  color: var(--btn_color);
-  background-color: (var(--btn_save_backcolor));
+  background-color: var(--btn_save_backcolor);
 }
 
 .table_orange_backgrouund_condition {
-  color: var(--btn_color);
-  background-color: (var(--btn_update_backcolor));
+  background-color: var(--btn_update_backcolor);
 }
 
 .table_red_backgrouund_condition {
-  color: var(--btn_color);
-  background-color: (var(--btn_delete_backcolor));
+  background-color: var(--btn_delete_backcolor);
 }
 
 .table_totals_row {
@@ -3549,7 +3579,7 @@ html[dir="rtl"] {
   /* gap: 3rem; */
   width: 100%;
   max-width: 100%;
-  padding: 1rem; /* الحفاظ على الحشو */
+  /* padding: 1rem; الحفاظ على الحشو */
   /* border: var(--border_normal); */
   height: auto;
   max-height: 100%; /* ارتفاع ابتدائي */
@@ -3569,7 +3599,7 @@ html[dir="rtl"] {
   position: relative;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: start;
   align-items: center;
   gap: 0.5rem;
@@ -3663,14 +3693,14 @@ html[dir="rtl"] {
 }
 
 .fn_container_div {
-  position: fixed;
+  position: fixed !important;
   z-index: 99;
   display: flex;
   flex-direction: column;
   justify-content: start;
-  align-items: center;
-  inset-block-start: 9rem;
-  inset-inline-end: 2rem;
+  align-items: end;
+  inset-block-start: 8rem;
+  inset-inline-end: 2.5rem;
 }
 
 @media screen and (max-width: 750px) {
@@ -3713,6 +3743,7 @@ html[dir="rtl"] {
 
 .fn_options_div {
   position: relative;
+  display: flex; flex-direction: column; justify-content: start; align-items: center;
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -3725,8 +3756,33 @@ html[dir="rtl"] {
     background-color 0.5s ease 0s, color 0.5s ease 0s, box-shadow 0.5s ease 0s,
     border 0.5s ease 0s, opacity 0.5s ease, transform 0.5s ease;
   overflow: hidden;
+  border: var(--border_normal);
+  background-color:  var(--bg_content_space);
+  transition: var(--transition);
 }
 
+.fn_options_div div{
+  position: relative;
+  display: flex; flex-direction: row; justify-content: start; align-items: center;
+  padding: 0.5rem ;
+  height: 4rem;
+  min-width: 5rem;
+  width: 100%;
+  cursor: pointer;
+  border-block-end: var(--border_normal);
+  background-color: inherit;
+  transition: var(--transition);
+  border-radius: 0.3rem;
+  font-weight: bold;
+}
+
+.fn_options_div div:hover{
+  background-color: var(--hover_btn_color);
+}
+
+.fn_options_div div:active{
+  scale: 1.1;
+}
 
 .custom_button {
   /* background: linear-gradient(to bottom, #d1d1d1, #a0a0a0); */

@@ -318,10 +318,10 @@ router.get('/salesman_view_ar', (req, res) => {
 
 
 //#region sales
-router.get('/sales_view_ar', (req, res) => {
+router.get('/sales_qutation_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales' ,'sales_view_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_qutation' ,'sales_qutation_view_ar.html'));
         }else{
             res.redirect('/salesMain_view_ar?reason=0');
         };
@@ -331,12 +331,12 @@ router.get('/sales_view_ar', (req, res) => {
 });
 
 
-router.get('/sales_add_ar', (req, res) => {
+router.get('/sales_qutation_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales' ,'sales_add_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_qutation' ,'sales_qutation_add_ar.html'));
         }else{
-            res.redirect('/sales_view_ar?reason=0');
+            res.redirect('/sales_qutation_view_ar?reason=0');
         };
     } else {        
         res.redirect('/login?reason=0');
@@ -344,12 +344,12 @@ router.get('/sales_add_ar', (req, res) => {
 });
 
 
-router.get('/sales_update_ar', (req, res) => {
+router.get('/sales_qutation_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales' ,'sales_update_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_qutation' ,'sales_qutation_update_ar.html'));
         }else{
-            res.redirect('/sales_view_ar?reason=0');
+            res.redirect('/sales_qutation_view_ar?reason=0');
         };
     } else {        
         res.redirect('/login?reason=0');
