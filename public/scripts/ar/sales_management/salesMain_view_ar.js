@@ -19,12 +19,26 @@ function showData(){
     window.location.href = "/sales_qutation_view_ar";
   }
   
+  sales_order_btn.onclick = function(){
+    sessionStorage.removeItem('sales_order_Array');
+    window.location.href = "/sales_order_view_ar";
+  }
+  
+
   mnadep_btn.onclick = function(){
     // sessionStorage.removeItem('salesmansConditionsArray');
     window.location.href = "/salesman_view_ar";
   }
   
   page_content.style.display = 'flex'
+}
+
+function remove_arrays(){
+  sessionStorage.removeItem('salesmansConditionsArray');
+  sessionStorage.removeItem('sales_order_update_data');
+  sessionStorage.removeItem('sales_order_Array');
+  sessionStorage.removeItem('sales_qutation_Array');
+  sessionStorage.removeItem('sales_qutation_update_data');
 }
 
 

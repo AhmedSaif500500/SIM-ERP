@@ -1,5 +1,5 @@
-setActiveSidebar("salesMain_view_ar");
-pagePermission("view", "sales_permission");
+setActiveSidebar("salesMain_view_ar");  
+pagePermission("view", "sales_permission");  // معلق
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
@@ -64,9 +64,17 @@ let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
 let f6_select = filter_div.querySelector(`#f6_select`);
 let f6_input = filter_div.querySelector(`#f6_input`);
 
+//! sales qutation reference
+let f7_div = filter_div.querySelector(`#f7_div`);
+let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
+let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
+let f7_select = filter_div.querySelector(`#f7_select`);
+let f7_input = filter_div.querySelector(`#f7_input`);
+
+
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4, 5, 6]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1, 2, 3, 4, 5, 6, 7]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -106,13 +114,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('sales_qutation_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('sales_order_Array')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('sales_qutation_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('sales_order_Array', JSON.stringify(conditionsArray));
 }
 
 
@@ -120,7 +128,7 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`sales_qutation_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`sales_order_Array`)) || [];
 
     if (!array || array.length <= 1) {
     
@@ -139,7 +147,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("sales_qutation_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("sales_order_Array")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -149,7 +157,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("sales_qutation_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("sales_order_Array", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -271,6 +279,7 @@ function deafult_checkbox() {
     call_default_checkbox('f4',true,true,false)
     call_default_checkbox('f5',true,true,false)
     call_default_checkbox('f6',true,true,false)
+    call_default_checkbox('f7',true,true,false)
 
 }
 
@@ -290,7 +299,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('sales_qutation_Array');
+            sessionStorage.removeItem('sales_order_Array');
             conditionsArray = []
             
         }
@@ -323,7 +332,7 @@ async function getData_fn() {
        
         //  معلق
         data = await new_fetchData_postAndGet(
-            "/get_sales_qutation_Data_view",
+            "/get_sales_order_Data_view",
             {start_date, end_date},
             "pass","pass",
             15,
@@ -466,8 +475,20 @@ function showFirst50RowAtTheBegening() {
                 const isQutationstatus = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
                     f6_checkbox,
                     f6_select,
-                    'qutation_status',
-                    row);
+                    'is_invoiced',
+                    row
+                );
+
+                const isQutationReference =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f1_checkbox,
+                    f1_select,
+                    f1_input,
+                    "qutation_reference",
+                    row
+                );
+
+
 
             return (
 
@@ -477,7 +498,8 @@ function showFirst50RowAtTheBegening() {
                 isSAccountNameMatch &&
                 isNoteMatch &&
                 isBalanceMatch &&
-                isQutationstatus
+                isQutationstatus &&
+                isQutationReference
             ); // && otherCondition;
         });
 
@@ -511,11 +533,12 @@ function fillTable() {
         let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
         let style_reference = `display: none;`; 
         let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_sales_qutation_reference = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
         let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f4_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
         let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
         let style_balance = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let qutation_status = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let is_invoiced = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
         let fn = `onclick = "table_update_btn_fn(this)"`;
@@ -534,9 +557,10 @@ function fillTable() {
                                  <th style="${style_accountName}">العميل</th>
                                  <th style="${style_id}">id</th>
                                 <th style="${style_salesman}">البائع</th>
+                                <th style="${style_sales_qutation_reference}">عرض السعر</th>
                                 <th style="${style_note}">البيان</th>
                                 <th style="${style_balance}">قيمة</th>
-                                <th style="${qutation_status}">الحاله</th>
+                                <th style="${is_invoiced}">الحاله</th>
                                 
                             </tr>
                         </thead>
@@ -546,14 +570,12 @@ function fillTable() {
                 
 
             // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let qutationstatusClass;
+            let invoicedstatusClass;
             
-            if(row.qutation_status === 'مقبول'){
-                qutationstatusClass = 'table_green_condition'
-            }else if(row.qutation_status === 'معلق'){
-                qutationstatusClass = 'table_orange_condition'
-            }else{
-                qutationstatusClass = 'table_red_condition'
+            if(row.is_invoiced === 'مفوتر'){
+                invoicedstatusClass = 'table_green_condition'
+            }else if(row.is_invoiced === 'غير مفوتر'){
+                invoicedstatusClass = 'table_orange_condition'
             }
 
             tableHTML +=
@@ -567,9 +589,10 @@ function fillTable() {
                         <td style="${style_accountName}" class="td_customer_name">${row.customer_name}</td>
                         <td style="${style_id}" class="td_salesman_id">${row.salesman_id}</td>
                         <td style="${style_salesman}" class="td_salesman_name">${row.salesman_name}</td>
+                        <td style="${style_sales_qutation_reference}" class="td_salesman_name">${row.qutation_reference}</td>
                         <td style="${style_note}" class="td_general_note">${row.general_note}</td>
                         ${tdNumber(true,false,true,row.total_value,style_balance,total_column1,fn,'td_total_value')}
-                        <td style="${qutation_status}"><span class="${qutationstatusClass} td_qutation_status">${row.qutation_status}</span></td>               
+                        <td style="${is_invoiced}"><span class="${invoicedstatusClass} td_is_invoiced">${row.is_invoiced}</span></td>               
                       </tr>`;
         });
 
@@ -584,9 +607,10 @@ function fillTable() {
                         <td id="footer_style_accountName" style="${style_accountName}"></td>
                         <td id="footer_style_salesmanid" style="${style_id}"></td>
                         <td id="footer_style_salesman" style="${style_salesman}"></td>
+                        <td id="footer_style_sales_qutation_reference" style="${style_sales_qutation_reference}"></td>
                         <td id="footer_style_note" style="${style_note}"></td>
                         <td id="footer_style_balance" style="${style_balance}"></td>
-                        <td id="footer_style_balance" style="${qutation_status}"></td>
+                        <td id="footer_style_balance" style="${is_invoiced}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -641,7 +665,8 @@ function performSearch() {
             const AccountName_Match = performSearch_Row(f3_checkbox,"customer_name",searchValue,row);
             const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
             const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
-            const qutationstatus = performSearch_Row(f6_checkbox,"qutation_status",searchValue,row);
+            const qutationstatus = performSearch_Row(f6_checkbox,"is_invoiced",searchValue,row);
+            const qutationReference = performSearch_Row(f7_checkbox,"qutation_reference",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
@@ -651,7 +676,8 @@ function performSearch() {
                 AccountName_Match ||
                 noteMatch ||
                 balanceMatch ||
-                qutationstatus
+                qutationstatus ||
+                qutationReference
             );
         });
 
@@ -693,8 +719,8 @@ searchInput.addEventListener("keydown", (event) => {
 
 async function table_update_btn_fn(updateBtn) {
     try {
-        showLoadingIcon(updateBtn)
-    const permission = await btn_permission("transaction_permission", "update");
+    showLoadingIcon(updateBtn)
+    const permission = await btn_permission("transaction_permission", "update"); // معلق
 
     if (!permission) {
         // if false
@@ -703,6 +729,9 @@ async function table_update_btn_fn(updateBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
+
+        
+
     const row = updateBtn.closest("tr");
 
     const sales_qutation_update_data = {
@@ -716,13 +745,14 @@ async function table_update_btn_fn(updateBtn) {
         salesman_name: row.querySelector(`.td_salesman_name`).textContent,
         general_note: row.querySelector(`.td_general_note`).textContent,
         total_value: row.querySelector(`.td_total_value`).textContent,
-        qutation_status: row.querySelector(`.td_qutation_status`).textContent      
+        is_invoiced: row.querySelector(`.td_is_invoiced`).textContent      
     };
 
     
+    
 
-    sessionStorage.setItem('sales_qutation_update_data', JSON.stringify(sales_qutation_update_data));                            
-    window.location.href = `sales_qutation_update_ar`;
+    sessionStorage.setItem('sales_order_update_data', JSON.stringify(sales_qutation_update_data));                            
+    window.location.href = `sales_order_update_ar`;
     hideLoadingIcon(updateBtn)
 } catch (error) {
     hideLoadingIcon(updateBtn)
@@ -771,7 +801,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`sales_qutation_Array`);
+    const conditionsArray = sessionStorage.getItem(`sales_order_Array`);
 
     if (!conditionsArray){
      

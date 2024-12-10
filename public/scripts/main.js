@@ -3480,6 +3480,10 @@ async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataA
 
 function selectedRow_dropdownDiv(str_dropdown_div,dataArray,id) {
 try {
+
+  if (!str_dropdown_div || !dataArray || !id){
+    return
+  }
   const dropdown_div = document.getElementById(str_dropdown_div)
   const id_hidden_input = dropdown_div.querySelector(`.idHidden_dropdown_select_input`)
   const dropdown_select_input = dropdown_div.querySelector(`.dropdown_select_input`)

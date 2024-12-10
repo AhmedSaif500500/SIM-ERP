@@ -30,12 +30,12 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="sales_qutation_view_ar" title="عروض اسعار بيع">
+            <a id="back_href" class="back_href" href="sales_order_view_ar" title="اوامر البيع">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="sales_qutation_add_ar" title="اعادة تحميل الصفحة">
-                عرض سعر بيع
+              <a id="h2_text_div" class="h2_text_div" href="sales_order_add_ar" title="اعادة تحميل الصفحة">
+                امر بيع
               </a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
             </div>
@@ -69,9 +69,17 @@
 
             </div>
 
-            <label for="note_inpute" class="lbl_sm">العميل</label>
-            <div id="dropdown_div3" class="dropdown_container"></div>
 
+            <div class="row y_start x_start nowrap gap_10">
+              <div class="column">
+                <label for="note_inpute" class="lbl_sm">العميل</label>
+                <div id="dropdown_div3" class="dropdown_container"></div>
+              </div>
+              <div class="column qutation_reference_div">
+                <label for="note_inpute" class="lbl_sm">رقم عرض السعر</label>
+                <div id="dropdown_div4" class="dropdown_container" style="width: 13rem"></div>
+              </div>
+            </div>
 
             <label for="note_inpute" class="lbl_sm">البيان العام</label>
             <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off">
@@ -126,8 +134,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/sales_management/sales/sales_qutation/sales_qutation_multi_pages.js"></script>
-  <script src="/public/scripts/ar/sales_management/sales/sales_qutation/sales_qutation_add_ar.js"></script>
+  <script src="/public/scripts/ar/sales_management/sales/sales_order/sales_order_multi_pages.js"></script>
+  <script src="/public/scripts/ar/sales_management/sales/sales_order/sales_order_add_ar.js"></script>
 
 
 

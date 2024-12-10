@@ -38,6 +38,9 @@ async function save(A_OR_B) {
   }
 
 
+  const qutationReferenceId = document.querySelector(`#dropdown_div4_hidden_input`).value
+
+
 
   const general_note = note_inpute.value.trim()
 
@@ -108,18 +111,18 @@ const is_RowNote  = is_RowNote_checkBox.checked
       currentIndex++; // زيادة العدّاد بعد كل تكرار
     }
 
-    const posted_Obj = {customerId, total, datex,itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, posted_array}
+    const posted_Obj = {customerId, total, datex, qutationReferenceId, itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, posted_array}
 
     if (A_OR_B == 'B'){
       const post = await new_fetchData_postAndGet(
-        "/api/sales_qutation_add",
+        "/api/sales_order_add",
         posted_Obj,
         'pass', 'pass',
         15,
-        true,"هل تريد حفظ البيانات ؟",
+        true,"هل تريد حفظ بيانات امر البيع ؟",
         true,
         false,false,false,false,false,
-        true,"sales_qutation_add_ar",
+        true,"sales_order_add_ar",
         false,false,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
@@ -131,14 +134,14 @@ const is_RowNote  = is_RowNote_checkBox.checked
     }else{
 //! معلق هنا فى الصفحه كلها راجع ال permissions
     const post = await new_fetchData_postAndGet(
-      "/api/sales_qutation_add",
+      "/api/sales_order_add",
       posted_Obj,
-      'transaction_permission', 'add',
+      'pass', 'pass',
       15,
-      true,"هل تريد حفظ بيانات عرض سعر البيع ؟",
+      true,"هل تريد حفظ بيانات امر البيع ؟",
       true,
       false,false,false,false,false,
-      true,"sales_qutation_view_ar",
+      true,"sales_order_view_ar",
       false,false,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
@@ -156,9 +159,9 @@ const is_RowNote  = is_RowNote_checkBox.checked
 }
 
 async function get_Data_for_add_page_fn() {
-
+  // معلق
   data_accounts = await new_fetchData_postAndGet(
-    "/get_itemsLocation_And_salesman",
+    "/get_data_for_sales_order_add",
     {},
     'sales_permission', 'view',
     15,
@@ -167,7 +170,7 @@ async function get_Data_for_add_page_fn() {
     false,false,
     false,false,
     false,false,false,
-    true,"sales_qutation_view_ar",
+    true,"sales_order_view_ar",
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 return data_accounts
@@ -175,31 +178,35 @@ return data_accounts
 
 
 
-let Data = [];
-let itemsDataArray = []
-let taxHeaderArray = [] ;
+let Data1 = [];
+let itemsDataArray1 = []
+let taxHeaderArray1 = [] ;
 
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
-
-  Data =  await get_Data_for_add_page_fn()
-  itemsDataArray =  Data.itemsDataArray
-
-    if (!Data || !itemsDataArray){
-      await redirection('sales_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
-      return
-    }
-    
-  create_drop_down_with_External_DataArray(`dropdown_div3`,Data.customersDataArray)
-  create_drop_down_with_External_DataArray(`dropdown_div`,Data.salesmanArray)
-  create_drop_down_with_External_DataArray(`dropdown_div2`,Data.itemslocationsArray)
-
-
+  const qutationToOrder = JSON.parse(sessionStorage.getItem('sales_order_update_data'));
+  if (qutationToOrder.qutationToOrder){
+    await showsalesOrderData(qutationToOrder.x,'qutation')
+  }else{
+    Data1 =  await get_Data_for_add_page_fn()
+    itemsDataArray1 =  Data1.itemsDataArray
   
-  // await get_items_locations()
-  build_table()
-  addRow(itemsDataArray, Data.taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
+      if (!Data1 || !itemsDataArray1){
+        await redirection('sales_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
+        return
+      }
+      create_drop_down_with_External_DataArray(`dropdown_div3`,Data1.customersDataArray)
+      create_drop_down_with_External_DataArray(`dropdown_div`,Data1.salesmanArray)
+      create_drop_down_with_External_DataArray(`dropdown_div2`,Data1.itemslocationsArray)
+      create_drop_down_with_External_DataArray(`dropdown_div4`,Data1.salesQutationReferencesArray)
+      // await get_items_locations()
+      build_table()
+      addRow(itemsDataArray1, Data1.taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
+
+  }
+                           
+
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
   

@@ -17,6 +17,7 @@ back_href.href = `sales_qutation_view_ar?data=${encodedData}`
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector(`#note_inpute`);
+const reference_status = document.querySelector(`#reference_status`);
 // const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_qutation_multi_pages
 // const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in sales_qutation_multi_pages
 const btn_newRow = document.querySelector(`#btn_newRow`);
@@ -136,7 +137,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
         posted_Obj,
         'pass', 'pass',
         15,
-        true,"هل تريد تحديث البيانات ؟",
+        true,"هل تريد تحديث بيانات عرض سعر البيع ؟",
         true,
         false,false,false,false,false,
         true,"sales_qutation_view_ar",
@@ -174,7 +175,7 @@ const post = await new_fetchData_postAndGet(
   {x},
   'pass', 'pass',
   15,
-  true,"هل تريد حذف البيانات ؟",
+  true,"هل تريد حذف بيانات عرض سعر البيع ؟",
   true,
   false,false,false,false,false,
   true,"sales_qutation_view_ar",
@@ -194,8 +195,23 @@ sessionStorage.removeItem('sales_qutation_Array')
 
 function showHeaderData(){
 
+  let status = +headerDataArray.qutation_status;
+            
+  if(status === 1){
+    reference_status.classList.add('table_green_condition')
+    reference_status.textContent = 'مقبول'
+  }else if(status === 2){
+    reference_status.classList.add('table_orange_condition')
+    reference_status.textContent = 'معلق'
+  }else{
+    reference_status.classList.add('table_red_condition')
+    reference_status.textContent = 'مرفوض'
+  }
+
+
   
-  reference_input.value = headerDataArray.referenceconcat
+  reference_input.value = headerDataArray.referenceconcat;
+
   date1.value = headerDataArray.datex
   note_inpute.value = headerDataArray.general_note
 
@@ -418,9 +434,21 @@ function handle_fn_options(){
   const newDivs = `
     <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
     <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
-    <div>انشاء امر بيع</div>
-    <div>انشاء فاتورة</div>
+    <div onclick="createSlalesOrder()">انشاء امر بيع</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+}
+
+
+
+function createSlalesOrder(){
+  
+  const sales_qutation_update_data = {
+    x: headerDataArray.id,
+    qutationToOrder: true
+  };
+  sessionStorage.setItem('sales_order_update_data', JSON.stringify(sales_qutation_update_data));                            
+  window.location.href = `sales_order_add_ar`;
+  
 }
 

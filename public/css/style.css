@@ -605,6 +605,10 @@ input[type="checkbox"]:hover {
   height: 100% !important;
 }
 
+.h_input {
+  height: var(--input_height) !important;
+}
+
 .h_fit {
   height: fit-content !important;
 }
@@ -638,6 +642,18 @@ input[type="checkbox"]:hover {
 }
 .ms_20 {
   margin-inline-start: 2rem !important;
+}
+.ms_25 {
+  margin-inline-start: 2.5rem !important;
+}
+.ms_30 {
+  margin-inline-start: 3rem !important;
+}
+.ms_35 {
+  margin-inline-start: 3.5rem !important;
+}
+.ms_40 {
+  margin-inline-start: 4rem !important;
 }
 .me_05 {
   margin-inline-end: 0.5rem !important;
@@ -1547,6 +1563,8 @@ input[type="checkbox"]:hover {
   flex-grow: 1;
   width: 100%;
   overflow: hidden;
+  background-color: var(--bg_white_backcolor);
+  transition: var(--transition);
   /* مهم جدا لضمان ان يكون الاسكرول بار فقط فى ال بودى */
 }
 
@@ -1615,12 +1633,13 @@ html[dir="rtl"] {
   flex-wrap: nowrap;
   min-width: 15rem;
   width: 15rem;
-  /* background-color: var(--bg_sidebar); */
+  background-color: var(--bg_sidebar);
   /* padding: 1rem; */
   transition: var(--transition);
   margin-inline-end: 0.5rem;
   height: 100%; /* تأكد من أن sidebar تملأ الحيز العمودي */
   overflow: auto;
+  transition: var(--transition);
 }
 
 @media print {
@@ -2636,18 +2655,23 @@ html[dir="rtl"] {
 
 .table_blue_condition {
   color: var(--btn_new_backcolor);
+  font-weight: bold;
 }
 
 .table_green_condition {
   color: var(--btn_save_backcolor);
+  font-weight: bold;
 }
 
 .table_orange_condition {
-  color: var(--btn_update_backcolor);
+  /* color: var(--btn_update_backcolor); */
+  color: darkorange;
+  font-weight: bold;
 }
 
 .table_red_condition {
   color: var(--btn_delete_backcolor);
+  font-weight: bold;
 }
 
 
@@ -3840,4 +3864,11 @@ html[dir="rtl"] {
   margin-block-start: 1rem;
   justify-content: start; align-items: center;
   padding: 0.5rem;
+}
+
+
+.reference_status{
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: 1rem;
 }

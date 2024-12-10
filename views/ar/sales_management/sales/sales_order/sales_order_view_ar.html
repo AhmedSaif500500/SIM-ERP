@@ -35,7 +35,7 @@
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="sales_qutation_view_ar" title="اعادة تحميل الصفحة">عروض اسعار بيع</a>
+              <a id="h2_text_div" class="h2_text_div" href="sales_order_view_ar.html" title="اعادة تحميل الصفحة">اوامر بيع</a>
               <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
           </h2>
@@ -43,7 +43,7 @@
 
           <div id="page_content" style="display: none;">
             <div class="btn_container">
-              <a href="/sales_qutation_add_ar" class="btn_new" id="newBtn">جديد</a>
+              <a href="/sales_order_add_ar" class="btn_new" id="newBtn">جديد</a>
               <!-- <a href="/effects_report_ar" class="btn_update" id="newBtn">تقارير</a> -->
             </div>
 
@@ -167,6 +167,27 @@
             </div>
 
 
+                        <!-- sales Qutation Reference  -->
+                        <div class="filter_div_sub" id="f7_div">
+                          <div class="row">
+                            <span class="reference_input_checkbox"><input type="checkbox" id="f7_checkbox" title="اظهار العمود"
+                                onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
+                            <div class="checkbox_label">رقم عرض السعر</div>
+                          </div>
+                          <div id="f7_selectAndInput_div" class="select_and_input_div">
+                            <select id="f7_select" class="dark_select hover"
+                              onchange="filter_insideSelect_string_column_with_input(this)">
+                              <option value="0" selected>اظهار الكل</option>
+                              <option value="1">يحتوى على</option>
+                              <option value="2">لا يحتوى على</option>
+                              <option value="3">فارغ</option>
+                              <option value="4">ليس فارغ</option>
+                            </select>
+                            <input id="f7_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                              style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                          </div>
+                        </div>
+
             
             <!-- note  -->
             <div class="filter_div_sub" id="f4_div">
@@ -250,7 +271,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/sales_management/sales/sales_qutation/sales_qutation_view_ar.js"></script>
+  <script src="/public/scripts/ar/sales_management/sales/sales_order/sales_order_view_ar.js"></script>
   
 
 
