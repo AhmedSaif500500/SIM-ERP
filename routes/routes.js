@@ -402,8 +402,50 @@ router.get('/sales_order_update_ar', (req, res) => {
 
 //#endregion
 
+//#region sales invoice
+router.get('/sales_invoice_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_invoice' ,'sales_invoice_view_ar.html'));
+        }else{
+            res.redirect('/salesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/sales_invoice_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_invoice' ,'sales_invoice_add_ar.html'));
+        }else{
+            res.redirect('/sales_invoice_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/sales_invoice_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_invoice' ,'sales_invoice_update_ar.html'));
+        }else{
+            res.redirect('/sales_invoice_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion sales invoice
+
 
 //#endregion
+
+
 
 
 //#region cutomers 

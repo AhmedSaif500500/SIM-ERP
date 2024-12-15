@@ -1,0 +1,51 @@
+-- استعلام الجرد العام
+SELECT
+    tb.item_id,
+    ROUND(SUM(CASE WHEN tb.current_amount > 0 THEN tb.current_amount ELSE 0 END), 2) AS current_amount,
+    ROUND(SUM(CASE WHEN tb.total_value > 0 THEN tb.total_value ELSE 0 END), 2) AS total_value,
+    ROUND(CASE 
+        WHEN SUM(tb.current_amount) != 0 THEN SUM(tb.total_value) / SUM(tb.current_amount)
+        ELSE 0
+    END, 2) AS avg_cost
+FROM (
+    SELECT
+        tb.item_id,
+        (SUM(CASE WHEN th.transaction_type = 6 THEN tb.item_amount ELSE 0 END) - 
+         SUM(CASE WHEN th.transaction_type = 3 THEN tb.item_amount ELSE 0 END)) AS current_amount,
+        (SUM(CASE WHEN th.transaction_type = 6 THEN tb.item_amount * tb.item_price ELSE 0 END) - 
+         SUM(CASE WHEN th.transaction_type = 3 THEN tb.item_amount * tb.avg_cost ELSE 0 END)) AS total_value
+    FROM
+        transaction_body tb
+    INNER JOIN
+        transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        th.company_id = 1
+        AND th.transaction_type IN (6, 3)
+        AND th.is_deleted IS NULL
+        AND th.datex < '2024-12-06'
+        AND tb.item_id IS NOT NULL
+    GROUP BY
+        tb.item_id
+) tb
+GROUP BY
+    tb.item_id;
+
+--------------------------------------------------------
+
+
+
+-- تتحديد تكلفه البضاعه  gulgdi ,hp]i
+   select 
+	(value/Current_amount)*$3 as new_cogs
+from
+(SELECT 
+    SUM(CASE WHEN tb.debit > 0 THEN tb.item_amount ELSE tb.item_amount * -1 end ) AS Current_amount,
+    SUM(CASE WHEN tb.debit > 0 THEN tb.debit ELSE 0 end ) - SUM(CASE WHEN tb.credit > 0 THEN tb.cogs ELSE 0 end )  AS value
+FROM 
+    transaction_body tb
+INNER JOIN 
+    transaction_header th 
+    ON th.id = tb.transaction_header_id
+WHERE 
+	tb.item_id = $1
+    and th.datex <= $2) as subquery

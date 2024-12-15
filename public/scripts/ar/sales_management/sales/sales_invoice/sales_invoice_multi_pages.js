@@ -2,6 +2,7 @@
 
 const qutation_reference_div = document.querySelector(`.qutation_reference_div`)
 const order_reference_div = document.querySelector(`.order_reference_div`)
+const dueDate_input = document.querySelector(`#dueDate_input`)
 
 let is_column_Note_show = 'none'
 let is_column_discount_show = 'none'
@@ -342,8 +343,8 @@ function update_table(str_tableName){
 
     const Xrow_discount_value =
     rowDiscountType === 1
-        ? +((rowDiscountValue / 100) * (rowAmount * rowUnitePrice)).toFixed(2)
-        : +rowDiscountValue.toFixed(2);
+        ? +((rowDiscountValue / 100) * (rowAmount * rowUnitePrice))
+        : +rowDiscountValue;
         Val_beforTax = +((rowAmount * rowUnitePrice) - Xrow_discount_value).toFixed(2);
         rowTotalBeforTax.textContent = Val_beforTax.toFixed(2)
         
@@ -599,21 +600,21 @@ let taxHeaderArray = [];
 let headerDataArray = [];
 let bodyDataArray = [];
 
-async function showsalesOrderData(x,type){
+async function showsalesInvoiceData(x){
 
   try {
     
   Data = await new_fetchData_postAndGet(
-    "/get_data_for_sales_order_update",
-    {x,type},
-    'sales_permission', 'view',
+    "/get_data_for_sales_invoice_update",
+    {x},
+    'sales_permission', 'view', // معلق
     15,
     false,false,
     true,
     false,false,
     false,false,
     false,false,false,
-    false,"sales_order_view_ar",
+    false,"sales_invoice_view_ar",
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 

@@ -3445,7 +3445,7 @@ app.post("/get_All_customers_Data", async (req, res) => {
         accounts_header ah_inner 
         ON ab_inner.account_id = ah_inner.id
     WHERE 
-        ah_inner.is_inactive IS NULL OR ah_inner.is_inactive <> 1
+        ah_inner.is_inactive IS NULL
     GROUP BY
         ab_inner.parent_id
 )
@@ -3700,6 +3700,7 @@ ORDER BY
             
         const posted_elements = req.body;
     
+        
         //! Permission
         await permissions(req, "departments_permission", "update");
         if (!permissions) {
@@ -3724,14 +3725,14 @@ ORDER BY
           return res.json({ success: false, message_ar: "ادخل اسم القسم" });
         }
 
-        if (posted_elements.activeValue && posted_elements.activeValue !== 1) {
-          await block_user(req,'andep1')
-          return res.json({
-            success: false,
-            xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-          });
-        }
+        // if (posted_elements.activeValue && posted_elements.activeValue !== 1) {
+        //   await block_user(req,'andep1')
+        //   return res.json({
+        //     success: false,
+        //     xx: true,
+        //     message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        //   });
+        // }
         //* Start--------------------------------------------------------------
     
         //2: validation data befor inserting to db
@@ -3768,8 +3769,8 @@ ORDER BY
         //3: insert data into db
 
 
-        let query1 = `UPDATE accounts_header set account_name = $1, legal_info = $2, is_inactive = $3 WHERE company_id = $4 AND id = $5`;
-        let params1 = [posted_elements.name, posted_elements.info, posted_elements.activeValue, req.session.company_id, posted_elements.id];
+        let query1 = `UPDATE accounts_header set account_name = $1, legal_info = $2 WHERE company_id = $3 AND id = $4`;
+        let params1 = [posted_elements.name, posted_elements.info, req.session.company_id, posted_elements.id];
     
     
         await db.tx(async (tx) => {
@@ -3904,7 +3905,7 @@ app.post("/employee_add", async (req, res) => {
     if(posted_elements.inactive_select_value == 0){
       active_value = null
     }else if (posted_elements.inactive_select_value == 1) {
-      active_value = 1
+      active_value = true
     }
 
     const newId_header = await newId_fn("accounts_header",'id');
@@ -4084,7 +4085,7 @@ app.post("/update_employee", async (req, res) => {
     if(posted_elements.inactive_select_value == 0){
       active_value = null
     }else if (posted_elements.inactive_select_value == 1) {
-      active_value = 1
+      active_value = true
     }
 
     
@@ -4283,7 +4284,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         COALESCE(A.banking_info, '') as end_date,
         COALESCE(A.is_salesman, false) as is_salesman,
         CASE 
-            WHEN A.is_inactive = 1 THEN 'غير نشط'
+            WHEN A.is_inactive = true THEN 'غير نشط'
             ELSE 'نشط'
         END as is_inactive,
         COALESCE(SUM(T.credit) - SUM(T.debit), 0) AS balance,
@@ -4897,7 +4898,7 @@ SELECT
     SUM(COALESCE(A.values, 0)) as values, -- جمع القيم
     '' as note, -- حقل note ببيانات فارغة
     CASE
-        WHEN ah.is_inactive = 1 THEN 'غير نشط'
+        WHEN ah.is_inactive = true THEN 'غير نشط'
         ELSE 'نشط'
     END as is_inactive,
     COALESCE(parent_ah.id, 0) as department_id, -- ID الحساب الأب
@@ -4940,7 +4941,7 @@ ORDER BY
               COALESCE(A.values, 0) as values,
               COALESCE(A.note, '') as note,
               CASE 
-                  WHEN ah.is_inactive = 1 THEN 'غير نشط'
+                  WHEN ah.is_inactive = true THEN 'غير نشط'
                   ELSE 'نشط'
               END as is_inactive,
               COALESCE(parent_ah.id, 0) as department_id, -- إضافة للحصول على ID الحساب الأب
@@ -11662,13 +11663,1163 @@ app.post("/getItemssData1", async (req, res) => {
 
 //#endregion sales order
 
+//#region sales invoice
+
+        //#region sales invoice view
+        app.post("/get_sales_invoice_Data_view", async (req, res) => {
+          try {
+            /*
+            //! Permission  معلق
+            await permissions(req, "sales_permission", "view");
+            if (!permissions) {
+              return;
+            }
+              */
+        
+            const posted_elements = req.body;
+        
+                // سرد كل القيم مره واحده 
+                const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+        
+                if (hasBadSymbols) {
+                  return res.json({
+                    success: false,
+                    message_ar:
+                      "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                  });
+                }
+              
+                  const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+                  if (InValidDateFormat){
+                    return res.json({
+                      success: false,
+                      message_ar: InValidDateFormat_message_ar,
+                    });
+                  }
+                
+        
+        
+              turn_EmptyValues_TO_null(posted_elements);
+            //* Start--------------------------------------------------------------
+        
+        
+            // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+        
+            let query1 = `
+        select 
+            th.id,
+            th.reference,
+            th.total_value,
+            COALESCE(th.general_note, '') as general_note, 
+            th.datex,
+            th.account_id as customer_id,
+            ah1.account_name as customer_name,
+            th.salesman_id as salesman_id,
+            ah2.account_name as salesman_name,
+            '' AS is_invoiced,
+            th.due_date,
+            th.is_row_note_show,
+            th.is_row_dicount_show,
+            CONCAT(
+                SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+                LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+            ) AS referenceconcat,
+             th.qutation_id,
+            CONCAT(
+                SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
+                LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+            ) AS qutation_reference,
+             th.order_id,
+            CONCAT(
+                SUBSTRING(bih2.datex, 1, 4), '-',  -- استخراج السنة من datex
+                LPAD(CAST(bih2.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+            ) AS order_reference
+
+             
+        from
+          	transaction_header th
+        left join accounts_header ah1 on ah1.id = th.account_id
+        left join accounts_header ah2 on ah2.id = th.salesman_id
+        left join befor_invoice_header bih on bih.id = th.qutation_id
+        left join befor_invoice_header bih2 on bih2.id = th.order_id
+        where
+            th.company_id = $1
+            AND th.transaction_type = 3
+            AND (th.datex BETWEEN $2 AND $3) -- التأكد أن القيم بين التواريخ النصية تعمل بشكل صحيح
+            AND th.is_deleted IS NULL
+        ORDER BY
+            th.datex DESC,
+            th.reference DESC;
+        
+        `;
+        
+            let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
+        
+            res.json(data);
+          } catch (error) {
+            console.error("Error get_sales_invoice_Data_view:", error);
+            res.status(500).send("Error:");
+          }
+        });
+        
+        //#endregion sales invoice view
+    
+          //#region get data for sales order add
+  app.post("/get_data_for_sales_invoice_add", async (req, res) => {
+    try {
+      // //! Permission
+      // await permissions(req, "sales_permission", "add");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      //* Start--------------------------------------------------------------
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      let query1 = `
+       -- مواقع المخزون
+  select
+    id as id,
+    account_name as  account_name
+  from
+    accounts_header 
+  WHERE company_id = $1 
+    AND account_type_id = 7
+    ;
+  `;
+  let params1 = [req.session.company_id]
+  
+  let query2 = `
+    select
+    id as id,
+    account_name as  account_name
+  from
+    accounts_header 
+  WHERE company_id = $1 
+    AND account_type_id = 4
+    AND is_final_account IS true
+    and is_salesman IS true
+    AND is_inactive IS null
+    ;
+  `
+  let params2 = [req.session.company_id]
+  
+  let query3 = `
+      select 
+    th.id,
+    th.taxe_package_name
+  from
+     settings_tax_header th
+  where
+    th.company_id = $1
+    and th.is_inactive is null
+  order by
+    th.taxe_package_name asc 
+   
+  `
+  let params3 = [req.session.company_id]
+  
+  let query4 = `
+  select
+      tb.id,
+      tb.tax_name,
+      tb.tax_rate,
+      tb.is_tax_reverse,
+      tb.tax_account_id,
+      ah.account_name,
+      tb.settings_tax_header_id
+  from
+      settings_tax_body tb
+  left join accounts_header ah on ah.id = tb.tax_account_id    
+  where
+      tb.settings_tax_header_id = ANY($1::int[])
+  `;
+  
+  
+  let query5 = `
+  SELECT
+    A.id,
+    A.account_name,
+    A.account_type_id,
+    COALESCE(A.item_unite, 'الكمية') as item_unite 
+  FROM
+    accounts_header A
+  WHERE
+    A.company_id = $1
+    AND is_final_account = true
+    AND account_type_id IN (5, 8)
+  `;
+  
+  let params5 = [req.session.company_id];
+  
+  
+  let query6 = `
+  select
+    ah.id,
+    ah.account_name
+  from
+    accounts_header ah
+  where
+    ah.company_id = $1
+    AND ah.is_final_account is true
+    AND is_inactive is null
+    AND (ah.account_type_id = 2 or ah.is_allow_to_buy_and_sell is true);`
+  
+    let params6 = [req.session.company_id];
+  
+
+   let query7 = `
+select 
+	bih.id,
+	    CONCAT(
+        SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS account_name
+from
+	befor_invoice_header bih
+where
+	bih.transaction_type = 23
+	and bih.company_id = $1
+	and bih.is_deleted is NULL
+	and bih.qutation_status in (1,2);
+   ` 
+   let params7 = [req.session.company_id]
+
+   let query8 = `
+   select 
+     bih.id,
+         CONCAT(
+           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
+           LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+       ) AS account_name
+   from
+     befor_invoice_header bih
+   where
+     bih.transaction_type = 24
+     and bih.company_id = $1
+     and bih.is_deleted is NULL
+     and bih.is_invoiced is NULL;
+      ` 
+      let params8 = [req.session.company_id]
+
+  await db.tx(async (tx) => {
+  
+    const itemslocationsArray = await tx.any(query1, params1);
+    const salesmanArray = await tx.any(query2, params2);
+    const taxHeaderArray = await tx.any(query3, params3);
+    const settings_tax_header_id_Array = taxHeaderArray.map(row => row.id);  // استخراج IDs من الاستعلام الثالث
+    const taxBodyArray = await tx.any(query4, [settings_tax_header_id_Array]);  // تمرير القائمة إلى الاستعلام الرابع
+    const itemsDataArray = await tx.any(query5, params5);
+    const customersDataArray = await tx.any(query6, params6);
+    const salesQutationReferencesArray = await tx.any(query7, params7);
+    const salesOederReferencesArray = await tx.any(query8, params8);
+  
+    const postedData = { itemslocationsArray, salesmanArray, taxHeaderArray, taxBodyArray, itemsDataArray, customersDataArray, salesQutationReferencesArray, salesOederReferencesArray };
+    res.json(postedData);
+  })
+  
+  
+      await last_activity(req)
+    } catch (error) {
+      await last_activity(req)
+      console.error("Error while get Employees Data", error);
+      res.join;
+      res
+        .status(500)
+        .json({ success: false, message_ar: "Error while get Employees Data" });
+    }
+  });
+  //#endregion get data for sales order add
+
+  //#region sales invoice add
+  app.post("/api/sales_invoice_add", async (req, res) => {
+    try {
+  
+      // //! Permission معلق
+      // await permissions(req, "transaction_permission", "add");
+      // if (!permissions) {
+      //   return res.status(403).json({
+      //     success: false,
+      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      //   });
+      // }
+
+
+
+  
+      const posted_elements = req.body;
+      const transaction_type = 3
+      let items_array = []
+    
+  
+      //! sql injection check
+      let hasBadSymbols = sql_anti_injection([
+        ...posted_elements.posted_array.map((obj) => obj.item_typeId + obj.item_id + obj.row_note + obj.row_amount + obj.row_unitPrice + obj.row_discountTypeId + obj.row_discountValue + obj.row_taxHeaderId), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+        posted_elements.customerId,
+        posted_elements.total,
+        posted_elements.datex,
+        posted_elements.dueDate,
+        posted_elements.orderReferenceId,
+        posted_elements.qutationReferenceId,
+        posted_elements.itemLocationId,
+        posted_elements.salesmanId,
+        posted_elements.is_RowNote,
+        posted_elements.is_RowDiscount,
+        posted_elements.general_note,
+        posted_elements.location_name,
+        // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+  
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.datex, posted_elements.dueDate]);
+      if (InValidDateFormat) {
+        return res.status(400).json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+  
+      //! settings
+      const settings = await check_settings_validation({
+        check_futureDate: true,
+        check_closingDate: true,
+        datex: posted_elements.datex,
+        type: 'add',
+        tableName: false, // if type = 'update' or 'delete' only
+        transaction_id: false, // if type = 'update' or 'delete' only
+      }, req);
+  
+      
+      if (!settings.valid) {
+        return res.json({
+          success: false,
+          message_ar: settings.message_ar,
+        });
+      }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      
+
+      //* Start Transaction --------------------------------------------------
+  
+     const total = +posted_elements.total
+
+     if (!total || isNaN(total)){
+      await block_user(req,'Ssia001')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+     }
+
+  
+  // //! Security hacking  accounts id
+ 
+     // check qutationReferenceId
+
+     const main_query = ` SELECT 
+  (SELECT id, qutation_status 
+   FROM befor_invoice_header 
+   WHERE id = $1 AND company_id = $2 AND transaction_type = 23 AND is_deleted IS NULL) AS qury1,
+  (SELECT COUNT(id) 
+   FROM befor_invoice_header 
+   WHERE id = $1 AND company_id = $2 AND transaction_type = 24 AND is_deleted IS NULL AND is_invoiced IS NULL) AS salesOrderReferenceCount;
+
+     `;
+
+     let query04;
+     let rows04;
+     if (posted_elements.qutationReferenceId){
+       query04 = `select id, qutation_status from befor_invoice_header where id = $1 and company_id = $2 and transaction_type = 23 and is_deleted IS NULL`
+       rows04 = await db.oneOrNone(query04, [posted_elements.qutationReferenceId, req.session.company_id])
+      if (!rows04 || !rows04.id){
+        await block_user(req,'Ssqa01')
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+      }
+
+
+
+
+      let query05;
+      let rows05;
+      if (posted_elements.orderReferenceId){
+        query05 = `select count(id) as salesOrderReferenceCount from befor_invoice_header where id = $1 and company_id = $2 and transaction_type = 24 and is_deleted IS NULL AND is_invoiced IS NULL`
+        rows05 = await db.oneOrNone(query05, [posted_elements.orderReferenceId, req.session.company_id])
+       if (rows05.salesOrderReferenceCount === 0){
+         await block_user(req,'Ssia02')
+         return res.json({
+           success: false,
+           xx: true,
+           message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+         });
+       }
+       }
+
+  // جلب الحسابات من قاعدة البيانات
+  let query02 = `SELECT id, account_type_id, is_salesman FROM accounts_header WHERE company_id = $1 AND is_inactive is null`;
+  let rows02 = await db.any(query02, [req.session.company_id]);
+  
+  // تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+  const dbAccounts = rows02.map(row => ({
+    id: parseInt(row.id),
+    account_type_id: row.account_type_id,
+    is_salesman: row.is_salesman
+  }));
+
+  //check salesman
+
+  const count_salesman = dbAccounts.some(row => +row.id === +posted_elements.salesmanId && +row.account_type_id === 4 && row.is_salesman === true);
+  const count_itemLocation = dbAccounts.some(row => +row.id === +posted_elements.itemLocationId && +row.account_type_id === 7);
+
+    // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+    if (!count_salesman) {
+      await block_user(req,'Ssqa01')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+    if (!count_itemLocation) {
+      await block_user(req,'Ssqa02')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+  // المرور على كل كائن في posted_elements.posted_array
+  for (const rowData of posted_elements.posted_array) {
+    const item_typeId = rowData.item_typeId;
+    const item_id = rowData.item_id;
+
+  
+    //! make sure from every account_id
+    const accountExists = dbAccounts.some(item => 
+      +item.id === +item_id && +item.account_type_id === +item_typeId
+    );
+  
+    // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+    if (!accountExists) {
+      await block_user(req,'Ssqa1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    items_array.push(+rowData.item_id)
+  }
+  
+  
+      // جلب من قاعدة البيانات
+      let query03 = `SELECT id FROM settings_tax_header WHERE company_id = $1`;
+      let rows03 = await db.any(query03, [req.session.company_id]);
+      
+      // تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+      const dbTaxesHeaderArray = rows03.map(row => ({
+        id: parseInt(row.id)
+      }));
+      
+
+      // المرور على كل كائن في posted_elements.posted_array
+      for (const rowData of posted_elements.posted_array) {
+        const row_taxHeaderId = rowData.row_taxHeaderId;
+        
+        if (row_taxHeaderId){
+        //! make sure from every account_id
+        const taxExists = dbTaxesHeaderArray.some(item =>
+          +item.id === +row_taxHeaderId
+        );
+        
+
+      
+        // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+        if (!taxExists) {
+          await block_user(req,'Ssqa2')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });
+        }
+      }
+      }
+  
+
+      //! فحص الجرد الكميات حسب الموقع
+
+
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(
+    		case 
+    			when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+    		end
+    		
+    	) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+		and tb.item_id IN (${items_array.join(',')})
+		and tb.item_location_id_tb = $2
+	group by
+		tb.item_id;
+      `
+
+      const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId])
+      
+      
+      const newId_transaction_header = await newId_fn("transaction_header", 'id');
+      const year = getYear(posted_elements.datex)
+      const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
+      const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+
+
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+
+        if(rows04){
+          if(rows04.qutation_status && +rows04.qutation_status !== 1){
+            await tx.none(
+              `UPDATE befor_invoice_header 
+               SET qutation_status = 1 
+               WHERE id = $1 AND company_id = $2`,
+              [posted_elements.qutationReferenceId, req.session.company_id]
+            );
+          }
+        }
+
+
+        if(rows05){
+          if(rows05.salesOrderReferenceCount && rows05.salesOrderReferenceCount > 0){
+            await tx.none(
+              `UPDATE befor_invoice_header 
+               SET is_invoiced = true 
+               WHERE id = $1 AND company_id = $2`,
+              [posted_elements.orderReferenceId, req.session.company_id]
+            );
+          }
+        }
+
+
+        let query1 = `INSERT INTO transaction_header
+                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, due_date, is_row_dicount_show, is_row_note_show, items_location_id, order_id, qutation_id, general_reference, is_including_items)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17);`;
+  
+        await tx.none(query1, [
+          newId_transaction_header,
+          newReference_transaction_header,
+          req.session.company_id,
+          transaction_type,
+          total.toFixed(2),
+          posted_elements.general_note,
+          posted_elements.datex,
+          posted_elements.customerId,
+          posted_elements.salesmanId,
+          posted_elements.dueDate,
+          posted_elements.is_RowDiscount ? true : null,
+          posted_elements.is_RowNote ? true : null,
+          posted_elements.itemLocationId,
+          posted_elements.orderReferenceId,
+          posted_elements.qutationReferenceId,
+          newId_general_reference,
+          true
+        ]);
+  
+        let DeafultAccounts = await tx.any('select id, item_revenue_account, item_expense_account from accounts_header where is_final_account = true and company_id = $1 and is_inactive IS NULL',[req.session.company_id])
+        let taxBodyArray = await tx.any('select id, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id from settings_tax_body')
+
+        let other_posted_array = []
+        let Val_beforTax = 0
+        let taxValue = 0
+        let TotalValue = 0
+        let newId_transaction_body = await newId_fn("transaction_body",'id');
+        let insertData2 = []
+        for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_transaction_body);
+  
+          //! make sure if account id != item  then location and amount = null
+
+          if(isNaN(+element.row_amount) || isNaN(+element.row_unitPrice)){
+            await block_user(req,'Ssia3')
+            throw new Error(
+              'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق'
+            );
+          }
+
+          //! check amount
+          
+          const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
+          const db_amount = +(current_location_amount_data?.current_location_amount || 0);
+          const result_amount = db_amount - +element.row_amount;
+            
+          if (isNaN(result_amount) || result_amount <= 0) {       
+            throw new Error(
+              `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
+            );
+          }
+
+          
+         const rowDiscountType = +element.row_discountTypeId || 0
+         const rowDiscountValue= +element.row_discountValue || 0
+         const rowAmount = +element.row_amount || 0
+         const rowUnitePrice = +element.row_unitPrice || 0
+
+          const Xrow_discount_value =
+          rowDiscountType === 1
+              ? +((rowDiscountValue / 100) * (rowAmount * rowUnitePrice))
+              : +rowDiscountValue;
+              Val_beforTax = +((rowAmount * rowUnitePrice) - Xrow_discount_value).toFixed(2);
+              TotalValue += Val_beforTax
+              
+
+          const account_row = DeafultAccounts.filter(item => +item.id === element.item_id);
+          
+          if (!account_row){
+            await block_user(req,'Ssia4')
+            throw new Error(
+              'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق'
+            );
+          }
+          const account_id = +account_row[0].item_revenue_account
+          
+          
+  
+          insertData2.push([
+            newId,
+            newId_transaction_header,
+            null,
+            +Val_beforTax,
+            element.row_note,
+            +element.row_amount,
+            +element.row_unitPrice,
+            +account_id,
+            +element.row_discountTypeId === 1 ? true : null,
+            element.row_discountValue || null,
+            element.row_taxHeaderId || null,
+            null,
+            null,
+            +element.item_typeId === 5? element.item_id : null,
+            +element.item_typeId === 5? posted_elements.itemLocationId : null
+          ]);
+
+          //! check if has taxHeader
+          if (element.row_taxHeaderId){
+            const taxesbodyArray = taxBodyArray.filter(item => +item.settings_tax_header_id === +element.row_taxHeaderId)
+            if (taxesbodyArray){
+              for (const row of taxesbodyArray){
+                const taxRate = +row.tax_rate /100
+                const taxMultiplier = row.is_tax_reverse ? -1 : 1;
+                taxValue = +(Val_beforTax * taxRate * taxMultiplier).toFixed(2);
+                TotalValue += taxValue
+
+                const newObject = {
+                  taxBodyId: row.id,
+                  taxHeaderId: row.settings_tax_header_id,
+                  debit: taxValue < 0 ? taxValue*-1 : null,
+                  credit: taxValue > 0 ? taxValue : null,
+                  account_id: row.tax_account_id,
+                  is_tax: true
+                }
+                other_posted_array.push(newObject)
+              }
+            }
+          }
+
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
+        }
+
+          
+
+        //! add customer row to transaction
+        const newObject = {
+          taxBodyId: null,
+          taxHeaderId: null,
+          debit: TotalValue > 0 ? TotalValue : null,
+          credit: TotalValue < 0 ? TotalValue*-1 : null,
+          account_id: posted_elements.customerId,
+          is_tax: null
+        }
+        other_posted_array.push(newObject)
+
+        //! insert the other part to transaction
+        for (const object of other_posted_array){
+          const newId = parseInt(newId_transaction_body);
+
+
+          insertData2.push([
+          newId,
+          newId_transaction_header,
+          +object.debit || null,
+          +object.credit || null,
+          null,
+          null,
+          null,
+          +object.account_id,
+          null,
+          null,
+          +object.taxHeaderId || null,
+          +object.taxBodyId || null,
+          object.is_tax,
+          null,
+          null
+          ]);
+
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
+        }
+  
+        let query2 = `INSERT INTO transaction_body
+        (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
+
+        // استخدم tx.batch بدلاً من tx.none
+        await tx.batch(insertData2.map(data => tx.none(query2, data)));
+
+
+        //! history
+        await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
+      });
+  
+      await update_items_cogs(req,items_array,posted_elements.datex)
+      const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+      await last_activity(req);
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+        success: true,
+        message_ar: `تم إنشاء فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error adding sales Invoice:", error);
+  
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+        success: false,
+        message_ar: error.message,
+      });
+    }
+  });
+  //#endregionsales invoice add
+
+  //#region get data for invoice_update_page
+  app.post("/get_data_for_sales_invoice_update", async (req, res) => {
+    try {
+      // //! Permission معلق
+      // await permissions(req, "sales_permission", "add");
+      // if (!permissions) {
+      //   return;
+      // }
+  
+      
+      const posted_elements = req.body;
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+      //* Start--------------------------------------------------------------
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      const transaction_type = 3
+
+  
+  
+      let query1 = `
+       -- مواقع المخزون
+  select
+    id as id,
+    account_name as  account_name
+  from
+    accounts_header 
+  WHERE company_id = $1 
+    AND account_type_id = 7
+    ;
+  `;
+  let params1 = [req.session.company_id]
+  
+  let query2 = `
+    select
+    id as id,
+    account_name as  account_name
+  from
+    accounts_header 
+  WHERE company_id = $1 
+    AND account_type_id = 4
+    AND is_final_account IS true
+    and is_salesman IS true
+    AND is_inactive IS null
+    ;
+  `
+  let params2 = [req.session.company_id]
+  
+  let query3 = `
+      select 
+    th.id,
+    th.taxe_package_name
+  from
+     settings_tax_header th
+  where
+    th.company_id = $1
+    and th.is_inactive is null
+  order by
+    th.taxe_package_name asc 
+   
+  `
+  let params3 = [req.session.company_id]
+  
+  let query4 = `
+  select
+      tb.id,
+      tb.tax_name,
+      tb.tax_rate,
+      tb.is_tax_reverse,
+      tb.tax_account_id,
+      ah.account_name,
+      tb.settings_tax_header_id
+  from
+      settings_tax_body tb
+  left join accounts_header ah on ah.id = tb.tax_account_id    
+  where
+      tb.settings_tax_header_id = ANY($1::int[])
+  `;
+  
+  
+  let query5 = `
+  SELECT
+    A.id,
+    A.account_name,
+    A.account_type_id,
+    COALESCE(A.item_unite, 'الكمية') as item_unite
+  FROM
+    accounts_header A
+  WHERE
+    A.company_id = $1
+    AND is_final_account = true
+    AND account_type_id IN (5, 8)
+  `;
+  
+  let params5 = [req.session.company_id];
+  
+  
+  let query6 = `
+  select
+    ah.id,
+    ah.account_name
+  from
+    accounts_header ah
+  where
+    ah.company_id = $1
+    AND ah.is_final_account is true
+    AND is_inactive is null
+    AND (ah.account_type_id = 2 or ah.is_allow_to_buy_and_sell is true);`
+  
+    let params6 = [req.session.company_id];
+  
+  
+  let query7 = `
+  select 
+    bih.id,
+    bih.reference,
+    bih.general_note,
+    bih.datex,
+    bih.account_id,
+    bih.salesman_id,
+    bih.qutation_status,
+    bih.expire_offer_datex,
+    bih.is_invoiced,
+    bih.qutation_id,
+    bih.order_reference,
+    bih.is_delivered,
+    bih.items_location_id,
+    bih.is_row_note_show,
+    bih.is_row_dicount_show,
+    CONCAT(
+      SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
+      LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat
+  from
+    befor_invoice_header bih
+  where 
+  bih.id = $1
+  and bih.company_id = $2
+  and bih.transaction_type = $3
+  AND bih.is_deleted IS NULL;
+  `
+  let params7 = [posted_elements.x, req.session.company_id, transaction_type];
+  
+  let query8 = `
+  select
+    bib.id,
+    bib.item_type_id,
+    bib.item_id,
+      ah.account_name,
+      ah.item_unite,
+    bib.amount,
+    bib.unite_price,
+    COALESCE(bib.row_note, '') as row_note,
+    bib.is_discount_percentage,
+    bib.dicount_value,
+    bib.tax_header_id,
+      sth.taxe_package_name
+  
+  from
+    befor_invoce_body bib
+  LEFT JOIN accounts_header ah on ah.id = bib.item_id 
+  LEFT JOIN settings_tax_header sth on sth.id = bib.tax_header_id 
+  where 
+    bib.header_id = $1;
+  `
+  let params8 = [posted_elements.x]
+  
+  
+  let query9 = `
+  select 
+    bih.id,
+        CONCAT(
+          SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
+          LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+      ) AS account_name
+  from
+    befor_invoice_header bih
+  where
+    bih.transaction_type = 23
+    and bih.company_id = $1
+    and bih.is_deleted is NULL
+    and bih.qutation_status in (1,2);
+     ` 
+     let params9 = [req.session.company_id]
+  
+  
+  
+  await db.tx(async (tx) => {
+  
+    const itemslocationsArray = await tx.any(query1, params1);
+    const salesmanArray = await tx.any(query2, params2);
+    const taxHeaderArray = await tx.any(query3, params3);
+    const settings_tax_header_id_Array = taxHeaderArray.map(row => row.id);  // استخراج IDs من الاستعلام الثالث
+    const taxBodyArray = await tx.any(query4, [settings_tax_header_id_Array]);  // تمرير القائمة إلى الاستعلام الرابع
+    const itemsDataArray = await tx.any(query5, params5);
+    const customersDataArray = await tx.any(query6, params6);
+    const headerData = await tx.any(query7, params7);
+    const bodyData = await tx.any(query8, params8);
+    const salesQutationReferencesArray = await tx.any(query9, params9);
+  
+    const postedData = { itemslocationsArray, salesmanArray, taxHeaderArray, taxBodyArray, itemsDataArray, customersDataArray, headerData, bodyData, salesQutationReferencesArray};
+    res.json(postedData);
+  })
+  
+  
+      await last_activity(req)
+    } catch (error) {
+      await last_activity(req)
+      console.error("Error while get Employees Data", error);
+      res.join;
+      res
+        .status(500)
+        .json({ success: false, message_ar: "Error while get Employees Data" });
+    }
+  });
+  //#endregion end - get data for invoice_update_page
+
+//#endregion sales invoice
 
 
 //#endregion
 
+//!====================================================================================================================================
+
+async function update_items_cogs(req,items_array,datex) {
+  
+
+  const query0 = `SELECT
+    tb.item_id,
+    SUM(
+        CASE 
+            WHEN th.datex = $1 AND tb.credit > 0 THEN 0 
+            WHEN tb.debit > 0 THEN tb.item_amount 
+            ELSE tb.item_amount * -1 
+        END
+    ) AS Current_amount,
+    SUM(
+        CASE
+            WHEN th.datex = $1 AND tb.credit > 0 THEN 0
+            WHEN tb.debit > 0 THEN tb.debit ELSE 0 END) - 
+            SUM(CASE WHEN tb.credit > 0 THEN tb.cogs ELSE 0
+        END
+    ) AS value
+FROM
+    transaction_body tb
+INNER JOIN 
+    transaction_header th ON th.id = tb.transaction_header_id
+WHERE
+    th.datex < $1
+    AND th.company_id = $2
+    AND tb.item_id IN (${items_array.join(',')})
+    AND th.is_deleted IS NULL
+    AND th.is_including_items IS TRUE
+GROUP BY
+    tb.item_id;`
+
+
+    
+  const started_balance = await db.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
+  
+
+  const query1 = `
+      SELECT 
+          tb.id,
+          th.datex,
+          tb.debit,
+          tb.credit,
+          tb.item_amount,
+          tb.item_id,
+          tb.cogs
+      FROM
+          transaction_body tb
+      LEFT JOIN 
+          transaction_header th ON th.id = tb.transaction_header_id
+      WHERE 
+          th.company_id = $1
+          AND th.is_deleted IS NULL
+          AND tb.item_id IS NOT NULL
+          AND th.datex >= $2
+      ORDER BY th.datex ASC;
+  `;
+
+  // جلب البيانات من قاعدة البيانات
+  const items_transactions_array = await db.any(query1,[req.session.company_id,datex]);
+
+  let updatedRecords = [];
+
+  for (const item_id of items_array){
+  
+  // تعريف المتغيرات لتتبع القيم
+  let old_cogs = 0;
+    
+  let started_balances = []
+  let started_amount = 0
+  let started_value = 0
+  started_balances = started_balance.find(item => +item.item_id === +item_id);
+  
+  if (started_balances){
+    started_amount = +started_balances.current_amount || 0;
+    started_value = +started_balances.value || 0;
+  }
+
+
+  const item_transaction_arry = items_transactions_array.filter(item => +item.item_id === +item_id)
+
+  for (const row of item_transaction_arry) {
+    
+    
+      // console.log(`started_value: ${started_value}`);
+
+      let cogs = 0;
+      if (row.debit) {
+          // إذا كانت العملية "debit"، تحديث الكميات والقيمة
+          started_amount += +row.item_amount;
+          started_value += +row.debit;
+      } else {
+          // إذا كانت العملية "credit"، حساب التكلفة (cogs)
+
+          
+          if (started_value === 0 || started_amount === 0 || +row.item_amount === 0){            
+            cogs = 0
+          }else{
+            cogs = (started_value / started_amount) * +row.item_amount            
+          }
+        
+          old_cogs += cogs;
+          started_amount -= +row.item_amount;
+          started_value -= cogs;
+
+          // console.log(`cogs: ${cogs}`);
+          // حفظ البيانات المحدثة
+          updatedRecords.push({ id: row.id, cogs });
+      }
+  }
+}
+  // إعداد استعلامات التحديث دفعة واحدة
+  const queries = updatedRecords.map(
+      ({ id, cogs }) =>
+          `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id};`
+  );
+
+  // تنفيذ التحديثات باستخدام tx.batch
+      await db.tx(async (tx) => {
+          await tx.batch(queries.map((query) => tx.none(query)));
+      });
+      
+}
+
+// update_items_cogs()
 
 
 
+/*
+! استعلام الجرد 
+-- da est3alm el gard
+-- tp3a how by7tawy 3ala el el kemya we total  lakn mafesh avg cost  hangepha ba2a fe el bena2 el taple nafso fe el loop 
+
+SELECT
+    tb.item_id,
+    SUM(
+        CASE 
+            WHEN tb.debit > 0 THEN tb.item_amount 
+            ELSE tb.item_amount * -1 
+        END
+    ) AS Current_amount,
+     SUM(
+        case 
+                WHEN tb.debit > 0 THEN tb.debit ELSE 0 END) 
+            - SUM(CASE WHEN tb.credit > 0 THEN tb.cogs ELSE 0 END) AS value
+FROM
+    transaction_body tb
+INNER JOIN 
+    transaction_header th ON th.id = tb.transaction_header_id
+WHERE
+    th.company_id = 1
+    AND th.datex <= '2024-12-13'
+GROUP BY
+    tb.item_id;
+
+    
+
+*/
+
+// updateCogs();
 
 
 
