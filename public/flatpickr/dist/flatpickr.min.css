@@ -623,7 +623,7 @@ span.flatpickr-weekday {
       border-color: #1284e7;
       background: #1284e7;
       color: #fff;
-      transform: scale(1.2); /* زيادة الحجم بنسبة 20% */
+      transform: scale(1); /* زيادة الحجم بنسبة 20% */
 }
 
 .flatpickr-day.selected,

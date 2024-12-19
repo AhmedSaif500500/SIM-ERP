@@ -1,13 +1,15 @@
 setActiveSidebar('bread_view_ar');
-pagePermission("add","transaction_permission");
+pagePermission("add","transaction_permission"); // معلق
 
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector(`#note_inpute`);
-// const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_qutation_multi_pages
-// const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in sales_qutation_multi_pages
+// const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in purshases_qutation_multi_pages
+// const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in purshases_qutation_multi_pages
 const btn_newRow = document.querySelector(`#btn_newRow`);
 const table = document.querySelector(`#myTable`);
+
+
 
 
 date1.value = today
@@ -18,17 +20,17 @@ async function save(A_OR_B) {
   const datex = date1.value;
 
   
-  const customerId = document.querySelector(`#dropdown_div3_hidden_input`).value
-  if (!customerId || isNaN(+customerId)) {
-    showAlert(`warning`, `يرجى تحديد العميل `)
+  const vendorId = document.querySelector(`#dropdown_div3_hidden_input`).value
+  if (!vendorId || isNaN(+vendorId)) {
+    showAlert(`warning`, `يرجى تحديد المورد `)
     return;
   }
 
-  const salesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
-  if (!salesmanId || isNaN(+salesmanId)) {
-    showAlert(`warning`, `يرجى تحديد البائع `)
-    return;
-  }
+  // const purshasesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
+  // if (!purshasesmanId || isNaN(+purshasesmanId)) {
+  //   showAlert(`warning`, `يرجى تحديد البائع `)
+  //   return;
+  // }
   
 
   const itemLocationId = document.querySelector(`#dropdown_div2_hidden_input`).value
@@ -38,16 +40,17 @@ async function save(A_OR_B) {
   }
 
 
-
+  const qutationReferenceId = document.querySelector(`#dropdown_div4_hidden_input`).value
+  
   const general_note = note_inpute.value.trim()
 
-  
   let total = 0
   if (!totalTaxValue || isNaN(totalTaxValue) || totalTaxValue === 0){
     total = totalVal_beforTax
   }else{
     total = totalAfterTax
   }
+  
 const is_RowDiscount = is_RowDiscount_checkBox.checked
 const is_RowNote  = is_RowNote_checkBox.checked
 
@@ -108,43 +111,43 @@ const is_RowNote  = is_RowNote_checkBox.checked
       currentIndex++; // زيادة العدّاد بعد كل تكرار
     }
 
-    const posted_Obj = {customerId, total, datex,itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, posted_array}
+    const posted_Obj = {vendorId, total, datex, qutationReferenceId, itemLocationId, is_RowNote, is_RowDiscount, general_note, posted_array}
 
     if (A_OR_B == 'B'){
       const post = await new_fetchData_postAndGet(
-        "/api/sales_qutation_add",
+        "/api/purshases_order_add",
         posted_Obj,
-        'pass', 'pass',
+        'pass', 'pass', // معلق
         15,
-        true,"هل تريد حفظ البيانات ؟",
+        true,"هل تريد حفظ بيانات امر الشراء ؟",
         true,
         false,false,false,false,false,
-        true,"sales_qutation_add_ar",
+        true,"purshases_order_add_ar",
         false,false,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('transactionViewArray') // معلق
     }
     
     }else{
 //! معلق هنا فى الصفحه كلها راجع ال permissions
     const post = await new_fetchData_postAndGet(
-      "/api/sales_qutation_add",
+      "/api/purshases_order_add",
       posted_Obj,
-      'transaction_permission', 'add',
+      'pass', 'pass', // معلق
       15,
-      true,"هل تريد حفظ بيانات عرض سعر البيع ؟",
+      true,"هل تريد حفظ بيانات امر الشراء ؟",
       true,
       false,false,false,false,false,
-      true,"sales_qutation_view_ar",
+      true,"purshases_order_view_ar",
       false,false,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('transactionViewArray') // معلق
     }
     
   }
@@ -156,18 +159,18 @@ const is_RowNote  = is_RowNote_checkBox.checked
 }
 
 async function get_Data_for_add_page_fn() {
-
+  // معلق
   data_accounts = await new_fetchData_postAndGet(
-    "/get_Data_for_sales_qutation_add_page",
+    "/get_data_for_purshases_order_add", // معلق
     {},
-    'sales_permission', 'view',
+    'purshases_permission', 'view', // معلق
     15,
     false,false,
     true,
     false,false,
     false,false,
     false,false,false,
-    true,"sales_qutation_view_ar",
+    true,"purshases_order_view_ar",
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 return data_accounts
@@ -176,35 +179,39 @@ return data_accounts
 
 
 
-
-
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
+  const qutationToOrder = JSON.parse(sessionStorage.getItem('purshases_order_update_data'));
+  if (qutationToOrder){    
+    await showPurshasesOrderData(qutationToOrder.x,qutationToOrder.x,'qutation')
+  }else{
+    Data =  await get_Data_for_add_page_fn()
+    itemslocationsArray =  Data.itemslocationsArray
+    // purshasesmanArray =  Data.purshasesmanArray
+    taxHeaderArray =  Data.taxHeaderArray
+    settings_tax_header_id_Array =  Data.settings_tax_header_id_Array
+    taxBodyArray =  Data.taxBodyArray
+    itemsDataArray =  Data.itemsDataArray
+    vendorsDataArray =  Data.vendorsDataArray
+    purshasesQutationReferencesArray =  Data.purshasesQutationReferencesArray
+      
 
-  Data =  await get_Data_for_add_page_fn()
-  itemslocationsArray =  Data.itemslocationsArray
-  salesmanArray =  Data.salesmanArray
-  taxHeaderArray =  Data.taxHeaderArray
-  settings_tax_header_id_Array =  Data.settings_tax_header_id_Array
-  taxBodyArray =  Data.taxBodyArray
-  itemsDataArray =  Data.itemsDataArray
-  customersDataArray =  Data.customersDataArray
+      if (!Data || !itemsDataArray){
+        await redirection('purshases_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
+        return
+      }
+      create_drop_down_with_External_DataArray(`dropdown_div3`,vendorsDataArray)
+      // create_drop_down_with_External_DataArray(`dropdown_div`,purshasesmanArray)
+      create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray)
+      create_drop_down_with_External_DataArray(`dropdown_div4`,purshasesQutationReferencesArray)
+      // await get_items_locations()
+      build_table()
+      addRow(itemsDataArray, taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
 
-    if (!Data || !itemsDataArray){
-      await redirection('sales_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
-      return
-    }
-    
-  create_drop_down_with_External_DataArray(`dropdown_div3`,customersDataArray)
-  create_drop_down_with_External_DataArray(`dropdown_div`,salesmanArray)
-  create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray)
+  }
+                           
 
-
-  
-  // await get_items_locations()
-  build_table()
-  addRow(itemsDataArray, taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
   

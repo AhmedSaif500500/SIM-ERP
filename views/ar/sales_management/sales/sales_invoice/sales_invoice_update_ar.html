@@ -30,12 +30,12 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="sales_invoice_view_ar" title="اوامر بيع">
+            <a id="back_href" class="back_href" href="sales_invoice_view_ar" title="فواتير المبيعات">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
               <a id="h2_text_div" class="h2_text_div" href="sales_invoice_update_ar" title="اعادة تحميل الصفحة">
-                اوامر بيع
+                فواتير المبيعات
                 <!-- <button class="btn_search">وضع التعديل</button> -->
               </a>
               <span id="sub_h2_header" class="sub_h2_header">عرض</span>
@@ -48,7 +48,6 @@
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
             <div class="reference_and_date_div">
-
               <div class="column x_start y_start w_fit">
                 <!-- date -->
                 <label for="date1" class="lbl_sm">التاريخ</label>
@@ -59,9 +58,17 @@
                 </div>
               </div>
 
+              <div class="column x_start y_start w_fit">
+                <!-- Due Date -->
+                <label for="dueDate_input" class="lbl_sm">تاريخ الاستحقاق</label>
+                <div class="input_with_icon_div">
+                  <input type="search" id="dueDate_input" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+                    autocomplete="off">
+                  <i class="fa-regular fa-calendar left_icon"></i>
+                </div>
+              </div>
               
               <div class="column x_start y_start w_fit">
-                <span id="reference_status" class="reference_status"></span>
                 <label for="reference_input" class="lbl_sm">المرجع</label>
                 <div class="input_with_icon_div">
                   <span class="reference_input_checkbox"><input type="checkbox" id="reference_input_checkbox" checked disabled title="تلقائى"></span>
@@ -69,22 +76,27 @@
                     oninput="check_parse(this,'number')" placeholder="تلقائى" autocomplete="off">
                 </div>
               </div>
-
             </div>
+
 
             <div class="row y_start x_start nowrap gap_10">
               <div class="column">
                 <label for="note_inpute" class="lbl_sm">العميل</label>
                 <div id="dropdown_div3" class="dropdown_container"></div>
               </div>
-              <div class="column qutation_reference_div">
-                <label for="note_inpute" class="lbl_sm">رقم عرض السعر</label>
+              <div class="column order_reference_div">
+                <label for="note_inpute" class="lbl_sm">امر البيع</label>
                 <div id="dropdown_div4" class="dropdown_container" style="width: 13rem"></div>
+              </div>
+              <div class="column qutation_reference_div">
+                <label for="note_inpute" class="lbl_sm">عرض السعر</label>
+                <div id="dropdown_div5" class="dropdown_container" style="width: 13rem"></div>
               </div>
             </div>
 
             <label for="note_inpute" class="lbl_sm">البيان العام</label>
             <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off">
+
 
 
             <!-- table -->

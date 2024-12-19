@@ -10,6 +10,8 @@ const btn_newRow = document.querySelector(`#btn_newRow`);
 const table = document.querySelector(`#myTable`);
 
 
+
+
 date1.value = today
 
 
@@ -44,13 +46,13 @@ async function save(A_OR_B) {
 
   const general_note = note_inpute.value.trim()
 
-let total = 0
-if (!totalTaxValue || isNaN(totalTaxValue) || totalTaxValue === 0){
-  total = Val_beforTax
-}else{
-  total = totalAfterTax
-}
-
+  let total = 0
+  if (!totalTaxValue || isNaN(totalTaxValue) || totalTaxValue === 0){
+    total = totalVal_beforTax
+  }else{
+    total = totalAfterTax
+  }
+  
 const is_RowDiscount = is_RowDiscount_checkBox.checked
 const is_RowNote  = is_RowNote_checkBox.checked
 
@@ -178,31 +180,35 @@ return data_accounts
 
 
 
-let Data1 = [];
-let itemsDataArray1 = []
-let taxHeaderArray1 = [] ;
 
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
   const qutationToOrder = JSON.parse(sessionStorage.getItem('sales_order_update_data'));
-  if (qutationToOrder){
-    await showsalesOrderData(qutationToOrder.x,'qutation')
+  if (qutationToOrder){    
+    await showsalesOrderData(qutationToOrder.x,qutationToOrder.x,'qutation')
   }else{
-    Data1 =  await get_Data_for_add_page_fn()
-    itemsDataArray1 =  Data1.itemsDataArray
+    Data =  await get_Data_for_add_page_fn()
+    itemslocationsArray =  Data.itemslocationsArray
+    salesmanArray =  Data.salesmanArray
+    taxHeaderArray =  Data.taxHeaderArray
+    settings_tax_header_id_Array =  Data.settings_tax_header_id_Array
+    taxBodyArray =  Data.taxBodyArray
+    itemsDataArray =  Data.itemsDataArray
+    customersDataArray =  Data.customersDataArray
+    salesQutationReferencesArray =  Data.salesQutationReferencesArray
   
-      if (!Data1 || !itemsDataArray1){
+      if (!Data || !itemsDataArray){
         await redirection('sales_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
         return
       }
-      create_drop_down_with_External_DataArray(`dropdown_div3`,Data1.customersDataArray)
-      create_drop_down_with_External_DataArray(`dropdown_div`,Data1.salesmanArray)
-      create_drop_down_with_External_DataArray(`dropdown_div2`,Data1.itemslocationsArray)
-      create_drop_down_with_External_DataArray(`dropdown_div4`,Data1.salesQutationReferencesArray)
+      create_drop_down_with_External_DataArray(`dropdown_div3`,customersDataArray)
+      create_drop_down_with_External_DataArray(`dropdown_div`,salesmanArray)
+      create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray)
+      create_drop_down_with_External_DataArray(`dropdown_div4`,salesQutationReferencesArray)
       // await get_items_locations()
       build_table()
-      addRow(itemsDataArray1, Data1.taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
+      addRow(itemsDataArray, taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
 
   }
                            

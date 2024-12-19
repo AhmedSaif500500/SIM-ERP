@@ -206,8 +206,13 @@ function loadSidebarContents() {
        إدارة المخزون
     </a>
 
-    <a href="salesMain_view_ar" target="_self" class="" style="display: ${module_display("salesman_permission","sales_permission")}">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+    <a href="purshasesMain_view_ar" target="_self" class="" style="display: ${module_display("purshases_qutation_permission","purshases_order_permission","purshases_invoice_permission")}">
+      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
+       إدارة المشتريات
+    </a>
+
+    <a href="salesMain_view_ar" target="_self" class="" style="display: ${module_display("salesman_permission","sales_qutation_permission","sales_order_permission","sales_invoice_permission")}">
+      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
        إدارة المبيعات
     </a>
 
@@ -2803,8 +2808,12 @@ const internal_permissions = [
   "vendors_permission",
   "itemsLocations_permission",
   "salesman_permission",
-  "sales_permission",
-  "purchases_permission",
+  "sales_qutation_permission",
+  "sales_order_permission",
+  "sales_invoice_permission",
+  "purshases_qutation_permission",
+  "purshases_order_permission",
+  "purshases_invoice_permission"
 ];
 
 
@@ -3157,6 +3166,7 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
 
 
 async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataArray) {
+
   const dropDownDiv = document.querySelector(`#${str_dropDownDivId}`);
   // dropDownDiv.style.width = '20rem'
   
@@ -3490,6 +3500,7 @@ try {
   const clear_icon = dropdown_div.querySelector(`.clear_icon`)
   const filteredData = dataArray.filter(item => +item.id === +id);
 
+  
   id_hidden_input.value = filteredData[0].id; // ID
   dropdown_select_input.value = filteredData[0].account_name; // الاسم  
 
@@ -3952,17 +3963,19 @@ function clear_icon2(event) {
     
     icon.classList.add('fa-caret-down');
     icon.classList.remove('fa-caret-up');
-
     clickedIcon.style.display = 'none'
+
 }
+
+const preventKeyDown = (e) => e.preventDefault();
 
 async function viewMode(is_hidden, permName, permType) {
   try {
-    
-    const permission = await btn_permission(permName,permType)
-    if (!permission){
-      return
+    const permission = await btn_permission(permName, permType);
+    if (!permission) {
+      return;
     }
+    
     showLoadingIcon(content_space);
 
     const elements = document.querySelectorAll(`.notView, .notViewTd`);
@@ -3979,14 +3992,135 @@ async function viewMode(is_hidden, permName, permType) {
     // تحديث النص وأسلوب المؤشر
     sub_h2_header.textContent = is_hidden ? 'عرض' : 'تحديث';
     page_content.style.pointerEvents = is_hidden ? 'none' : 'auto';
-    fn_container_div.querySelector(`#fn_option_update_btn`).style.display = is_hidden ? 'flex' : 'none'
-    fn_container_div.querySelector(`#fn_option_view_btn`).style.display = is_hidden ? 'none' : 'flex'
 
-    hide_fn_options_div()
+    // إضافة أو إزالة المستمع بناءً على الحالة
+    if (is_hidden) {
+      page_content.addEventListener('keydown', preventKeyDown);
+    } else {
+      page_content.removeEventListener('keydown', preventKeyDown);
+    }
+
+    // تحديث عرض الأزرار
+    fn_container_div.querySelector(`#fn_option_update_btn`).style.display = is_hidden ? 'flex' : 'none';
+    fn_container_div.querySelector(`#fn_option_view_btn`).style.display = is_hidden ? 'none' : 'flex';
+
+    hide_fn_options_div();
     hideLoadingIcon(content_space);
   } catch (error) {
-    hide_fn_options_div()
+    hide_fn_options_div();
     hideLoadingIcon(content_space);
     catch_error(error);
   }
 }
+
+
+
+
+let totalsArray = []
+let totalVal_beforTax = 0
+let totalTaxValue = 0
+let totalAfterTax = 0
+let row_Val_beforTax = 0
+let row_totalAfterTax = 0
+
+function update_table(str_tableName){
+ try {
+
+ const table = document.getElementById(`${str_tableName}`);
+ const rows = table.querySelectorAll(`.mainTr`);
+ 
+
+ //#region update totals in table
+ totalsArray = []
+ row_Val_beforTax = 0
+ totalTaxValue = 0
+ row_totalAfterTax = 0
+ totalAfterTax = 0
+ totalVal_beforTax = 0
+ 
+ const tfoot_totalDiv_note = table.querySelector(`.tfoot_totalDiv_note`); tfoot_totalDiv_note.innerHTML = ""
+ const tfoot_totalDiv_Values = table.querySelector(`.tfoot_totalDiv_Values`); tfoot_totalDiv_Values.innerHTML = ""
+
+ function update_totalsArray (tax_account_id,str_name,val){
+   if (tax_account_id){
+     const obj = totalsArray.find(obj => obj.tax_account_id === tax_account_id)
+     if (obj){
+       obj.val = +obj.val + val;
+     }else{
+       totalsArray.push({tax_account_id:tax_account_id, name: str_name , val:+val})
+     }
+   }else{
+     const obj = totalsArray.find(obj => obj.name === str_name)
+     if (obj){
+       obj.val = +obj.val + val;
+     }else{
+       totalsArray.push({name: str_name , val:+val})
+     }
+   }
+ }
+
+
+
+ for (const row of rows){
+       
+   const rowAmount = +row.querySelector(`.td-amount .Xitem_amount`).textContent || 0;
+   const rowUnitePrice = +row.querySelector(`.td-unitePrice`).textContent || 0;
+   const rowDiscountType = +row.querySelector(`.td-dsicount .tbody_discountType`).value || 0;
+   const rowDiscountValue = +row.querySelector(`.td-dsicount .Xrow_discount_value`).textContent || 0;
+   const rowTotalBeforTax = row.querySelector(`.td-totalBeforTax`);
+   const rowTaxValue = row.querySelector(`.td-taxValue`);
+   const rowAfterTax = row.querySelector(`.td-totalAfterTax`);
+
+
+   const Xrow_discount_value =
+   rowDiscountType === 1
+       ? +((rowDiscountValue / 100) * (rowAmount * rowUnitePrice))
+       : +rowDiscountValue;
+       row_Val_beforTax = +((rowAmount * rowUnitePrice) - Xrow_discount_value).toFixed(2);
+       rowTotalBeforTax.textContent = row_Val_beforTax.toFixed(2)
+       
+       update_totalsArray(false,'الاجمالى',row_Val_beforTax)
+       totalVal_beforTax += row_Val_beforTax
+       let Val_rowTax = 0;
+       const taxType = +row.querySelector(`.tbody_taxType`).value || 0;
+     
+       if (taxType !== 0) {
+         for (const taxRow of taxBodyArray) {
+           if (+taxRow.settings_tax_header_id === taxType) {
+             const taxAccount_id = +taxRow.tax_account_id;
+             // const taxAccount_name = taxRow.account_name.trim();
+             const tax_name = taxRow.tax_name.trim();
+             const taxRate = +taxRow.tax_rate / 100;
+             const taxMultiplier = taxRow.is_tax_reverse ? -1 : 1;
+             const taxValue = +(row_Val_beforTax * taxRate * taxMultiplier).toFixed(2);
+             Val_rowTax += taxValue;
+             totalTaxValue += taxValue
+             update_totalsArray(taxAccount_id,tax_name,taxValue)
+           }
+         }
+         rowTaxValue.textContent = Val_rowTax.toFixed(2)
+       }else{
+         rowTaxValue.textContent = 0.00
+       }
+   
+       rowAfterTax.textContent =  (row_Val_beforTax + Val_rowTax).toFixed(2)
+       row_totalAfterTax = (row_Val_beforTax + Val_rowTax).toFixed(2)
+       totalAfterTax += +row_totalAfterTax
+ }
+
+ totalsArray.forEach((obj, index) => {
+
+   tfoot_totalDiv_note.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}">${obj.name}</span>`
+   tfoot_totalDiv_Values.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}" class="${obj.val < 0? 'color_negative' : ''}">${obj.val.toFixed(2)}</span>`
+ })
+ if (totalsArray.length > 1){
+   tfoot_totalDiv_note.innerHTML += `<span style="font-weight: bold;font-size:1.6rem;">الاجمالى</span>`
+   tfoot_totalDiv_Values.innerHTML += `<span style="font-weight: bold; font-size:1.6rem" class="totalsSpan_totalAfterTax">${(totalsArray[0].val + totalTaxValue).toFixed(2)}</span>`
+ }
+   
+} catch (error) {
+ catch_error(error)
+}
+}
+
+//#endregion end - update tables in table

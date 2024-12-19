@@ -2,6 +2,8 @@
 
 const qutation_reference_div = document.querySelector(`.qutation_reference_div`)
 const order_reference_div = document.querySelector(`.order_reference_div`)
+const reference_status = document.querySelector(`#reference_status`);
+
 
 let is_column_Note_show = 'none'
 let is_column_discount_show = 'none'
@@ -70,7 +72,7 @@ function build_table(){
   <tr>
     <td colspan="13" class="notViewTd">
       <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
-        <button id="btn_newRow" class="btn_new" onclick="addRow(itemsDataArray1, Data1.taxHeaderArray)">سطر جديد</button>
+        <button id="btn_newRow" class="btn_new" onclick="addRow(itemsDataArray, taxHeaderArray)">سطر جديد</button>
         <select id="columnSelect" class="select m_0" style="width: fit-content; height: 3.5rem;">
           <option value="1">1</option>
           <option value="2">2</option>
@@ -130,7 +132,7 @@ function build_table(){
                         <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(dataArray))}', '${encodeURIComponent(JSON.stringify(DropDown_accounts_tableColumnsName))}', 'account_type', 'tbody_itemUniteName')"  style="min-width: 10rem;">
                           <div id="" class="dropdown_select_input T hover"></div>
                           <i class="fa-solid fa-caret-down left_icon"></i>
-                          <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event)"></i>
+                          <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>
                           <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
                         </div>
 
@@ -179,7 +181,7 @@ function build_table(){
                         <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(taxHeaderArray))}', '${encodeURIComponent(JSON.stringify(DropDown_TaxHeader_tableColumnsName))}', false, false)"  style="min-width: 10rem;">
                           <div id="" class="dropdown_select_input taxHeaderInput T hover" oninput="update_table('myTable')"></div>
                           <i class="fa-solid fa-caret-down left_icon"></i>
-                          <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event)"></i>
+                          <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>
                           <input type="hidden" class="id_hidden_input tbody_taxType x1 T" id="" readonly>
                         </div>
 
@@ -211,20 +213,7 @@ function build_table(){
   `;
       table.querySelector('tbody').appendChild(emptyRow);
   
-      const taxHeaderInput = emptyRow.querySelector('.taxHeaderInput');
-      if (taxHeaderInput) {
-        const observer = new MutationObserver(() => {
-          // تحديث الجدول عند حدوث تغير
-          update_table('myTable');
-          
-        });
-  
-        observer.observe(taxHeaderInput, {
-          childList: true, // مراقبة تغييرات العناصر
-          characterData: false, // مراقبة النصوص
-          subtree: false // مراقبة العناصر الفرعية
-        });
-      }
+      observe_changes_in_taxheaderinput(emptyRow)
     }
     reset_rowcount_in_table(`myTable`)
   }
@@ -288,107 +277,6 @@ function build_table(){
   }
  }
 
- let totalsArray = []
- let totalTaxValue = 0
- let Val_beforTax = 0
- let totalAfterTax = 0
- 
-function update_table(str_tableName){
-  try {
-
-  const table = document.getElementById(`${str_tableName}`);
-  const rows = table.querySelectorAll(`.mainTr`);
-  
-
-  
-  totalsArray = []
-  Val_beforTax = 0
-  totalTaxValue = 0
-  totalAfterTax = 0
-  
-  const tfoot_totalDiv_note = table.querySelector(`.tfoot_totalDiv_note`); tfoot_totalDiv_note.innerHTML = ""
-  const tfoot_totalDiv_Values = table.querySelector(`.tfoot_totalDiv_Values`); tfoot_totalDiv_Values.innerHTML = ""
-
-  function update_totalsArray (tax_account_id,str_name,val){
-    if (tax_account_id){
-      const obj = totalsArray.find(obj => obj.tax_account_id === tax_account_id)
-      if (obj){
-        obj.val = +obj.val + val;
-      }else{
-        totalsArray.push({tax_account_id:tax_account_id, name: str_name , val:+val})
-      }
-    }else{
-      const obj = totalsArray.find(obj => obj.name === str_name)
-      if (obj){
-        obj.val = +obj.val + val;
-      }else{
-        totalsArray.push({name: str_name , val:+val})
-      }
-    }
-  }
-
-
-
-  for (const row of rows){
-        
-    const rowAmount = +row.querySelector(`.td-amount .Xitem_amount`).textContent || 0;
-    const rowUnitePrice = +row.querySelector(`.td-unitePrice`).textContent || 0;
-    const rowDiscountType = +row.querySelector(`.td-dsicount .tbody_discountType`).value || 0;
-    const rowDiscountValue = +row.querySelector(`.td-dsicount .Xrow_discount_value`).textContent || 0;
-    const rowTotalBeforTax = row.querySelector(`.td-totalBeforTax`);
-    const rowTaxValue = row.querySelector(`.td-taxValue`);
-    const rowAfterTax = row.querySelector(`.td-totalAfterTax`);
-
-
-    const Xrow_discount_value =
-    rowDiscountType === 1
-        ? +((rowDiscountValue / 100) * (rowAmount * rowUnitePrice)).toFixed(2)
-        : +rowDiscountValue.toFixed(2);
-        Val_beforTax = +((rowAmount * rowUnitePrice) - Xrow_discount_value).toFixed(2);
-        rowTotalBeforTax.textContent = Val_beforTax.toFixed(2)
-        
-        update_totalsArray(false,'الاجمالى',Val_beforTax)
-
-        let Val_rowTax = 0;
-        const taxType = +row.querySelector(`.tbody_taxType`).value || 0;
-      
-        if (taxType !== 0) {
-          for (const taxRow of Data1.taxBodyArray) {
-            if (+taxRow.settings_tax_header_id === taxType) {
-              const taxAccount_id = +taxRow.tax_account_id;
-              // const taxAccount_name = taxRow.account_name.trim();
-              const tax_name = taxRow.tax_name.trim();
-              const taxRate = +taxRow.tax_rate / 100;
-              const taxMultiplier = taxRow.is_tax_reverse ? -1 : 1;
-              const taxValue = +(Val_beforTax * taxRate * taxMultiplier).toFixed(2);
-              Val_rowTax += taxValue;
-              totalTaxValue += taxValue
-              update_totalsArray(taxAccount_id,tax_name,taxValue)
-            }
-          }
-          rowTaxValue.textContent = Val_rowTax.toFixed(2)
-        }else{
-          rowTaxValue.textContent = 0.00
-        }
-    
-        rowAfterTax.textContent =  (Val_beforTax + Val_rowTax).toFixed(2)
-        totalAfterTax = (Val_beforTax + Val_rowTax).toFixed(2)
-  }
-
-  totalsArray.forEach((obj, index) => {
-
-    tfoot_totalDiv_note.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}">${obj.name}</span>`
-    tfoot_totalDiv_Values.innerHTML += `<span style="${index === 0 ? 'font-weight: bold;' : ''}" class="${obj.val < 0? 'color_negative' : ''}">${obj.val.toFixed(2)}</span>`
-  })
-  if (totalsArray.length > 1){
-    tfoot_totalDiv_note.innerHTML += `<span style="font-weight: bold;font-size:1.6rem;">الاجمالى</span>`
-    tfoot_totalDiv_Values.innerHTML += `<span style="font-weight: bold; font-size:1.6rem" class="totalsSpan_totalAfterTax">${(totalsArray[0].val + totalTaxValue).toFixed(2)}</span>`
-  }
-    
-} catch (error) {
-  catch_error(error)
-}
-}
 
 
 function handle_input_event(input) {
@@ -482,7 +370,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                       <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(dataArray))}', '${encodeURIComponent(JSON.stringify(DropDown_accounts_tableColumnsName))}', 'account_type', 'tbody_itemUniteName')"  style="min-width: 10rem;">
                         <div id="" class="dropdown_select_input T hover"></div>
                         <i class="fa-solid fa-caret-down left_icon"></i>
-                        <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event)"></i>
+                        <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>
                         <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
                       </div>
 
@@ -531,7 +419,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                       <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(taxHeaderArray))}', '${encodeURIComponent(JSON.stringify(DropDown_TaxHeader_tableColumnsName))}', false, false)"  style="min-width: 10rem;">
                         <div id="" class="dropdown_select_input taxHeaderInput T hover" oninput="update_table('myTable')"></div>
                         <i class="fa-solid fa-caret-down left_icon"></i>
-                        <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event)"></i>
+                        <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>
                         <input type="hidden" class="id_hidden_input tbody_taxType x1 T" id="" readonly>
                       </div>
 
@@ -574,6 +462,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
 function handleCurrentTr(row,tr){
 try {
   
+  observe_changes_in_taxheaderinput(tr)
   const selectItemType = tr.querySelector(`.td-item_type .account_type`) 
   selectItemType.value = row.item_type_id;
   tr.querySelector(`.td-itemId .account_type_name`).textContent = selectItemType.options[selectItemType.selectedIndex].text;
@@ -594,18 +483,25 @@ tr.querySelector(`.td-taxHeader .dropdown_select_input`).textContent = row.taxe_
 
 
 let Data = [];
-let itemsDataArray = [];
+let itemslocationsArray = [];
+let salesmanArray = [];
 let taxHeaderArray = [];
+let settings_tax_header_id_Array = [];
+let taxBodyArray = [];
+let itemsDataArray = [];
+let customersDataArray = [];
 let headerDataArray = [];
 let bodyDataArray = [];
+let salesQutationReferencesArray = [];
 
-async function showsalesOrderData(x,type){
+
+async function showsalesOrderData(x,qutation_id,type){
 
   try {
     
   Data = await new_fetchData_postAndGet(
     "/get_data_for_sales_order_update",
-    {x,type},
+    {x,qutation_id,type},
     'sales_permission', 'view',
     15,
     false,false,
@@ -617,29 +513,37 @@ async function showsalesOrderData(x,type){
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 
-  headerDataArray = Data.headerData[0];
+  itemslocationsArray = Data.itemslocationsArray;
+  salesmanArray =  Data.salesmanArray;
+  taxHeaderArray =  Data.taxHeaderArray;
+  settings_tax_header_id_Array =  Data.settings_tax_header_id_Array;
+  taxBodyArray =  Data.taxBodyArray;
   itemsDataArray =  Data.itemsDataArray;
-  bodyDataArray =  Data.bodyData;
+  customersDataArray =  Data.customersDataArray;
+  headerDataArray =  Data.headerDataArray;
+  bodyDataArray =  Data.bodyDataArray;
+  salesQutationReferencesArray =  Data.salesQutationReferencesArray;
 
   
-    if (!Data || !itemsDataArray || !itemsDataArray || !bodyDataArray){
+    if (!Data || !taxHeaderArray || !itemsDataArray || !bodyDataArray){
       await redirection('sales_order_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
       return
     }
 
     build_table()
-    fillTable(itemsDataArray, Data.taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
+    fillTable(itemsDataArray, taxHeaderArray) //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table() 5od de copy 7otaha henak
     
     
     //! show header data 
+    
     const qutationId = type === 'qutation' ? x : headerDataArray.qutation_id
     
-    create_drop_down_with_External_DataArray(`dropdown_div3`,Data.customersDataArray); selectedRow_dropdownDiv(`dropdown_div3`,Data.customersDataArray,headerDataArray.account_id);
-    create_drop_down_with_External_DataArray(`dropdown_div`,Data.salesmanArray); selectedRow_dropdownDiv(`dropdown_div`,Data.salesmanArray,headerDataArray.salesman_id);
-    create_drop_down_with_External_DataArray(`dropdown_div2`,Data.itemslocationsArray); selectedRow_dropdownDiv(`dropdown_div2`,Data.itemslocationsArray,headerDataArray.items_location_id);
-    create_drop_down_with_External_DataArray(`dropdown_div4`,Data.salesQutationReferencesArray); selectedRow_dropdownDiv(`dropdown_div4`,Data.salesQutationReferencesArray,qutationId);
+    create_drop_down_with_External_DataArray(`dropdown_div3`,customersDataArray); selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
+    create_drop_down_with_External_DataArray(`dropdown_div`,salesmanArray); selectedRow_dropdownDiv(`dropdown_div`,salesmanArray,headerDataArray.salesman_id);
+    create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray); selectedRow_dropdownDiv(`dropdown_div2`,itemslocationsArray,headerDataArray.items_location_id);
+    create_drop_down_with_External_DataArray(`dropdown_div4`,salesQutationReferencesArray); selectedRow_dropdownDiv(`dropdown_div4`,salesQutationReferencesArray,qutationId);
   
-
+  if (type !== 'qutation'){
     let status = headerDataArray.is_invoiced; 
     if(status){
       reference_status.classList.add('table_green_condition')
@@ -648,6 +552,7 @@ async function showsalesOrderData(x,type){
       reference_status.classList.add('table_orange_condition')
       reference_status.textContent = 'غير مفوتر'
     }
+  }
     reference_input.value = type === 'qutation' ? "" : headerDataArray.referenceconcat
     date1.value = headerDataArray.datex
     note_inpute.value = headerDataArray.general_note
@@ -665,3 +570,32 @@ async function showsalesOrderData(x,type){
 
 
 //#endregion
+
+function reset_row_unit(event){
+  try {
+    event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأب
+    const clickedIcon = event.target;
+    const mainRow = clickedIcon.closest(`.mainTr`)    
+    const unit = mainRow.querySelector(`.td-amount .tbody_itemUniteName`).textContent = 'الكميه' 
+  } catch (error) {
+    catch_error(error)
+  }
+}
+
+
+function observe_changes_in_taxheaderinput(row){
+  const taxHeaderInput = row.querySelector('.td-taxHeader .taxHeaderInput');
+  if (taxHeaderInput) {
+    const observer = new MutationObserver(() => {
+      // تحديث الجدول عند حدوث تغير
+      update_table('myTable');
+      
+    });
+
+    observer.observe(taxHeaderInput, {
+      childList: true, // مراقبة تغييرات العناصر
+      characterData: false, // مراقبة النصوص
+      subtree: false // مراقبة العناصر الفرعية
+    });
+  }
+}

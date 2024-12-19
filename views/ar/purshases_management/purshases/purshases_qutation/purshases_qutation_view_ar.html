@@ -31,11 +31,11 @@
           <div id="fn_container_div" class="fn_container_div"></div>
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="salesMain_view_ar" title="إدارة المبيعات">
+            <a id="back_href" class="back_href" href="purshasesMain_view_ar" title="إدارة المشتريات">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="sales_qutation_view_ar" title="اعادة تحميل الصفحة">عروض اسعار بيع</a>
+              <a id="h2_text_div" class="h2_text_div" href="purshases_qutation_view_ar" title="اعادة تحميل الصفحة">عروض اسعار شراء</a>
               <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
           </h2>
@@ -43,7 +43,7 @@
 
           <div id="page_content" style="display: none;">
             <div class="btn_container">
-              <a href="/sales_qutation_add_ar" class="btn_new" id="newBtn">جديد</a>
+              <a href="/purshases_qutation_add_ar" class="btn_new" id="newBtn">جديد</a>
               <!-- <a href="/effects_report_ar" class="btn_update" id="newBtn">تقارير</a> -->
             </div>
 
@@ -128,7 +128,7 @@
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
-                <div class="checkbox_label">اسم العميل</div>
+                <div class="checkbox_label">اسم المورد</div>
               </div>
               <div id="f3_selectAndInput_div" class="select_and_input_div">
                 <select id="f3_select" class="dark_select hover"
@@ -146,6 +146,7 @@
 
             
             <!-- salesman  -->
+<!--              
             <div class="filter_div_sub" id="f2_div">
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f2_checkbox" title="اظهار العمود"
@@ -164,7 +165,7 @@
                 <input id="f2_input" name="inside_input_search" type="search" class="input_text_sm hover"
                   style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
               </div>
-            </div>
+            </div> -->
 
 
             
@@ -250,10 +251,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/sales_management/sales/sales_qutation/sales_qutation_view_ar.js"></script>
+  <script src="/public/scripts/ar/purshases_management/purshases/purshases_qutation/purshases_qutation_view_ar.js"></script>
   
-
-
 </body>
 
 </html>

@@ -43,8 +43,7 @@
 
           <div id="page_content" style="display: none;">
             <div class="btn_container">
-              <a href="/sales_order_add_ar" class="btn_new" id="newBtn">جديد</a>
-              <!-- <a href="/effects_report_ar" class="btn_update" id="newBtn">تقارير</a> -->
+              <button class="btn_new" id="newBtn">جديد</button>
             </div>
 
             <!-- search in table -->
@@ -171,10 +170,10 @@
                         <div class="filter_div_sub" id="f7_div">
                           <div class="row">
                             <span class="reference_input_checkbox"><input type="checkbox" id="f7_checkbox" title="اظهار العمود"
-                                onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
+                                onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" ></span>
                             <div class="checkbox_label">رقم عرض السعر</div>
                           </div>
-                          <div id="f7_selectAndInput_div" class="select_and_input_div">
+                          <div id="f7_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
                             <select id="f7_select" class="dark_select hover"
                               onchange="filter_insideSelect_string_column_with_input(this)">
                               <option value="0" selected>اظهار الكل</option>

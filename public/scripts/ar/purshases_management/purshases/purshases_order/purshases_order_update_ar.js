@@ -2,23 +2,27 @@
 // pagePermission("add","transaction_permission"); //معلق
 
 
-const sales_order_update_data = JSON.parse(sessionStorage.getItem('sales_order_update_data'));
-// sessionStorage.removeItem(`sales_order_update_data`)
+const u1 = JSON.parse(sessionStorage.getItem('purshases_order_update_data'));
+// sessionStorage.removeItem(`purshases_order_update_data`)
 
-if (!sales_order_update_data){
-    redirection("sales_order_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
+
+if (!u1){
+    redirection("purshases_order_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه ازامر الشراء الرئيسية")
 }
+const purshases_order_update_data = u1
+sessionStorage.removeItem('purshases_order_update_data')
 
-const obj_sales_order_update = {pageName : 'sales_order_update_ar'}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_sales_order_update));
-back_href.href = `sales_order_view_ar?data=${encodedData}`
+const obj_purshases_order_update = {pageName : 'purshases_order_update_ar'}
+
+const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_order_update));
+back_href.href = `purshases_order_view_ar?data=${encodedData}`
 
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector(`#note_inpute`);
-// const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_order_multi_pages
-// const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in sales_order_multi_pages
+// const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in purshases_order_multi_pages
+// const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in purshases_order_multi_pages
 const btn_newRow = document.querySelector(`#btn_newRow`);
 const table = document.querySelector(`#myTable`);
 
@@ -40,17 +44,17 @@ document.querySelector(`#btn_update`).onclick = async function () {
   const x = headerDataArray.id
   const qutation_id = document.querySelector(`#dropdown_div4_hidden_input`).value
   
-  const customerId = document.querySelector(`#dropdown_div3_hidden_input`).value
-  if (!customerId || isNaN(+customerId)) {
-    showAlert(`warning`, `يرجى تحديد العميل `)
+  const vendorId = document.querySelector(`#dropdown_div3_hidden_input`).value
+  if (!vendorId || isNaN(+vendorId)) {
+    showAlert(`warning`, `يرجى تحديد المورد `)
     return;
   }
 
-  const salesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
-  if (!salesmanId || isNaN(+salesmanId)) {
-    showAlert(`warning`, `يرجى تحديد البائع `)
-    return;
-  }
+  // const purshasesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
+  // if (!purshasesmanId || isNaN(+purshasesmanId)) {
+  //   showAlert(`warning`, `يرجى تحديد البائع `)
+  //   return;
+  // }
   
 
   const itemLocationId = document.querySelector(`#dropdown_div2_hidden_input`).value
@@ -130,24 +134,24 @@ const is_RowNote  = is_RowNote_checkBox.checked
       currentIndex++; // زيادة العدّاد بعد كل تكرار
     }
 
-    const posted_Obj = {x, qutation_id, customerId, total, datex,itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, posted_array}
+    const posted_Obj = {x, qutation_id, vendorId, total, datex,itemLocationId, is_RowNote, is_RowDiscount, general_note, posted_array}
 
 
       const post = await new_fetchData_postAndGet(
-        "/api/sales_order_update",
+        "/api/purshases_order_update",
         posted_Obj,
         'pass', 'pass',
         15,
-        true,"هل تريد تحديث بيانات امر البيع ؟",
+        true,"هل تريد تحديث بيانات امر الشراء ؟",
         true,
         false,false,false,false,false,
-        true,"sales_order_view_ar",
+        true,"purshases_order_view_ar",
         false,false,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
     if (post){
-      sessionStorage.removeItem('sales_order_Array')
+      sessionStorage.removeItem('purshases_order_Array')
     }
     
 
@@ -174,20 +178,20 @@ const datex = date1.value;
 
 
 const post = await new_fetchData_postAndGet(
-  "/api/sales_order_delete",
+  "/api/purshases_order_delete",
   {x, datex},
   'pass', 'pass',
   15,
   true,"هل تريد حذف بيانات امر البيع ؟",
   true,
   false,false,false,false,false,
-  true,"sales_order_view_ar",
+  true,"purshases_order_view_ar",
   false,false,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
 if (post){
-sessionStorage.removeItem('sales_order_Array')
+sessionStorage.removeItem('purshases_order_Array')
 }
 
 
@@ -201,10 +205,10 @@ document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
     
-    const x = sales_order_update_data.x
-    const qutation_id = sales_order_update_data.x
+    const x = purshases_order_update_data.x
+    const qutation_id = purshases_order_update_data.x
     
-   await showsalesOrderData(x, qutation_id, 'order')
+   await showPurshasesOrderData(x, qutation_id, 'order')
   
   viewMode(true,'pass','pass')
   handle_fn_options()
@@ -226,14 +230,14 @@ async function createSlalesInvoice(){
     }
 
     
-    const sales_qutation_update_data = {
+    const purshases_qutation_update_data = {
       x: headerDataArray.id,
       qutation_id: headerDataArray.qutation_id,
       orderToInvoice: true
     };
-    sessionStorage.removeItem('sales_invoice_update_data')
-    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_qutation_update_data));                            
-    window.location.href = `sales_invoice_add_ar`;
+    sessionStorage.removeItem('purshases_invoice_update_data')
+    sessionStorage.setItem('purshases_invoice_update_data', JSON.stringify(purshases_qutation_update_data));                            
+    window.location.href = `purshases_invoice_add_ar`;
   } catch (error) {
     catch_error(error)
   }
@@ -244,7 +248,7 @@ function handle_fn_options(){
   const newDivs = `
     <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
     <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
-    <div id="" onclick="createSlalesInvoice()">انشاء فاتورة مبيعات</div>
+    <div id="" onclick="createSlalesInvoice()">انشاء فاتورة مشتريات</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
 }

@@ -31,11 +31,11 @@
           <div id="fn_container_div" class="fn_container_div"></div>
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="salesMain_view_ar" title="إدارة المبيعات">
+            <a id="back_href" class="back_href" href="purshasesMain_view_ar" title="إدارة المشتريات">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="sales_invoice_view_ar.html" title="اعادة تحميل الصفحة">فواتير المبيعات</a>
+              <a id="h2_text_div" class="h2_text_div" href="purshases_invoice_view_ar.html" title="اعادة تحميل الصفحة">فواتير المشتريات</a>
               <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
           </h2>
@@ -43,7 +43,7 @@
 
           <div id="page_content" style="display: none;">
             <div class="btn_container">
-              <button class="btn_new" id="newBtn">جديد</button>
+              <a href="/purshases_invoice_add_ar" class="btn_new" id="newBtn">جديد</a>
               <!-- <a href="/effects_report_ar" class="btn_update" id="newBtn">تقارير</a> -->
             </div>
 
@@ -162,7 +162,7 @@
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
-                <div class="checkbox_label">اسم العميل</div>
+                <div class="checkbox_label">اسم المورد</div>
               </div>
               <div id="f3_selectAndInput_div" class="select_and_input_div">
                 <select id="f3_select" class="dark_select hover"
@@ -179,8 +179,8 @@
             </div>
 
             
-            <!-- salesman  -->
-            <div class="filter_div_sub" id="f2_div">
+            <!-- purshasesman  -->
+            <!-- <div class="filter_div_sub" id="f2_div">
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f2_checkbox" title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
@@ -198,15 +198,15 @@
                 <input id="f2_input" name="inside_input_search" type="search" class="input_text_sm hover"
                   style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
               </div>
-            </div>
+            </div> -->
 
 
-                        <!-- sales order Reference  -->
+                        <!-- purshases order Reference  -->
                         <div class="filter_div_sub" id="f7_div">
                           <div class="row">
                             <span class="reference_input_checkbox"><input type="checkbox" id="f7_checkbox" title="اظهار العمود"
                                 onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                            <div class="checkbox_label">امر البيع</div>
+                            <div class="checkbox_label">امر الشراء</div>
                           </div>
                           <div id="f7_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
                             <select id="f7_select" class="dark_select hover"
@@ -224,7 +224,7 @@
 
 
 
-                        <!-- sales Qutation Reference  -->
+                        <!-- purshases Qutation Reference  -->
                         <div class="filter_div_sub" id="f8_div">
                           <div class="row">
                             <span class="reference_input_checkbox"><input type="checkbox" id="f8_checkbox" title="اظهار العمود"
@@ -328,7 +328,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/sales_management/sales/sales_invoice/sales_invoice_view_ar.js"></script>
+  <script src="/public/scripts/ar/purshases_management/purshases/purshases_invoice/purshases_invoice_view_ar.js"></script>
   
 
 

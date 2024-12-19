@@ -2,24 +2,24 @@
 // pagePermission("add","transaction_permission"); //معلق
 
 
-const sales_invoice_update_data = JSON.parse(sessionStorage.getItem('sales_invoice_update_data'));
-// sessionStorage.removeItem(`sales_invoice_update_data`)
+const purshases_invoice_update_data = JSON.parse(sessionStorage.getItem('purshases_invoice_update_data'));
+// sessionStorage.removeItem(`purshases_invoice_update_data`)
 
-if (!sales_invoice_update_data){
-    redirection("sales_invoice_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المبيعات الرئيسية")
+if (!purshases_invoice_update_data){
+    redirection("purshases_invoice_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المبيعات الرئيسية")
 }
 
-const obj_sales_invoice_update = {pageName : 'sales_invoice_update_ar'}
+const obj_purshases_invoice_update = {pageName : 'purshases_invoice_update_ar'}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_sales_invoice_update));
-back_href.href = `sales_invoice_view_ar?data=${encodedData}`
+const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_invoice_update));
+back_href.href = `purshases_invoice_view_ar?data=${encodedData}`
 
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector(`#note_inpute`);
 const reference_status = document.querySelector(`#reference_status`);
-// const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_order_multi_pages
-// const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in sales_order_multi_pages
+// const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in purshases_order_multi_pages
+// const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`); //!  already in purshases_order_multi_pages
 const btn_newRow = document.querySelector(`#btn_newRow`);
 const table = document.querySelector(`#myTable`);
 
@@ -31,21 +31,21 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
 
-    const x = sales_invoice_update_data.x;
+    const x = purshases_invoice_update_data.x;
     const datex = date1.value;
     const dueDate = dueDate_input.value
     
-    const customerId = document.querySelector(`#dropdown_div3_hidden_input`).value
-    if (!customerId || isNaN(+customerId)) {
-      showAlert(`warning`, `يرجى تحديد العميل `)
+    const vendorId = document.querySelector(`#dropdown_div3_hidden_input`).value
+    if (!vendorId || isNaN(+vendorId)) {
+      showAlert(`warning`, `يرجى تحديد المورد `)
       return;
     }
   
-    const salesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
-    if (!salesmanId || isNaN(+salesmanId)) {
-      showAlert(`warning`, `يرجى تحديد البائع `)
-      return;
-    }
+    // const purshasesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
+    // if (!purshasesmanId || isNaN(+purshasesmanId)) {
+    //   showAlert(`warning`, `يرجى تحديد البائع `)
+    //   return;
+    // }
     
   
     const itemLocationId = document.querySelector(`#dropdown_div2_hidden_input`).value
@@ -133,25 +133,25 @@ document.querySelector(`#btn_update`).onclick = async function () {
         currentIndex++; // زيادة العدّاد بعد كل تكرار
       }
   
-      const posted_Obj = {x, customerId, total, datex, dueDate, orderReferenceId, qutationReferenceId, itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, location_name, posted_array}
+      const posted_Obj = {x, vendorId, total, datex, dueDate, orderReferenceId, qutationReferenceId, itemLocationId, is_RowNote, is_RowDiscount, general_note, location_name, posted_array}
   
         const post = await new_fetchData_postAndGet(
-          "/api/sales_invoice_update",
+          "/api/purshases_invoice_update",
           posted_Obj,
           'pass', 'pass',
           15,
-          true,"هل تريد حفظ بيانات فاتورة المبيعات ؟",
+          true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
           true,
           false,false,false,false,false,
-          true,"sales_invoice_view_ar",
+          true,"purshases_invoice_view_ar",
           false,false,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
         
         
     if (post){
-      sessionStorage.removeItem('sales_invoice_update_data')
-      sessionStorage.removeItem('sales_invoice_Array')
+      sessionStorage.removeItem('purshases_invoice_update_data')
+      sessionStorage.removeItem('purshases_invoice_Array')
     }
 
     } else {
@@ -177,20 +177,20 @@ const datex = date1.value;
 
 
 const post = await new_fetchData_postAndGet(
-  "/api/sales_invoice_delete",
+  "/api/purshases_invoice_delete",
   {x,datex},
   'pass', 'pass',
   15,
-  true,"هل تريد حذف بيانات امر البيع ؟",
+  true,"هل تريد حذف بيانات فاتورة المشتريات ؟",
   true,
   false,false,false,false,false,
-  true,"sales_invoice_view_ar",
+  true,"purshases_invoice_view_ar",
   false,false,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
 if (post){
-sessionStorage.removeItem('sales_order_Array')
+sessionStorage.removeItem('purshases_order_Array')
 }
 
 
@@ -204,11 +204,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
   
-    const x = sales_invoice_update_data.x;
-    const qutation_id = sales_invoice_update_data.qutation_id;
-    const order_id = sales_invoice_update_data.order_id;
+    const x = purshases_invoice_update_data.x;
+    const qutation_id = purshases_invoice_update_data.qutation_id;
+    const order_id = purshases_invoice_update_data.order_id;
         
-   await showsalesInvoiceData(x, qutation_id, order_id, false)
+   await showpurshasesInvoiceData(x, qutation_id, order_id, false)
     
    
     //! here
@@ -230,8 +230,6 @@ function handle_fn_options(){
   const newDivs = `
     <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
     <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
-    <div>انشاء امر بيع</div>
-    <div>انشاء فاتورة</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
 }

@@ -43,7 +43,9 @@ function remove_arrays(){
   sessionStorage.removeItem('sales_order_Array');
   sessionStorage.removeItem('sales_qutation_Array');
   sessionStorage.removeItem('sales_qutation_update_data');
-  sessionStorage.removeItem('sales_invoice_Array');}
+  sessionStorage.removeItem('sales_invoice_Array');
+  sessionStorage.removeItem('sales_invoice_update_data');
+}
 
 
 document.addEventListener('DOMContentLoaded', function() {

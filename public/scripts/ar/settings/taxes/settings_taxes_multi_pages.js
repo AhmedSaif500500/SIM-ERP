@@ -81,7 +81,7 @@ function hideDropdown() {
   }
 }
 
-let keydownHandler = null;
+keydownHandler = null;
 
 function handle_dropdown_row_selection(td) {
   try {
@@ -232,9 +232,7 @@ async function getAccounsData_fn() {
     false,false,false,
     true,"transaction_view_ar",
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
-  )
-
-
+  )  
 };
 
 

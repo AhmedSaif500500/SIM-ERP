@@ -3,12 +3,12 @@
 
 let Data = [];
 let itemslocationsArray = [];
-let salesmanArray = [];
+// let salesmanArray = [];
 let taxHeaderArray = [];
 let settings_tax_header_id_Array = [];
 let taxBodyArray = [];
 let itemsDataArray = [];
-let customersDataArray = [];
+let vendorsDataArray = [];
 let headerDataArray = [];
 let bodyDataArray = [];
 

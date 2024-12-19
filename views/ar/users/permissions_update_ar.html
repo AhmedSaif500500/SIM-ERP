@@ -268,13 +268,13 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
                         
-              <!-- sales-->
+              <!-- sales_qutation_permission-->
               <tr>
                 <td style="width: auto;">12</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
-                <td style="width: auto; text-wrap: nowrap;">المبيعات</td>
+                <td style="width: auto; text-wrap: nowrap;">عروض اسعار المبيعات</td>
                 <td style="width: auto;">
-                  <select class="select hover s" id="table_permission_sales"
+                  <select class="select hover s" id="table_permission_sales_qutation"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -286,7 +286,41 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
             
+              <!-- table_permission_sales_order-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">أوامر المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales_order"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
 
+              <!-- table_permission_sales_invoice-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">فواتير المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales_invoice"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>              
                      
               <!-- vendors -->
               <tr>
@@ -307,13 +341,13 @@
               </tr>
 
 
-              <!-- purchases-->
+              <!-- table_permission_purshases_qutation-->
               <tr>
                 <td style="width: auto;">14</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
-                <td style="width: auto; text-wrap: nowrap;">المشتريات</td>
+                <td style="width: auto; text-wrap: nowrap;">عروض اسعار المشتريات</td>
                 <td style="width: auto;">
-                  <select class="select hover s" id="table_permission_purchases"
+                  <select class="select hover s" id="table_permission_purshases_qutation"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>
@@ -325,7 +359,43 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
             
-
+              <!-- table_permission_purshases_order-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">أوامر المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purshases_order"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+              <!-- table_permission_purshases_invoice-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">فواتير المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purshases_invoice"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+              
               <!-- itemsLocations-->
               <tr>
                 <td style="width: auto;">15</td>

@@ -1,6 +1,12 @@
 setActiveSidebar("salesMain_view_ar");  
 pagePermission("view", "sales_permission");  // معلق
 
+const newBtn = document.querySelector('#newBtn');
+newBtn.onclick = function (){
+    sessionStorage.removeItem('sales_order_update_data')
+    window.location.href = "/sales_invoice_add_ar";
+  }
+
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
@@ -571,8 +577,8 @@ function fillTable() {
         let style_due_date = `display:${f100_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_reference = `display: none;`; 
         let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_sales_invoice_reference = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_sales_qutation_reference = `display:${f8_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_order_reference = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_qutation_reference = `display:${f8_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
         let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
         let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f4_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
         let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
@@ -597,8 +603,10 @@ function fillTable() {
                                  <th style="${style_accountName}">العميل</th>
                                  <th style="${style_id}">id</th>
                                 <th style="${style_salesman}">البائع</th>
-                                <th style="${style_sales_invoice_reference}">امر بيع</th>
-                                <th style="${style_sales_qutation_reference}">عرض السعر</th>
+                                <th style="${style_id}">order_id</th>
+                                <th style="${style_order_reference}">امر بيع</th>
+                                <th style="${style_id}">qutation_id</th>
+                                <th style="${style_qutation_reference}">عرض السعر</th>
                                 <th style="${style_note}">البيان</th>
                                 <th style="${style_balance}">قيمة</th>
                                 <th style="${is_invoiced}">الحاله</th>
@@ -631,8 +639,10 @@ function fillTable() {
                         <td style="${style_accountName}" class="td_customer_name">${row.customer_name}</td>
                         <td style="${style_id}" class="td_salesman_id">${row.salesman_id}</td>
                         <td style="${style_salesman}" class="td_salesman_name">${row.salesman_name}</td>
-                        <td style="${style_sales_invoice_reference}" class="td_order_reference">${row.order_reference}</td>
-                        <td style="${style_sales_qutation_reference}" class="td_qutation_reference">${row.qutation_reference}</td>
+                        <td style="${style_id}" class="td_order_id">${row.order_id}</td>
+                        <td style="${style_order_reference}" class="td_order_reference">${row.order_reference}</td>
+                        <td style="${style_id}" class="td_qutation_id">${row.qutation_id}</td>
+                        <td style="${style_qutation_reference}" class="td_qutation_reference">${row.qutation_reference}</td>
                         <td style="${style_note}" class="td_general_note">${row.general_note}</td>
                         ${tdNumber(true,false,true,row.total_value,style_balance,total_column1,fn,'td_total_value')}
                         <td style="${is_invoiced}"><span class="${invoicedstatusClass} td_is_invoiced">${row.is_invoiced}</span></td>               
@@ -651,8 +661,10 @@ function fillTable() {
                         <td id="footer_style_accountName" style="${style_accountName}"></td>
                         <td id="footer_style_salesmanid" style="${style_id}"></td>
                         <td id="footer_style_salesman" style="${style_salesman}"></td>
-                        <td id="footer_style_sales_invoice_reference" style="${style_sales_invoice_reference}"></td>
-                        <td id="footer_style_sales_qutation_reference" style="${style_sales_qutation_reference}"></td>
+                        <td id="footer_style_order_id" style="${style_id}"></td>
+                        <td id="footer_style_order_reference" style="${style_order_reference}"></td>
+                        <td id="footer_style_qutation_id" style="${style_id}"></td>
+                        <td id="footer_style_qutation_reference" style="${style_qutation_reference}"></td>
                         <td id="footer_style_note" style="${style_note}"></td>
                         <td id="footer_style_balance" style="${style_balance}"></td>
                         <td id="footer_style_balance" style="${is_invoiced}"></td>
@@ -780,7 +792,9 @@ async function table_update_btn_fn(updateBtn) {
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
     const sales_invoice_update_data = {
-        x: row.querySelector(`.td_id`).textContent,   
+        x: row.querySelector(`.td_id`).textContent,
+        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
+        order_id: row.querySelector(`.td_order_id`).textContent,
     };
 
     

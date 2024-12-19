@@ -729,7 +729,7 @@ async function showFirst50RowInAccountsTable(button) {
 async function get_salesmanAndItemslocations_fn() {
 
   data_accounts = await new_fetchData_postAndGet(
-    "/get_itemsLocation_And_salesman",
+    "/get_Data_for_sales_qutation_add_page",
     {},
     'sales_permission', 'view',
     15,
@@ -744,3 +744,15 @@ async function get_salesmanAndItemslocations_fn() {
 return data_accounts
 };
 //#endregion
+
+
+function reset_row_unit(event){
+  try {
+    event.stopPropagation(); // منع انتقال الحدث إلى العنصر الأب
+    const clickedIcon = event.target;
+    const mainRow = clickedIcon.closest(`.mainTr`)    
+    const unit = mainRow.querySelector(`.td-amount .tbody_itemUniteName`).textContent = 'الكميه' 
+  } catch (error) {
+    catch_error(error)
+  }
+}

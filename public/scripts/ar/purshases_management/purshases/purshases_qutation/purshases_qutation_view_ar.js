@@ -1,12 +1,5 @@
-setActiveSidebar("salesMain_view_ar");  
-pagePermission("view", "sales_permission");  // معلق
-
-
-const newBtn = document.querySelector('#newBtn');
-newBtn.onclick = function (){
-    sessionStorage.removeItem('sales_order_update_data')
-    window.location.href = "/sales_order_add_ar";
-  }
+setActiveSidebar("purshasesMain_view_ar");
+pagePermission("view", "sales_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
@@ -37,11 +30,11 @@ let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
 //! salesman
-let f2_div = filter_div.querySelector(`#f2_div`);
-let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
-let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
-let f2_select = filter_div.querySelector(`#f2_select`);
-let f2_input = filter_div.querySelector(`#f2_input`);
+// let f2_div = filter_div.querySelector(`#f2_div`);
+// let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+// let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+// let f2_select = filter_div.querySelector(`#f2_select`);
+// let f2_input = filter_div.querySelector(`#f2_input`);
 
 //! accountName
 let f3_div = filter_div.querySelector(`#f3_div`);
@@ -71,17 +64,9 @@ let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
 let f6_select = filter_div.querySelector(`#f6_select`);
 let f6_input = filter_div.querySelector(`#f6_input`);
 
-//! sales qutation reference
-let f7_div = filter_div.querySelector(`#f7_div`);
-let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
-let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
-let f7_select = filter_div.querySelector(`#f7_select`);
-let f7_input = filter_div.querySelector(`#f7_input`);
-
-
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4, 5, 6, 7]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1, 3, 4, 5, 6]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -121,13 +106,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('sales_order_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('purshases_qutation_Array')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('sales_order_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('purshases_qutation_Array', JSON.stringify(conditionsArray));
 }
 
 
@@ -135,12 +120,12 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`sales_order_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`purshases_qutation_Array`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `salesMain_view_ar`;
+            window.location.href = `purshasesMain_view_ar`;
        
     }else{
 
@@ -154,7 +139,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("sales_order_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("purshases_qutation_Array")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -164,7 +149,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("sales_order_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("purshases_qutation_Array", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -281,12 +266,11 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 function deafult_checkbox() {
     call_default_checkbox('f0',true,true,true)
     call_default_checkbox('f1',true,true,false)
-    call_default_checkbox('f2',true,false,false)
+    // call_default_checkbox('f2',true,false,false)
     call_default_checkbox('f3',true,true,false)
     call_default_checkbox('f4',true,true,false)
     call_default_checkbox('f5',true,true,false)
     call_default_checkbox('f6',true,true,false)
-    call_default_checkbox('f7',true,false,false)
 
 }
 
@@ -306,7 +290,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('sales_order_Array');
+            sessionStorage.removeItem('purshases_qutation_Array');
             conditionsArray = []
             
         }
@@ -339,7 +323,7 @@ async function getData_fn() {
        
         //  معلق
         data = await new_fetchData_postAndGet(
-            "/get_sales_order_Data_view",
+            "/get_purshases_qutation_Data_view",
             {start_date, end_date},
             "pass","pass",
             15,
@@ -351,7 +335,6 @@ async function getData_fn() {
             false,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
-
 
         showFirst50RowAtTheBegening();
     } catch (error) {
@@ -443,21 +426,21 @@ function showFirst50RowAtTheBegening() {
             );
 
 
-            const isSalesmanMatch =
-                filterData_string_column_with_showAndHiddenCheckbox(
-                    f2_checkbox,
-                    f2_select,
-                    f2_input,
-                    "salesman_name",
-                    row
-                );
+            // const isSalesmanMatch =
+            //     filterData_string_column_with_showAndHiddenCheckbox(
+            //         f2_checkbox,
+            //         f2_select,
+            //         f2_input,
+            //         "salesman_name",
+            //         row
+            //     );
 
                 const isSAccountNameMatch =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f3_checkbox,
                     f3_select,
                     f3_input,
-                    "customer_name",
+                    "vendor_name",
                     row
                 );                
 
@@ -482,31 +465,18 @@ function showFirst50RowAtTheBegening() {
                 const isQutationstatus = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
                     f6_checkbox,
                     f6_select,
-                    'is_invoiced',
-                    row
-                );
-
-                const isQutationReference =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f1_checkbox,
-                    f1_select,
-                    f1_input,
-                    "qutation_reference",
-                    row
-                );
-
-
+                    'qutation_status',
+                    row);
 
             return (
 
                 isdatexMatch &&
                 isReferenceMatch &&
-                isSalesmanMatch &&
+                // isSalesmanMatch &&
                 isSAccountNameMatch &&
                 isNoteMatch &&
                 isBalanceMatch &&
-                isQutationstatus &&
-                isQutationReference
+                isQutationstatus
             ); // && otherCondition;
         });
 
@@ -540,12 +510,11 @@ function fillTable() {
         let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
         let style_reference = `display: none;`; 
         let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_sales_qutation_reference = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        // let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
         let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f4_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
         let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
         let style_balance = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let is_invoiced = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let qutation_status = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
         let fn = `onclick = "table_update_btn_fn(this)"`;
@@ -561,14 +530,10 @@ function fillTable() {
                                 <th style="${style_reference}">#</th>
                                 <th style="${style_referenceCONCAT}">#</th>
                                  <th style="${style_id}">id</th>
-                                 <th style="${style_accountName}">العميل</th>
-                                 <th style="${style_id}">id</th>
-                                <th style="${style_salesman}">البائع</th>
-                                <th style="${style_id}">qutation_id</th>
-                                <th style="${style_sales_qutation_reference}">عرض السعر</th>
+                                 <th style="${style_accountName}">المورد</th>
                                 <th style="${style_note}">البيان</th>
                                 <th style="${style_balance}">قيمة</th>
-                                <th style="${is_invoiced}">الحاله</th>
+                                <th style="${qutation_status}">الحاله</th>
                                 
                             </tr>
                         </thead>
@@ -578,12 +543,14 @@ function fillTable() {
                 
 
             // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let invoicedstatusClass;
+            let qutationstatusClass;
             
-            if(row.is_invoiced === 'مفوتر'){
-                invoicedstatusClass = 'table_green_condition'
-            }else if(row.is_invoiced === 'غير مفوتر'){
-                invoicedstatusClass = 'table_orange_condition'
+            if(row.qutation_status === 'مقبول'){
+                qutationstatusClass = 'table_green_condition'
+            }else if(row.qutation_status === 'معلق'){
+                qutationstatusClass = 'table_orange_condition'
+            }else{
+                qutationstatusClass = 'table_red_condition'
             }
 
             tableHTML +=
@@ -593,15 +560,11 @@ function fillTable() {
                         <td style="${style_datex}" class="td_datex">${row.datex}</td>
                         <td style="${style_reference}" class="td_reference">${row.reference}</td>
                         <td style="${style_referenceCONCAT}" class="td_referenceconcat">${row.referenceconcat}</td>
-                        <td style="${style_id}" class="td_customer_id">${row.customer_id}</td>
-                        <td style="${style_accountName}" class="td_customer_name">${row.customer_name}</td>
-                        <td style="${style_id}" class="td_salesman_id">${row.salesman_id}</td>
-                        <td style="${style_salesman}" class="td_salesman_name">${row.salesman_name}</td>
-                        <td style="${style_id}" class="td_qutation_id">${row.qutation_id}</td>
-                        <td style="${style_sales_qutation_reference}" class="td_salesman_name">${row.qutation_reference}</td>
+                        <td style="${style_id}" class="td_vendor_id">${row.vendor_id}</td>
+                        <td style="${style_accountName}" class="td_vendor_name">${row.vendor_name}</td>
                         <td style="${style_note}" class="td_general_note">${row.general_note}</td>
                         ${tdNumber(true,false,true,row.total_value,style_balance,total_column1,fn,'td_total_value')}
-                        <td style="${is_invoiced}"><span class="${invoicedstatusClass} td_is_invoiced">${row.is_invoiced}</span></td>               
+                        <td style="${qutation_status}"><span class="${qutationstatusClass} td_qutation_status">${row.qutation_status}</span></td>               
                       </tr>`;
         });
 
@@ -614,13 +577,9 @@ function fillTable() {
                         <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
                         <td id="footer_style_accountid" style="${style_id}"></td>
                         <td id="footer_style_accountName" style="${style_accountName}"></td>
-                        <td id="footer_style_salesmanid" style="${style_id}"></td>
-                        <td id="footer_style_salesman" style="${style_salesman}"></td>
-                        <td id="footer_style_qutation_id" style="${style_id}"></td>
-                        <td id="footer_style_sales_qutation_reference" style="${style_sales_qutation_reference}"></td>
                         <td id="footer_style_note" style="${style_note}"></td>
                         <td id="footer_style_balance" style="${style_balance}"></td>
-                        <td id="footer_style_balance" style="${is_invoiced}"></td>
+                        <td id="footer_style_balance" style="${qutation_status}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -671,23 +630,21 @@ function performSearch() {
         array1 = filteredData_Array.filter((row) => {
             const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
             const reference_Match = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
-            const salesman_Match = performSearch_Row(f2_checkbox,"salesman_name",searchValue,row);
-            const AccountName_Match = performSearch_Row(f3_checkbox,"customer_name",searchValue,row);
+            // const salesman_Match = performSearch_Row(f2_checkbox,"salesman_name",searchValue,row);
+            const AccountName_Match = performSearch_Row(f3_checkbox,"vendor_name",searchValue,row);
             const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
             const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
-            const qutationstatus = performSearch_Row(f6_checkbox,"is_invoiced",searchValue,row);
-            const qutationReference = performSearch_Row(f7_checkbox,"qutation_reference",searchValue,row);
+            const qutationstatus = performSearch_Row(f6_checkbox,"qutation_status",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 datexInfoMatch ||
                 reference_Match ||
-                salesman_Match ||
+                // salesman_Match ||
                 AccountName_Match ||
                 noteMatch ||
                 balanceMatch ||
-                qutationstatus ||
-                qutationReference
+                qutationstatus
             );
         });
 
@@ -729,8 +686,8 @@ searchInput.addEventListener("keydown", (event) => {
 
 async function table_update_btn_fn(updateBtn) {
     try {
-    showLoadingIcon(updateBtn)
-    const permission = await btn_permission("transaction_permission", "update"); // معلق
+        showLoadingIcon(updateBtn)
+    const permission = await btn_permission("transaction_permission", "update"); //  معلق
 
     if (!permission) {
         // if false
@@ -739,31 +696,26 @@ async function table_update_btn_fn(updateBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-
-        
-
     const row = updateBtn.closest("tr");
 
-    const sales_qutation_update_data = {
+    const purshases_qutation_update_data = {
         x: row.querySelector(`.td_id`).textContent,
-        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
         datex: row.querySelector(`.td_datex`).textContent,
         reference: row.querySelector(`.td_reference`).textContent,
         referenceconcat: row.querySelector(`.td_referenceconcat`).textContent,
-        customer_id: row.querySelector(`.td_customer_id`).textContent,
-        customer_name: row.querySelector(`.td_customer_name`).textContent,
-        salesman_id: row.querySelector(`.td_salesman_id`).textContent,
-        salesman_name: row.querySelector(`.td_salesman_name`).textContent,
+        vendor_id: row.querySelector(`.td_vendor_id`).textContent,
+        vendor_name: row.querySelector(`.td_vendor_name`).textContent,
+        // salesman_id: row.querySelector(`.td_salesman_id`).textContent,
+        // salesman_name: row.querySelector(`.td_salesman_name`).textContent,
         general_note: row.querySelector(`.td_general_note`).textContent,
         total_value: row.querySelector(`.td_total_value`).textContent,
-        is_invoiced: row.querySelector(`.td_is_invoiced`).textContent      
+        qutation_status: row.querySelector(`.td_qutation_status`).textContent      
     };
 
     
-    
 
-    sessionStorage.setItem('sales_order_update_data', JSON.stringify(sales_qutation_update_data));                            
-    window.location.href = `sales_order_update_ar`;
+    sessionStorage.setItem('purshases_qutation_update_data', JSON.stringify(purshases_qutation_update_data));                            
+    window.location.href = `purshases_qutation_update_ar`;
     hideLoadingIcon(updateBtn)
 } catch (error) {
     hideLoadingIcon(updateBtn)
@@ -812,7 +764,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`sales_order_Array`);
+    const conditionsArray = sessionStorage.getItem(`purshases_qutation_Array`);
 
     if (!conditionsArray){
      

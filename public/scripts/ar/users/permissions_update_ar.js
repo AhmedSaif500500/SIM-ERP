@@ -84,8 +84,12 @@ async function get_user_data_fn() {
     document.querySelector("#table_permission_vendors").value = array1.vendors_permission || 0;
     document.querySelector("#table_permission_itemsLocations").value = array1.itemsLocations_permission || 0;
     document.querySelector("#table_permission_salesman").value = array1.salesman_permission || 0;
-    document.querySelector("#table_permission_sales").value = array1.sales_permission || 0;
-    document.querySelector("#table_permission_purchases").value = array1.purchases_permission || 0;
+    document.querySelector("#table_permission_sales_qutation").value = array1.sales_qutation_permission || 0;
+    document.querySelector("#table_permission_sales_order").value = array1.sales_order_permission || 0;
+    document.querySelector("#table_permission_sales_invoice").value = array1.sales_invoice_permission || 0;
+    document.querySelector("#table_permission_purshases_qutation").value = array1.purshases_qutation_permission || 0;
+    document.querySelector("#table_permission_purshases_order").value = array1.purshases_order_permission || 0;
+    document.querySelector("#table_permission_purshases_invoice").value = array1.purshases_invoice_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -220,8 +224,12 @@ try {
   let table_permission_vendors = A("#table_permission_vendors");
   let table_permission_itemsLocations = A("#table_permission_itemsLocations");
   let table_permission_salesman = A("#table_permission_salesman");
-  let table_permission_sales = A("#table_permission_sales");
-  let table_permission_purchases = A("#table_permission_purchases");
+  let table_permission_sales_qutation = A("#table_permission_sales_qutation");
+  let table_permission_sales_order = A("#table_permission_sales_order");
+  let table_permission_sales_invoice = A("#table_permission_sales_invoice");
+  let table_permission_purshases_qutation = A("#table_permission_purshases_qutation");
+  let table_permission_purshases_order = A("#table_permission_purshases_order");
+  let table_permission_purshases_invoice = A("#table_permission_purshases_invoice");
 
     // ضبط قيم الصلاحيات
     if (general_permission_select != "1" || general_permission_select == '') {
@@ -239,8 +247,12 @@ try {
       table_permission_vendors = '';
       table_permission_itemsLocations = '';
       table_permission_salesman = '';
-      table_permission_sales = '';
-      table_permission_purchases = '';
+      table_permission_sales_qutation = '';
+      table_permission_sales_order = '';
+      table_permission_sales_invoice = '';
+      table_permission_purshases_qutation = '';
+      table_permission_purshases_order = '';
+      table_permission_purshases_invoice = '';
       // add here all tables select permission id
     };
 
@@ -264,8 +276,12 @@ try {
           table_permission_vendors,
           table_permission_itemsLocations,
           table_permission_salesman,
-          table_permission_sales,
-          table_permission_purchases
+          table_permission_sales_qutation,
+          table_permission_sales_order,
+          table_permission_sales_invoice,
+          table_permission_purshases_qutation,
+          table_permission_purshases_order,
+          table_permission_purshases_invoice
         },
         'users_permission','update',
         20,

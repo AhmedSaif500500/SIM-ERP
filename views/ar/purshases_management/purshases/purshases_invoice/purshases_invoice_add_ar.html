@@ -30,12 +30,12 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="purshases_order_view_ar" title="اوامر الشراء">
+            <a id="back_href" class="back_href" href="purshases_invoice_view_ar" title="فواتير المشتريات">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="purshases_order_add_ar" title="اعادة تحميل الصفحة">
-                امر شراء
+              <a id="h2_text_div" class="h2_text_div" href="purshases_invoice_add_ar" title="اعادة تحميل الصفحة">
+                فواتير المشتريات
               </a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
             </div>
@@ -46,7 +46,6 @@
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
             <div class="reference_and_date_div">
-
               <div class="column x_start y_start w_fit">
                 <!-- date -->
                 <label for="date1" class="lbl_sm">التاريخ</label>
@@ -57,6 +56,15 @@
                 </div>
               </div>
 
+              <div class="column x_start y_start w_fit">
+                <!-- Due Date -->
+                <label for="dueDate_input" class="lbl_sm">تاريخ الاستحقاق</label>
+                <div class="input_with_icon_div">
+                  <input type="search" id="dueDate_input" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+                    autocomplete="off">
+                  <i class="fa-regular fa-calendar left_icon"></i>
+                </div>
+              </div>
               
               <div class="column x_start y_start w_fit">
                 <label for="reference_input" class="lbl_sm">المرجع</label>
@@ -66,7 +74,6 @@
                     oninput="check_parse(this,'number')" placeholder="تلقائى" autocomplete="off">
                 </div>
               </div>
-
             </div>
 
 
@@ -75,9 +82,13 @@
                 <label for="note_inpute" class="lbl_sm">المورد</label>
                 <div id="dropdown_div3" class="dropdown_container"></div>
               </div>
-              <div class="column qutation_reference_div">
-                <label for="note_inpute" class="lbl_sm">رقم عرض السعر</label>
+              <div class="column order_reference_div">
+                <label for="note_inpute" class="lbl_sm">امر الشراء</label>
                 <div id="dropdown_div4" class="dropdown_container" style="width: 13rem"></div>
+              </div>
+              <div class="column qutation_reference_div">
+                <label for="note_inpute" class="lbl_sm">عرض السعر</label>
+                <div id="dropdown_div5" class="dropdown_container" style="width: 13rem"></div>
               </div>
             </div>
 
@@ -134,8 +145,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/purshases_management/purshases/purshases_order/purshases_order_multi_pages.js"></script>
-  <script src="/public/scripts/ar/purshases_management/purshases/purshases_order/purshases_order_add_ar.js"></script>
+  <script src="/public/scripts/ar/purshases_management/purshases/purshases_invoice/purshases_invoice_multi_pages.js"></script>
+  <script src="/public/scripts/ar/purshases_management/purshases/purshases_invoice/purshases_invoice_add_ar.js"></script>
 
 
 

@@ -1,5 +1,5 @@
-setActiveSidebar('bread_view_ar');
-pagePermission("add","transaction_permission");
+setActiveSidebar('purshasesMain_view_ar');
+pagePermission("add","transaction_permission"); // معلق
 
 
 const date1 = document.querySelector('#date1');
@@ -18,17 +18,17 @@ async function save(A_OR_B) {
   const datex = date1.value;
 
   
-  const customerId = document.querySelector(`#dropdown_div3_hidden_input`).value
-  if (!customerId || isNaN(+customerId)) {
-    showAlert(`warning`, `يرجى تحديد العميل `)
+  const vendorId = document.querySelector(`#dropdown_div3_hidden_input`).value
+  if (!vendorId || isNaN(+vendorId)) {
+    showAlert(`warning`, `يرجى تحديد المورد `)
     return;
   }
 
-  const salesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
-  if (!salesmanId || isNaN(+salesmanId)) {
-    showAlert(`warning`, `يرجى تحديد البائع `)
-    return;
-  }
+  // const salesmanId = document.querySelector(`#dropdown_div_hidden_input`).value
+  // if (!salesmanId || isNaN(+salesmanId)) {
+  //   showAlert(`warning`, `يرجى تحديد البائع `)
+  //   return;
+  // }
   
 
   const itemLocationId = document.querySelector(`#dropdown_div2_hidden_input`).value
@@ -108,43 +108,43 @@ const is_RowNote  = is_RowNote_checkBox.checked
       currentIndex++; // زيادة العدّاد بعد كل تكرار
     }
 
-    const posted_Obj = {customerId, total, datex,itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, posted_array}
+    const posted_Obj = {vendorId, total, datex,itemLocationId, is_RowNote, is_RowDiscount, general_note, posted_array}
 
     if (A_OR_B == 'B'){
       const post = await new_fetchData_postAndGet(
-        "/api/sales_qutation_add",
+        "/api/purshases_qutation_add",
         posted_Obj,
-        'pass', 'pass',
+        'pass', 'pass', //معلق
         15,
-        true,"هل تريد حفظ البيانات ؟",
+        true,"هل تريد حفظ بيانات عرض سعر الشراء؟",
         true,
         false,false,false,false,false,
-        true,"sales_qutation_add_ar",
+        true,"purshases_qutation_add_ar",
         false,false,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('transactionViewArray') // معلق
     }
     
     }else{
 //! معلق هنا فى الصفحه كلها راجع ال permissions
     const post = await new_fetchData_postAndGet(
-      "/api/sales_qutation_add",
+      "/api/purshases_qutation_add",
       posted_Obj,
-      'transaction_permission', 'add',
+      'transaction_permission', 'add', // معلق
       15,
-      true,"هل تريد حفظ بيانات عرض سعر البيع ؟",
+      true,"هل تريد حفظ بيانات عرض سعر الشراء؟",
       true,
       false,false,false,false,false,
-      true,"sales_qutation_view_ar",
+      true,"purshases_qutation_view_ar",
       false,false,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('transactionViewArray') // معلق
     }
     
   }
@@ -158,16 +158,16 @@ const is_RowNote  = is_RowNote_checkBox.checked
 async function get_Data_for_add_page_fn() {
 
   data_accounts = await new_fetchData_postAndGet(
-    "/get_Data_for_sales_qutation_add_page",
+    "/get_Data_for_purshases_qutation_add_page",
     {},
-    'sales_permission', 'view',
+    'sales_permission', 'view', // معلق
     15,
     false,false,
     true,
     false,false,
     false,false,
     false,false,false,
-    true,"sales_qutation_view_ar",
+    true,"purshases_qutation_view_ar",
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 return data_accounts
@@ -184,20 +184,20 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   Data =  await get_Data_for_add_page_fn()
   itemslocationsArray =  Data.itemslocationsArray
-  salesmanArray =  Data.salesmanArray
+  // salesmanArray =  Data.salesmanArray
   taxHeaderArray =  Data.taxHeaderArray
   settings_tax_header_id_Array =  Data.settings_tax_header_id_Array
   taxBodyArray =  Data.taxBodyArray
   itemsDataArray =  Data.itemsDataArray
-  customersDataArray =  Data.customersDataArray
+  vendorsDataArray =  Data.vendorsDataArray
 
     if (!Data || !itemsDataArray){
-      await redirection('sales_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
+      await redirection('purshases_qutation_view_ar','fail','حدث خطأ اثتاء معالجه البيانات')
       return
     }
     
-  create_drop_down_with_External_DataArray(`dropdown_div3`,customersDataArray)
-  create_drop_down_with_External_DataArray(`dropdown_div`,salesmanArray)
+  create_drop_down_with_External_DataArray(`dropdown_div3`,vendorsDataArray)
+  // create_drop_down_with_External_DataArray(`dropdown_div`,salesmanArray)
   create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray)
 
 

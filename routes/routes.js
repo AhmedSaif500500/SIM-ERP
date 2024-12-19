@@ -447,6 +447,165 @@ router.get('/sales_invoice_update_ar', (req, res) => {
 
 
 
+//#region purshases mangement
+
+router.get('/purshasesMain_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshasesman_permission > 0 || req.session.purshases_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshasesMain_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+// router.get('/purshasesman_view_ar', (req, res) => {
+//     if (req.session.isLoggedIn) {
+//         if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshasesman_permission > 0) {
+//             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'mnadep', 'purshasesman_view_ar.html'));
+//         }else{
+//             res.redirect('/purshasesMain_view_ar?reason=0');
+//         };
+//     } else {        
+//         res.redirect('/login?reason=0');
+//     }
+// });
+
+
+//#region purshases
+
+//#region purshases qutation
+router.get('/purshases_qutation_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_qutation' ,'purshases_qutation_view_ar.html'));
+        }else{
+            res.redirect('/purshasesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_qutation_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_qutation' ,'purshases_qutation_add_ar.html'));
+        }else{
+            res.redirect('/purshases_qutation_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_qutation_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_qutation' ,'purshases_qutation_update_ar.html'));
+        }else{
+            res.redirect('/purshases_qutation_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion purshases qutation
+
+    // معلق
+//#region purshases order
+router.get('/purshases_order_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_order' ,'purshases_order_view_ar.html'));
+        }else{
+            res.redirect('/purshasesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_order_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_order' ,'purshases_order_add_ar.html'));
+        }else{
+            res.redirect('/purshases_order_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_order_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_order' ,'purshases_order_update_ar.html'));
+        }else{
+            res.redirect('/purshases_order_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion purshases order
+
+//#endregion
+
+//#region purshases invoice
+router.get('/purshases_invoice_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_invoice' ,'purshases_invoice_view_ar.html'));
+        }else{
+            res.redirect('/purshasesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_invoice_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_invoice' ,'purshases_invoice_add_ar.html'));
+        }else{
+            res.redirect('/purshases_invoice_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_invoice_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_invoice' ,'purshases_invoice_update_ar.html'));
+        }else{
+            res.redirect('/purshases_invoice_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion purshases invoice
+
+
+//#endregion
+
+
+
+
 
 //#region cutomers 
 router.get('/customers_view_ar', (req, res) => {
