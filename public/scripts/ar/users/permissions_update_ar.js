@@ -90,6 +90,7 @@ async function get_user_data_fn() {
     document.querySelector("#table_permission_purshases_qutation").value = array1.purshases_qutation_permission || 0;
     document.querySelector("#table_permission_purshases_order").value = array1.purshases_order_permission || 0;
     document.querySelector("#table_permission_purshases_invoice").value = array1.purshases_invoice_permission || 0;
+    document.querySelector("#table_permission_services").value = array1.services_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -230,6 +231,7 @@ try {
   let table_permission_purshases_qutation = A("#table_permission_purshases_qutation");
   let table_permission_purshases_order = A("#table_permission_purshases_order");
   let table_permission_purshases_invoice = A("#table_permission_purshases_invoice");
+  let table_permission_services = A("#table_permission_services");
 
     // ضبط قيم الصلاحيات
     if (general_permission_select != "1" || general_permission_select == '') {
@@ -253,6 +255,7 @@ try {
       table_permission_purshases_qutation = '';
       table_permission_purshases_order = '';
       table_permission_purshases_invoice = '';
+      table_permission_services = '';
       // add here all tables select permission id
     };
 
@@ -281,7 +284,8 @@ try {
           table_permission_sales_invoice,
           table_permission_purshases_qutation,
           table_permission_purshases_order,
-          table_permission_purshases_invoice
+          table_permission_purshases_invoice,
+          table_permission_services
         },
         'users_permission','update',
         20,

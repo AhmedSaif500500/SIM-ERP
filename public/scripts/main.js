@@ -201,7 +201,7 @@ function loadSidebarContents() {
       الموردين
     </a>
 
-    <a href="itemsMain_view_ar" target="_self" class="" style="display: ${module_display("items_permission","itemsLocations_permission")}">
+    <a href="itemsMain_view_ar" target="_self" class="" style="display: ${module_display("items_permission","itemsLocations_permission","services_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
        إدارة المخزون
     </a>
@@ -2813,7 +2813,8 @@ const internal_permissions = [
   "sales_invoice_permission",
   "purshases_qutation_permission",
   "purshases_order_permission",
-  "purshases_invoice_permission"
+  "purshases_invoice_permission",
+  "services_permission",
 ];
 
 
@@ -3166,7 +3167,7 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
 
 
 async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataArray) {
-
+try {
   const dropDownDiv = document.querySelector(`#${str_dropDownDivId}`);
   // dropDownDiv.style.width = '20rem'
   
@@ -3477,6 +3478,9 @@ async function create_drop_down_with_External_DataArray(str_dropDownDivId, DataA
     ShowAllDataInTable,
     showFirst50RowInTable
   };
+} catch (error) {
+  catch_error(error)
+}
 
 
   /*

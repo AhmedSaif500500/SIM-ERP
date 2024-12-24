@@ -1,5 +1,5 @@
-setActiveSidebar('bread_view_ar');
-pagePermission("add","transaction_permission");
+setActiveSidebar('salesMain_view_ar');
+pagePermission("add","sales_order_permission");
 
 
 const date1 = document.querySelector('#date1');
@@ -119,7 +119,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/sales_order_add",
         posted_Obj,
-        'pass', 'pass',
+        'sales_order_permission', 'add',
         15,
         true,"هل تريد حفظ بيانات امر البيع ؟",
         true,
@@ -130,7 +130,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('sales_order_ViewArray')
     }
     
     }else{
@@ -149,7 +149,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('sales_order_ViewArray')
     }
     
   }
@@ -187,6 +187,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   const qutationToOrder = JSON.parse(sessionStorage.getItem('sales_order_update_data'));
   if (qutationToOrder){    
     await showsalesOrderData(qutationToOrder.x,qutationToOrder.x,'qutation')
+    const obj = {pageName : 'sales_order_add_ar', x : qutationToOrder.x}
+    sessionStorage.setItem('sales_qutation_update_data', JSON.stringify(obj));                            
+    back_href.href = `sales_qutation_update_ar`
   }else{
     Data =  await get_Data_for_add_page_fn()
     itemslocationsArray =  Data.itemslocationsArray

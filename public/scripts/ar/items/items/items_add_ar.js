@@ -1,13 +1,11 @@
-setActiveSidebar('items_view_ar');
+setActiveSidebar('itemsMain_view_ar');
 pagePermission("add", "items_permission");
 
 
 const sub_h2_header = document.querySelector(`#sub_h2_header`)
 const tree_add_account = document.querySelector(`#tree_add_account`)
 const tree_group_div = document.querySelector(`#tree_group_div`)
-const select_parent_gruop_name_tree_goup_div = tree_group_div.querySelector(`#select_parent_gruop_name_tree_goup_div`)
 const input_account_name_input_tree_group_div = tree_group_div.querySelector(`#input_account_name_input_tree_group_div`)
-const select_parents_group_select = tree_add_account.querySelector(`#select_parents_group_select`)
 const revenue_account_select = tree_add_account.querySelector(`#revenue_account_select`)
 const item_unite_inputx = tree_add_account.querySelector(`#item_unite_input`)
 const account_name_input = tree_add_account.querySelector(`#account_name_input`)
@@ -17,18 +15,15 @@ const purchase_pricex = tree_add_account.querySelector(`#purchase_price`)
 const reorder_pointx = tree_add_account.querySelector(`#reorder_point`)
 
 const obj_items_create_group = JSON.parse(sessionStorage.getItem('obj_items_create_group'));
+
 const obj_items_create_account = JSON.parse(sessionStorage.getItem('obj_items_create_account'));
 
     //#region create group
 if (obj_items_create_group){
-
-
-
+  
     sub_h2_header.textContent = 'مجموعة جديده'
-    
-    select_parent_gruop_name_tree_goup_div.innerHTML = obj_items_create_group.itemsArray;
-    select_parent_gruop_name_tree_goup_div.value = obj_items_create_group.nodeId
-    
+    create_drop_down_with_External_DataArray(`dropdown_div1`,obj_items_create_group.itemsArray); selectedRow_dropdownDiv(`dropdown_div1`,obj_items_create_group.itemsArray,obj_items_create_group.nodeId);
+  
     tree_group_div.style.display = 'flex'
 }
 
@@ -36,9 +31,9 @@ async function save_group(A_or_B) {
     try {
 
         const accountname = input_account_name_input_tree_group_div.value.trim();
-        const accountParent = select_parent_gruop_name_tree_goup_div.value;
-        if (!accountname || accountname == ""){
-            showAlert('warning','برجاء ادخال اسم المجموعة بشكل صحيح')
+        const accountParent = document.querySelector(`#dropdown_div1_hidden_input`).value;
+        if (!accountname || accountname == "" || !accountParent || isNaN(+accountParent)){
+            showAlert('warning','برجاء ادخال البيانات بشكل صحيح')
             return
         }
     if (A_or_B === 'A'){
@@ -84,10 +79,11 @@ async function save_group(A_or_B) {
     //#region create account
     if (obj_items_create_account){
         sub_h2_header.textContent = 'صنف جديد'
-                
-        select_parents_group_select.innerHTML = obj_items_create_account.items_options;
-        select_parents_group_select.value = obj_items_create_account.nodeId
-        revenue_account_select.innerHTML = obj_items_create_account.revenue_accounts_options;
+        create_drop_down_with_External_DataArray(`dropdown_div2`,obj_items_create_account.items_options); selectedRow_dropdownDiv(`dropdown_div2`,obj_items_create_account.items_options,obj_items_create_account.nodeId);
+                    
+        const revenue_id_row = obj_items_create_account.revenue_accounts_options.find(item => +item.global_id === 19) // 19 = global sales revenue        
+        create_drop_down_with_External_DataArray(`dropdown_div3`,obj_items_create_account.revenue_accounts_options); selectedRow_dropdownDiv(`dropdown_div3`,obj_items_create_account.revenue_accounts_options,revenue_id_row.id);    
+        
 
 
         tree_add_account.style.display = 'flex'
@@ -100,14 +96,15 @@ async function save_group(A_or_B) {
 
             const item_unite_input = item_unite_inputx.value.trim();
             const account_name = account_name_input.value.trim();
+            const account_parent_name_id = parseInt(document.querySelector(`#dropdown_div2_hidden_input`).value);
 
-            if (!item_unite_input || !account_name) {
-                showAlert('warning', 'تأكد من ادخال قيمه فى الحقول المطلوبه');
+
+            if (!item_unite_input || !account_name || !account_parent_name_id || isNaN(+account_parent_name_id)) {
+                showAlert('warning', 'رجاء الدخال البيانات فى الحقول المطلوبه بشكل صحيح');
                 return;
             }
             const account_no = account_no_input.value.trim();
-            const account_parent_name_id = parseInt(select_parents_group_select.value);
-            const revenue_account_select_value = parseInt(revenue_account_select.value);
+            const revenue_account_select_value = parseInt(document.querySelector(`#dropdown_div3_hidden_input`).value);
             const sales_price = sales_pricex.value;
             const purchase_price = purchase_pricex.value;
             const reorder_point = reorder_pointx.value;
@@ -116,7 +113,7 @@ async function save_group(A_or_B) {
 
         if (A_or_B === 'A'){
             const post = await new_fetchData_postAndGet(
-                '/api/add-item',
+                '/api/add_item',
                 {
                     account_no,
                     account_name,
@@ -140,7 +137,7 @@ async function save_group(A_or_B) {
         }else if(A_or_B === 'B'){
     
             const post = await new_fetchData_postAndGet(
-                '/api/add-item',
+                '/api/add_item',
                 {
                     account_no,
                     account_name,
@@ -170,10 +167,6 @@ async function save_group(A_or_B) {
     }
         //#endregion end create account
     
-    
-
-
-
 function clear(){
     input_account_name_input_tree_group_div.value = ""
     item_unite_input.value = ""

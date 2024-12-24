@@ -50,14 +50,13 @@
                 oninput="check_parse(this,'string')">
               <input type="hidden" id="account_id_hidden_tree_group_div">
     
-              <!--   القائمة والمجموعه-->
-              <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
+              <!--   القائمة والمجموعه-->    
+              <label for="dropdown_div1" class="lbl_sm">المجموعه</label>
               <div class="row x_start y_center mb_10">
-                <span id="statment_type_span_tree_group_div" class="span">مجموعات الاصناف</span>
-                <input type="hidden" id="statment_type_span_hidden_value">
-                <select id="select_parent_gruop_name_tree_goup_div" class="select"></select>
+                <!-- <span id="statment_type_span_tree_group_div" class="input_span_start">مجموعات الاصناف</span> -->
+                <div id="dropdown_div1" class="dropdown_container" style="margin: 0;"></div>
               </div>
-    
+              
               <div class="btn_container_top_border">
                 <button class="btn_update" id="btn_update_group">تعديل</button>
                 <button class="btn_cancel" id="btn_delete_group">حذف</button>
@@ -88,23 +87,19 @@
                 <input type="search" id="item_unite_input" class="input_text_sm hover" placeholder="مطلوب" autocomplete="off"
                   oninput="check_parse(this,'string')">
       
-                <!--   القائمة والمجموعه-->
-                <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
-                <div class="row x_start y_center mb_10">
-                  <span id="statment_type_span" class="span">مجموعات الاصناف</span>
-                  <input type="hidden" id="statment_type_span_hidden_value">
-                  <select id="select_parents_group_select" class="select"></select>
-                </div>
+                    <!--   القائمة والمجموعه-->    
+                    <label for="dropdown_div2" class="lbl_sm">المجموعه</label>
+                    <div class="row x_start y_center mb_10">
+                      <!-- <span id="statment_type_span_tree_group_div" class="input_span_start">مجموعات الاصناف</span> -->
+                      <div id="dropdown_div2" class="dropdown_container" style="margin: 0;"></div>
+                    </div>
       
-      
-                <div id="final_account_information_div" class="flex_column">
-                  <!-- قائمة التدفقات النقدية -->
-                  <label for="revenue_account_select" class="lbl_sm">حساب الدخل</label>
-                  <select name="revenue_account_select" id="revenue_account_select" class="select mb_10"
-                    style="border-start-start-radius: none;">
-                  </select>
-                </div>
-      
+                          <!--   القائمة والمجموعه-->    
+                          <label for="dropdown_div3" class="lbl_sm">حساب الدخل</label>
+                          <div class="row x_start y_center mb_10">
+                            <!-- <span id="statment_type_span_tree_group_div" class="input_span_start">مجموعات الاصناف</span> -->
+                            <div id="dropdown_div3" class="dropdown_container" style="margin: 0;"></div>
+                          </div>
       
                 <div id="final_account_information_div" class="flex_column">
                   <!-- قائمة التدفقات النقدية -->

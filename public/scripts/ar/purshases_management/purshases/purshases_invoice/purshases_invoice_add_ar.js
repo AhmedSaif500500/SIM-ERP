@@ -1,5 +1,5 @@
-setActiveSidebar('bread_view_ar'); // معلق
-pagePermission("add","transaction_permission");
+setActiveSidebar('purshasesMain_view_ar');
+pagePermission("add","sales_invoice_permission");
 
 
 const date1 = document.querySelector('#date1');
@@ -122,7 +122,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/purshases_invoice_add",
         posted_Obj,
-        'pass', 'pass',
+        'sales_invoice_permission', 'add',
         15,
         true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
         true,
@@ -133,7 +133,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('purshases_invoice_ViewArray')
     }
     
     }else{
@@ -141,7 +141,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     const post = await new_fetchData_postAndGet(
       "/api/purshases_invoice_add",
       posted_Obj,
-      'pass', 'pass',
+      'sales_invoice_permission', 'add',
       15,
       true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
       true,
@@ -152,7 +152,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray') // معلق
+      sessionStorage.removeItem('purshases_invoice_ViewArray') // معلق
     }
     
   }
@@ -168,7 +168,7 @@ async function get_Data_for_add_page_fn() {
   data_accounts = await new_fetchData_postAndGet(
     "/get_data_for_purshases_invoice_add",
     {},
-    'pass', 'pass',
+    'sales_invoice_permission', 'add',
     15,
     false,false,
     true,
@@ -181,10 +181,6 @@ async function get_Data_for_add_page_fn() {
 return data_accounts
 };
 
-
-
-
-
 document.addEventListener('DOMContentLoaded', async function () {
   try {
 
@@ -195,8 +191,14 @@ document.addEventListener('DOMContentLoaded', async function () {
   const convertToInvoice = JSON.parse(sessionStorage.getItem('purshases_invoice_update_data'));  
   if (convertToInvoice && convertToInvoice.qutationToInvoice){
     await showpurshasesInvoiceData(convertToInvoice.x, convertToInvoice.x, false, 'qutation')
+    const obj = {pageName : 'purshases_invoice_add_ar', x : convertToInvoice.x}
+    sessionStorage.setItem('purshases_qutation_update_data', JSON.stringify(obj));                            
+    back_href.href = `purshases_qutation_update_ar`
   }else if(convertToInvoice && convertToInvoice.orderToInvoice){
     await showpurshasesInvoiceData(convertToInvoice.x, convertToInvoice.qutation_id, convertToInvoice.x, 'order')
+    const obj = {pageName : 'purshases_invoice_add_ar', x : convertToInvoice.x}
+    sessionStorage.setItem('purshases_order_update_data', JSON.stringify(obj));                            
+    back_href.href = `purshases_order_update_ar`
   }else{
 
 

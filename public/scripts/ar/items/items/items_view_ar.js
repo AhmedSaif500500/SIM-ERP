@@ -1,6 +1,6 @@
 
-setActiveSidebar('items_view_ar');
-// alertify.alert('هذه رسالة تنبيه.');
+setActiveSidebar('itemsMain_view_ar');
+pagePermission("view", "items_permission");
 
 const table_div = document.querySelector(`.table_div`);
 const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
@@ -15,13 +15,13 @@ const accounts_view_table_btn = document.querySelector(`#accounts_view_table_btn
 
 accounts_view_tree_btn.addEventListener('click', async function () {
     try {
-        showLoadingIcon(this)
+        showLoadingIcon(content_space)
         await fetchTreeData();
         table_div.style.display = 'none'
         tree_2div_container.style.display = 'flex'
-        hideLoadingIcon(this)
+        hideLoadingIcon(content_space)
     } catch (error) {
-        hideLoadingIcon(this)
+        hideLoadingIcon(content_space)
         catch_error(error)
         table_div.style.display = 'none'
         tree_2div_container.style.display = 'none'
@@ -87,11 +87,15 @@ async function get_revenue_accounts_fn() {
         
 
         for (const row of data) {
-            const option = `<option value="${row.id}" ${row.global_id === 19 ? 'selected' : ''}>${row.account_name}</option>`;
-            filterd_revenue_options_array.push(option);
+            const optionObject = {
+                id: row.id,
+                account_name: row.account_name,
+                global_id : row.global_id 
+            };
+            filterd_revenue_options_array.push(optionObject);
         }
-
-        return filterd_revenue_options_array
+        
+        return filterd_revenue_options_array;
     } catch (error) {
         catch_error(error)
     }
@@ -159,7 +163,7 @@ async function fetchTreeData() {
                                       showLoadingIcon(content_space)  
 
                                 if (is_main_account.includes(node.data.global_id)) {
-                                    showAlert('warning', 'لا يمكن عرض معلومات عن الحساب المحدد')
+                                    showAlert('warning', 'لا يمكن عرض معلومات عن الصنف المحدد')
                                     return
                                 }
 
@@ -243,23 +247,27 @@ async function fetchTreeData() {
                             }
                         },
                         'create': {
-                            'label': 'إضافة حساب فرعي',
+                            'label': 'إضافة صنف فرعي',
                             'icon': 'fa-duotone fa-clipboard',
                             'action': async function () {
 
                                 if (node.data.final_account || is_forbidden_adding_branches.includes(node.data.global_id)) {
-                                    showAlert(`warning`, `لا يمكن اضافة حساب فرعى ضمن الحساب المحدد`)
+                                    showAlert(`warning`, `لا يمكن اضافة صنف فرعى ضمن الصنف المحدد`)
                                     return;
                                 }
 
                                 const revenue_accounts_options = await get_revenue_accounts_fn()
-
+    
+                                
+                                
                                 const items_options =  get_items_groups_options_fn(node.id, true,'tree','');
                                 const obj_items_create_account = {
                                     items_options: items_options,
                                     revenue_accounts_options: revenue_accounts_options,
                                     nodeId: node.id,
                                 };
+
+
                                 clear_items_sessionsStorage()
                                 sessionStorage.setItem('obj_items_create_account', JSON.stringify(obj_items_create_account));                            
                                 window.location.href = `items_add_ar`;
@@ -275,7 +283,7 @@ async function fetchTreeData() {
 
 
                                     if (is_forbidden_deletion.includes(node.data.global_id)) {
-                                        showAlert('warning', 'لا يمكن اعادة تمسية الحساب المحدد لانه من الحسابات الافتراضية')
+                                        showAlert('warning', 'لا يمكن اعادة تمسية الصنف المحدد لانه من الصنفات الافتراضية')
                                         return;
                                     }
 
@@ -300,7 +308,7 @@ async function fetchTreeData() {
                                                 account_rename_input
                                             },
                                             'items_permission', 'update',
-                                            'هل تريد تحديث اسم الحساب المحدد ؟',
+                                            'هل تريد تحديث اسم الصنف المحدد ؟',
                                             15,
                                             'items_view_ar',
                                             'حدث خطأ اثناء معالجة البيانات'
@@ -365,7 +373,8 @@ async function fetchTreeData() {
         });
 
     } catch (error) {
-        console.error('Error fetching tree data:', error);
+        catch_error(error)
+        // console.error('Error fetching tree data:', error);
     }
 }
 
@@ -439,9 +448,10 @@ function get_items_groups_options_fn(accountId, is_Allow_To_show_The_Same_Accoun
             item.is_final_account !== true
         );
 
-        filterd_statement_options_array = statement_options_array.map(item => `
-        <option value="${item.account_id}">${item.account_name}</option>
-    `).join('');
+        filterd_statement_options_array = statement_options_array.map(item => ({
+            id: item.account_id,
+            account_name: item.account_name
+        }));        
         return filterd_statement_options_array
     } catch (error) {
         catch_error(error)
@@ -487,7 +497,7 @@ $(tree).on('move_node.jstree', async function (e, data) {
         const allChildIds = getSubChildIds_By_JsTree(tree, currentAccountId);
 
         if (allChildIds.includes(newParentId)) {
-            showAlert('warning', 'لا يمكن نقل الحساب الى المجموعه المحدده')
+            showAlert('warning', 'لا يمكن نقل الصنف الى المجموعه المحدده')
             $(tree).jstree(true).refresh();
             return
         }
@@ -509,7 +519,7 @@ $(tree).on('move_node.jstree', async function (e, data) {
             const controller = new AbortController();
             const signal = controller.signal;
 
-            await showDialog('', 'هل تريد حفظ التعديل على دليل الحسابات ؟', '');
+            await showDialog('', 'هل تريد حفظ التعديل على دليل الصنفات ؟', '');
             if (!dialogAnswer) {
                 $(tree).jstree(true).refresh();
                 return;
@@ -556,7 +566,7 @@ $(tree).on('move_node.jstree', async function (e, data) {
 
 
         } else {
-            showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الحساب المحدد`)
+            showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الصنف المحدد`)
             $(tree).jstree(true).refresh();
 
         }
@@ -599,370 +609,30 @@ collapse_tree.addEventListener('click', async function () {
 
 //#endregion end tree
 
-//!===========================================================================================================================
-//!===========================================================================================================================
-//!===========================================================================================================================
 
-//#region table
-
-accounts_view_table_btn.addEventListener('click', async function () {
+accounts_view_table_btn.addEventListener('click', function () {
     try {
-        showLoadingIcon(this)
-        await showFirst50RowAtTheBegening();
-        tree_2div_container.style.display = 'none'
-        table_div.style.display = 'flex'
-        hideLoadingIcon(this)
+        sessionStorage.removeItem('items_table_view_Array')
+        window.location.href = "/items_table_view_ar";
     } catch (error) {
-        hideLoadingIcon(this)
         catch_error(error)
-        table_div.style.display = 'none'
-        tree_2div_container.style.display = 'none'
     }
 })
-
-
-const tableContainer = document.getElementById('tableContainer');
-const searchBtn = document.getElementById('searchBtn');
-const searchInput = document.getElementById('searchInput');
-
-
-let data2 = [];
-let array1 = [];
-let slice_Array1 = [];
-
-async function geteProductionData_fn() {
-
-    data = await fetchData_postAndGet(
-        '/get_All_items_Data_for_table',
-        {},
-        'items_permission','view',
-        15,
-        false,'',
-        false,
-        true,content_space,
-        false,'',
-        'حدث خطأ اثناء معالجة البيانات'
-    )
-    // const response = await fetch('/get_All_items_Data_for_table');
-    // data2 = await response.json();
-    array1 = data2.slice();
-}
-
-async function showFirst50RowAtTheBegening() {
-    await geteProductionData_fn()
-    slice_Array1 = await array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
-}
-
-
-async function filleffectstable() {
-    //  @@ هاااااام جدا 
-    // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
-    // el properties hya :
-    // 1 : display: none; > fe 7alt enak ardt e5fa2 el 3amod -- display: ; hatspha fadya fe7alt enak ardt tezhr el 3amod
-    // 2 : white-space: nowrap;  fe 7alt enak ardt en el text maylfsh ta7t ba3do  -- white-space: wrap; fe 7alt enak ardt en el tezt ylf
-    // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- min-width: 15rem;width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
-    // 4 : text-align: center / left / right / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
-
-    //* Prepare GLOBAL variables Befor sum functions
-
-    // إعداد رأس الجدول
-    let tableHTML = `<table id="bread_table" class="review_table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th style="display: none;">id</th>
-                                <th style="display: none;">parentId</th>
-                                <th style="display: none; width: auto; white-space: nowrap; text-align: start">المجموعه</th>
-                                <th style="min-width: 25rem; max-width: 40rem; width: 100%; white-space: wrap;text-align: start">الصنف</th>
-                                <th style="width: auto; white-space: wrap; text-align: start">الوحدة</th>
-                                <th style="display: none;">acc_no</th>
-                                <th style="display: none;">item_revenue_account</th>
-                                <th style="display: none;">item_expense_account</th>
-                                <th style="display: none;">item_sales_price</th>
-                                <th style="display: none;">item_purshas_price</th>
-                                <th style="display: none;">item_amount_reorder_point</th>
-                                <th style="width: auto; white-space: nowrap; text-align: center">الكمية</th>
-                                <th style="width: auto; white-space: nowrap; text-align: center">متوسط التكلفة</th>
-                                <th style="width: auto; white-space: nowrap; text-align: center">اجمالى التكلفة</th>
-                            </tr>
-                            </thead>
-                            <tbody>`;
-
-    // إضافة صفوف الجدول بناءً على البيانات
-    // slice_Array1 = ""; // تفريغ المصفوفه
-    slice_Array1.forEach(row => {
-        tableHTML += `<tr>
-                            <td> <button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button> </td>
-                            <td style="display: none">${row.account_id}</td>
-                            <td style="display: none">${row.parent_id}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.parent_name}</td>
-                            <td style="min-width: 25rem; max-width: 40rem; width: 100%; white-space: wrap;text-align: start">${row.account_name}</td>
-                            <td style="width: auto; white-space: nowrap;text-align: center">${row.item_unite}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.account_no}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.item_revenue_account}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.item_expense_account}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.item_sales_price}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.item_purshas_price}</td>
-                            <td style="display: none; width: auto; white-space: nowrap;text-align: start">${row.item_amount_reorder_point}</td>
-                            <td style="width: auto; white-space: nowrap; text-align: center"></td>
-                            <td style="width: auto; white-space: nowrap; text-align: center"></td>
-                            <td style="width: auto; white-space: nowrap; text-align: center"></td>
-                          </tr>`;
-    });
-
-    tableHTML += `</tbody>
-        <tfoot>
-            <tr class="table_totals_row";>
-                <td id="tfooter1" ></td>
-                <td id="tfooter2" style="display: none;" ></td>
-                <td id="tfooter3" style="display: none;"></td>
-                <td id="tfooter4" style="display: none;"></td>
-                <td id="tfooter5" ></td>
-                <td id="tfooter6" ></td>
-                <td id="tfooter7" style="display: none;"></td>
-                <td id="tfooter8" style="display: none;"></td>
-                <td id="tfooter9" style="display: none;"></td>
-                <td id="tfooter10" style="display: none;"></td>
-                <td id="tfooter11" style="display: none;"></td>
-                <td id="tfooter12" style="display: none;"></td>
-                <td id="tfooter13" style="width: auto; white-space: nowrap; text-align: center"></td>
-                <td id="tfooter14" style="width: auto; white-space: nowrap; text-align: center"></td>
-                <td id="tfooter15" style="width: auto; white-space: nowrap; text-align: center"></td>
-            </tr>
-                        <tr id="table_fotter_buttons_row">
-                            <td colspan="15">   <!-- da awel 3amod fe ele sad tr han7othan5elh han3mel merge lkol el columns fe column wa7ed 3ashan n7ot el 2 buttons hat3mel colspan le3add el 3awamed kolaha -->
-                                <div class='flex_H'>
-                                 <button class="table_footer_show_data"  id="" onclick="ShowAllDataIneffectsTable()">All</button>
-                                 <button class="table_footer_show_data"  id="" onclick="showFirst50RowIneffectsTable()">50</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tfoot>`;
-
-    // إغلاق الجدول
-    tableHTML += '</table>';
-
-    // تحديث محتوى الصفحة بناءً على البيانات
-    tableContainer.innerHTML = tableHTML;
-    page_content.style.display = 'flex'
-
-
-    document.getElementById("tfooter1").textContent = slice_Array1.length; // عدد الصفوف
-
-
-
-
-
-
-    // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
-    // document.getElementById("tfooter1").textContent = slice_Array1.length; //  عدد الصفوف
-
-    if (array1.length > 0 && array1.length <= 50) {
-        document.querySelector('#table_fotter_buttons_row').style.display = "none";
-    } else if (array1.length < 1) {
-        document.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan='15' class="td_no_result">لا نتائج</td>`;
-    };
-
-
-};
-
-
-// search in effectsTable
-function performSearch() {
-    // الحصول على قيمة البحث
-    const searchValue = searchInput.value.trim().toLowerCase();
-
-    // فلترة البيانات بناءً على قيمة البحث
-    array1 = data2.filter(row => {
-        const account_name = row.account_name && row.account_name.toString().toLowerCase().includes(searchValue);
-        const item_unite = row.item_unite && row.item_unite.toString().toLowerCase().includes(searchValue);
-        return account_name || item_unite;
-    });
-
-    // تحديد جزء البيانات للعرض (أول 50 صف فقط)
-    slice_Array1 = array1.slice(0, 50);
-
-    // ملء الجدول بالبيانات
-     filleffectstable();
-//     /*
-               
-//         const cumulativeBalanceColumnHeaders = document.querySelectorAll('#bread_table th:nth-child(7), #bread_table td:nth-child(7)');
-        
-//         if (searchValue) {
-//             // إذا كانت قيمة البحث موجودة، أخفِ عمود الجرد
-//             cumulativeBalanceColumnHeaders.forEach(element => {
-//                 element.style.display = 'none';
-//             });
-//         } else {
-//             // إذا لم تكن هناك قيمة في البحث، اعرض عمود الجرد
-//             cumulativeBalanceColumnHeaders.forEach(element => {
-//                 element.style.display = 'table-cell';
-//             });
-//         }
-//     */
- }
-
-async function ShowAllDataIneffectsTable() {
-    showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
-    slice_Array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
-}
-
-async function showFirst50RowIneffectsTable() {
-    slice_Array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    filleffectstable()
-}
-
-async function table_update_btn_fn(updateBtn) {
-    try {
-        
-        showLoadingIcon(updateBtn)
-    clear_inputs(`dialogOverlay_input`)
-    const row = updateBtn.closest("tr")
-    
-    get_revenue_accounts_fn()
-    changeSelect('revenue_account_select', row.cells[7].textContent)
-
-    const response = await fetch('/api/tree/items');
-    data = await response.json();
-
-    get_items_groups_options_fn(parents_group_select, parseInt(row.cells[1].textContent), false,'array',data);
-    changeSelect('parents_group_select', row.cells[2].textContent);
-
-        h2_header.textContent = row.cells[4].textContent;
-        account_no_input.value = row.cells[6].textContent
-        account_name_input.value = row.cells[4].textContent
-        account_id_hidden.value = row.cells[1].textContent
-
-
-        
-
-
-        item_unite_input.value = row.cells[5].textContent;
-        sales_price.value = row.cells[9].textContent;
-        purchase_price.value = row.cells[10].textContent;
-        reorder_point.value = row.cells[11].textContent
-
-
-        btn_save.style.display = 'none'
-        btn_update.style.display = 'flex'
-        btn_delete.style.display = 'flex'
-        tree_group_div.style.display = 'none'
-        tree_rename_div.style.display = 'none'
-        tree_add_account.style.display = 'flex'
-        dialogOverlay_input.style.display = 'flex'
-
-        hideLoadingIcon(updateBtn)
-    } catch (error) {
-        hideLoadingIcon(updateBtn)
-        catch_error(error)
-    }
-};
-
-
-document.querySelector(`#newItemBtn_table`).onclick = async function () {
-    try {
-
-        showLoadingIcon(this)
-        clear_inputs(`dialogOverlay_input`)
-
-        get_revenue_accounts_fn()
-
-        const response = await fetch('/api/tree/items');
-        data = await response.json();
-
-        const allItemsGroups = data.filter(item =>
-            item.is_final_account !== true
-        );
-
-
-        filterd_statement_options_array = allItemsGroups.map(item => `
-        <option value="${item.account_id}">${item.account_name}</option>
-    `).join('');
-        document.querySelector(`#parents_group_select`).innerHTML = filterd_statement_options_array
-
-        // h2
-        h2_header.textContent = `صنف جديد`;
-
-        // buttons
-        btn_save.style.display = 'flex'
-        btn_update.style.display = 'none'
-        btn_delete.style.display = 'none'
-        tree_group_div.style.display = 'none'
-        tree_rename_div.style.display = 'none'
-        tree_add_account.style.display = 'flex'
-        dialogOverlay_input.style.display = 'flex'
-
-        hideLoadingIcon(this)
-    } catch (error) {
-        hideLoadingIcon(this)
-        catch_error(error)
-    }
-}
-
-
-document.querySelector(`#newGroupBtn_table`).onclick = async function () {
-    try {
-        showLoadingIcon(this)
-        clear_inputs(`dialogOverlay_input`)
-
-        // input_account_name_input_tree_group_div.value = ''
-
-        const response = await fetch('/api/tree/items');
-        data = await response.json();
-
-        const allItemsGroups = data.filter(item =>
-            item.is_final_account !== true
-        );
-
-
-
-        filterd_statement_options_array = allItemsGroups.map(item => `
-        <option value="${item.account_id}">${item.account_name}</option>
-    `).join('');
-
-        document.querySelector(`#select_parent_gruop_name_tree_goup_div`).innerHTML = filterd_statement_options_array
-
-        // h2
-        h2_header.textContent = ` مجموعه فرعيه جديدة`;
-        lbl_acc_name.textContent = 'اسم المجموعه';
-
-        
-        btn_save_tree_group_div.style.display = 'flex';
-        btn_update_tree_group_div.style.display = 'none';
-        btn_delete_tree_group_div.style.display = 'none';
-        tree_rename_div.style.display = 'none';
-        tree_add_account.style.display = 'none';
-        tree_group_div.style.display = 'flex'
-        dialogOverlay_input.style.display = 'flex';
-        hideLoadingIcon(this)
-    } catch (error) {
-        hideLoadingIcon(this)
-        catch_error(error)
-    }
-}
-
-// عند الضغط على زر البحث
-searchBtn.addEventListener('click', performSearch);
-
-// حدث عن الضغط على زر المسح الخاص ب الانبوت سيرش الى بيظهر لما بنكتب بيانات
-searchInput.addEventListener('search', function () {
-    performSearch();
-});
-
-// عند الضغط على زرار انتر وانت واقف فى مربع البحث
-searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        performSearch();
-    };
-});
 
 
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    showRedirectionReason();
+    try {
+        showLoadingIcon(content_space)
+
+        showRedirectionReason();
+        hideLoadingIcon(content_space)
+    } catch (error) {
+        hideLoadingIcon(content_space)
+        catch_error(error)
+    }
+   
 });
 
 

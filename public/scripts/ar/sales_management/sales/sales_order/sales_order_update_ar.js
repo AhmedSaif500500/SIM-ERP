@@ -1,5 +1,5 @@
-// setActiveSidebar('bread_view_ar'); //معلق
-// pagePermission("add","transaction_permission"); //معلق
+setActiveSidebar('salesMain_view_ar'); //معلق
+pagePermission("add","sales_order_permission"); //معلق
 
 
 const sales_order_update_data = JSON.parse(sessionStorage.getItem('sales_order_update_data'));
@@ -8,6 +8,7 @@ const sales_order_update_data = JSON.parse(sessionStorage.getItem('sales_order_u
 if (!sales_order_update_data){
     redirection("sales_order_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
 }
+
 
 const obj_sales_order_update = {pageName : 'sales_order_update_ar'}
 
@@ -30,7 +31,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
 
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('sales_order_permission', 'update') // معلق
       if (!permission){
         showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
         return
@@ -136,7 +137,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/sales_order_update",
         posted_Obj,
-        'pass', 'pass',
+        'sales_order_permission', 'update',
         15,
         true,"هل تريد تحديث بيانات امر البيع ؟",
         true,
@@ -147,7 +148,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('sales_order_Array')
+      sessionStorage.removeItem('sales_order_ViewArray')
     }
     
 
@@ -163,7 +164,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
 
 document.querySelector(`#btn_delete`).onclick = async function () {
   try {
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('sales_order_permission', 'delete') // معلق
     if (!permission){
       showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
       return
@@ -176,7 +177,7 @@ const datex = date1.value;
 const post = await new_fetchData_postAndGet(
   "/api/sales_order_delete",
   {x, datex},
-  'pass', 'pass',
+  'sales_order_permission', 'delete',
   15,
   true,"هل تريد حذف بيانات امر البيع ؟",
   true,
@@ -187,7 +188,7 @@ const post = await new_fetchData_postAndGet(
 )
 
 if (post){
-sessionStorage.removeItem('sales_order_Array')
+sessionStorage.removeItem('sales_order_ViewArray')
 }
 
 
@@ -206,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     
    await showsalesOrderData(x, qutation_id, 'order')
   
-  viewMode(true,'pass','pass')
+  viewMode(true,'sales_order_permission','view')
   handle_fn_options()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -220,6 +221,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 async function createSlalesInvoice(){
   try {
+
+    const permission = await btn_permission('sales_invoice_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
+
     await showDialog('', `سيتم تحويلك الى صفحة انشاء فواتير المبيعات , هل تريد المتابعه؟`, '');        
     if (!dialogAnswer) {
       return false;
@@ -242,8 +250,8 @@ async function createSlalesInvoice(){
 
 function handle_fn_options(){
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'sales_order_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'sales_order_permission','view')" style="display: none;">وضع العرض</div>
     <div id="" onclick="createSlalesInvoice()">انشاء فاتورة مبيعات</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);

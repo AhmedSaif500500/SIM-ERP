@@ -330,8 +330,6 @@ function change_select_account_type(select) {
 
 function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow beta3 el zeror ely fe el table fe ele Buld_table()
     
-
-  
   const tableBody = document.querySelector(`#myTable tbody`)
     
   const DropDown_accounts_tableColumnsName = ['id', 'account_name', 'item_unite'];
@@ -498,20 +496,24 @@ let purshasesOrderReferencesArray = [];
 async function showpurshasesInvoiceData(x, qutationId, orderId, type){
 
   try {
-    
+
+    let permType
     let url;
     if (type === 'qutation'){
       url = "/get_data_for_purshasesQutationToInvoice"
+      permType = 'add'
     }else if (type === 'order'){
       url = "/get_data_for_purshasesOrderToInvoice"
+      permType = 'add'
     }else{
       url = "/get_data_for_sales_purshasesInvoice_update"
+      permType = 'update'
     }
 
   Data = await new_fetchData_postAndGet(
     url,
     {x, qutationId, orderId},
-    'purshases_permission', 'view', // معلق
+    'purshases_invoice_permission', permType, // معلق
     15,
     false,false,
     true,

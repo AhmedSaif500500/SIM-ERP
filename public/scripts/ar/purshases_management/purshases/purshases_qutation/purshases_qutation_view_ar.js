@@ -1,5 +1,5 @@
 setActiveSidebar("purshasesMain_view_ar");
-pagePermission("view", "sales_permission");
+pagePermission("view", "purshases_qutation_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
@@ -106,13 +106,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('purshases_qutation_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('purshases_qutation_ViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('purshases_qutation_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('purshases_qutation_ViewArray', JSON.stringify(conditionsArray));
 }
 
 
@@ -120,7 +120,7 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`purshases_qutation_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`purshases_qutation_ViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
@@ -139,7 +139,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("purshases_qutation_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("purshases_qutation_ViewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -149,7 +149,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("purshases_qutation_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("purshases_qutation_ViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -290,7 +290,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('purshases_qutation_Array');
+            sessionStorage.removeItem('purshases_qutation_ViewArray');
             conditionsArray = []
             
         }
@@ -325,7 +325,7 @@ async function getData_fn() {
         data = await new_fetchData_postAndGet(
             "/get_purshases_qutation_Data_view",
             {start_date, end_date},
-            "pass","pass",
+            "purshases_qutation_permission","view",
             15,
             false,'',
             false,
@@ -517,7 +517,7 @@ function fillTable() {
         let qutation_status = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -555,7 +555,7 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_view_btn" onclick="table_update_btn_fn(this)">عرض</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${style_datex}" class="td_datex">${row.datex}</td>
                         <td style="${style_reference}" class="td_reference">${row.reference}</td>
@@ -684,10 +684,10 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     try {
         showLoadingIcon(updateBtn)
-    const permission = await btn_permission("transaction_permission", "update"); //  معلق
+    const permission = await btn_permission("purshases_qutation_permission", "view"); //  معلق
 
     if (!permission) {
         // if false
@@ -727,15 +727,13 @@ function CheckUrlParams_transaction_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "transaction_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
+            "purshases_qutation_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة عرض اسعار المشتريات"
         );
 
-        if (!urlData || urlData.pageName !== "transaction_update_ar") {
+        if (!urlData || urlData.pageName !== "purshases_qutation_update_ar") {
             return true;
         }
-
-    
         if (urlData !== "noParams") {
 
             restore_filter_div_conditions(2)
@@ -764,7 +762,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`purshases_qutation_Array`);
+    const conditionsArray = sessionStorage.getItem(`purshases_qutation_ViewArray`);
 
     if (!conditionsArray){
      

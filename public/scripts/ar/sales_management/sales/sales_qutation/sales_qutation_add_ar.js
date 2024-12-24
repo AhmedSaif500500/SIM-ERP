@@ -1,5 +1,5 @@
-setActiveSidebar('bread_view_ar');
-pagePermission("add","transaction_permission");
+setActiveSidebar('salesMain_view_ar');
+pagePermission("add","sales_qutation_permission");
 
 
 const date1 = document.querySelector('#date1');
@@ -114,7 +114,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/sales_qutation_add",
         posted_Obj,
-        'pass', 'pass',
+        'sales_qutation_permission', 'add',
         15,
         true,"هل تريد حفظ البيانات ؟",
         true,
@@ -125,7 +125,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('sales_qutation_ViewArray')
     }
     
     }else{
@@ -133,7 +133,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     const post = await new_fetchData_postAndGet(
       "/api/sales_qutation_add",
       posted_Obj,
-      'transaction_permission', 'add',
+      'sales_qutation_permission', 'add',
       15,
       true,"هل تريد حفظ بيانات عرض سعر البيع ؟",
       true,
@@ -144,7 +144,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('sales_qutation_ViewArray')
     }
     
   }
@@ -160,7 +160,7 @@ async function get_Data_for_add_page_fn() {
   data_accounts = await new_fetchData_postAndGet(
     "/get_Data_for_sales_qutation_add_page",
     {},
-    'sales_permission', 'view',
+    'sales_qutation_permission', 'view',
     15,
     false,false,
     true,

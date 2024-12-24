@@ -498,20 +498,25 @@ let salesOrderReferencesArray = [];
 async function showsalesInvoiceData(x, qutationId, orderId, type){
 
   try {
-    
+    let permType
     let url;
     if (type === 'qutation'){
       url = "/get_data_for_qutationToInvoice"
+      permType = 'add'
     }else if (type === 'order'){
       url = "/get_data_for_orderToInvoice"
+      permType = 'add'
     }else{
       url = "/get_data_for_sales_invoice_update"
+      permType = 'update'
     }
 
+
+    
   Data = await new_fetchData_postAndGet(
     url,
     {x, qutationId, orderId},
-    'sales_permission', 'view', // معلق
+    'sales_invoice_permission', permType, // معلق
     15,
     false,false,
     true,
@@ -556,6 +561,7 @@ async function showsalesInvoiceData(x, qutationId, orderId, type){
       qutation_id = headerDataArray.qutation_id
       order_id = headerDataArray.order_id
     }
+
 
     create_drop_down_with_External_DataArray(`dropdown_div3`,customersDataArray); selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
     create_drop_down_with_External_DataArray(`dropdown_div`,salesmanArray); selectedRow_dropdownDiv(`dropdown_div`,salesmanArray,headerDataArray.salesman_id);

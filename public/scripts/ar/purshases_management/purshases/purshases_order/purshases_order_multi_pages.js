@@ -1,6 +1,4 @@
 
-console.log(`start`);
-
 const qutation_reference_div = document.querySelector(`.qutation_reference_div`)
 const order_reference_div = document.querySelector(`.order_reference_div`)
 const reference_status = document.querySelector(`#reference_status`);
@@ -503,7 +501,7 @@ async function showPurshasesOrderData(x,qutation_id,type){
   Data = await new_fetchData_postAndGet(
     "/get_data_for_purshases_order_update",
     {x,qutation_id,type},
-    'sales_permission', 'view',
+    'purshases_order_permission', 'update',
     15,
     false,false,
     true,

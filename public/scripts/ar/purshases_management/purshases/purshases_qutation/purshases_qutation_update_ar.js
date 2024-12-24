@@ -1,5 +1,5 @@
-// setActiveSidebar('bread_view_ar'); //معلق
-// pagePermission("add","transaction_permission"); //معلق
+setActiveSidebar('purshasesMain_view_ar');
+pagePermission("add","purshases_qutation_permission");
 
 
 const purshases_qutation_update_data = JSON.parse(sessionStorage.getItem('purshases_qutation_update_data'));
@@ -9,10 +9,10 @@ if (!purshases_qutation_update_data){
     redirection("purshases_qutation_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الموردين الرئيسية")
 }
 
-const obj_purshases_qutation_update = {pageName : 'purshases_qutation_update_ar'}
+// const obj_purshases_qutation_update = {pageName : 'purshases_qutation_update_ar'}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_qutation_update));
-back_href.href = `purshases_qutation_view_ar?data=${encodedData}`
+// const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_qutation_update));
+// back_href.href = `purshases_qutation_view_ar?data=${encodedData}`
 
 
 const date1 = document.querySelector('#date1');
@@ -31,7 +31,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
 
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('purshases_qutation_permission', 'update');
       if (!permission){
         showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
         return
@@ -136,7 +136,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/purshases_qutation_update",
         posted_Obj,
-        'pass', 'pass', // معلق
+        'purshases_qutation_permission', 'update', // معلق
         15,
         true,"هل تريد تحديث بيانات عرض سعر الشراء ؟",
         true,
@@ -147,7 +147,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('purshases_qutation_Array')
+      sessionStorage.removeItem('purshases_qutation_ViewArray')
     }
     
 
@@ -163,7 +163,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
 
 document.querySelector(`#btn_delete`).onclick = async function () {
   try {
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('purshases_qutation_permission', 'delete') // معلق
     if (!permission){
       showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
       return
@@ -174,7 +174,7 @@ const x = headerDataArray.id
 const post = await new_fetchData_postAndGet(
   "/api/purshases_qutation_delete",
   {x},
-  'pass', 'pass',
+  'purshases_qutation_permission', 'delete',
   15,
   true,"هل تريد حذف بيانات عرض سعر الشراء ؟",
   true,
@@ -185,7 +185,7 @@ const post = await new_fetchData_postAndGet(
 )
 
 if (post){
-sessionStorage.removeItem('purshases_qutation_Array')
+sessionStorage.removeItem('purshases_qutation_ViewArray')
 }
 
 
@@ -232,7 +232,7 @@ async function get_Data_for_update_page_fn(x) {
   data_accounts = await new_fetchData_postAndGet(
     "/get_data_for_purshases_qutation_update",
     {x},
-    'purshases_permission', 'view',
+    'purshases_qutation_permission', 'update',
     15,
     false,false,
     true,
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray); selectedRow_dropdownDiv(`dropdown_div2`,itemslocationsArray,headerDataArray.items_location_id);
 
   showHeaderData()
-  viewMode(true,'pass','pass')
+  viewMode(true,'purshases_qutation_permission','view')
   handle_fn_options()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -440,8 +440,8 @@ function handleCurrentTr(row,tr){
 
 function handle_fn_options(){
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'purshases_qutation_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'purshases_qutation_permission','view')" style="display: none;">وضع العرض</div>
     <div onclick="createpurshasesOrder()">انشاء امر شراء</div>
     <div onclick="createpurshasesInvoice()">انشاء فاتوره مشتريات</div>
     <div onclick="rejectَQutation()">رفض</div>
@@ -453,6 +453,13 @@ function handle_fn_options(){
 
 async function createpurshasesOrder(){
   try {
+
+    const permission = await btn_permission('purshases_order_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
+
     await showDialog('', `سيتم تحويلك الى صفحة انشاء امر شراء , هل تريد المتابعه؟`, '');        
     if (!dialogAnswer) {
       return false;
@@ -471,6 +478,12 @@ async function createpurshasesOrder(){
 
 async function createpurshasesInvoice(){
   try {
+
+    const permission = await btn_permission('purshases_invoice_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
 
     await showDialog('', `سيتم تحويلك الى صفحة انشاء فواتير المشتريات , هل تريد المتابعه؟`, '');        
     if (!dialogAnswer) {
@@ -502,7 +515,7 @@ try {
   const post = await new_fetchData_postAndGet(
     "/api/purshases_qutation_reject",
     {x,datex},
-    'purshases_permission', 'view',   // معلق
+    'purshases_qutation_permission', 'update',   // معلق
     15,
     true,"هل تريد رفض عرض السعر الحالى ؟",
     true,

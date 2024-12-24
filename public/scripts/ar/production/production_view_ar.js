@@ -511,7 +511,7 @@ function fillTable() {
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_datex}">${row.datex}</td>
                         <td style="${style_note}">${row.note}</td>
-                        ${tdNumber(true,false,true,row.procution_amount,style_balance1,total_column1,false)}                
+                        ${tdNumber(true,false,true,row.procution_amount,style_balance1,total_column1,false)}            
                         ${tdNumber(true,false,true,row.sales_amount,style_balance2,total_column2,false)}                
                         ${tdNumber(true,false,true,row.cumulative_balance,style_balance3,false,false)}                
                       </tr>`;

@@ -1,5 +1,5 @@
-// setActiveSidebar('bread_view_ar'); //معلق
-// pagePermission("add","transaction_permission"); //معلق
+setActiveSidebar('purshasesMain_view_ar');
+pagePermission("update","purshases_invoice_permission");
 
 
 const purshases_invoice_update_data = JSON.parse(sessionStorage.getItem('purshases_invoice_update_data'));
@@ -30,6 +30,12 @@ date1.value = today
 document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
+
+    const permission = await btn_permission('purshases_invoice_permission', 'update') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
+      return
+    }
 
     const x = purshases_invoice_update_data.x;
     const datex = date1.value;
@@ -138,7 +144,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
         const post = await new_fetchData_postAndGet(
           "/api/purshases_invoice_update",
           posted_Obj,
-          'pass', 'pass',
+          'purshases_invoice_permission', 'update',
           15,
           true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
           true,
@@ -151,7 +157,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
         
     if (post){
       sessionStorage.removeItem('purshases_invoice_update_data')
-      sessionStorage.removeItem('purshases_invoice_Array')
+      sessionStorage.removeItem('purshases_invoice_ViewArray')
     }
 
     } else {
@@ -166,7 +172,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
 
 document.querySelector(`#btn_delete`).onclick = async function () {
   try {
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('purshases_invoice_permission', 'delete');
     if (!permission){
       showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
       return
@@ -179,7 +185,7 @@ const datex = date1.value;
 const post = await new_fetchData_postAndGet(
   "/api/purshases_invoice_delete",
   {x,datex},
-  'pass', 'pass',
+  'purshases_invoice_permission', 'delete',
   15,
   true,"هل تريد حذف بيانات فاتورة المشتريات ؟",
   true,
@@ -190,7 +196,7 @@ const post = await new_fetchData_postAndGet(
 )
 
 if (post){
-sessionStorage.removeItem('purshases_order_Array')
+sessionStorage.removeItem('purshases_order_ViewArray')
 }
 
 
@@ -213,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async function () {
    
     //! here
 
-  viewMode(true,'pass','pass')
+  viewMode(true,'purshases_invoice_permission','view')
   handle_fn_options()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -228,8 +234,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 function handle_fn_options(){
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'purshases_invoice_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'purshases_invoice_permission','view')" style="display: none;">وضع العرض</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
 }

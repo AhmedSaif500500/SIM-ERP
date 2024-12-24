@@ -942,6 +942,19 @@ router.get('/items_view_ar', (req, res) => {
 });
 
 
+router.get('/items_table_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items', 'items_table_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
 router.get('/items_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 1) {
@@ -1014,7 +1027,7 @@ router.get('/transaction_update_ar', (req, res) => {
 
 
 //! suspense - need to put right permission for  settings tax 3 pages
-//#region settings tax
+//#region settings tax  معلق -- اضافة صلاحيات الضرائب من 
 router.get('/settings_taxes_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1) {
@@ -1029,7 +1042,7 @@ router.get('/settings_taxes_view_ar', (req, res) => {
 
 router.get('/settings_taxes_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 2) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'taxes' ,'settings_taxes_add_ar.html'));
         }else{
             res.redirect('/settings_taxes_view_ar?reason=0');
@@ -1041,7 +1054,7 @@ router.get('/settings_taxes_add_ar', (req, res) => {
 
 router.get('/settings_taxes_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'taxes' ,'settings_taxes_update_ar.html'));
         }else{
             res.redirect('/settings_taxes_view_ar?reason=0');
@@ -1076,5 +1089,44 @@ router.get('/companies_add_ar', (req, res) => {
 
 
 //#endregion
+
+
+//#region services
+router.get('/services_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.services_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'items', 'services' ,'services_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/services_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 || req.session.services_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'items', 'services' ,'services_add_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/services_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 3 || req.session.services_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'items', 'services' ,'services_update_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion services
 
 module.exports = router;

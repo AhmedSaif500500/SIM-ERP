@@ -1,5 +1,5 @@
 setActiveSidebar('purshasesMain_view_ar');
-pagePermission("add","transaction_permission"); // معلق
+pagePermission("add","purshases_qutation_permission"); // معلق
 
 
 const date1 = document.querySelector('#date1');
@@ -114,7 +114,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/purshases_qutation_add",
         posted_Obj,
-        'pass', 'pass', //معلق
+        'purshases_qutation_permission', 'add',
         15,
         true,"هل تريد حفظ بيانات عرض سعر الشراء؟",
         true,
@@ -125,7 +125,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray') // معلق
+      sessionStorage.removeItem('purshases_qutation_ViewArray') // معلق
     }
     
     }else{
@@ -133,7 +133,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     const post = await new_fetchData_postAndGet(
       "/api/purshases_qutation_add",
       posted_Obj,
-      'transaction_permission', 'add', // معلق
+      'purshases_qutation_permission', 'add',
       15,
       true,"هل تريد حفظ بيانات عرض سعر الشراء؟",
       true,
@@ -144,7 +144,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray') // معلق
+      sessionStorage.removeItem('purshases_qutation_ViewArray')
     }
     
   }
@@ -160,7 +160,7 @@ async function get_Data_for_add_page_fn() {
   data_accounts = await new_fetchData_postAndGet(
     "/get_Data_for_purshases_qutation_add_page",
     {},
-    'sales_permission', 'view', // معلق
+    'purshases_qutation_permission', 'add', // معلق
     15,
     false,false,
     true,

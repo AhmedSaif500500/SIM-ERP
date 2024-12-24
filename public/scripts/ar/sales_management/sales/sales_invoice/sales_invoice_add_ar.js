@@ -1,5 +1,5 @@
-setActiveSidebar('bread_view_ar');
-pagePermission("add","transaction_permission");
+setActiveSidebar('salesMain_view_ar');
+pagePermission("add","sales_invoice_permission");
 
 
 const date1 = document.querySelector('#date1');
@@ -122,7 +122,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/sales_invoice_add",
         posted_Obj,
-        'pass', 'pass',
+        'sales_invoice_permission', 'add',
         15,
         true,"هل تريد حفظ بيانات فاتورة المبيعات ؟",
         true,
@@ -133,7 +133,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('sales_invoice_ViewArray') 
     }
     
     }else{
@@ -141,7 +141,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     const post = await new_fetchData_postAndGet(
       "/api/sales_invoice_add",
       posted_Obj,
-      'pass', 'pass',
+      'sales_invoice_permission', 'add',
       15,
       true,"هل تريد حفظ بيانات فاتورة المبيعات ؟",
       true,
@@ -152,7 +152,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray')
+      sessionStorage.removeItem('sales_invoice_ViewArray')
     }
     
   }
@@ -168,7 +168,7 @@ async function get_Data_for_add_page_fn() {
   data_accounts = await new_fetchData_postAndGet(
     "/get_data_for_sales_invoice_add",
     {},
-    'pass', 'pass',
+    'sales_invoice_permission', 'add',
     15,
     false,false,
     true,
@@ -192,11 +192,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   
   dueDate_input.value = today
-  const convertToInvoice = JSON.parse(sessionStorage.getItem('sales_invoice_update_data'));  
+  const convertToInvoice = JSON.parse(sessionStorage.getItem('sales_invoice_update_data'));
+  
   if (convertToInvoice && convertToInvoice.qutationToInvoice){
+
     await showsalesInvoiceData(convertToInvoice.x, convertToInvoice.x, false, 'qutation')
+    const obj = {pageName : 'sales_invoice_add_ar', x : convertToInvoice.x}
+    sessionStorage.setItem('sales_qutation_update_data', JSON.stringify(obj));                            
+    back_href.href = `sales_qutation_update_ar`
+
   }else if(convertToInvoice && convertToInvoice.orderToInvoice){
+
     await showsalesInvoiceData(convertToInvoice.x, convertToInvoice.qutation_id, convertToInvoice.x, 'order')
+    const obj = {pageName : 'sales_invoice_add_ar', x : convertToInvoice.x}
+    sessionStorage.setItem('sales_order_update_data', JSON.stringify(obj));                            
+    back_href.href = `sales_order_update_ar`
+
   }else{
 
 

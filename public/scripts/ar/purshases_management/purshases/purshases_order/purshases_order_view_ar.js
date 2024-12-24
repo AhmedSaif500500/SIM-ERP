@@ -1,5 +1,5 @@
 setActiveSidebar("purshasesMain_view_ar");  
-pagePermission("view", "purshases_permission");  // معلق
+pagePermission("view", "purshases_order_permission");  // معلق
 
 
 const newBtn = document.querySelector('#newBtn');
@@ -121,13 +121,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('purshases_order_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('purshases_order_ViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('purshases_order_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('purshases_order_ViewArray', JSON.stringify(conditionsArray));
 }
 
 
@@ -135,7 +135,7 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`purshases_order_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`purshases_order_ViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
@@ -154,7 +154,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("purshases_order_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("purshases_order_ViewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -164,7 +164,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("purshases_order_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("purshases_order_ViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -306,7 +306,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('purshases_order_Array');
+            sessionStorage.removeItem('purshases_order_ViewArray');
             conditionsArray = []
             
         }
@@ -337,11 +337,10 @@ async function getData_fn() {
         start_date = f0_input_start_date1.value;
         end_date = f0_input_end_date1.value;
        
-        //  معلق
         data = await new_fetchData_postAndGet(
             "/get_purshases_order_Data_view",
             {start_date, end_date},
-            "pass","pass",
+            "purshases_order_permission","view",
             15,
             false,'',
             false,
@@ -769,19 +768,15 @@ function CheckUrlParams_transaction_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "transaction_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة ادارة المشتريات"
+            "purshases_order_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة اوامر المشتريات"
         );
 
-        if (!urlData || urlData.pageName !== "transaction_update_ar") {
+        if (!urlData || urlData.pageName !== "purshases_order_update_ar") {
             return true;
         }
-
-    
         if (urlData !== "noParams") {
-
             restore_filter_div_conditions(2)
-
             return true;
         } else if (urlData === "noParams") {
             return true;
@@ -806,7 +801,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`purshases_order_Array`);
+    const conditionsArray = sessionStorage.getItem(`purshases_order_ViewArray`);
 
     if (!conditionsArray){
      

@@ -1,9 +1,9 @@
 setActiveSidebar("salesMain_view_ar");  
-pagePermission("view", "sales_permission");  // معلق
+pagePermission("view", "sales_invoice_permission");  // معلق
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
-    sessionStorage.removeItem('sales_order_update_data')
+    sessionStorage.removeItem('sales_invoice_update_data')
     window.location.href = "/sales_invoice_add_ar";
   }
 
@@ -357,7 +357,7 @@ async function getData_fn() {
         data = await new_fetchData_postAndGet(
             "/get_sales_invoice_Data_view",
             {start_date, end_date},
-            "pass","pass",
+            "sales_invoice_permission","view",
             15,
             false,'',
             false,
@@ -781,7 +781,7 @@ searchInput.addEventListener("keydown", (event) => {
 async function table_update_btn_fn(updateBtn) {
     try {
     showLoadingIcon(updateBtn)
-    const permission = await btn_permission("transaction_permission", "update"); // معلق
+    const permission = await btn_permission("sales_invoice_permission", "view");
 
     if (!permission) {
         // if false
@@ -807,15 +807,15 @@ async function table_update_btn_fn(updateBtn) {
 }
 }
 
-function CheckUrlParams_transaction_update_ar() {
+function CheckUrlParams_salesInvoice_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "transaction_view_ar",
+            "sales_invoice_view_ar",
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
 
-        if (!urlData || urlData.pageName !== "transaction_update_ar") {
+        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
             return true;
         }
 
@@ -842,7 +842,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
     
-    const result2 = CheckUrlParams_transaction_update_ar();
+    const result2 = CheckUrlParams_salesInvoice_update_ar();
     if (!result2) {
         return;
     }

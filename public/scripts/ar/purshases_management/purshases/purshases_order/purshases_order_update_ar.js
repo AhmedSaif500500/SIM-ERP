@@ -1,17 +1,14 @@
-// setActiveSidebar('bread_view_ar'); //معلق
-// pagePermission("add","transaction_permission"); //معلق
+setActiveSidebar('purshasesMain_view_ar'); 
+pagePermission("add","purshases_order_permission");
 
 
-const u1 = JSON.parse(sessionStorage.getItem('purshases_order_update_data'));
+const purshases_order_update_data = JSON.parse(sessionStorage.getItem('purshases_order_update_data'));
 // sessionStorage.removeItem(`purshases_order_update_data`)
 
 
-if (!u1){
+if (!purshases_order_update_data){
     redirection("purshases_order_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه ازامر الشراء الرئيسية")
 }
-const purshases_order_update_data = u1
-sessionStorage.removeItem('purshases_order_update_data')
-
 
 const obj_purshases_order_update = {pageName : 'purshases_order_update_ar'}
 
@@ -34,7 +31,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
 
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('purshases_order_permission', 'update') // معلق
       if (!permission){
         showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
         return
@@ -140,7 +137,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/purshases_order_update",
         posted_Obj,
-        'pass', 'pass',
+        'purshases_order_permission', 'update',
         15,
         true,"هل تريد تحديث بيانات امر الشراء ؟",
         true,
@@ -151,7 +148,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('purshases_order_Array')
+      sessionStorage.removeItem('purshases_order_ViewArray')
     }
     
 
@@ -167,7 +164,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
 
 document.querySelector(`#btn_delete`).onclick = async function () {
   try {
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('purshases_order_permission', 'delete') // معلق
     if (!permission){
       showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
       return
@@ -180,7 +177,7 @@ const datex = date1.value;
 const post = await new_fetchData_postAndGet(
   "/api/purshases_order_delete",
   {x, datex},
-  'pass', 'pass',
+  'purshases_order_permission', 'delete',
   15,
   true,"هل تريد حذف بيانات امر البيع ؟",
   true,
@@ -191,7 +188,7 @@ const post = await new_fetchData_postAndGet(
 )
 
 if (post){
-sessionStorage.removeItem('purshases_order_Array')
+sessionStorage.removeItem('purshases_order_ViewArray')
 }
 
 
@@ -210,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     
    await showPurshasesOrderData(x, qutation_id, 'order')
   
-  viewMode(true,'pass','pass')
+  viewMode(true,'purshases_order_permission','view')
   handle_fn_options()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -224,6 +221,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 async function createSlalesInvoice(){
   try {
+
+    const permission = await btn_permission('purshases_invoice_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
     await showDialog('', `سيتم تحويلك الى صفحة انشاء فواتير المبيعات , هل تريد المتابعه؟`, '');        
     if (!dialogAnswer) {
       return false;
@@ -246,8 +249,8 @@ async function createSlalesInvoice(){
 
 function handle_fn_options(){
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'purshases_order_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'purshases_order_permission','view')" style="display: none;">وضع العرض</div>
     <div id="" onclick="createSlalesInvoice()">انشاء فاتورة مشتريات</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);

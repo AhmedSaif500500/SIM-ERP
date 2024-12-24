@@ -1,5 +1,5 @@
-setActiveSidebar('bread_view_ar');
-pagePermission("add","transaction_permission"); // معلق
+setActiveSidebar('purshasesMain_view_ar');
+pagePermission("add","purshases_order_permission"); // معلق
 
 
 const date1 = document.querySelector('#date1');
@@ -117,7 +117,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/purshases_order_add",
         posted_Obj,
-        'pass', 'pass', // معلق
+        'purshases_order_permission', 'add', // معلق
         15,
         true,"هل تريد حفظ بيانات امر الشراء ؟",
         true,
@@ -128,7 +128,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray') // معلق
+      sessionStorage.removeItem('purshases_order_ViewArray') // معلق
     }
     
     }else{
@@ -136,7 +136,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     const post = await new_fetchData_postAndGet(
       "/api/purshases_order_add",
       posted_Obj,
-      'pass', 'pass', // معلق
+      'purshases_order_permission', 'add', // معلق
       15,
       true,"هل تريد حفظ بيانات امر الشراء ؟",
       true,
@@ -147,7 +147,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
     )
 
     if (post){
-      sessionStorage.removeItem('transactionViewArray') // معلق
+      sessionStorage.removeItem('purshases_order_ViewArray') // معلق
     }
     
   }
@@ -163,7 +163,7 @@ async function get_Data_for_add_page_fn() {
   data_accounts = await new_fetchData_postAndGet(
     "/get_data_for_purshases_order_add", // معلق
     {},
-    'purshases_permission', 'view', // معلق
+    'purshases_order_permission', 'add', // معلق
     15,
     false,false,
     true,

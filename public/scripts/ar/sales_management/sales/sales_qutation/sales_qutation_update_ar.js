@@ -1,5 +1,5 @@
-// setActiveSidebar('bread_view_ar'); //معلق
-// pagePermission("add","transaction_permission"); //معلق
+setActiveSidebar('salesMain_view_ar');
+pagePermission("add","sales_qutation_permission"); 
 
 
 const sales_qutation_update_data = JSON.parse(sessionStorage.getItem('sales_qutation_update_data'));
@@ -9,10 +9,6 @@ if (!sales_qutation_update_data){
     redirection("sales_qutation_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
 }
 
-const obj_sales_qutation_update = {pageName : 'sales_qutation_update_ar'}
-
-const encodedData = encodeURIComponent(JSON.stringify(obj_sales_qutation_update));
-back_href.href = `sales_qutation_view_ar?data=${encodedData}`
 
 
 const date1 = document.querySelector('#date1');
@@ -31,7 +27,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
 
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('sales_qutation_permission', 'update') // معلق
       if (!permission){
         showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
         return
@@ -136,7 +132,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       const post = await new_fetchData_postAndGet(
         "/api/sales_qutation_update",
         posted_Obj,
-        'pass', 'pass',
+        'sales_qutation_permission', 'update',
         15,
         true,"هل تريد تحديث بيانات عرض سعر البيع ؟",
         true,
@@ -147,7 +143,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       )
 
     if (post){
-      sessionStorage.removeItem('sales_qutation_Array')
+      sessionStorage.removeItem('sales_qutation_ViewArray')
     }
     
 
@@ -163,7 +159,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
 
 document.querySelector(`#btn_delete`).onclick = async function () {
   try {
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('sales_qutation_permission', 'delete') // معلق
     if (!permission){
       showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
       return
@@ -174,7 +170,7 @@ const x = headerDataArray.id
 const post = await new_fetchData_postAndGet(
   "/api/sales_qutation_delete",
   {x},
-  'pass', 'pass',
+  'sales_qutation_permission', 'delete',
   15,
   true,"هل تريد حذف بيانات عرض سعر البيع ؟",
   true,
@@ -185,7 +181,7 @@ const post = await new_fetchData_postAndGet(
 )
 
 if (post){
-sessionStorage.removeItem('sales_qutation_Array')
+sessionStorage.removeItem('sales_qutation_ViewArray')
 }
 
 
@@ -232,7 +228,7 @@ async function get_Data_for_update_page_fn(x) {
   data_accounts = await new_fetchData_postAndGet(
     "/get_data_for_sales_qutation_update",
     {x},
-    'sales_permission', 'view',
+    'sales_qutation_permission', 'update',
     15,
     false,false,
     true,
@@ -251,7 +247,8 @@ return data_accounts
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
-    const x = sales_qutation_update_data.x
+  
+  x = sales_qutation_update_data.x
   Data =  await get_Data_for_update_page_fn(x)
 
   itemslocationsArray =  Data.itemslocationsArray
@@ -279,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   create_drop_down_with_External_DataArray(`dropdown_div2`,itemslocationsArray); selectedRow_dropdownDiv(`dropdown_div2`,itemslocationsArray,headerDataArray.items_location_id);
 
   showHeaderData()
-  viewMode(true,'pass','pass')
+  viewMode(true,'sales_qutation_permission','view')
   handle_fn_options()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -440,8 +437,8 @@ function handleCurrentTr(row,tr){
 
 function handle_fn_options(){
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'sales_qutation_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'sales_qutation_permission','view')" style="display: none;">وضع العرض</div>
     <div onclick="createSlalesOrder()">انشاء امر بيع</div>
     <div onclick="createSlalesInvoice()">انشاء فاتوره مبيعات</div>
     <div onclick="rejectَQutation()">رفض</div>
@@ -453,6 +450,13 @@ function handle_fn_options(){
 
 async function createSlalesOrder(){
   try {
+
+    const permission = await btn_permission('sales_order_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
+
     await showDialog('', `سيتم تحويلك الى صفحة انشاء امر بيع , هل تريد المتابعه؟`, '');        
     if (!dialogAnswer) {
       return false;
@@ -471,6 +475,12 @@ async function createSlalesOrder(){
 
 async function createSlalesInvoice(){
   try {
+
+    const permission = await btn_permission('sales_invoice_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
 
     await showDialog('', `سيتم تحويلك الى صفحة انشاء فواتير المبيعات , هل تريد المتابعه؟`, '');        
     if (!dialogAnswer) {
@@ -494,6 +504,11 @@ async function rejectَQutation(){
 try {
   
 
+  const permission = await btn_permission('sales_qutation_permission', 'update') // معلق
+  if (!permission){
+    showAlert('warning','عفواً لا تملك الصلاحيه')
+    return
+  }
     // معلق  -- هنا هنحتاج نعنمل صلاحسات الرفض ونعمل هييستورى
   const x = headerDataArray.id;
   const datex = date1.value;
@@ -502,7 +517,7 @@ try {
   const post = await new_fetchData_postAndGet(
     "/api/sales_qutation_reject",
     {x,datex},
-    'sales_permission', 'view',   // معلق
+    'sales_qutation_permission', 'update',   // معلق
     15,
     true,"هل تريد رفض عرض السعر الحالى ؟",
     true,

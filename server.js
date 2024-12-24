@@ -1462,7 +1462,8 @@ const query_permissions =
     uc.sales_invoice_permission,
     uc.purshases_qutation_permission,
     uc.purshases_order_permission,
-    uc.purshases_invoice_permission
+    uc.purshases_invoice_permission,
+    uc.services_permission
 FROM user_company uc 
     left join companies c on uc.company_id = c.id
 WHERE
@@ -1500,6 +1501,7 @@ if (data) {
   req.session.purshases_qutation_permission = data.purshases_qutation_permission
   req.session.purshases_order_permission = data.purshases_order_permission
   req.session.purshases_invoice_permission = data.purshases_invoice_permission
+  req.session.services_permission = data.services_permission
 
 
   res.json(data);
@@ -2982,7 +2984,8 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
                         sales_invoice_permission = $18,
                         purshases_qutation_permission = $19,
                         purshases_order_permission = $20,
-                        purshases_invoice_permission = $21
+                        purshases_invoice_permission = $21,
+                        services_permission = $22
                       WHERE user_id = $1
                         AND company_id = $2`;
 
@@ -3008,7 +3011,8 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_sales_invoice,
           posted_elements.table_permission_purshases_qutation,
           posted_elements.table_permission_purshases_order,
-          posted_elements.table_permission_purshases_invoice
+          posted_elements.table_permission_purshases_invoice,
+          posted_elements.table_permission_services
         ]);
 
         return res.json({
@@ -5964,7 +5968,7 @@ app.post("/api/addGroup-account", async (req, res) => {
         (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
         (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
         (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_name,
-        (SELECT COUNT(main_account_id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
+        (SELECT main_account_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
     `;
     
     result = await db.oneOrNone(query, [
@@ -5973,7 +5977,6 @@ app.post("/api/addGroup-account", async (req, res) => {
       posted_elements.accountname,
     ]);
     
-
     if (result.is_final_account) {
       return res.json({
         success: false,
@@ -6085,7 +6088,7 @@ app.post("/api/add-account", async (req, res) => {
         (SELECT is_final_account FROM accounts_header WHERE company_id = $1 AND id = $2) AS is_final_account,
         (SELECT global_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS global_id,
         (SELECT COUNT(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3) AS count_account_name,
-        (SELECT COUNT(main_account_id) FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
+        (SELECT main_account_id FROM accounts_header WHERE company_id = $1 AND id = $2) AS main_account_id
     `;
 
     result = await db.oneOrNone(query, [
@@ -7120,6 +7123,14 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       }
   
       //* Start--------------------------------------------------------------
+
+      if (!posted_elements.accountname || !posted_elements.accountParent || isNaN(+posted_elements.accountParent)) {
+        return res.json({
+          success: false,
+          message_ar: "برجاء ادخال البيانات بشكل صحيح",
+        })
+      }
+
       let result = [];
       const query = `
         SELECT
@@ -7204,12 +7215,13 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
   //#endregion
 
 //#region add new item
-app.post("/api/add-item", async (req, res) => {
+app.post("/api/add_item", async (req, res) => {
   
 
   try {
     const posted_elements = req.body;
 
+    
     const hasPermission = await permissions(req, "items_permission", "add");
     if (!hasPermission) {
       return res.json({
@@ -7219,27 +7231,32 @@ app.post("/api/add-item", async (req, res) => {
       });
     }
 
-    // التحقق من حقن SQL
-    const hasBadSymbols = sql_anti_injection([
-      posted_elements.account_no,
-      posted_elements.account_name,
-      posted_elements.item_unite_input,
-      posted_elements.account_parent_name_id,
-      posted_elements.revenue_account_select_value,
-      posted_elements.sales_price,
-      posted_elements.purchase_price,
-      posted_elements.reorder_point
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
-    if (hasBadSymbols) {
-      return res.json({
-        success: false,
-        message_ar: sql_injection_message_ar,
-        message_en: sql_injection_message_en,
-      });
-    }
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+
+          turn_EmptyValues_TO_null(posted_elements);
 
     //#region validation
+
+          if(!posted_elements.account_name || !posted_elements.account_parent_name_id || isNaN(+posted_elements.account_parent_name_id)){
+            return res.json({
+              success: false,
+              message_ar: "رجاء تأكد من ادخال البيانات فى الحقول المطوبه بشكل صحيح",
+            });
+          }
+
+
     let result = [];
     const query = `
       SELECT
@@ -7322,10 +7339,10 @@ app.post("/api/add-item", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم إضافة الحساب بنجاح",
+      message_ar: "تم إضافة الصنف بنجاح",
     });
   } catch (error) {
-    console.error("Error adding account:", error);
+    console.error("Error add_item:", error);
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false, // العملية فشلت
@@ -7368,6 +7385,9 @@ app.post("/api/update-group_items", async (req, res) => {
           message_en: sql_injection_message_en,
         });
       }
+
+      turn_EmptyValues_TO_null(posted_elements);
+
 
 
     let result = [];
@@ -7486,6 +7506,7 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
     }
 
   
+    turn_EmptyValues_TO_null(posted_elements);
 
 
 
@@ -7578,7 +7599,6 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
   }
 });
 //#endregion
-
 //#endregion end tree
 app.post("/get_All_items_Data_for_table", async (req, res) => {
   try {
@@ -7592,31 +7612,129 @@ app.post("/get_All_items_Data_for_table", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = `SELECT h1.id AS account_id,
-    h1.account_name AS account_name,
-    h1.item_unite as item_unite,
-    h2.account_name AS parent_name,
-    h2.id AS parent_id,
-    h1.is_final_account AS is_final_account,
-    h1.account_no AS account_no,
-    h1.item_revenue_account AS item_revenue_account,
-    h1.item_expense_account AS item_expense_account,
-    h1.item_sales_price AS item_sales_price,
-    h1.item_purshas_price AS item_purshas_price,
-    h1.item_amount_reorder_point AS item_amount_reorder_point
-FROM accounts_header h1
-LEFT JOIN accounts_body b ON h1.id = b.account_id
-LEFT JOIN accounts_header h2 ON b.parent_id = h2.id
-WHERE h1.company_id = $1
-  AND h1.account_type_id = 5
-  AND h1.is_final_account = true
-ORDER BY h1.id asc;;
+    let query1 = ` 
+SELECT
+    ah.id,
+    ah.account_no,
+    ah.account_name,
+    ah.item_unite,
+    ab.parent_id,
+    parent_ah.account_name AS parent_account_name,
+    SUM(
+        CASE 
+            WHEN tb.debit > 0 THEN tb.item_amount 
+            ELSE tb.item_amount * -1 
+        END
+    ) AS current_amount,
+    SUM(
+        CASE 
+            WHEN tb.debit > 0 THEN tb.debit ELSE 0 
+        END) 
+        - SUM(
+            CASE 
+                WHEN tb.credit > 0 THEN tb.cogs ELSE 0 
+            END
+        ) AS value
+FROM
+    accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id
+    LEFT JOIN transaction_body tb ON tb.item_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE
+    ah.company_id = $1
+    and ah.is_final_account = true
+    and ah.account_type_id = 5
+    and th.company_id = $1
+    and th.is_including_items is TRUE
+    and th.is_deleted is NULL
+    and th.datex <= $2
+    and tb.item_id is not NULL
+GROUP BY
+    ah.id, ab.parent_id, parent_ah.account_name;
+
 `;
-    let data = await db.any(query1, [req.session.company_id]);
+    let data = await db.any(query1, [req.session.company_id, today]);
     res.json(data);
   } catch (error) {
     console.error("Error get_All_bread_Data:", error);
     res.status(500).send("Error:");
+  }
+});
+
+
+app.post("/getItemsGroupDataForItemsTableView", async (req, res) => {
+  try {
+    // //! Permission
+    await permissions(req, "items_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+    select
+	ah.id,
+	ah.account_name 
+from
+	accounts_header ah
+where
+	ah.company_id = $1
+	and ah.is_final_account is not true
+	and ah.account_type_id = 5
+	and ah.is_inactive is not TRUE
+    `;
+    
+    let data = await db.any(query1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error while get accounts Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get accounts Data" });
+  }
+});
+
+
+app.post("/getRevenueAccountsDataForItemsTableView", async (req, res) => {
+  try {
+    // //! Permission
+    await permissions(req, "items_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+    select
+	ah.id,
+	ah.account_name,
+  ah.global_id
+from
+	accounts_header ah
+where
+	ah.company_id = $1
+	and ah.is_final_account is true
+	and ah.account_type_id = 1
+	and ah.main_account_id = 4
+	and ah.is_inactive is not TRUE
+    `;
+    
+    let data = await db.any(query1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error while get accounts Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get accounts Data" });
   }
 });
 
@@ -7664,6 +7782,9 @@ app.post("/api/update-item", async (req, res) => {
         });
       }
    
+
+      
+      turn_EmptyValues_TO_null(posted_elements);
 
 
     let result = [];
@@ -7736,8 +7857,6 @@ app.post("/api/update-item", async (req, res) => {
       ]
 
 
-   
-
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       await tx.none(query1, query1_parameters);
@@ -7789,6 +7908,8 @@ app.post("/api/delete-item", async (req, res) => {
         message_en: sql_injection_message_en,
       });
     }
+
+    turn_EmptyValues_TO_null(posted_elements);
 
     //* Start--------------------------------------------------------------
 
@@ -8590,7 +8711,7 @@ WHERE
 app.post("/get_Data_for_sales_qutation_add_page", async (req, res) => {
   try {
     //! Permission
-    await permissions(req, "sales_permission", "add");
+    await permissions(req, "sales_qutation_permission", "add");
     if (!permissions) {
       return;
     }
@@ -8719,11 +8840,11 @@ await db.tx(async (tx) => {
 
 app.post("/get_data_for_sales_qutation_update", async (req, res) => {
   try {
-    // //! Permission معلق
-    // await permissions(req, "sales_permission", "add");
-    // if (!permissions) {
-    //   return;
-    // }
+    //! Permission معلق
+    await permissions(req, "sales_qutation_permission", "update");
+    if (!permissions) {
+      return;
+    }
 
     const posted_elements = req.body;
     const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
@@ -10020,13 +10141,13 @@ ORDER BY
 //#region 1: sales_qutation_view
 app.post("/get_sales_qutation_Data_view", async (req, res) => {
   try {
-    /*
+    
     //! Permission  معلق
-    await permissions(req, "sales_permission", "view");
+    await permissions(req, "sales_qutation_permission", "view");
     if (!permissions) {
       return;
     }
-      */
+      
 
     const posted_elements = req.body;
 
@@ -10106,7 +10227,7 @@ ORDER BY
 
 app.post("/getItemssData1", async (req, res) => {
   try {
-    // //! Permission
+    // //! Permission معلق
     // await permissions(req, "effects_permission", "view");
     // if (!permissions) {
     //   return;
@@ -10131,11 +10252,7 @@ app.post("/getItemssData1", async (req, res) => {
     
     let data = await db.any(query1, [req.session.company_id]);
 
-    // const data = rows.map((row) => ({
-    //   id: row.id,
-    //   account_name: row.account_name,
-    //   account_type: row.account_type_id
-    // }));
+
     res.json(data);
   } catch (error) {
     console.error("Error while get accounts Data", error);
@@ -10153,14 +10270,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/sales_qutation_add", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission
+        await permissions(req, "sales_qutation_permission", "add");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -10719,14 +10836,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/sales_qutation_reject", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        // //! Permission
+        await permissions(req, "sales_qutation_permission", "update");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -10864,14 +10981,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/sales_qutation_delete", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission 
+        await permissions(req, "sales_qutation_permission", "delete");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -11008,13 +11125,12 @@ app.post("/getItemssData1", async (req, res) => {
     //#region sales order view
     app.post("/get_sales_order_Data_view", async (req, res) => {
       try {
-        /*
         //! Permission  معلق
-        await permissions(req, "sales_permission", "view");
+        await permissions(req, "sales_order_permission", "view");
         if (!permissions) {
           return;
         }
-          */
+          
     
         const posted_elements = req.body;
     
@@ -11104,14 +11220,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/sales_order_add", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        // //! Permission
+        await permissions(req, "sales_order_permission", "add");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -11415,14 +11531,14 @@ app.post("/getItemssData1", async (req, res) => {
         app.post("/api/sales_order_update", async (req, res) => {
           try {
         
-            // //! Permission معلق
-            // await permissions(req, "transaction_permission", "add");
-            // if (!permissions) {
-            //   return res.status(403).json({
-            //     success: false,
-            //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-            //   });
-            // }
+            //! Permission معلق
+            await permissions(req, "sales_order_permission", "update");
+            if (!permissions) {
+              return res.status(403).json({
+                success: false,
+                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+              });
+            }
     
     
     
@@ -11745,14 +11861,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/sales_order_delete", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission معلق
+        await permissions(req, "sales_order_permission", "delete");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -11910,13 +12026,13 @@ app.post("/getItemssData1", async (req, res) => {
         //#region sales invoice view
         app.post("/get_sales_invoice_Data_view", async (req, res) => {
           try {
-            /*
-            //! Permission  معلق
-            await permissions(req, "sales_permission", "view");
+            
+            //! Permission  
+            await permissions(req, "sales_invoice_permission", "view");
             if (!permissions) {
               return;
             }
-              */
+              
         
             const posted_elements = req.body;
         
@@ -12010,10 +12126,10 @@ app.post("/getItemssData1", async (req, res) => {
   app.post("/get_data_for_sales_invoice_add", async (req, res) => {
     try {
       // //! Permission
-      // await permissions(req, "sales_permission", "add");
-      // if (!permissions) {
-      //   return;
-      // }
+      await permissions(req, "sales_invoice_add", "add");
+      if (!permissions) {
+        return;
+      }
   
       //* Start--------------------------------------------------------------
       // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
@@ -12177,14 +12293,14 @@ where
   app.post("/api/sales_invoice_add", async (req, res) => {
     try {
   
-      // //! Permission معلق
-      // await permissions(req, "transaction_permission", "add");
-      // if (!permissions) {
-      //   return res.status(403).json({
-      //     success: false,
-      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-      //   });
-      // }
+      //! Permission معلق
+      await permissions(req, "sales_invoice_permission", "add");
+      if (!permissions) {
+        return res.status(403).json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+        });
+      }
 
 
 
@@ -12664,11 +12780,11 @@ where
   //#region get data for invoice_update_page
   app.post("/get_data_for_sales_invoice_update", async (req, res) => {
     try {
-      // //! Permission معلق
-      // await permissions(req, "sales_permission", "add");
-      // if (!permissions) {
-      //   return;
-      // }
+      //! Permission معلق
+      await permissions(req, "sales_invoice_permission", "update");
+      if (!permissions) {
+        return;
+      }
   
       
       const posted_elements = req.body;
@@ -12688,7 +12804,7 @@ where
   
       const transaction_type = 3
 
-  
+      
   
       let query1 = `
        -- مواقع المخزون
@@ -12866,9 +12982,9 @@ where
     and bih.is_deleted is NULL
     and (bih.is_qutation_status IS NOT FALSE or bih.id = $2);
      ` 
-     qutation_id = isNaN(+posted_elements.qutation_id) ? null : posted_elements.qutation_id
+     qutationId = isNaN(+posted_elements.qutationId) ? null : posted_elements.qutationId
 
-     let params9 = [req.session.company_id, qutation_id]
+     let params9 = [req.session.company_id, qutationId]
   
      let query10 = `
      select 
@@ -12886,9 +13002,9 @@ where
        and (bih.is_invoiced IS NULL or bih.id = $2);
         ` 
         
-        order_id = isNaN(+posted_elements.order_id) ? null : posted_elements.order_id
         
-        let params10 = [req.session.company_id, order_id]
+        orderId = isNaN(+posted_elements.orderId) ? null : posted_elements.orderId
+        let params10 = [req.session.company_id, orderId]
   
   
   await db.tx(async (tx) => {
@@ -12923,11 +13039,11 @@ where
 
   app.post("/get_data_for_qutationToInvoice", async (req, res) => {
     try {
-      // //! Permission معلق
-      // await permissions(req, "sales_permission", "add");
-      // if (!permissions) {
-      //   return;
-      // }
+      //! Permission معلق
+      await permissions(req, "sales_invoice_permission", "add");
+      if (!permissions) {
+        return;
+      }
   
       
       const posted_elements = req.body;
@@ -13178,11 +13294,11 @@ where
 
   app.post("/get_data_for_orderToInvoice", async (req, res) => {
     try {
-      // //! Permission معلق
-      // await permissions(req, "sales_permission", "add");
-      // if (!permissions) {
-      //   return;
-      // }
+      //! Permission معلق
+      await permissions(req, "sales_invoice_permission", "add");
+      if (!permissions) {
+        return;
+      }
   
       
       const posted_elements = req.body;
@@ -13331,9 +13447,7 @@ where
   and bih.transaction_type = $3
   AND bih.is_deleted IS NULL
   `
-  console.log(posted_elements.x);
-  console.log(req.session.company_id);
-  console.log(transaction_type);
+
   
   let params7 = [posted_elements.x, req.session.company_id, transaction_type];
   
@@ -13439,13 +13553,13 @@ where
     try {
   
       // //! Permission معلق
-      // await permissions(req, "transaction_permission", "add");
-      // if (!permissions) {
-      //   return res.status(403).json({
-      //     success: false,
-      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-      //   });
-      // }
+      await permissions(req, "sales_invoice_permission", "update");
+      if (!permissions) {
+        return res.status(403).json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+        });
+      }
 
 
 
@@ -13971,14 +14085,14 @@ where
   app.post("/api/sales_invoice_delete", async (req, res) => {
     try {
   
-      // //! Permission معلق
-      // await permissions(req, "transaction_permission", "add");
-      // if (!permissions) {
-      //   return res.status(403).json({
-      //     success: false,
-      //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-      //   });
-      // }
+      //! Permission معلق
+      await permissions(req, "sales_invoice_permission", "delete");
+      if (!permissions) {
+        return res.status(403).json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+        });
+      }
 
 
 
@@ -14170,13 +14284,13 @@ where
 //#region 1: sales_qutation_view
 app.post("/get_purshases_qutation_Data_view", async (req, res) => {
   try {
-    /*
-    //! Permission  معلق
-    await permissions(req, "sales_permission", "view");
+    
+    //! Permission
+    await permissions(req, "purshases_qutation_permission", "view");
     if (!permissions) {
       return;
     }
-      */
+      
 
     const posted_elements = req.body;
 
@@ -14255,7 +14369,7 @@ ORDER BY
 app.post("/get_Data_for_purshases_qutation_add_page", async (req, res) => {
   try {
     //! Permission
-    await permissions(req, "sales_permission", "add"); // معلق
+    await permissions(req, "purshases_qutation_ViewArray", "add"); // معلق
     if (!permissions) {
       return;
     }
@@ -14381,7 +14495,7 @@ await db.tx(async (tx) => {
       .json({ success: false, message_ar: "Error while get_Data_for_purshases_qutation_add_page" });
   }
 });
-
+/*
 app.post("/getItemssData1", async (req, res) => {
   try {
     // //! Permission
@@ -14423,7 +14537,7 @@ app.post("/getItemssData1", async (req, res) => {
       .json({ success: false, message_ar: "Error while get accounts Data" });
   }
 });
-
+*/
 //#endregion
 
 
@@ -14431,14 +14545,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/purshases_qutation_add", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission معلق
+        await permissions(req, "purshases_qutation_permission", "add");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -14711,11 +14825,11 @@ app.post("/getItemssData1", async (req, res) => {
     //#region get_data_for_purshases_qutation_update
     app.post("/get_data_for_purshases_qutation_update", async (req, res) => {
       try {
-        // //! Permission معلق
-        // await permissions(req, "sales_permission", "add");
-        // if (!permissions) {
-        //   return;
-        // }
+        //! Permission معلق
+        await permissions(req, "purshases_qutation_permission", "update");
+        if (!permissions) {
+          return;
+        }
     
         const posted_elements = req.body;
         const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
@@ -14913,14 +15027,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/purshases_qutation_update", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission
+        await permissions(req, "purshases_qutation_update", "update");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -15199,14 +15313,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/purshases_qutation_reject", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission
+        await permissions(req, "purshases_qutation_permission", "update");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -15344,14 +15458,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/purshases_qutation_delete", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission معلق
+        await permissions(req, "purshases_qutation_permission", "delete");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -15488,13 +15602,13 @@ app.post("/getItemssData1", async (req, res) => {
     //#region purshases order view
     app.post("/get_purshases_order_Data_view", async (req, res) => {
       try {
-        /*
-        //! Permission  معلق
-        await permissions(req, "sales_permission", "view");
+        
+        //! Permission 
+        await permissions(req, "purshases_order_permission", "view");
         if (!permissions) {
           return;
         }
-          */
+          
     
         const posted_elements = req.body;
     
@@ -15581,14 +15695,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/purshases_order_add", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission
+        await permissions(req, "purshases_order_permission", "add");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -15889,7 +16003,7 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/get_data_for_purshases_order_add", async (req, res) => {
       try {
         //! Permission
-        await permissions(req, "sales_permission", "add"); // معلق
+        await permissions(req, "purshases_order_permission", "add"); // معلق
         if (!permissions) {
           return;
         }
@@ -16038,14 +16152,14 @@ app.post("/getItemssData1", async (req, res) => {
         app.post("/api/purshases_order_update", async (req, res) => {
           try {
         
-            // //! Permission معلق
-            // await permissions(req, "transaction_permission", "add");
-            // if (!permissions) {
-            //   return res.status(403).json({
-            //     success: false,
-            //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-            //   });
-            // }
+            //! Permission معلق
+            await permissions(req, "purshases_order_permission", "update");
+            if (!permissions) {
+              return res.status(403).json({
+                success: false,
+                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+              });
+            }
     
     
     
@@ -16364,11 +16478,11 @@ app.post("/getItemssData1", async (req, res) => {
     //#region get_data_for_purshases_order_update
     app.post("/get_data_for_purshases_order_update", async (req, res) => {
       try {
-        // //! Permission معلق
-        // await permissions(req, "sales_permission", "add");
-        // if (!permissions) {
-        //   return;
-        // }
+        //! Permission
+        await permissions(req, "purshases_order_permission", "update");
+        if (!permissions) {
+          return;
+        }
     
         
         const posted_elements = req.body;
@@ -16594,14 +16708,14 @@ app.post("/getItemssData1", async (req, res) => {
     app.post("/api/purshases_order_delete", async (req, res) => {
       try {
     
-        // //! Permission معلق
-        // await permissions(req, "transaction_permission", "add");
-        // if (!permissions) {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-        //   });
-        // }
+        //! Permission معلق
+        await permissions(req, "purshases_order_permission", "delete");
+        if (!permissions) {
+          return res.status(403).json({
+            success: false,
+            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          });
+        }
 
 
 
@@ -16761,13 +16875,11 @@ app.post("/getItemssData1", async (req, res) => {
         //#region purshases invoice view
         app.post("/get_purshases_invoice_Data_view", async (req, res) => {
           try {
-            /*
-            //! Permission  معلق
-            await permissions(req, "sales_permission", "view");
+            //! Permission
+            await permissions(req, "purshases_invoice_permission", "view");
             if (!permissions) {
               return;
             }
-              */
         
             const posted_elements = req.body;
         
@@ -16856,11 +16968,11 @@ app.post("/getItemssData1", async (req, res) => {
 
         app.post("/get_data_for_purshasesQutationToInvoice", async (req, res) => {
           try {
-            // //! Permission معلق
-            // await permissions(req, "sales_permission", "add");
-            // if (!permissions) {
-            //   return;
-            // }
+            //! Permission
+            await permissions(req, "purshases_invoice_permission", "add");
+            if (!permissions) {
+              return;
+            }
         
             
             const posted_elements = req.body;
@@ -17109,11 +17221,11 @@ app.post("/getItemssData1", async (req, res) => {
 
         app.post("/get_data_for_purshasesOrderToInvoice", async (req, res) => {
           try {
-            // //! Permission معلق
-            // await permissions(req, "sales_permission", "add");
-            // if (!permissions) {
-            //   return;
-            // }
+            //! Permission
+            await permissions(req, "purshases_invoice_permission", "add");
+            if (!permissions) {
+              return;
+            }
         
             
             const posted_elements = req.body;
@@ -17362,11 +17474,11 @@ app.post("/getItemssData1", async (req, res) => {
 
         app.post("/get_data_for_sales_purshasesInvoice_update", async (req, res) => {
           try {
-            // //! Permission معلق
-            // await permissions(req, "sales_permission", "add");
-            // if (!permissions) {
-            //   return;
-            // }
+            //! Permission
+            await permissions(req, "purshases_invoice_permission", "update");
+            if (!permissions) {
+              return;
+            }
         
             
             const posted_elements = req.body;
@@ -17621,14 +17733,14 @@ app.post("/getItemssData1", async (req, res) => {
         app.post("/api/purshases_invoice_add", async (req, res) => {
           try {
         
-            // //! Permission معلق
-            // await permissions(req, "transaction_permission", "add");
-            // if (!permissions) {
-            //   return res.status(403).json({
-            //     success: false,
-            //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-            //   });
-            // }
+            //! Permission
+            await permissions(req, "purshases_invoice_add", "add");
+            if (!permissions) {
+              return res.status(403).json({
+                success: false,
+                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+              });
+            }
       
       
       
@@ -18098,11 +18210,11 @@ app.post("/getItemssData1", async (req, res) => {
 
         app.post("/get_data_for_purshases_invoice_add", async (req, res) => {
           try {
-            // //! Permission
-            // await permissions(req, "sales_permission", "add");
-            // if (!permissions) {
-            //   return;
-            // }
+            //! Permission
+            await permissions(req, "sales_invoice_permission", "add");
+            if (!permissions) {
+              return;
+            }
         
             //* Start--------------------------------------------------------------
             // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
@@ -18264,14 +18376,14 @@ app.post("/getItemssData1", async (req, res) => {
         app.post("/api/purshases_invoice_update", async (req, res) => {
           try {
         
-            // //! Permission معلق
-            // await permissions(req, "transaction_permission", "add");
-            // if (!permissions) {
-            //   return res.status(403).json({
-            //     success: false,
-            //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
-            //   });
-            // }
+            //! Permission معلق
+            await permissions(req, "purshases_invoice_permission", "update");
+            if (!permissions) {
+              return res.status(403).json({
+                success: false,
+                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+              });
+            }
         
             const posted_elements = req.body;
             const transaction_type = 6
@@ -18975,6 +19087,668 @@ app.post("/getItemssData1", async (req, res) => {
 
 //#endregion
 
+//#region services
+
+app.post("/services_view_ar", async (req, res) => {
+  try {
+    // //! Permission
+    await permissions(req, "services_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+   select
+	ah.id,
+	ah.account_name,
+	ah.account_no,
+	CASE 
+    	WHEN
+      		ah.is_inactive = true THEN 'غير نشط'
+    	ELSE
+     		'نشط'
+  	END as is_inactive
+from
+	accounts_header ah
+where 
+	ah.company_id = $1
+	and ah.is_final_account is true
+	and ah.account_type_id = 8
+    `;
+    
+    let data = await db.any(query1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error while get accounts Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get accounts Data" });
+  }
+});
+
+app.post("/get_data_for_services_add", async (req, res) => {
+  try {
+    // //! Permission
+    await permissions(req, "services_permission", "add");
+    if (!permissions) {
+      return;
+    }
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+     -- الايرادات
+select
+	ah.id,
+	ah.account_name,
+	ah.global_id
+from
+	accounts_header ah
+where 
+	ah.company_id = $1
+	and ah.is_final_account is true
+	and ah.account_type_id = 1
+	and ah.is_inactive is null
+	and ah.main_account_id = 4
+  ;
+`;
+let params1 = [req.session.company_id]
+
+let query2 = `
+-- المصروفات
+select
+ah.id,
+ah.account_name,
+ah.global_id
+from
+accounts_header ah
+where 
+ah.company_id = $1
+and ah.is_final_account is true
+and ah.account_type_id = 1
+and ah.is_inactive is null
+and ah.main_account_id = 5
+;
+`;
+let params2 = [req.session.company_id]
+
+await db.tx(async (tx) => {
+
+  const revenueAccountsArray = await tx.any(query1, params1);
+  const expensesAccountsArray = await tx.any(query2, params2);
+
+
+  const postedData = { revenueAccountsArray, expensesAccountsArray};
+  res.json(postedData);
+})
+
+
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while get Employees Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get Employees Data" });
+  }
+});
+
+//500500
+app.post("/get_data_for_services_update", async (req, res) => {
+  try {
+    // //! Permission
+    await permissions(req, "services_permission", "add");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+  
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+     -- الايرادات
+select
+	ah.id,
+	ah.account_name,
+	ah.global_id
+from
+	accounts_header ah
+where 
+	ah.company_id = $1
+	and ah.is_final_account is true
+	and ah.account_type_id = 1
+	and ah.is_inactive is null
+	and ah.main_account_id = 4
+  ;
+`;
+let params1 = [req.session.company_id]
+
+let query2 = `
+-- المصروفات
+select
+ah.id,
+ah.account_name,
+ah.global_id
+from
+accounts_header ah
+where 
+ah.company_id = $1
+and ah.is_final_account is true
+and ah.account_type_id = 1
+and ah.is_inactive is null
+and ah.main_account_id = 5
+;
+`;
+let params2 = [req.session.company_id]
+
+
+let query3 = `
+select 
+	ah.id,
+	ah.account_name,
+	ah.account_no,
+	ah.is_inactive,
+	ah.item_unite,
+	ah.item_revenue_account,
+	ah.item_expense_account,
+	ah.item_sales_price,
+	ah.item_purshas_price
+from
+	accounts_header ah
+where 
+	ah.id = $1
+	and ah.company_id = $2
+	and ah.is_final_account is true
+	and ah.account_type_id = 8
+	and ah.is_inactive is null
+  ;
+`
+let params3 = [posted_elements.x, req.session.company_id]
+
+
+
+
+await db.tx(async (tx) => {
+
+  const revenueAccountsArray = await tx.any(query1, params1);
+  const expensesAccountsArray = await tx.any(query2, params2);
+  const serviceDataArray = await tx.oneOrNone(query3, params3);
+
+
+  const postedData = { revenueAccountsArray, expensesAccountsArray, serviceDataArray};
+  res.json(postedData);
+})
+
+
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while get Employees Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get Employees Data" });
+  }
+});
+
+app.post("/services_add", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "services_permission", "add");
+      if (!permissions) {
+        return;
+      }  
+
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.employee_start_date_value, posted_elements.employee_leave_date_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.account_name ||
+        !posted_elements.unite_name ||
+        !posted_elements.revenueAccount ||
+        isNaN(+posted_elements.revenueAccount) ||
+        !posted_elements.expenseAccount ||
+        isNaN(+posted_elements.expenseAccount) ||
+        (posted_elements.sales_price && isNaN(+posted_elements.sales_price)) ||   
+        (posted_elements.purshase_price && isNaN(+posted_elements.purshase_price))   
+      ){
+          return res.json({
+        success: false,
+        message_ar:
+          'برجاء ادخال البيانات المطلوبه بشكل صحيح',
+      });
+    }          
+    
+    //* Start--------------------------------------------------------------
+
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_account_name,
+               (select count(id) FROM accounts_header WHERE id = $3 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 4 AND is_inactive IS NULL) as count_revenue_account,
+               (select count(id) FROM accounts_header WHERE id = $4 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 5 AND is_inactive IS NULL) as count_expenses_account
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.account_name.trim(),
+      posted_elements.revenueAccount,
+      posted_elements.expenseAccount
+    ]);
+
+  
+    if (result.count_account_name > 0){
+      return res.json({
+        success: false,
+        message_ar: 'اسم الخدمه موجود من قبل',
+      });
+    }
+
+
+    if (+result.count_revenue_account === 0 || +result.count_expenses_account === 0){
+      await block_user(req,'Ssadd1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    //3: insert data into db
+    
+    
+    let active_value;
+    if(posted_elements.inactive_select_value == 0){
+      active_value = null
+    }else if (posted_elements.inactive_select_value == 1) {
+      active_value = true
+    }
+
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
+
+
+    let query1 = `
+  INSERT INTO accounts_header (id, account_name, account_no, item_unite, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, is_inactive, is_final_account, finance_statement, company_id, account_type_id)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+`;
+
+  let params1 =[
+    newId_header,
+    posted_elements.account_name,
+    posted_elements.accountNo,
+    posted_elements.unite_name,
+    posted_elements.revenueAccount,
+    posted_elements.expenseAccount,
+    posted_elements.sales_price,
+    posted_elements.purshase_price,
+    active_value,
+    true,
+    1,
+    req.session.company_id,
+    8
+  ]
+
+
+  // let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+  //               VALUES ($1, $2, $3)`
+
+  // let params2 = [newId_body,
+  //   posted_elements.select_department_value,
+  //   newId_header
+  // ]               
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    // await tx.none(query2, params2);
+    await history(27, 1, newId_header, 0, req, tx)
+
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حفظ صنف الخدمة بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error services_add:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+app.post("/services_update", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "services_permission", "update");
+      if (!permissions) {
+        return;
+      }  
+
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.employee_start_date_value, posted_elements.employee_leave_date_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.account_name ||
+        !posted_elements.unite_name ||
+        !posted_elements.revenueAccount ||
+        isNaN(+posted_elements.revenueAccount) ||
+        !posted_elements.expenseAccount ||
+        isNaN(+posted_elements.expenseAccount) ||
+        (posted_elements.sales_price && isNaN(+posted_elements.sales_price)) ||   
+        (posted_elements.purshase_price && isNaN(+posted_elements.purshase_price))   
+      ){
+          return res.json({
+        success: false,
+        message_ar:
+          'برجاء ادخال البيانات المطلوبه بشكل صحيح',
+      });
+    }          
+    
+    //* Start--------------------------------------------------------------
+
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE id = $5 AND company_id = $1 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_exist_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $5 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_account_name,
+               (select count(id) FROM accounts_header WHERE id = $3 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 4 AND is_inactive IS NULL) as count_revenue_account,
+               (select count(id) FROM accounts_header WHERE id = $4 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 5 AND is_inactive IS NULL) as count_expenses_account
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.account_name.trim(),
+      posted_elements.revenueAccount,
+      posted_elements.expenseAccount,
+      posted_elements.x
+
+    ]);
+
+  
+    if (result.count_account_name > 0){
+      return res.json({
+        success: false,
+        message_ar: 'اسم الخدمه موجود من قبل',
+      });
+    }
+
+
+    if (+result.count_exist_account_name ===0 || +result.count_revenue_account === 0 || +result.count_expenses_account === 0){
+      await block_user(req,'Ssadd1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    //3: insert data into db
+    
+    
+    let active_value;
+    if(posted_elements.inactive_select_value == 0){
+      active_value = null
+    }else if (posted_elements.inactive_select_value == 1) {
+      active_value = true
+    }
+
+    // const newId_header = await newId_fn("accounts_header",'id');
+    // const newId_body = await newId_fn("accounts_body",'id');
+
+
+    let query1 = `
+  update accounts_header set
+     account_name = $1,
+     account_no = $2,
+     item_unite = $3,
+     item_revenue_account = $4,
+     item_expense_account = $5,
+     item_sales_price = $6,
+     item_purshas_price = $7,
+     is_inactive = $8
+    where
+    id = $9 
+    and company_id = $10 
+    and account_type_id = 8
+    and is_inactive is NULL
+  ;  
+`;
+
+  let params1 =[
+    posted_elements.account_name,
+    posted_elements.accountNo,
+    posted_elements.unite_name,
+    posted_elements.revenueAccount,
+    posted_elements.expenseAccount,
+    posted_elements.sales_price,
+    posted_elements.purshase_price,
+    active_value,
+    posted_elements.x,
+    req.session.company_id
+  ]
+
+
+  // let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+  //               VALUES ($1, $2, $3)`
+
+  // let params2 = [newId_body,
+  //   posted_elements.select_department_value,
+  //   newId_header
+  // ]               
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    // await tx.none(query2, params2);
+    await history(27, 2, posted_elements.x, 0, req, tx)
+
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم تعديل صنف الخدمة بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error services_update:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+app.post("/services_delete", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "services_permission", "delete");
+      if (!permissions) {
+        return;
+      }  
+
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.employee_start_date_value, posted_elements.employee_leave_date_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+         
+    
+    //* Start--------------------------------------------------------------
+
+
+    let query0 = `SELECT
+               (select count(tb.id) from transaction_body tb left join transaction_header th on th.id = tb.transaction_header_id where th.company_id = $1 and tb.item_id = $2 and th.is_deleted is null and th.is_including_items is true) as_count_transactions,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_exist_account_name
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.x
+
+    ]);
+
+  
+
+    if (+result.count_exist_account_name === 0){
+      await block_user(req,'Ssadd1')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+
+    if(+result.as_count_transactions > 0){
+      return res.json({
+        success: false,
+        message_ar: 'يوجد حركات على هذا الصنف الخدمى ولا يمكن حذفه',
+      });
+    }
+
+    let query1 = `
+    delete from accounts_header where id = $1 and company_id = $2 and account_type_id = 8
+  ;  
+`;
+
+  let params1 =[
+    posted_elements.x,
+    req.session.company_id
+  ]
+          
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    // await tx.none(query2, params2);
+    await history(27, 3, posted_elements.x, 0, req, tx)
+
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حذف صنف الخدمة بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error services_delete:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+//#endregion services
+
 //!====================================================================================================================================
 
 async function update_items_cogs(req,items_array,datex) {
@@ -19110,34 +19884,53 @@ GROUP BY
 -- da est3alm el gard
 -- tp3a how by7tawy 3ala el el kemya we total  lakn mafesh avg cost  hangepha ba2a fe el bena2 el taple nafso fe el loop 
 
-SELECT
-    tb.item_id,
+ SELECT
+    ah.id,
+    ah.account_name,
+    ab.parent_id,
+    parent_ah.account_name AS parent_account_name,
     SUM(
         CASE 
             WHEN tb.debit > 0 THEN tb.item_amount 
             ELSE tb.item_amount * -1 
         END
     ) AS Current_amount,
-     SUM(
-        case 
-                WHEN tb.debit > 0 THEN tb.debit ELSE 0 END) 
-            - SUM(CASE WHEN tb.credit > 0 THEN tb.cogs ELSE 0 END) AS value
+    SUM(
+        CASE 
+            WHEN tb.debit > 0 THEN tb.debit ELSE 0 
+        END) 
+        - SUM(
+            CASE 
+                WHEN tb.credit > 0 THEN tb.cogs ELSE 0 
+            END
+        ) AS value
 FROM
-    transaction_body tb
-INNER JOIN 
-    transaction_header th ON th.id = tb.transaction_header_id
+    accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id
+    LEFT JOIN transaction_body tb ON tb.item_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
 WHERE
-    th.company_id = 1
-    AND th.datex <= '2024-12-13'
+    ah.company_id = $1
+    and ah.is_final_account = true
+    and ah.account_type_id = 5
+    and th.company_id = $1
+    and th.is_including_items is TRUE
+    and th.is_deleted is NULL
+    and th.datex <= $2
+    and tb.item_id is not NULL
 GROUP BY
-    tb.item_id;
+    ah.id, ab.parent_id, parent_ah.account_name;
 
-    
 
 */
 
 // updateCogs();
 
+
+
+
+//! استعلام 
 
 
 //*-- server----------------------------------------------

@@ -502,7 +502,7 @@ async function showsalesOrderData(x,qutation_id,type){
   Data = await new_fetchData_postAndGet(
     "/get_data_for_sales_order_update",
     {x,qutation_id,type},
-    'sales_permission', 'view',
+    'sales_order_permission', 'update',
     15,
     false,false,
     true,

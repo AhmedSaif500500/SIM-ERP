@@ -56,17 +56,17 @@
       page_content.style.display = 'flex'
     }
 
-    function active_color(select_variable) {
-      try {
-                  if (select_variable.value == 1){
-                      select_variable.classList.add(`inactive_color`);
-                  }else{
-                      select_variable.classList.remove(`inactive_color`);
-                  }
-      } catch (error) {
-          catch_error(error)
-      }
-    }
+    // function active_color(select_variable) {
+    //   try {
+    //               if (select_variable.value == 1){
+    //                   select_variable.classList.add(`inactive_color`);
+    //               }else{
+    //                   select_variable.classList.remove(`inactive_color`);
+    //               }
+    //   } catch (error) {
+    //       catch_error(error)
+    //   }
+    // }
     
     
     inactive_select.onchange = function (){

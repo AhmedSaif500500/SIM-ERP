@@ -1,5 +1,5 @@
-// setActiveSidebar('bread_view_ar'); //معلق
-// pagePermission("add","transaction_permission"); //معلق
+setActiveSidebar('salesMain_view_ar'); //معلق
+pagePermission("update","sales_invoice_permission"); //معلق
 
 
 const sales_invoice_update_data = JSON.parse(sessionStorage.getItem('sales_invoice_update_data'));
@@ -30,6 +30,12 @@ date1.value = today
 document.querySelector(`#btn_update`).onclick = async function () {
   
   try {
+
+    const permission = await btn_permission('sales_invoice_permission', 'update') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
+      return
+    }
 
     const x = sales_invoice_update_data.x;
     const datex = date1.value;
@@ -138,7 +144,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
         const post = await new_fetchData_postAndGet(
           "/api/sales_invoice_update",
           posted_Obj,
-          'pass', 'pass',
+          'sales_invoice_permission', 'update',
           15,
           true,"هل تريد حفظ بيانات فاتورة المبيعات ؟",
           true,
@@ -151,7 +157,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
         
     if (post){
       sessionStorage.removeItem('sales_invoice_update_data')
-      sessionStorage.removeItem('sales_invoice_Array')
+      sessionStorage.removeItem('sales_invoice_ViewArray')
     }
 
     } else {
@@ -166,7 +172,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
 
 document.querySelector(`#btn_delete`).onclick = async function () {
   try {
-    const permission = await btn_permission('pass', 'pass') // معلق
+    const permission = await btn_permission('sales_invoice_permission', 'delete') // معلق
     if (!permission){
       showAlert('warning','عفواً لا تملك الصلاحيه للتحديث')
       return
@@ -179,7 +185,7 @@ const datex = date1.value;
 const post = await new_fetchData_postAndGet(
   "/api/sales_invoice_delete",
   {x,datex},
-  'pass', 'pass',
+  'sales_invoice_permission', 'delete',
   15,
   true,"هل تريد حذف بيانات امر البيع ؟",
   true,
@@ -190,7 +196,7 @@ const post = await new_fetchData_postAndGet(
 )
 
 if (post){
-sessionStorage.removeItem('sales_order_Array')
+sessionStorage.removeItem('sales_order_ViewArray')
 }
 
 
@@ -203,7 +209,7 @@ sessionStorage.removeItem('sales_order_Array')
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
-  
+      
     const x = sales_invoice_update_data.x;
     const qutation_id = sales_invoice_update_data.qutation_id;
     const order_id = sales_invoice_update_data.order_id;
@@ -213,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async function () {
    
     //! here
 
-  viewMode(true,'pass','pass')
+  viewMode(true,'sales_invoice_permission','view')
   handle_fn_options()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -228,8 +234,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 function handle_fn_options(){
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'pass','pass')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'pass','pass')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'sales_invoice_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'sales_invoice_permission','view')" style="display: none;">وضع العرض</div>
     <div>انشاء امر بيع</div>
     <div>انشاء فاتورة</div>
   `;

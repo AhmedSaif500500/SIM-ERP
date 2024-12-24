@@ -1,33 +1,105 @@
-setActiveSidebar("salesMain_view_ar");  
-pagePermission("view", "sales_order_permission");
+setActiveSidebar("itemsMain_view_ar");  
+pagePermission("view", "items_permission");  // معلق
 
+
+async function getItemsGroupData(){
+    
+    const data = await new_fetchData_postAndGet(
+        "getItemsGroupDataForItemsTableView",
+        {},
+        "items_permission","view",
+        15,
+        false,"",
+        true,
+        true,newBtn_group,
+        false,false,false,
+        false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
+    )
+    return data
+}
+
+
+
+async function getIRevenueAccountsData(){
+    
+    const data = await new_fetchData_postAndGet(
+        "getRevenueAccountsDataForItemsTableView",
+        {},
+        "items_permission","view",
+        15,
+        false,"",
+        true,
+        true,newBtn_group,
+        false,false,false,
+        false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
+    )
+    return data
+}
 
 const newBtn = document.querySelector('#newBtn');
-newBtn.onclick = function (){
-    sessionStorage.removeItem('sales_order_update_data')
-    window.location.href = "/sales_order_add_ar";
+newBtn.onclick = async function (){
+    try {
+    sessionStorage.removeItem('obj_items_create_group')
+    sessionStorage.removeItem('obj_items_create_account')
+
+    const itemsGroup = await getItemsGroupData();
+    const revenueAccouns = await getIRevenueAccountsData();
+
+    const obj_items_create_account = {
+        items_options: itemsGroup,
+        revenue_accounts_options: revenueAccouns,
+        nodeId: null,
+    };
+
+
+    if (!itemsGroup || !revenueAccouns){
+        await redirection("items_table_view_ar","fail","حدث خطأ اثناء معالجة البيانات : سيتم اعاده تحميل الصفحه")
+    }
+
+    sessionStorage.setItem("obj_items_create_account", JSON.stringify(obj_items_create_account));
+    window.location.href = "items_add_ar";
+} catch (error) {
+    catch_error(error)
+}
   }
 
+const newBtn_group = document.querySelector(`#newBtn_group`)
+newBtn_group.onclick = async function () {
+    try {
+        sessionStorage.removeItem('obj_items_create_group')
+        sessionStorage.removeItem('obj_items_create_account')
+
+        const itemsGroup = await getItemsGroupData();
+
+        if (!itemsGroup){
+            await redirection("items_table_view_ar","fail","حدث خطأ اثناء معالجة البيانات : سيتم اعاده تحميل الصفحه")
+        }
+
+        const postedData = {
+            itemsArray: itemsGroup
+        }
+        sessionStorage.setItem("obj_items_create_group", JSON.stringify(postedData));
+        
+        window.location.href = "items_add_ar";
+
+    } catch (error) {
+        catch_error(error)
+    }
+}
+
 const h2_text_div = document.querySelector(`#h2_text_div`);
-const sub_h2_header = document.querySelector(`#sub_h2_header`);
+// const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
-let startDate = firstDayOfYear;
-let endDate = lastDayOfYear;
+// let startDate = firstDayOfYear;
+// let endDate = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
 const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
-
-let f0_div = filter_div.querySelector(`#f0_div`);
-let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
-let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
-let f0_select = filter_div.querySelector(`#f0_select`);
-let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
-let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
 
 //! reference
 let f1_div = filter_div.querySelector(`#f1_div`);
@@ -36,52 +108,23 @@ let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! salesman
+//! accountName
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
 let f2_select = filter_div.querySelector(`#f2_select`);
 let f2_input = filter_div.querySelector(`#f2_input`);
 
-//! accountName
+//! accountGroup
 let f3_div = filter_div.querySelector(`#f3_div`);
 let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
 let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
 let f3_select = filter_div.querySelector(`#f3_select`);
 let f3_input = filter_div.querySelector(`#f3_input`);
 
-//! note
-let f4_div = filter_div.querySelector(`#f4_div`);
-let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
-let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
-let f4_select = filter_div.querySelector(`#f4_select`);
-let f4_input = filter_div.querySelector(`#f4_input`);
-
-//! balance
-let f5_div = filter_div.querySelector(`#f5_div`);
-let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
-let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
-let f5_select = filter_div.querySelector(`#f5_select`);
-let f5_input = filter_div.querySelector(`#f5_input`);
-
-//! balance
-let f6_div = filter_div.querySelector(`#f6_div`);
-let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
-let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
-let f6_select = filter_div.querySelector(`#f6_select`);
-let f6_input = filter_div.querySelector(`#f6_input`);
-
-//! sales qutation reference
-let f7_div = filter_div.querySelector(`#f7_div`);
-let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
-let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
-let f7_select = filter_div.querySelector(`#f7_select`);
-let f7_input = filter_div.querySelector(`#f7_input`);
-
-
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4, 5, 6, 7]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [1, 2, 3]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -115,19 +158,19 @@ function backUp_filter_div_conditions() {
     Object.assign(conditions, {
         is_filter: is_filter,
         is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
-        sub_h2_header: sub_h2_header.textContent,
+        // sub_h2_header: sub_h2_header.textContent,
         back_href: back_href.href,
         back_title: back_href.title
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('sales_order_ViewArray')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('items_table_view_Array')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('sales_order_ViewArray', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('items_table_view_Array', JSON.stringify(conditionsArray));
 }
 
 
@@ -135,12 +178,12 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`sales_order_ViewArray`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`items_table_view_Array`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `salesMain_view_ar`;
+            window.location.href = `itemsMain_view_ar`;
        
     }else{
 
@@ -154,7 +197,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("sales_order_ViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("items_table_view_Array")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -164,7 +207,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("sales_order_ViewArray", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("items_table_view_Array", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -201,7 +244,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         });
 
         // استرجاع الشروط الأخرى
-        sub_h2_header.textContent = conditions.sub_h2_header;
+        // sub_h2_header.textContent = conditions.sub_h2_header;
         is_filter = conditions.is_filter;
         if (conditions.is_filter_div_hidden) {
             hidden_filter_div();
@@ -279,14 +322,9 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f0',true,true,true)
-    call_default_checkbox('f1',true,true,false)
-    call_default_checkbox('f2',true,false,false)
-    call_default_checkbox('f3',true,true,false)
-    call_default_checkbox('f4',true,true,false)
-    call_default_checkbox('f5',true,true,false)
-    call_default_checkbox('f6',true,true,false)
-    call_default_checkbox('f7',true,false,false)
+    call_default_checkbox('f1',true,false,false)
+    call_default_checkbox('f2',true,true,false)
+    call_default_checkbox('f3',true,false,false)
 
 }
 
@@ -301,12 +339,12 @@ async function filter_icon_cancel_fn() {
                 return;
             }
     
-            deafult_checkbox();
-            sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+            // deafult_checkbox();
+            // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('sales_order_ViewArray');
+            sessionStorage.removeItem('items_table_view_Array');
             conditionsArray = []
             
         }
@@ -331,28 +369,24 @@ let filteredData_Array = [];
 
 async function getData_fn() {
     try {
-        let start_date;
-        let end_date;
 
-        start_date = f0_input_start_date1.value;
-        end_date = f0_input_end_date1.value;
+        // start_date = f0_input_start_date1.value;
+        // end_date = f0_input_end_date1.value;
        
         //  معلق
         data = await new_fetchData_postAndGet(
-            "/get_sales_order_Data_view",
-            {start_date, end_date},
-            "sales_order_permission","view",
+            "/get_All_items_Data_for_table",
+            {},
+            "items_permission","view",
             15,
             false,'',
             false,
             true,content_space,
             false,false,'',
             false,'',
-            false,'notes_ar',
+            false,'itemsMain_view_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
-
-
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -360,32 +394,14 @@ async function getData_fn() {
 }
 
 
-function is_datexChanged() {
-    if (
-        f0_input_start_date1.value !== startDate ||
-        f0_input_end_date1.value !== endDate
-    ) {
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
 
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
-        const datechange = is_datexChanged()
-        if (datechange){
-            await getData_fn();
-        }else{
-            showFirst50RowAtTheBegening();
-        }
-
+        // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+        showFirst50RowAtTheBegening();
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
 
@@ -423,90 +439,42 @@ function showFirst50RowAtTheBegening() {
 
         filteredData_Array = data.filter((row) => {
 
-            const isdatexMatch = 
-            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
-                f0_checkbox,
-                f0_select,
-                f0_input_start_date1,
-                f0_input_end_date1,
-                "datex",
-                row
-            );
-
-            const isReferenceMatch =
+            const isAccountNoMatch =
             filterData_number_column_with_showAndHiddenCheckbox(
                 f1_checkbox,
                 f1_select,
                 f1_input,
-                "referenceconcat",
+                "account_no",
                 row
             );
 
 
-            const isSalesmanMatch =
+            const isSAccountNameMatch =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f2_checkbox,
                     f2_select,
                     f2_input,
-                    "salesman_name",
+                    "account_name",
                     row
                 );
 
-                const isSAccountNameMatch =
+                const isSAccountGroupNameMatch =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f3_checkbox,
                     f3_select,
                     f3_input,
-                    "customer_name",
+                    "parent_account_name",
                     row
                 );                
-
-            const isNoteMatch =
-                filterData_string_column_with_showAndHiddenCheckbox(
-                    f4_checkbox,
-                    f4_select,
-                    f4_input,
-                    "general_note",
-                    row
-                );
-
-            const isBalanceMatch =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f5_checkbox,
-                    f5_select,
-                    f5_input,
-                    "total_value",
-                    row
-                );
-
-                const isQutationstatus = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
-                    f6_checkbox,
-                    f6_select,
-                    'is_invoiced',
-                    row
-                );
-
-                const isQutationReference =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f1_checkbox,
-                    f1_select,
-                    f1_input,
-                    "qutation_reference",
-                    row
-                );
 
 
 
             return (
 
-                isdatexMatch &&
-                isReferenceMatch &&
-                isSalesmanMatch &&
+                isAccountNoMatch &&
                 isSAccountNameMatch &&
-                isNoteMatch &&
-                isBalanceMatch &&
-                isQutationstatus &&
-                isQutationReference
+                isSAccountGroupNameMatch
+   
             ); // && otherCondition;
         });
 
@@ -537,17 +505,16 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_reference = `display: none;`; 
-        let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_sales_qutation_reference = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f4_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
-        let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
-        let style_balance = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let is_invoiced = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-
+        let style_accountgroup = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
+        let style_account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_accountName = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
+        let style_amount = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
+        let style_item_unit = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
+        let style_avg = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
+        let style_value = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
+        
         total_column1.value = 0;
+
         let fn = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
@@ -557,19 +524,14 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${style_datex}">التاريخ</th>
-                                <th style="${style_reference}">#</th>
-                                <th style="${style_referenceCONCAT}">#</th>
-                                 <th style="${style_id}">id</th>
-                                 <th style="${style_accountName}">العميل</th>
-                                 <th style="${style_id}">id</th>
-                                <th style="${style_salesman}">البائع</th>
-                                <th style="${style_id}">qutation_id</th>
-                                <th style="${style_sales_qutation_reference}">عرض السعر</th>
-                                <th style="${style_note}">البيان</th>
-                                <th style="${style_balance}">قيمة</th>
-                                <th style="${is_invoiced}">الحاله</th>
-                                
+                                <th style="${style_id}">IDGroup</th>
+                                <th style="${style_accountgroup}">المجموعه</th>
+                                <th style="${style_account_no}">المعرف</th>
+                                <th style="${style_accountName}">الصنف</th>
+                                <th style="${style_amount}">الرصيد</th>
+                                <th style="${style_item_unit}">الوحده</th>
+                                <th style="${style_avg}">متوسط التكلفه</th>
+                                <th style="${style_value}">إجمالى التكلفه</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -578,30 +540,21 @@ function fillTable() {
                 
 
             // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let invoicedstatusClass;
+            let avg = (+row.value / +row.current_amount).toFixed(2);
             
-            if(row.is_invoiced === 'مفوتر'){
-                invoicedstatusClass = 'table_green_condition'
-            }else if(row.is_invoiced === 'غير مفوتر'){
-                invoicedstatusClass = 'table_orange_condition'
-            }
 
             tableHTML +=
                      `<tr>
                         <td style="${style_button}"><button class="table_view_btn" onclick="table_update_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
-                        <td style="${style_datex}" class="td_datex">${row.datex}</td>
-                        <td style="${style_reference}" class="td_reference">${row.reference}</td>
-                        <td style="${style_referenceCONCAT}" class="td_referenceconcat">${row.referenceconcat}</td>
-                        <td style="${style_id}" class="td_customer_id">${row.customer_id}</td>
-                        <td style="${style_accountName}" class="td_customer_name">${row.customer_name}</td>
-                        <td style="${style_id}" class="td_salesman_id">${row.salesman_id}</td>
-                        <td style="${style_salesman}" class="td_salesman_name">${row.salesman_name}</td>
-                        <td style="${style_id}" class="td_qutation_id">${row.qutation_id}</td>
-                        <td style="${style_sales_qutation_reference}" class="td_salesman_name">${row.qutation_reference}</td>
-                        <td style="${style_note}" class="td_general_note">${row.general_note}</td>
-                        ${tdNumber(true,false,true,row.total_value,style_balance,total_column1,fn,'td_total_value')}
-                        <td style="${is_invoiced}"><span class="${invoicedstatusClass} td_is_invoiced">${row.is_invoiced}</span></td>               
+                        <td style="${style_id}" class="td_parent_id">${row.parent_id}</td>
+                        <td style="${style_accountgroup}" class="td_parent_account_name">${row.parent_account_name}</td>
+                        <td style="${style_account_no}" class="td_account_no">${row.account_no}</td>
+                        <td style="${style_accountName}" class="td_account_name">${row.account_name}</td>
+                        ${tdNumber(true,false,true,row.current_amount,style_amount,false,false,'td_amount')}
+                        <td style="${style_item_unit}" class="td_item_unite">${row.item_unite}</td>
+                        ${tdNumber(false,false,true,avg,style_avg,false,false,'td_avg')}
+                        ${tdNumber(true,false,true,row.value,style_value,total_column1,false,'td_value')}            
                       </tr>`;
         });
 
@@ -609,18 +562,14 @@ function fillTable() {
                     <tr class="table_totals_row">
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id1" style="${style_id}"></td>
-                        <td id="footer_style_datex" style="${style_datex}"></td>
-                        <td id="footer_style_reference" style="${style_reference}"></td>
-                        <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
-                        <td id="footer_style_accountid" style="${style_id}"></td>
+                        <td id="footer_td_parent_id" style="${style_id}"></td>
+                        <td id="footer_style_accountgroup" style="${style_accountgroup}"></td>
+                        <td id="footer_style_style_account_no" style="${style_account_no}"></td>
                         <td id="footer_style_accountName" style="${style_accountName}"></td>
-                        <td id="footer_style_salesmanid" style="${style_id}"></td>
-                        <td id="footer_style_salesman" style="${style_salesman}"></td>
-                        <td id="footer_style_qutation_id" style="${style_id}"></td>
-                        <td id="footer_style_sales_qutation_reference" style="${style_sales_qutation_reference}"></td>
-                        <td id="footer_style_note" style="${style_note}"></td>
-                        <td id="footer_style_balance" style="${style_balance}"></td>
-                        <td id="footer_style_balance" style="${is_invoiced}"></td>
+                        <td id="footer_style_style_amount" style="${style_amount}"></td>
+                        <td id="footer_style_item_unit" style="${style_item_unit}"></td>
+                        <td id="footer_style_avg" style="${style_avg}"></td>
+                        <td id="footer_style_value" style="${style_value}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -647,14 +596,14 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_balance`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_value`).textContent = floatToString(true,total_column1.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
 
-        startDate = f0_input_start_date1.value;
-        endDate = f0_input_end_date1.value;
+        // startDate = f0_input_start_date1.value;
+        // endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
@@ -669,25 +618,15 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
-            const reference_Match = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
-            const salesman_Match = performSearch_Row(f2_checkbox,"salesman_name",searchValue,row);
-            const AccountName_Match = performSearch_Row(f3_checkbox,"customer_name",searchValue,row);
-            const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
-            const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
-            const qutationstatus = performSearch_Row(f6_checkbox,"is_invoiced",searchValue,row);
-            const qutationReference = performSearch_Row(f7_checkbox,"qutation_reference",searchValue,row);
+            const accountNo_Match = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
+            const accountparent_Match = performSearch_Row(f3_checkbox,"parent_account_name",searchValue,row);
+            const AccountName_Match = performSearch_Row(f3_checkbox,"account_name",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                datexInfoMatch ||
-                reference_Match ||
-                salesman_Match ||
-                AccountName_Match ||
-                noteMatch ||
-                balanceMatch ||
-                qutationstatus ||
-                qutationReference
+                accountNo_Match ||
+                accountparent_Match ||
+                AccountName_Match
             );
         });
 
@@ -730,7 +669,7 @@ searchInput.addEventListener("keydown", (event) => {
 async function table_update_btn_fn(updateBtn) {
     try {
     showLoadingIcon(updateBtn)
-    const permission = await btn_permission("sales_order_permission", "view"); // معلق
+    const permission = await btn_permission("items_permission", "view");
 
     if (!permission) {
         // if false
@@ -739,31 +678,16 @@ async function table_update_btn_fn(updateBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-
-        
-
     const row = updateBtn.closest("tr");
-
-    const sales_qutation_update_data = {
+    const items_table_view_data = {
         x: row.querySelector(`.td_id`).textContent,
         qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        datex: row.querySelector(`.td_datex`).textContent,
-        reference: row.querySelector(`.td_reference`).textContent,
-        referenceconcat: row.querySelector(`.td_referenceconcat`).textContent,
-        customer_id: row.querySelector(`.td_customer_id`).textContent,
-        customer_name: row.querySelector(`.td_customer_name`).textContent,
-        salesman_id: row.querySelector(`.td_salesman_id`).textContent,
-        salesman_name: row.querySelector(`.td_salesman_name`).textContent,
-        general_note: row.querySelector(`.td_general_note`).textContent,
-        total_value: row.querySelector(`.td_total_value`).textContent,
-        is_invoiced: row.querySelector(`.td_is_invoiced`).textContent      
+        order_id: row.querySelector(`.td_order_id`).textContent,
     };
 
     
-    
-
-    sessionStorage.setItem('sales_order_update_data', JSON.stringify(sales_qutation_update_data));                            
-    window.location.href = `sales_order_update_ar`;
+    sessionStorage.setItem('items_table_view_data', JSON.stringify(items_table_view_data));                            
+    // window.location.href = `sales_invoice_update_ar`;
     hideLoadingIcon(updateBtn)
 } catch (error) {
     hideLoadingIcon(updateBtn)
@@ -771,15 +695,15 @@ async function table_update_btn_fn(updateBtn) {
 }
 }
 
-function CheckUrlParams_sales_order_update_ar() {
+function CheckUrlParams_salesInvoice_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "sales_order_view_ar",
+            "itemsMain_view_ar",
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
 
-        if (!urlData || urlData.pageName !== "sales_order_update_ar") {
+        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") { // معلق
             return true;
         }
 
@@ -804,15 +728,15 @@ function CheckUrlParams_sales_order_update_ar() {
 document.addEventListener("DOMContentLoaded", async function () {
     showRedirectionReason();
 
-    sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+    // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
     
-    const result2 = CheckUrlParams_sales_order_update_ar();
-    if (!result2) {
-        return;
-    }
+    // const result2 = CheckUrlParams_salesInvoice_update_ar();
+    // if (!result2) {
+    //     return;
+    // }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`sales_order_ViewArray`);
+    const conditionsArray = sessionStorage.getItem(`items_table_view_Array`);
 
     if (!conditionsArray){
      
