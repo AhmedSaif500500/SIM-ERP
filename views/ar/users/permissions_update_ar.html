@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+           <!-- <div id="fn_container_div" class="fn_container_div"></div> -->
+
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="permissions_view_ar" title="المستخدمين">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="effects_view_ar" title="اعادة تحميل الصفحة">المستخدمين</a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
+          </h2>
+
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+          <div id="page_content" style="display: none;">
+
+
+          <p id="p_stop_user_text" style="color: red; text-align: start; margin-block-end: 1rem; display:none">* هذا المستخدم تم ايقافه</p>
+          <label for="user_name_input" class="lbl_sm">اسم المستخدم</label>
+          <input type="search" id="user_name_input" class="input_text_md hover" title="تعديل الاسم من خلال صفحه الاعمال التجاريه من مستخدم يملك صلاحيات المالك"  disabled autocomplete="off">
+          
+
+          <!-- Global Code permissions500 f-2 -->
+          <!-- الصلاحيات -->
+
+          <label for="general_permission_select" class="lbl_sm">صلاحيات عامه</label>
+          <select onchange="" class="select hover" id="general_permission_select">
+            <option value="0" selected>ايقاف المستخدم</option>
+            <option value="1">تخصيص صلاحيات</option>
+            <option value="2">فقط / عرض</option>
+            <option value="3">فقط / عرض واضافة</option>
+            <option value="4">فقط / عرض واضافه وتعديل</option>
+            <option value="5">فقط / عرض واوضافه وتعديل وحذف</option>
+            <option value="6">مدير النظام</option>
+          </select>
+
+
+
+          <!-- جدول الصلاحيات -->
+
+
+          <table id="permissions_table" class="review_table" style="display: none; margin-block-start: 2rem;">
+            <thead style="inset-block-start: 0;">
+              <tr>
+                <th>م</th>
+                <th style="display: none;">ID</th>
+                <th style="width: auto; text-wrap: nowrap;">الصلاحيه</th>
+                <th style="width: auto;">المستوى</th>
+                <th style="width: 100%; text-wrap: nowrap;">المتاح</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- المستخدمين -->
+              <tr>
+                <td style="width: auto;">1</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">المستخدمين</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_users"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+
+              
+              <!-- الاقسام الادارية -->
+              <tr>
+                <td style="width: auto;">3</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الاقسام الادراية</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_departments"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+
+              <!-- الوظفين -->
+              <tr>
+                <td style="width: auto;">4</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الموظفين</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_employees"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              <!--  المؤثرات -->
+              <tr>
+                <td style="width: auto;">5</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">المؤثرات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_effects"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              <!--  production -->
+              <tr>
+                <td style="width: auto;">6</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الانتاج</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_production"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+
+              <!-- bread -->
+              <tr>
+                <td style="width: auto;">7</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">العيش</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_bread"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              <!-- transaction -->
+              <tr>
+                <td style="width: auto;">8</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">قيد محاسبى</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_transaction"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              <!-- items-->
+              <tr>
+                <td style="width: auto;">9</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الاصناف</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_items"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+
+              <!-- services-->
+              <tr>
+                <td style="width: auto;">9</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الاصناف الخدميه</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_services"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+                          
+
+            <!-- customers -->
+            <tr>
+              <td style="width: auto;">10</td>
+              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+              <td style="width: auto; text-wrap: nowrap;">العملاء</td>
+              <td style="width: auto;">
+                <select class="select hover s" id="table_permission_customers"
+                  onchange="updatePermissionLevel(this)">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </td>
+              <td style="width: 100%; text-wrap: nowrap;"></td>
+            </tr>
+
+
+              <!-- salesman-->
+              <tr>
+                <td style="width: auto;">11</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">البائعين</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_salesman"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+                        
+              <!-- sales_qutation_permission-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">عروض اسعار المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales_qutation"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+              <!-- table_permission_sales_order-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">أوامر المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales_order"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+              <!-- table_permission_sales_invoice-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">فواتير المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales_invoice"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>              
+                     
+              <!-- vendors -->
+              <tr>
+                <td style="width: auto;">13</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الموردين</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_vendors"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+
+
+              <!-- table_permission_purshases_qutation-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">عروض اسعار المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purshases_qutation"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+              <!-- table_permission_purshases_order-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">أوامر المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purshases_order"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+              <!-- table_permission_purshases_invoice-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">فواتير المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purshases_invoice"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+              
+              <!-- itemsLocations-->
+              <tr>
+                <td style="width: auto;">15</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">مواقع المخزون</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_itemsLocations"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+              
+              
+
+
+              
+            </tbody>
+            <tfoot>
+              <tr class="table_totals_row" ;>
+                <td id="tfooter1"></td>
+                <td id="tfooter2" style="display: none;"></td>
+                <td id="tfooter3"></td>
+                <td id="tfooter3"></td>
+                <td id="tfooter3"></td>
+              </tr>
+              <tr>
+                <td colspan="5">
+
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+
+
+          <!-- <label for="user_leave_date_input" class="lbl_sm">تاريخ ترك العمل</label> -->
+          <!-- date -->
+          <!-- <div class="input_with_icon_div">
+            <input type="search" id="user_leave_date_input" class="hover input_date datepicker"
+              placeholder="التاريخ..." readonly autocomplete="off">
+            <i class="fa-regular fa-calendar left_icon"></i>
+          </div> -->
+
+
+
+          <div class="btn_container_top_border">
+            <button class="btn_update" id="btn_update">تعديل</button>
+          </div>
+
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/users/permissions_update_ar.js"></script>
+
+
+</body>
+
+</html>

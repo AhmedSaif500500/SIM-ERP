@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>العيش</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+     <!-- start ------------------------------------------------------------------------------------------>
+     <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+
+    <div id="white_backcolor" class="white_backcolor">
+      <!-- content -->
+              <div id="content_space" class="scroll">
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+        <h2 class="h2">
+          <a href="notes_ar">
+            <i class="fa-solid fa-arrow-right back_icon"></i>
+          </a>
+      
+          العيش
+        </h2>
+        <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+       <div id="page_content" style="display: none;"> 
+        <div class="btn_container">
+          <a href="/bread_add_ar" class="btn_new" id="newBtn">جديد</a>
+        </div>
+
+
+        <!-- search in table -->
+
+        <div class="row gap_05">
+          <div class="input_with_icon_div">
+            <input type="search" name="searchInput" id="searchInput" placeholder="search" class="search_input hover">
+            <i class="fa-light fa-magnifying-glass left_icon"></i>
+          </div>
+          <button id="searchBtn" class="btn_search hover">search</button>
+        </div>
+
+        <!-- table container filled by js -->
+        <div id="tableContainer" class="tableContainer scroll"></div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+</div> <!-- end body content -->
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/bread/bread_view_ar.js"></script>
+
+
+</body>
+
+</html>

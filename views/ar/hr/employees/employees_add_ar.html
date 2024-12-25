@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    
+    <button id="scrollToTopBtn">&#9650;</button>
+
+     <!-- start ------------------------------------------------------------------------------------------>
+     <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+
+    <div id="white_backcolor" class="white_backcolor">
+      <!-- content -->
+      <div id="content_space" class="scroll">
+        <div id ="fn_container_div" class="fn_container_div"></div>
+
+
+        <h2 id="h2" class="h2">
+          <a id="back_href" class="back_href" href="employees_view_ar">
+            <i class="fa-solid fa-arrow-right back_icon"></i>
+          </a>
+          <div class="h2_main_text_div">
+            <span id="h2_text_div" class="h2_text_div">الموظفين</span>
+            <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+          </div>
+        </h2>
+        <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+       <div id="page_content" style="display: none;">
+
+        <label for="account_no_input" class="lbl_sm">معرف الموظف</label>
+        <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختياري" autocomplete="off" oninput="check_parse(this,'string')">
+     
+        <label for="employee_name_input" class="lbl_sm">اسم الموظف</label>
+        <input type="search" id="employee_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')" placeholder="مطلوب">
+        
+
+        <!-- legal_info -->
+        <label for="employee_job_input" class="lbl_sm">الوظيفة</label>  
+        <input type="search" id="employee_job_input" class="input_text_md hover" oninput="check_parse(this,'string')" placeholder="اختياري">
+        
+        <label for="select_department" class="lbl_sm">القسم</label>
+        <select name="" id="select_department" class="select hover">
+        </select>
+
+
+            <!-- البريد الالكترونى -->
+            <label for="email_input" class="lbl_sm">البريد الالكترونى</label>
+            <input type="search" id="email_input" class="input_text_md hover" placeholder="اختياري"
+              autocomplete="off" oninput="check_parse(this,'string')">
+              
+      <!-- بيانات التواصل الاخرى -->
+      <!-- contact_info -->
+      <label for="other_info_input" class="lbl_sm">البيانات الاخرى للنوظف</label>
+      <textarea name="" id="other_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
+        style="margin-block-end: 1rem;"></textarea>
+
+
+        <!-- delivery_adress -->
+        <label for="employee_start_date_input" class="lbl_sm">تاريخ التعيين</label>
+        <!-- date -->
+        <div class="input_with_icon_div">
+          <input type="search" id="employee_start_date_input" class="hover input_date datepicker"
+            placeholder="التاريخ..." readonly autocomplete="off">
+          <i class="fa-regular fa-calendar left_icon"></i>
+        </div>
+
+
+        
+        <!-- banking_info -->
+        <label for="employee_leave_date_input" class="lbl_sm">تاريخ ترك العمل</label>
+        <!-- date -->
+        <div class="input_with_icon_div">
+          <input type="search" id="employee_leave_date_input" class="hover input_date datepicker"
+            placeholder="التاريخ..." readonly autocomplete="off">
+          <i class="fa-regular fa-calendar left_icon"></i>
+        </div>
+
+
+        <div id="is_salesman_div" class="column x_start y_start w_fit">
+          <label for="reference_input" class="lbl_sm">تفعيل كبائع ؟</label>
+          <div class="input_with_icon_div">
+            <span class="reference_input_checkbox"><input type="checkbox" id="is_salesman" title="تفعيل هذه الخاصية يسمح باختيار الموظف كبائع  فى فواتير المبيعات"></span>
+            <input type="search" id="reference_input" class="reference_input reference_input_auto_mode hover"
+              oninput="check_parse(this,'number')" placeholder="تفعيل" autocomplete="off">
+          </div>
+        </div>
+
+        <label for="inactive_select" class="lbl_sm">الحالة</label>
+        <select name="" id="inactive_select" class="select hover">
+          <option value="0" selected>نشط</option>
+          <option value="1" >غير نشط</option>
+        </select>
+        
+      
+                
+        <div class="btn_container_top_border">
+          <button class="btn_save" id="btn_save" onclick="save('A')">حفظ</button>
+          <button class="btn_save" id="btn_save_and_add_another" onclick="save('B')">حفظ و إضافة أخر</button>
+      </div>
+
+
+    </div>
+  </div>
+
+</div>
+
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/hr/employees/employees_add_ar.js"></script>
+
+
+</body>
+
+</html>

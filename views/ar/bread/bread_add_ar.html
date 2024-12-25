@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عيش</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+      
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+                <div id="content_space" class="scroll">
+          
+           <!-- <div id="fn_container_div" class="fn_container_div"></div> -->
+
+
+           <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="bread_view_ar" title="العيش">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="bread_add_ar" title="اعادة تحميل الصفحة">العيش</a>
+              <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+            </div>
+          </h2>
+
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+          <div id="page_content" style="display: flex;">
+          <label for="date1" class="lbl_sm">التاريخ</label>
+          <!-- date -->
+          <div class="input_with_icon_div">
+            <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+              autocomplete="off">
+            <i class="fa-regular fa-calendar left_icon"></i>
+          </div>
+          <label for="date1" class="lbl_sm">اسم المورد</label>
+          <select name="" id="vendore_select" class="select" style="width: fit-content;">
+            <option value="1">حسين مرزوق</option>
+            <option value="2">ابراهيم ملش</option>
+            <option value="3">فرن منطى</option>
+            <option value="4">احمد رضوان</option>
+            <option value="5">صابر الخشاب</option>
+            <option value="6">ابو فارس</option>
+            <option value="7">فرن زينهم</option>
+          </select>
+
+          <label for="note_inpute" class="lbl_sm">البيان</label>
+          <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off" oninput="check_parse(this,'string')">
+          <!-- <textarea id="note_inpute" class="text_area1 hover" oninput="check_parse(this,'string')"></textarea> -->
+          <!-- table -->
+         
+            <table id="myTable" class="input_table">
+              <thead class="">
+                <tr>
+                  <th></th>
+                  <th style="width: auto;">الكمية</th>
+                  <th style="width: auto;">الوزن</th>
+                  <th style="width: auto;"></th>
+                </tr>
+              </thead>
+              <tbody class="">
+                <tr class="">
+                  <td style="width: auto;" class="">
+                    <div class="dragbutton_table">
+                      <button class="drag-handle">
+                        <i class="fa-solid fa-arrows-up-down" style=" pointer-events: none;"></i>
+                        </button>
+                    </div>
+                  </td>
+                  <td style="width: auto;" class="">
+                    <div class="input_table_input_div">
+                      <span class="input_span_start">عدد</span>
+                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
+                    </div>
+                  </td>
+                  <td style="width: auto;" class="">
+                    <div class="input_table_input_div">
+                      <span class="input_span_start">جرام</span>
+                      <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
+                    </div>
+                  </td>
+                  <td style="width: 100%;" class="">
+                    <div class="table_buttons_div">
+                      <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                      <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot class="">
+                <tr class="table_total_row">
+                  <td id="lengthColumn1"></td>
+                  <td id="sumColumn1" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
+                  <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;">0</td>
+                  <td id="sumColumn3"></td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="">
+                    <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
+                    <button onclick="addRows()" class="btn_new">سطر جديد</button>
+                    <select id="columnSelect" class="select m_0" style="width: fit-content; height: 3.5rem;">
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                    </select>
+                  </div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="btn_container_top_border">
+              <button class="btn_save" id="btn_save">حفظ</button>
+            </div>
+
+          </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+
+
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/bread/bread_add_ar.js"></script>
+
+
+</body>
+
+</html>
