@@ -1,18 +1,21 @@
 setActiveSidebar('salesMain_view_ar');
-pagePermission('view','salesman_permissions',"sales_qutation_permission","sales_order_permission","sales_invoice_permission");
+pagePermission('view','salesman_permissions',"sales_qutation_permission","sales_order_permission","sales_invoice_permission","sales_returns_permission");
 
 
 const sales_qutation_btn = document.querySelector(`#sales_qutation_btn`)
 const sales_order_btn = document.querySelector(`#sales_order_btn`)
 const sales_invoice_btn = document.querySelector(`#sales_invoice_btn`)
 const mnadep_btn = document.querySelector(`#mnadep_btn`)
+const sales_returns_btn = document.querySelector(`#sales_returns_btn`)
 
 
 function showData(){
-  sales_qutation_btn.style.display = style= module_display("sales_qutation_permission") // معلق
-  sales_order_btn.style.display = style= module_display("sales_order_permission") // معلق
-  sales_invoice_btn.style.display = style= module_display("sales_invoice_permission") // معلق
-  mnadep_btn.style.display = style= module_display("salesman_permissions") // معلق
+  sales_qutation_btn.style.display = style= module_display("sales_qutation_permission") // 
+  sales_order_btn.style.display = style= module_display("sales_order_permission") // 
+  sales_invoice_btn.style.display = style= module_display("sales_invoice_permission") // 
+  mnadep_btn.style.display = style= module_display("salesman_permissions") // 
+  sales_returns_btn.style.display = style= module_display("sales_returns_permission") // 
+
    
   sales_qutation_btn.onclick = function(){
     sessionStorage.removeItem('sales_qutation_ViewArray');
@@ -35,6 +38,13 @@ function showData(){
     window.location.href = "/salesman_view_ar";
   }
   
+
+  sales_returns_btn.onclick = function(){
+    sessionStorage.removeItem('sales_returns_Array');
+    window.location.href = "/sales_returns_view_ar";
+  }
+
+
   page_content.style.display = 'flex'
 }
 
@@ -46,6 +56,7 @@ function remove_arrays(){
   sessionStorage.removeItem('sales_qutation_update_data');
   sessionStorage.removeItem('sales_invoice_Array');
   sessionStorage.removeItem('sales_invoice_update_data');
+  sessionStorage.removeItem('sales_returns_Array');
 }
 
 

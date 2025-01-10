@@ -13,7 +13,25 @@ const accounts_view_table_btn = document.querySelector(`#accounts_view_table_btn
 
 
 
-accounts_view_tree_btn.addEventListener('click', async function () {
+// accounts_view_tree_btn.addEventListener('click', async function () {
+//     try {
+//         showLoadingIcon(content_space)
+//         await fetchTreeData();
+//         table_div.style.display = 'none'
+//         tree_2div_container.style.display = 'flex'
+//         hideLoadingIcon(content_space)
+//     } catch (error) {
+//         hideLoadingIcon(content_space)
+//         catch_error(error)
+//         table_div.style.display = 'none'
+//         tree_2div_container.style.display = 'none'
+//     }
+// })
+
+
+
+
+accounts_view_tree_btn.onclick =  async function () {
     try {
         showLoadingIcon(content_space)
         await fetchTreeData();
@@ -26,7 +44,8 @@ accounts_view_tree_btn.addEventListener('click', async function () {
         table_div.style.display = 'none'
         tree_2div_container.style.display = 'none'
     }
-})
+}
+
 
 const tree_add_account = document.querySelector(`#tree_add_account`);
 const account_no_input = document.querySelector(`#account_no_input`);

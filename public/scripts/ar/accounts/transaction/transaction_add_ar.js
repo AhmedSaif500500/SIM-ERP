@@ -33,19 +33,19 @@ async function save(A_OR_B) {
 
 
     for (const row of tableRows) {
-      const account_typeId = parseInt(row.children[1].querySelector('.account_type').value);
-      const account_id = parseInt(row.children[2].querySelector('.id_hidden_input').value);
+      const account_typeId = parseInt(row.querySelector('.td_account_type .account_type').value);
+      const account_id = parseInt(row.querySelector('.td_account .id_hidden_input').value);
 
       if (isNaN(account_id)) {
         showAlert(`warning`, 'توجد صفوف لا تحتوى على حساب')
         return;
       }
 
-      const note_row = row.children[3].textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
-      const debt = parseFloat(row.children[4].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
-      const credit = parseFloat(row.children[5].textContent || 0); // لو ملقاش قيمه يعتبرها صفر
-      const item_amount = parseFloat(row.children[2].querySelector('.Xitem_amount').textContent || 0)
-      const items_locations_select = row.children[2].querySelector('.items_locations_select').value
+      const note_row = row.querySelector(`.td_row_note`).textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
+      const debt = parseFloat(row.querySelector(`.td_debt`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+      const credit = parseFloat(row.querySelector(`.td_credit`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+      const item_amount = parseFloat(row.querySelector('.td_account .Xitem_amount').textContent || 0)
+      const items_locations_select = row.querySelector('.td_account .items_locations_select').value
 
       if (debt < 0 || credit < 0) {
         showAlert(`warning`, `لا يمكن ادخل قيمه بالسالب فى القيد`);
@@ -70,7 +70,7 @@ async function save(A_OR_B) {
         { total, datex, general_note, posted_array },
         'transaction_permission', 'add',
         15,
-        true,"هل تريد حفظ البيانات ؟",
+        true,"هل تريد حفظ بيانات القيد المحاسبى ؟",
         true,
         false,false,false,false,false,
         true,"transaction_add_ar",
@@ -89,7 +89,7 @@ async function save(A_OR_B) {
       { total, datex, general_note, posted_array },
       'transaction_permission', 'add',
       15,
-      true,"هل تريد حفظ البيانات ؟",
+      true,"هل تريد حفظ بيانات القيد المحاسبى ؟",
       true,
       false,false,false,false,false,
       true,"transaction_view_ar",
@@ -114,7 +114,7 @@ async function save(A_OR_B) {
 document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
-  await getAccounsData_fn() // *
+  data_accounts = await getAccounsData_fn() // *
   await get_accounts_type()
   await get_items_locations()
   build_table()

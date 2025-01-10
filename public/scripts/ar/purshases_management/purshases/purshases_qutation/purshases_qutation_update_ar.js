@@ -327,7 +327,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                   <div class="dropdown_container_input_table" id="">
                     <div class="row h_full">
                       <span class="input_span_start account_type_name T">صنف</span>
-                      <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(dataArray))}', '${encodeURIComponent(JSON.stringify(DropDown_accounts_tableColumnsName))}', 'account_type', 'tbody_itemUniteName')"  style="min-width: 10rem;">
+                      <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(dataArray))}', '${encodeURIComponent(JSON.stringify(DropDown_accounts_tableColumnsName))}', 'account_type', 'purshasesInvoiceForm')"  style="min-width: 10rem;">
                         <div id="" class="dropdown_select_input T hover"></div>
                         <i class="fa-solid fa-caret-down left_icon"></i>
                         <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>

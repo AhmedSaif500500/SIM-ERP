@@ -81,6 +81,64 @@
             </thead>
             <tbody>
 
+
+            <!-- fixed_assests_permission-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">الاصول الثابتة</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_fixed_assests"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>              
+
+            <!-- table_permission_accumulated_depreciation-->
+            <tr>
+              <td style="width: auto;">12</td>
+              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+              <td style="width: auto; text-wrap: nowrap;">اهلاكات الاصول الثابتة</td>
+              <td style="width: auto;">
+                <select class="select hover s" id="table_permission_accumulated_depreciation"
+                  onchange="updatePermissionLevel(this)">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </td>
+              <td style="width: 100%; text-wrap: nowrap;"></td>
+            </tr>    
+            
+            
+
+            <!-- table_permission_disposed_fixed_asset-->
+            <tr>
+              <td style="width: auto;">12</td>
+              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+              <td style="width: auto; text-wrap: nowrap;">استبعاد اصول ثابته</td>
+              <td style="width: auto;">
+                <select class="select hover s" id="table_permission_disposed_fixed_asset"
+                  onchange="updatePermissionLevel(this)">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </td>
+              <td style="width: 100%; text-wrap: nowrap;"></td>
+            </tr>    
+            
+            
               <!-- المستخدمين -->
               <tr>
                 <td style="width: auto;">1</td>
@@ -340,6 +398,25 @@
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>              
                      
+              <!-- table_permission_sales_returns-->
+              <tr>
+                <td style="width: auto;">12</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">مرتجع المبيعات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_sales_returns"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>              
+                  
+              
               <!-- vendors -->
               <tr>
                 <td style="width: auto;">13</td>
@@ -402,6 +479,25 @@
                 <td style="width: auto; text-wrap: nowrap;">فواتير المشتريات</td>
                 <td style="width: auto;">
                   <select class="select hover s" id="table_permission_purshases_invoice"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+
+              <!-- table_permission_purshases_returns-->
+              <tr>
+                <td style="width: auto;">14</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">مرتجع المشتريات</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_purshases_returns"
                     onchange="updatePermissionLevel(this)">
                     <option value="0" selected>0</option>
                     <option value="1">1</option>

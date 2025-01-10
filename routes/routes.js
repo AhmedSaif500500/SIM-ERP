@@ -293,7 +293,7 @@ router.get('/departments_update_ar', (req, res) => {
 
 router.get('/salesMain_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.salesman_permission > 0 || req.session.sales_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.salesman_permission > 0 || req.session.sales_qutation_permission > 0 || req.session.sales_order_permission > 0 || req.session.sales_invoice_permission > 0) { // 
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'salesMain_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
@@ -322,7 +322,7 @@ router.get('/salesman_view_ar', (req, res) => {
 //#region sales qutation
 router.get('/sales_qutation_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_qutation_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_qutation' ,'sales_qutation_view_ar.html'));
         }else{
             res.redirect('/salesMain_view_ar?reason=0');
@@ -335,7 +335,7 @@ router.get('/sales_qutation_view_ar', (req, res) => {
 
 router.get('/sales_qutation_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_qutation_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_qutation' ,'sales_qutation_add_ar.html'));
         }else{
             res.redirect('/sales_qutation_view_ar?reason=0');
@@ -348,7 +348,7 @@ router.get('/sales_qutation_add_ar', (req, res) => {
 
 router.get('/sales_qutation_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_qutation_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_qutation' ,'sales_qutation_update_ar.html'));
         }else{
             res.redirect('/sales_qutation_view_ar?reason=0');
@@ -363,7 +363,7 @@ router.get('/sales_qutation_update_ar', (req, res) => {
 //#region sales order
 router.get('/sales_order_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_order_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_order' ,'sales_order_view_ar.html'));
         }else{
             res.redirect('/salesMain_view_ar?reason=0');
@@ -376,7 +376,7 @@ router.get('/sales_order_view_ar', (req, res) => {
 
 router.get('/sales_order_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_order_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_order' ,'sales_order_add_ar.html'));
         }else{
             res.redirect('/sales_order_view_ar?reason=0');
@@ -389,7 +389,7 @@ router.get('/sales_order_add_ar', (req, res) => {
 
 router.get('/sales_order_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_order_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_order' ,'sales_order_update_ar.html'));
         }else{
             res.redirect('/sales_order_view_ar?reason=0');
@@ -405,7 +405,7 @@ router.get('/sales_order_update_ar', (req, res) => {
 //#region sales invoice
 router.get('/sales_invoice_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_invoice_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_invoice' ,'sales_invoice_view_ar.html'));
         }else{
             res.redirect('/salesMain_view_ar?reason=0');
@@ -418,7 +418,7 @@ router.get('/sales_invoice_view_ar', (req, res) => {
 
 router.get('/sales_invoice_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_invoice_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_invoice' ,'sales_invoice_add_ar.html'));
         }else{
             res.redirect('/sales_invoice_view_ar?reason=0');
@@ -431,7 +431,7 @@ router.get('/sales_invoice_add_ar', (req, res) => {
 
 router.get('/sales_invoice_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_invoice_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_invoice' ,'sales_invoice_update_ar.html'));
         }else{
             res.redirect('/sales_invoice_view_ar?reason=0');
@@ -451,7 +451,7 @@ router.get('/sales_invoice_update_ar', (req, res) => {
 
 router.get('/purshasesMain_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshasesman_permission > 0 || req.session.purshases_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_qutation_permission > 0 || req.session.purshases_order_permission > 0 || req.session.purshases_invoice_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshasesMain_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
@@ -480,7 +480,7 @@ router.get('/purshasesMain_view_ar', (req, res) => {
 //#region purshases qutation
 router.get('/purshases_qutation_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_qutation_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_qutation' ,'purshases_qutation_view_ar.html'));
         }else{
             res.redirect('/purshasesMain_view_ar?reason=0');
@@ -493,7 +493,7 @@ router.get('/purshases_qutation_view_ar', (req, res) => {
 
 router.get('/purshases_qutation_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_qutation_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_qutation' ,'purshases_qutation_add_ar.html'));
         }else{
             res.redirect('/purshases_qutation_view_ar?reason=0');
@@ -506,7 +506,7 @@ router.get('/purshases_qutation_add_ar', (req, res) => {
 
 router.get('/purshases_qutation_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_qutation_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_qutation' ,'purshases_qutation_update_ar.html'));
         }else{
             res.redirect('/purshases_qutation_view_ar?reason=0');
@@ -521,7 +521,7 @@ router.get('/purshases_qutation_update_ar', (req, res) => {
 //#region purshases order
 router.get('/purshases_order_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_order_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_order' ,'purshases_order_view_ar.html'));
         }else{
             res.redirect('/purshasesMain_view_ar?reason=0');
@@ -534,7 +534,7 @@ router.get('/purshases_order_view_ar', (req, res) => {
 
 router.get('/purshases_order_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_order_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_order' ,'purshases_order_add_ar.html'));
         }else{
             res.redirect('/purshases_order_view_ar?reason=0');
@@ -547,7 +547,7 @@ router.get('/purshases_order_add_ar', (req, res) => {
 
 router.get('/purshases_order_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_order_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_order' ,'purshases_order_update_ar.html'));
         }else{
             res.redirect('/purshases_order_view_ar?reason=0');
@@ -563,7 +563,7 @@ router.get('/purshases_order_update_ar', (req, res) => {
 //#region purshases invoice
 router.get('/purshases_invoice_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_invoice_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_invoice' ,'purshases_invoice_view_ar.html'));
         }else{
             res.redirect('/purshasesMain_view_ar?reason=0');
@@ -576,7 +576,7 @@ router.get('/purshases_invoice_view_ar', (req, res) => {
 
 router.get('/purshases_invoice_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_invoice_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_invoice' ,'purshases_invoice_add_ar.html'));
         }else{
             res.redirect('/purshases_invoice_view_ar?reason=0');
@@ -589,7 +589,7 @@ router.get('/purshases_invoice_add_ar', (req, res) => {
 
 router.get('/purshases_invoice_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_invoice_permission > 3) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases', 'purshases_invoice' ,'purshases_invoice_update_ar.html'));
         }else{
             res.redirect('/purshases_invoice_view_ar?reason=0');
@@ -810,20 +810,7 @@ router.get('/bread_update_ar', (req, res) => {
 });
 //#endregion end bread
 
-//#region reports 
-router.get('/effects_report_ar', (req, res) => {
-    if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'reports', 'effects' ,'effects_report_ar.html'));
-        }else{
-            res.redirect('/notes_ar?reason=0');
-        };
-    } else {        
-        res.redirect('/login?reason=0');
-    }
-});
 
-//#endregion reports
 
 //#region accounting
 
@@ -1128,5 +1115,265 @@ router.get('/services_update_ar', (req, res) => {
     }
 });
 //#endregion services
+
+
+//#region sales returns
+router.get('/sales_returns_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_returns' ,'sales_returns_view_ar.html'));
+        }else{
+            res.redirect('/salesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/sales_returns_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_returns' ,'sales_returns_add_ar.html'));
+        }else{
+            res.redirect('/sales_returns_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/sales_returns_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.sales_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'sales_management', 'sales', 'sales_returns' ,'sales_returns_update_ar.html'));
+        }else{
+            res.redirect('/sales_returns_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion sales returns
+
+
+
+//#region purshases returns
+router.get('/purshases_returns_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases_returns' ,'purshases_returns_view_ar.html'));
+        }else{
+            res.redirect('/purshasesMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_returns_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases_returns' ,'purshases_returns_add_ar.html'));
+        }else{
+            res.redirect('/purshases_returns_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/purshases_returns_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.purshases_permission > 3) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'purshases_management', 'purshases_returns' ,'purshases_returns_update_ar.html'));
+        }else{
+            res.redirect('/purshases_returns_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//#endregion purshases returns
+
+router.get('/fixedAssestsMain_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 0 || req.session.accumulated_depreciation_permission > 0 || req.session.disposed_fixed_asset_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management' ,'fixedAssestsMain_view_ar.html'));
+        }else{
+            res.redirect('/nots_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/fixed_assests_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'fixed_assests', 'fixed_assests_view_ar.html'));
+        }else{
+            res.redirect('/fixedAssestsMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/fixed_assests_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'fixed_assests', 'fixed_assests_add_ar.html'));
+        }else{
+            res.redirect('/fixed_assests_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/fixed_assests_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'fixed_assests', 'fixed_assests_update_ar.html'));
+        }else{
+            res.redirect('/fixed_assests_view?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/accumulated_depreciation_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.accumulated_depreciation_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'accumulated_depreciation', 'accumulated_depreciation_view_ar.html'));
+        }else{
+            res.redirect('/fixedAssestsMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/accumulated_depreciation_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.accumulated_depreciation_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'accumulated_depreciation', 'accumulated_depreciation_add_ar.html'));
+        }else{
+            res.redirect('/accumulated_depreciation_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/accumulated_depreciation_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.accumulated_depreciation_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'accumulated_depreciation', 'accumulated_depreciation_update_ar.html'));
+        }else{
+            res.redirect('/accumulated_depreciation_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/disposed_fixed_asset_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.disposed_fixed_asset_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'disposed_fixed_asset', 'disposed_fixed_asset_view_ar.html'));
+        }else{
+            res.redirect('/fixedAssestsMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/disposed_fixed_asset_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.disposed_fixed_asset_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'disposed_fixed_asset', 'disposed_fixed_asset_add_ar.html'));
+        }else{
+            res.redirect('/disposed_fixed_asset_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/disposed_fixed_asset_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.disposed_fixed_asset_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'disposed_fixed_asset', 'disposed_fixed_asset_update_ar.html'));
+        }else{
+            res.redirect('/disposed_fixed_asset_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+//#region fixed assests
+
+//#endregionend fixed assets
+
+
+
+
+//#region reports 
+
+    //#region statments reports
+    router.get('/report_map_ar', (req, res) => {
+        if (req.session.isLoggedIn) {
+            if (req.session.is_owner || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
+                res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'report_map_ar.html'));
+            }else{
+                res.redirect('/notes_ar?reason=0');
+            };
+        } else {        
+            res.redirect('/login?reason=0');
+        }
+    });
+
+        //#region trial_balance
+        router.get('/trial_balance_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'statements' , 'trial_balance', 'trial_balance_view_ar.html'));
+                }else{
+                    res.redirect('/notes_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
+        //#endregion end trial balance
+    //#endregion end statements reports
+
+router.get('/effects_report_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'reports', 'effects' ,'effects_report_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+//#endregion reports
+
+//============================================================================
 
 module.exports = router;

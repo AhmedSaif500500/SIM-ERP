@@ -541,6 +541,9 @@ function fillTable() {
 
             // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
             let avg = (+row.value / +row.current_amount).toFixed(2);
+            if (!avg || isNaN(avg)){
+                avg = 0
+            }
             
 
             tableHTML +=

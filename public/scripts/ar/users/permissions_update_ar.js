@@ -91,6 +91,11 @@ async function get_user_data_fn() {
     document.querySelector("#table_permission_purshases_order").value = array1.purshases_order_permission || 0;
     document.querySelector("#table_permission_purshases_invoice").value = array1.purshases_invoice_permission || 0;
     document.querySelector("#table_permission_services").value = array1.services_permission || 0;
+    document.querySelector("#table_permission_sales_returns").value = array1.sales_returns_permission || 0;
+    document.querySelector("#table_permission_purshases_returns").value = array1.purshases_returns_permission || 0;
+    document.querySelector("#table_permission_fixed_assests").value = array1.fixed_assests_permission || 0;
+    document.querySelector("#table_permission_accumulated_depreciation").value = array1.accumulated_depreciation_permission || 0;
+    document.querySelector("#table_permission_disposed_fixed_asset").value = array1.disposed_fixed_asset_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -232,6 +237,11 @@ try {
   let table_permission_purshases_order = A("#table_permission_purshases_order");
   let table_permission_purshases_invoice = A("#table_permission_purshases_invoice");
   let table_permission_services = A("#table_permission_services");
+  let table_permission_sales_returns = A("#table_permission_sales_returns");
+  let table_permission_purshases_returns = A("#table_permission_purshases_returns");
+  let table_permission_fixed_assests = A("#table_permission_fixed_assests");
+  let table_permission_accumulated_depreciation = A("#table_permission_accumulated_depreciation");
+  let table_permission_disposed_fixed_asset = A("#table_permission_disposed_fixed_asset");
 
     // ضبط قيم الصلاحيات
     if (general_permission_select != "1" || general_permission_select == '') {
@@ -256,6 +266,11 @@ try {
       table_permission_purshases_order = '';
       table_permission_purshases_invoice = '';
       table_permission_services = '';
+      table_permission_sales_returns = '';
+      table_permission_purshases_returns = '';
+      table_permission_fixed_assests = '';
+      table_permission_accumulated_depreciation = '';
+      table_permission_disposed_fixed_asset = '';
       // add here all tables select permission id
     };
 
@@ -285,7 +300,12 @@ try {
           table_permission_purshases_qutation,
           table_permission_purshases_order,
           table_permission_purshases_invoice,
-          table_permission_services
+          table_permission_services,
+          table_permission_sales_returns,
+          table_permission_purshases_returns,
+          table_permission_fixed_assests,
+          table_permission_accumulated_depreciation,
+          table_permission_disposed_fixed_asset
         },
         'users_permission','update',
         20,

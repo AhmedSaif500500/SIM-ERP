@@ -66,14 +66,14 @@ let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
 let f4_select = filter_div.querySelector(`#f4_select`);
 let f4_input = filter_div.querySelector(`#f4_input`);
 
-//! balance
+//! total_value
 let f5_div = filter_div.querySelector(`#f5_div`);
 let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
 let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
 let f5_select = filter_div.querySelector(`#f5_select`);
 let f5_input = filter_div.querySelector(`#f5_input`);
 
-//! balance
+//! payment_status
 let f6_div = filter_div.querySelector(`#f6_div`);
 let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
 let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
@@ -94,8 +94,17 @@ let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
 let f8_select = filter_div.querySelector(`#f8_select`);
 let f8_input = filter_div.querySelector(`#f8_input`);
 
+
+//! remaining_balance
+let f9_div = filter_div.querySelector(`#f9_div`);
+let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
+let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
+let f9_select = filter_div.querySelector(`#f9_select`);
+let f9_input = filter_div.querySelector(`#f9_input`);
+
+
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -293,16 +302,17 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f0',true,true,true)
-    call_default_checkbox('f100',true,false,true)
-    call_default_checkbox('f1',true,true,false)
-    call_default_checkbox('f2',true,false,false)
-    call_default_checkbox('f3',true,true,false)
-    call_default_checkbox('f4',true,true,false)
-    call_default_checkbox('f5',true,true,false)
-    call_default_checkbox('f6',true,true,false)
-    call_default_checkbox('f7',true,false,false)
-    call_default_checkbox('f8',true,false,false)
+    call_default_checkbox('f0',true,true,true) // datex
+    call_default_checkbox('f100',true,false,true) // due date
+    call_default_checkbox('f1',true,true,false) // reference
+    call_default_checkbox('f2',true,false,false) // salesman
+    call_default_checkbox('f3',true,true,false) // accountName
+    call_default_checkbox('f4',true,true,false) // note
+    call_default_checkbox('f5',true,true,false) // total_value
+    call_default_checkbox('f6',true,true,false) // payment_status
+    call_default_checkbox('f7',true,false,false) // sales order Reference
+    call_default_checkbox('f8',true,false,false) // sales Qutation Reference
+    call_default_checkbox('f9',true,true,false) // remaining_balance
 
 }
 
@@ -368,6 +378,7 @@ async function getData_fn() {
             'حدث خطأ اثناء معالجة البيانات'
         )
 
+        
 
         showFirst50RowAtTheBegening();
     } catch (error) {
@@ -505,10 +516,12 @@ function showFirst50RowAtTheBegening() {
                     row
                 );
 
-                const isQutationstatus = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
+            const isPaymentstatusstatus = 
+                filterData_string_column_with_showAndHiddenCheckbox(
                     f6_checkbox,
                     f6_select,
-                    'is_invoiced',
+                    f4_input,
+                    'payment_status',
                     row
                 );
 
@@ -530,6 +543,14 @@ function showFirst50RowAtTheBegening() {
                     row
                 );
 
+                const isRemaining_balanceeMatch =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f9_checkbox,
+                    f9_select,
+                    f9_input,
+                    "remaining_balance",
+                    row
+                );
 
             return (
 
@@ -540,9 +561,10 @@ function showFirst50RowAtTheBegening() {
                 isSAccountNameMatch &&
                 isNoteMatch &&
                 isBalanceMatch &&
-                isQutationstatus &&
+                isPaymentstatusstatus &&
                 isQutationReference &&
-                isOrderReference
+                isOrderReference &&
+                isRemaining_balanceeMatch
             ); // && otherCondition;
         });
 
@@ -582,10 +604,12 @@ function fillTable() {
         let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
         let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f4_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
         let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
-        let style_balance = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let is_invoiced = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_total_value = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_payment_status = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_remaining_balance = `display:${f9_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
+        total_column2.value = 0;
         let fn = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
@@ -608,9 +632,9 @@ function fillTable() {
                                 <th style="${style_id}">qutation_id</th>
                                 <th style="${style_qutation_reference}">عرض السعر</th>
                                 <th style="${style_note}">البيان</th>
-                                <th style="${style_balance}">قيمة</th>
-                                <th style="${is_invoiced}">الحاله</th>
-                                
+                                <th style="${style_total_value}">قيمة</th>
+                                <th style="${style_remaining_balance}">المستحق</th>
+                                <th style="${style_payment_status}">الحاله</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -619,12 +643,18 @@ function fillTable() {
                 
 
             // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let invoicedstatusClass;
+            let payment_status_class;
             
-            if(row.is_invoiced === 'مفوتر'){
-                invoicedstatusClass = 'table_green_condition'
-            }else if(row.is_invoiced === 'غير مفوتر'){
-                invoicedstatusClass = 'table_orange_condition'
+            if(row.payment_status.includes('مدفوع بالكامل')){
+                payment_status_class = 'table_green_condition'
+            }else if(row.payment_status.includes('مدفوع مقدماً')){
+                payment_status_class = 'table_blue_condition'
+            }else if(row.payment_status.includes('مستحق اليوم')){
+                payment_status_class = 'table_blue_condition'
+            }else if(row.payment_status.includes('مستحق منذ')){
+                payment_status_class = 'table_red_condition'
+            }else if(row.payment_status.includes('يستحق بعد')){
+                payment_status_class = 'table_orange_condition'
             }
 
             tableHTML +=
@@ -644,8 +674,9 @@ function fillTable() {
                         <td style="${style_id}" class="td_qutation_id">${row.qutation_id}</td>
                         <td style="${style_qutation_reference}" class="td_qutation_reference">${row.qutation_reference}</td>
                         <td style="${style_note}" class="td_general_note">${row.general_note}</td>
-                        ${tdNumber(true,false,true,row.total_value,style_balance,total_column1,fn,'td_total_value')}
-                        <td style="${is_invoiced}"><span class="${invoicedstatusClass} td_is_invoiced">${row.is_invoiced}</span></td>               
+                        ${tdNumber(true,false,true,row.total_value,style_total_value,total_column1,fn,'td_total_value')}
+                        ${tdNumber(false,false,true,row.remaining_balance,style_remaining_balance,total_column2,fn,'td_remaining_balance')}
+                        <td style="${style_payment_status}"><span class="${payment_status_class} td_payment_status">${row.payment_status}</span></td>               
                       </tr>`;
         });
 
@@ -666,8 +697,9 @@ function fillTable() {
                         <td id="footer_style_qutation_id" style="${style_id}"></td>
                         <td id="footer_style_qutation_reference" style="${style_qutation_reference}"></td>
                         <td id="footer_style_note" style="${style_note}"></td>
-                        <td id="footer_style_balance" style="${style_balance}"></td>
-                        <td id="footer_style_balance" style="${is_invoiced}"></td>
+                        <td id="footer_style_total_value" style="${style_total_value}"></td>
+                        <td id="footer_style_remaining_balance" style="${style_remaining_balance}"></td>
+                        <td id="footer_style_payment_status" style="${style_payment_status}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -694,7 +726,8 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_balance`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_remaining_balance`).textContent = floatToString(true,total_column2.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
@@ -723,9 +756,10 @@ function performSearch() {
             const AccountName_Match = performSearch_Row(f3_checkbox,"customer_name",searchValue,row);
             const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
             const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
-            const qutationstatus = performSearch_Row(f6_checkbox,"is_invoiced",searchValue,row);
             const orderReference = performSearch_Row(f7_checkbox,"order_reference",searchValue,row);
             const qutationReference = performSearch_Row(f8_checkbox,"qutation_reference",searchValue,row);
+            const remaining_balance = performSearch_Row(f9_checkbox,"remaining_balance",searchValue,row);
+            const payment_status = performSearch_Row(f6_checkbox,"payment_status",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
@@ -737,8 +771,9 @@ function performSearch() {
                 noteMatch ||
                 balanceMatch ||
                 orderReference ||
-                qutationstatus ||
-                qutationReference
+                qutationReference ||
+                remaining_balance ||
+                payment_status
             );
         });
 

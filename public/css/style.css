@@ -762,6 +762,10 @@ input[type="checkbox"]:hover {
 
 /*! end margin*/
 
+.hand{
+  cursor: pointer;
+}
+
 /* ? start - H */
 
 .h2_main_text_div {
@@ -2542,7 +2546,7 @@ html[dir="rtl"] {
   .review_table td {
     position: static; /*! لو غيرتها الحدود مش هتبان */
     border: 1px solid #999 !important;
-    padding: 3px 5px !important;
+    /* padding: 3px 5px !important; */
 
     page-break-inside: avoid !important; /* يمنع انقسام الصف الى جزىئين فى حاله ان الصفحه مكفتش لعرض الصف */
     box-sizing: border-box !important; /* تأكد من احتساب الحدود ضمن حجم الخلية */
@@ -2655,25 +2659,70 @@ html[dir="rtl"] {
 
 .table_blue_condition {
   color: var(--btn_new_backcolor);
-  font-weight: bold;
+  /* font-weight: bold; */
 }
 
 .table_green_condition {
   color: var(--btn_save_backcolor);
-  font-weight: bold;
+  /* font-weight: bold; */
+  position: relative; /* ضروري للسماح بإضافة العنصر قبل */
+  
+}
+
+
+@keyframes glowing {
+  from {
+    box-shadow: 0 0 5px var(--btn_save_backcolor);
+  }
+  to {
+    box-shadow: 0 0 15px var(--btn_save_backcolor), 0 0 25px var(--btn_save_backcolor);
+  }
 }
 
 .table_orange_condition {
   /* color: var(--btn_update_backcolor); */
   color: darkorange;
-  font-weight: bold;
+  /* font-weight: bold; */
 }
 
 .table_red_condition {
   color: var(--btn_delete_backcolor);
-  font-weight: bold;
+  /* font-weight: bold; */
 }
 
+.table_blue_condition,
+.table_green_condition,
+.table_orange_condition,
+.table_red_condition {
+  position: relative; /* للسماح بإضافة العنصر قبل */
+}
+
+.table_blue_condition::before,
+.table_green_condition::before,
+.table_orange_condition::before,
+.table_red_condition::before {
+  content: "";
+  display: inline-block;
+  width: 8px; /* حجم الدائرة */
+  height: 8px; /* نفس الحجم لضمان أن تكون دائرية */
+  border-radius: 50%; /* لجعلها دائرية */
+  margin-inline-end: 0.7rem; /* مسافة بين النقطة والنص */
+  vertical-align: middle; /* لضبط المحاذاة مع النص */
+  box-shadow: 0 0 10px currentColor; /* تأثير الإضاءة */
+  animation: glowing 1.5s infinite alternate; /* حركة التوهج مربوط بكود @keyframes glowing */
+  background-color: currentColor; /* لجعل لون الدائرة نفس لون النص */
+}
+
+/* كود التوهج */
+@keyframes glowing {
+  from {
+    box-shadow: 0 0 5px currentColor;
+  }
+  to {
+    box-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
+  }
+  
+}
 
 .table_blue_backgrouund_condition,
 .table_green_backgrouund_condition,
@@ -3373,7 +3422,11 @@ html[dir="rtl"] {
 /* النافذة */
 .dialog {
   background-color: var(--bg_white_backcolor);
-  padding: 2rem;
+  padding-block-start: 0.5rem;
+  padding-block-end: 2rem;
+  padding-inline-start: 2rem;
+  padding-inline-end: 2rem;
+  /* padding: 2rem; */
   border-radius: 0.5rem;
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s;
@@ -3381,7 +3434,8 @@ html[dir="rtl"] {
 }
 
 .dialog_input {
-  width: 40rem !important;
+  /* width: 40rem !important; */
+  width: fit-content;
   overflow: auto !important;
 }
 @media screen and (max-width: 600px) {
@@ -3727,6 +3781,12 @@ html[dir="rtl"] {
   inset-inline-end: 2.5rem;
 }
 
+@media print {
+  .fn_container_div {
+    display: none;
+  }
+}
+
 @media screen and (max-width: 750px) {
   .fn_container_div {
     inset-block-start: 7.5rem;
@@ -3808,6 +3868,45 @@ html[dir="rtl"] {
   scale: 1.1;
 }
 
+
+.info_div_with_normal_nput{
+  position: relative;
+  display: flex;
+  flex-direction: row; justify-content: start; align-items: center;
+  margin-block-end: 1rem;
+}
+.info_div_with_normal_nput input,
+.info_div_with_normal_nput textarea,
+.info_div_with_normal_nput span,
+.info_div_with_normal_nput div{
+  margin: 0;
+}
+
+.info_div_with_normal_nput .inf_btn{
+  margin-inline-start: 1rem;
+}
+
+
+.inf_btn {
+  /* color: var(--Font_Color); */
+  color: gray;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* تأثير الظل */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.inf_btn:hover{
+  transform: translateY(-4px); /* تأثير البروز عند التمرير */
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); /* تأثير الظل عند التمرير */
+}
+
+.inf_btn:active {
+  transform: translateY(2px); /* تأثير الضغط على الزر */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
+  scale: 1.2;
+}
+
 .custom_button {
   /* background: linear-gradient(to bottom, #d1d1d1, #a0a0a0); */
   background: linear-gradient(to bottom, #bebebe, #808080); /* تغميق الألوان */  
@@ -3871,4 +3970,48 @@ html[dir="rtl"] {
   position: absolute;
   inset-inline-end: 0;
   inset-block-start: 1rem;
+}
+
+
+.dialogx_div_for_2_dates{
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-block-end: 1rem;
+  width: 100%;
+  gap: 1rem;
+}
+
+.dialogx_div_for_2_dates .date_div{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.dialogx_checkbox_div{
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  height: var(--input_height);
+  width: fit-content;
+  background-color: var(--btn_search_backcolor);
+  color: var(--btn_search_color);
+  padding: 0.8rem;
+  margin-block-end: 1rem;
+  height: var(--input_height);
+  border: var(--border_normal);
+  border-radius: 0.3rem;
+  gap: 1rem;
+  transition: var(--transition);
 }

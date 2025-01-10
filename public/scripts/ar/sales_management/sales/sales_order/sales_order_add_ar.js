@@ -162,6 +162,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
 
 async function get_Data_for_add_page_fn() {
   // معلق
+
   data_accounts = await new_fetchData_postAndGet(
     "/get_data_for_sales_order_add",
     {},

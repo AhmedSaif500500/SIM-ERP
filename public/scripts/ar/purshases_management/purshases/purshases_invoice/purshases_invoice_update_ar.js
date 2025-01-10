@@ -230,12 +230,40 @@ document.addEventListener('DOMContentLoaded', async function () {
 })
 
 
+async function createpurshasesReturns(){
+  try {
+
+    const permission = await btn_permission('purshases_returns_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
+
+    await showDialog('', `سيتم تحويلك الى صفحة انشاء مرتجع المشتريات , هل تريد المتابعه؟`, '');        
+    if (!dialogAnswer) {
+      return false;
+    }
+
+    
+    const purshases_returns_update_data = {
+      x: headerDataArray.id,
+      vendor_id: headerDataArray.account_id,
+      invoiceToReturns: true
+    };
+    sessionStorage.removeItem('purshases_returns_update_data')
+    sessionStorage.setItem('purshases_returns_update_data', JSON.stringify(purshases_returns_update_data));                            
+    window.location.href = `purshases_returns_add_ar`;
+  } catch (error) {
+    catch_error(error)
+  }
+}
 
 
 function handle_fn_options(){
   const newDivs = `
     <div id="fn_option_update_btn" onclick="viewMode(false,'purshases_invoice_permission','update')">وضع التعديل</div>
     <div id="fn_option_view_btn" onclick="viewMode(true,'purshases_invoice_permission','view')" style="display: none;">وضع العرض</div>
+     <div id="" onclick="createpurshasesReturns()">انشاء مرتجع مشتريات</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
 }

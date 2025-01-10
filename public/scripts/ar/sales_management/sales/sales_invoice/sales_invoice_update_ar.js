@@ -230,14 +230,40 @@ document.addEventListener('DOMContentLoaded', async function () {
 })
 
 
+async function createSlalesReturns(){
+  try {
+
+    const permission = await btn_permission('sales_returns_permission', 'add') // معلق
+    if (!permission){
+      showAlert('warning','عفواً لا تملك الصلاحيه')
+      return
+    }
+
+    await showDialog('', `سيتم تحويلك الى صفحة انشاء مرتجع المبيعات , هل تريد المتابعه؟`, '');        
+    if (!dialogAnswer) {
+      return false;
+    }
+
+    
+    const sales_invoice_update_data = {
+      x: headerDataArray.id,
+      customer_id: headerDataArray.account_id,
+      invoiceToReturns: true
+    };
+    sessionStorage.removeItem('sales_returns_update_data')
+    sessionStorage.setItem('sales_returns_update_data', JSON.stringify(sales_invoice_update_data));                            
+    window.location.href = `sales_returns_add_ar`;
+  } catch (error) {
+    catch_error(error)
+  }
+}
 
 
 function handle_fn_options(){
   const newDivs = `
     <div id="fn_option_update_btn" onclick="viewMode(false,'sales_invoice_permission','update')">وضع التعديل</div>
     <div id="fn_option_view_btn" onclick="viewMode(true,'sales_invoice_permission','view')" style="display: none;">وضع العرض</div>
-    <div>انشاء امر بيع</div>
-    <div>انشاء فاتورة</div>
+    <div id="" onclick="createSlalesReturns()">انشاء مرتجع مبيعات</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
 }
