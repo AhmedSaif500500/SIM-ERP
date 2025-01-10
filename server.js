@@ -1167,7 +1167,7 @@ return res.json({
         {id: x17, parent_id: x5, account_name: "ارباح وخسائر فترات سابقة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 23, main_account_id: 3},
         {id: x18, parent_id: x6, account_name: "ايرادات المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 19, main_account_id: 4},
         {id: x19, parent_id: x7, account_name: "تكلفة المخزون - المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 17, main_account_id: 5},
-        {id: x20, parent_id: x7, account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 6, account_name_en: null, global_id: 18, main_account_id: 5},
+        {id: x20, parent_id: x7, account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 18, main_account_id: 5},
         {id: x21, parent_id: false, account_name: "مراكز التكلفة", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 21, main_account_id: null},
         {id: x22, parent_id: x21, account_name: "مجموعة مراكز التكلفة 1", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 22, main_account_id: null},
         // أضف باقي الحسابات
@@ -23991,6 +23991,91 @@ await db.tx(async (tx) => {
 });
 
 
+app.post("/fixed_assests_view", async (req, res) => {
+  try {
+    
+    //! Permission  
+    await permissions(req, "fixed_assests_permission", "view");
+    if (!permissions) {
+      return;
+    }
+      
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+ 
+
+let quer1 = `
+SELECT
+    ah.id,
+    ah.account_name,
+    ah.item_expense_account,
+    ah.str10_data_column1 AS purshases_date,
+    ah.str10_data_column2 AS started_depreciation_date,
+    ah.numeric_column1 AS rate_value,
+    ah.numeric_column2 AS un_depericated_value,
+    ah.str50_column1 AS fixed_ssests_group_name,
+    ah.str_textarea_column1 AS asset_info,
+        SUM(
+        CASE 
+            WHEN tb.is_accumulated_depreciationIS NULL THEN (tb.debit - tb.credit)
+            ELSE 0
+        END
+    ) AS asset_cost,
+    SUM(
+        CASE 
+            WHEN tb.is_accumulated_depreciation IS TRUE THEN (tb.credit - tb.debit)
+            ELSE 0
+        END
+    ) AS depreciation_value
+FROM
+    accounts_header ah
+LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE
+    ah.company_id = $1
+    AND ah.finance_statement = 1
+    AND ah.account_type_id = 6
+    AND (th.is_deleted IS NULL OR th.is_deleted = FALSE)
+GROUP BY
+    ah.id;
+
+`;
+
+// تنفيذ الاستعلامات
+let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error get_sales_invoice_Data_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
 app.post("/fixed_assests_add", async (req, res) => {
   try {
         // إرسال رسالة إلى العميل عبر WebSocket
@@ -24006,8 +24091,6 @@ app.post("/fixed_assests_add", async (req, res) => {
       }  
 
     
-
-
     //! sql injection check
 
           // سرد كل القيم مره واحده 

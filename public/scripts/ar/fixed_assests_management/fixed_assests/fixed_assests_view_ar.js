@@ -21,7 +21,7 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! datex
+//! تاريخ الشراء
 let f0_div = filter_div.querySelector(`#f0_div`);
 let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
 let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
@@ -29,7 +29,7 @@ let f0_select = filter_div.querySelector(`#f0_select`);
 let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
 let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
 
-//! datex
+//! تاريخ اول اهلاك
 let f100_div = filter_div.querySelector(`#f100_div`);
 let f100_checkbox_div = filter_div.querySelector(`#f100_checkbox_div`);
 let f100_checkbox = filter_div.querySelector(`#f100_checkbox`);
@@ -38,56 +38,56 @@ let f100_input_start_date1 = filter_div.querySelector(`#f100_input_start_date1`)
 let f100_input_end_date1 = filter_div.querySelector(`#f100_input_end_date1`); f100_input_end_date1.value = lastDayOfYear;
 
 
-//! reference
+//! account no
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! salesman
+//! account name
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
 let f2_select = filter_div.querySelector(`#f2_select`);
 let f2_input = filter_div.querySelector(`#f2_input`);
 
-//! accountName
+//! account group desc
 let f3_div = filter_div.querySelector(`#f3_div`);
 let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
 let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
 let f3_select = filter_div.querySelector(`#f3_select`);
 let f3_input = filter_div.querySelector(`#f3_input`);
 
-//! note
+//! account desc
 let f4_div = filter_div.querySelector(`#f4_div`);
 let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
 let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
 let f4_select = filter_div.querySelector(`#f4_select`);
 let f4_input = filter_div.querySelector(`#f4_input`);
 
-//! total_value
+//! und depre value
 let f5_div = filter_div.querySelector(`#f5_div`);
 let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
 let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
 let f5_select = filter_div.querySelector(`#f5_select`);
 let f5_input = filter_div.querySelector(`#f5_input`);
 
-//! payment_status
+//! depr rate
 let f6_div = filter_div.querySelector(`#f6_div`);
 let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
 let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
 let f6_select = filter_div.querySelector(`#f6_select`);
 let f6_input = filter_div.querySelector(`#f6_input`);
 
-//! sales order reference
+//! purshases value
 let f7_div = filter_div.querySelector(`#f7_div`);
 let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
 let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
 let f7_select = filter_div.querySelector(`#f7_select`);
 let f7_input = filter_div.querySelector(`#f7_input`);
 
-//! sales qutation reference
+//! ما تم اهلاكه
 let f8_div = filter_div.querySelector(`#f8_div`);
 let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
 let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
@@ -95,7 +95,7 @@ let f8_select = filter_div.querySelector(`#f8_select`);
 let f8_input = filter_div.querySelector(`#f8_input`);
 
 
-//! remaining_balance
+//! book_value
 let f9_div = filter_div.querySelector(`#f9_div`);
 let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
 let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
@@ -104,7 +104,7 @@ let f9_input = filter_div.querySelector(`#f9_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -144,25 +144,23 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('sales_invoice_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('fixed_assests_ViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('sales_invoice_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('fixed_assests_ViewArray', JSON.stringify(conditionsArray));
 }
 
 
 back_href.onclick = async function (event) {
     event.preventDefault();
    
-
-    const array = JSON.parse(sessionStorage.getItem(`sales_invoice_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`fixed_assests_ViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
-   
             window.location.href = `salesMain_view_ar`;
        
     }else{
@@ -177,7 +175,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("sales_invoice_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("fixed_assests_ViewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -187,7 +185,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("sales_invoice_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("fixed_assests_ViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -304,15 +302,15 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 function deafult_checkbox() {
     call_default_checkbox('f0',true,true,true) // datex
     call_default_checkbox('f100',true,false,true) // due date
-    call_default_checkbox('f1',true,true,false) // reference
-    call_default_checkbox('f2',true,false,false) // salesman
-    call_default_checkbox('f3',true,true,false) // accountName
-    call_default_checkbox('f4',true,true,false) // note
-    call_default_checkbox('f5',true,true,false) // total_value
-    call_default_checkbox('f6',true,true,false) // payment_status
-    call_default_checkbox('f7',true,false,false) // sales order Reference
-    call_default_checkbox('f8',true,false,false) // sales Qutation Reference
-    call_default_checkbox('f9',true,true,false) // remaining_balance
+    call_default_checkbox('f1',true,true,false) // account_no
+    call_default_checkbox('f2',true,false,false) // account_name
+    call_default_checkbox('f3',true,false,false) // account_group
+    call_default_checkbox('f4',true,false,false) // account_desc
+    call_default_checkbox('f5',true,false,false) // un dep value
+    call_default_checkbox('f6',true,true,false) // rate
+    call_default_checkbox('f7',true,true,false) // purshases value
+    call_default_checkbox('f8',true,true,false) // depeaceated
+    call_default_checkbox('f9',true,true,false) // book value
 
 }
 
@@ -332,7 +330,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('sales_invoice_Array');
+            sessionStorage.removeItem('fixed_assests_ViewArray');
             conditionsArray = []
             
         }
@@ -365,8 +363,8 @@ async function getData_fn() {
        
         //  معلق
         data = await new_fetchData_postAndGet(
-            "/get_sales_invoice_Data_view",
-            {start_date, end_date},
+            "/fixed_assests_view",
+            {},
             "sales_invoice_permission","view",
             15,
             false,'',
@@ -883,7 +881,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`sales_invoice_Array`);
+    const conditionsArray = sessionStorage.getItem(`fixed_assests_ViewArray`);
 
     if (!conditionsArray){
      

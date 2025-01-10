@@ -104,7 +104,7 @@ let f9_input = filter_div.querySelector(`#f9_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
