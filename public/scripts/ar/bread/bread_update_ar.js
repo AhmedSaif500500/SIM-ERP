@@ -104,7 +104,7 @@ try {
                 <tr>
                   <td colspan="4" class="">
                     <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
-                    <button onclick="addRows()" class="btn_new">سطر جديد</button>
+                    <button onclick="handele_addrow()" class="btn_new">سطر جديد</button>
                     <select id="columnSelect" class="select m_0" style="width: fit-content; height: 3.5rem;">
                       <option value="1">1</option>
                       <option value="2">2</option>
@@ -175,6 +175,10 @@ function updateFooter() {
   });
 }
 
+function handele_addrow(){
+  addRows()
+  updateFooter()
+}
 
 function addRows() {
   var table = document.getElementById("myTable");

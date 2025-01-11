@@ -23915,7 +23915,7 @@ app.post("/api/purshases_returns_delete", async (req, res) => {
 app.post("/get_expenses_accounts", async (req, res) => {
   try {
     //! Permission معلق
-    await permissions(req, "sales_qutation_permission", "update");
+    await permissions(req, "fixed_assests_permission", "add");
     if (!permissions) {
       return;
     }
@@ -24030,8 +24030,11 @@ app.post("/fixed_assests_view", async (req, res) => {
  
 
 let quer1 = `
+WITH
+main_query as(
 SELECT
     ah.id,
+    ah.account_no,
     ah.account_name,
     ah.item_expense_account,
     ah.str10_data_column1 AS purshases_date,
@@ -24040,18 +24043,19 @@ SELECT
     ah.numeric_column2 AS un_depericated_value,
     ah.str50_column1 AS fixed_ssests_group_name,
     ah.str_textarea_column1 AS asset_info,
-        SUM(
+    SUM(
         CASE 
-            WHEN tb.is_accumulated_depreciationIS NULL THEN (tb.debit - tb.credit)
+            WHEN tb.is_accumulated_depreciation IS NULL THEN (COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0))
             ELSE 0
         END
     ) AS asset_cost,
     SUM(
         CASE 
-            WHEN tb.is_accumulated_depreciation IS TRUE THEN (tb.credit - tb.debit)
+            WHEN tb.is_accumulated_depreciation IS TRUE THEN (COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0))
             ELSE 0
         END
-    ) AS depreciation_value
+    ) AS depreciation_value,
+     'نشط' as assest_status
 FROM
     accounts_header ah
 LEFT JOIN transaction_body tb ON tb.account_id = ah.id
@@ -24062,12 +24066,29 @@ WHERE
     AND ah.account_type_id = 6
     AND (th.is_deleted IS NULL OR th.is_deleted = FALSE)
 GROUP BY
-    ah.id;
-
+    ah.id)
+select
+    mq.id,
+    mq.account_no,
+    mq.account_name,
+    mq.item_expense_account,
+    mq.purshases_date,
+    mq.started_depreciation_date,
+    mq.rate_value,
+    mq.un_depericated_value,
+    mq.fixed_ssests_group_name,
+    mq.asset_info,
+	mq.asset_cost,
+	mq.depreciation_value,
+	mq.asset_cost - mq.depreciation_value as book_value,
+	mq.assest_status
+    from
+    	main_query mq
+;
 `;
 
 // تنفيذ الاستعلامات
-let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+let data = await db.any(quer1, [req.session.company_id]);
 
     res.json(data);
   } catch (error) {
@@ -24141,16 +24162,26 @@ app.post("/fixed_assests_add", async (req, res) => {
     let query0 = `SELECT
                (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 6) as count_account_name,
                (select main_account_id FROM accounts_header WHERE company_id = $1 AND global_id = 9) as parent_main_account_id,
-               (select id FROM accounts_header WHERE company_id = $1 AND global_id = 9) as parent_id
+               (select id FROM accounts_header WHERE company_id = $1 AND global_id = 9) as parent_id,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3 AND account_type_id = 1 AND main_account_id = 5 AND global_id != 17) as count_expense_account
               `;
     let result = await db.oneOrNone(query0, [
       req.session.company_id,
-      posted_elements.fixed_ssests_name_input_value,      
+      posted_elements.fixed_ssests_name_input_value,    
+      posted_elements.dropdown_div_hidden_input_value, // depreciation_account
     ]);
-
-    console.log(result);
     
      
+
+    if (result.count_expense_account === 0) {
+      await block_user(req, 'Sfaa001');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
     if (result.count_account_name > 0) {
       // اذا حصل على نتائج
       return res.json({
@@ -24177,14 +24208,15 @@ app.post("/fixed_assests_add", async (req, res) => {
 
 
     let query1 = `
-  INSERT INTO accounts_header (id, account_name, account_no, finance_statement, company_id, account_type_id, main_account_id, item_expense_account, str10_data_column1, str10_data_column2, numeric_column1, numeric_column2, str50_column1, str_textarea_column1)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+  INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, item_expense_account, str10_data_column1, str10_data_column2, numeric_column1, numeric_column2, str50_column1, str_textarea_column1)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 `;
 
   let params1 =[
     newId_header,
     posted_elements.fixed_ssests_name_input_value,
     posted_elements.fixed_ssests_input_value,
+    true,
     1,
     req.session.company_id,
     6,
@@ -24230,6 +24262,379 @@ app.post("/fixed_assests_add", async (req, res) => {
     });
   }
 });
+
+
+app.post("/get_fixed_assests_data_for_update_page", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "fixed_assests_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+     --  حسابات المصورفات باستثناء حساب تكلفة المخزون
+select
+	ah.id as id,
+	ah.account_name as account_name
+from
+	accounts_header ah
+WHERE ah.company_id = $1
+  AND ah.account_type_id in(1,6)
+  and ah.finance_statement = 2
+  and ah.main_account_id = 5
+  and ah.is_final_account is true
+  and ah.global_id != 17
+  and ah.is_inactive is null
+  ;
+`;
+let params1 = [req.session.company_id]
+
+let query2 = `
+--  حسابات المصورفات باستثناء حساب تكلفة المخزون
+select
+	ah.id as id
+from
+	accounts_header ah
+WHERE ah.company_id = $1
+      and ah.global_id = 18
+;
+`;
+let params2 = [req.session.company_id]
+
+
+let query3 = `
+--  بيانات الاصل الثابت
+select
+	ah.id,
+	ah.account_no,
+	ah.account_name,
+	ah.item_expense_account,
+	ah.str10_data_column1 as purshases_date,
+	ah.str10_data_column2 AS started_depreciation_date,
+	ah.numeric_column1 AS rate_value,
+	ah.numeric_column2 AS un_depericated_value,
+	ah.str50_column1 AS fixed_ssests_group_name,
+	ah.str_textarea_column1 AS asset_info
+from
+	accounts_header ah
+where 
+	ah.company_id = $1
+	and ah.id = $2
+	and ah.account_type_id = 6
+	and ah.is_final_account is true
+;
+`;
+let params3 = [req.session.company_id, posted_elements.x]
+
+
+await db.tx(async (tx) => {
+
+  const expensesAccountsArray = await tx.any(query1, params1);
+  const deafultDepreciationExpensesAccount = await tx.oneOrNone(query2, params2);
+  const asset_data = await tx.oneOrNone(query3, params3);
+
+  
+  const postedData = { expensesAccountsArray, deafultDepreciationExpensesAccount, asset_data};
+  res.json(postedData);
+})
+
+
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while get Employees Data", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get Employees Data" });
+  }
+});
+
+app.post("/fixed_assests_update", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "fixed_assests_permission", "update");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.fixed_ssests_name_input_value || posted_elements.fixed_ssests_name_input_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "برجاء ادخال اسم الاصل",
+      });
+    }          
+    
+    if (!posted_elements.rate_input_value || isNaN(posted_elements.rate_input_value)){
+      return res.json({
+        success: false,
+        message_ar:
+          "برجاء ادخال معدل الضريبه بشكل صحيح",
+      });
+    }     
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3 AND account_type_id = 6) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3 and account_type_id = 6) as count_id,
+                (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $4 AND account_type_id = 1 AND main_account_id = 5 AND global_id != 17) as count_expense_account
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.fixed_ssests_name_input_value,
+      posted_elements.x,
+      posted_elements.dropdown_div_hidden_input_value,
+    ]);
+
+
+
+    if (result.count_expense_account === 0) {
+      await block_user(req, 'Sfau001');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    //500500
+    if (result.count_id === 0) {
+      await block_user(req,'Sfau002')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    
+     
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "اسم الاصل موجود بالفعل"
+      });
+    }
+
+
+    let query1 = `
+  UPDATE accounts_header set account_name = $1,
+                    account_no = $2,
+                    item_expense_account = $3,
+                    str10_data_column1 = $4,
+                    str10_data_column2 = $5,
+                    numeric_column1 = $6,
+                    numeric_column2 = $7,
+                    str50_column1 = $8,
+                    str_textarea_column1 = $9
+                where
+                    id = $10
+                    AND company_id = $11
+                    AND account_type_id = 6
+                    ;
+  `;
+
+  let params1 =[
+    posted_elements.fixed_ssests_name_input_value,
+    posted_elements.fixed_ssests_input_value,
+    posted_elements.dropdown_div_hidden_input_value,
+    posted_elements.purshase_date_input_value,
+    posted_elements.started_accumulated_depeciation_date_input_value,
+    posted_elements.rate_input_value,
+    posted_elements.un_depericated_value_input_value,
+    posted_elements.fixed_ssests_group_name_input_value,
+    posted_elements.asset_info_input_value,
+    posted_elements.x,
+    req.session.company_id
+  ]
+
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await history(14, 2, posted_elements.x, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم تعديل بيانات الاصل الثابت بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error fixed_assests_update:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+
+app.post("/fixed_assests_delete", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "fixed_assests_permission", "delete");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+       
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $2 AND is_final_account IS TRUE and account_type_id = 6) as count_id,
+               (select count(id) FROM transaction_body WHERE account_id = $2) as count_transaction_body
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.x
+    ]);
+
+
+    if (result.count_id === 0) {
+      await block_user(req,'Sfad001')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    if (result.count_transaction_body > 0) {
+      return res.json({
+        success: false,
+        message_ar: 'يوجد حركات على الاصل الثابت فى القيود اليوميه ولا يمكن حذفه',
+      });
+    }
+
+
+    let query1 = `
+  delete from accounts_header where id = $1 AND company_id = $2 AND is_final_account is true AND account_type_id = 6;
+  `;
+
+  let params1 =[
+    posted_elements.x,
+    req.session.company_id
+  ]
+
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await history(14, 3, posted_elements.x, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حذف بيانات الاصل الثابت بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error fixed_assests_delete:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
 //#endregion
 
 

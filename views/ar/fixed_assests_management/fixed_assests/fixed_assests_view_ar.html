@@ -68,10 +68,10 @@
             <div class="filter_div_sub" id="f1_div">
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f1_checkbox" title="اظهار العمود"
-                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
                 <div class="checkbox_label">المعرف</div>
               </div>
-              <div id="f1_selectAndInput_div" class="select_and_input_div">
+              <div id="f1_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
                 <select id="f1_select" class="dark_select hover"
                   onchange="filter_insideSelect_string_column_with_input(this)">
                   <option value="0" selected>اظهار الكل</option>
@@ -89,7 +89,7 @@
             <div class="filter_div_sub" id="f2_div">
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f2_checkbox" title="اظهار العمود"
-                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked disabled></span>
                 <div class="checkbox_label">اسم الاصل</div>
               </div>
               <div id="f2_selectAndInput_div" class="select_and_input_div">
@@ -152,11 +152,11 @@
             <!-- تاريخ الشراء  -->
             <div class="filter_div_sub flex_column y_start" id="f0_div">
               <div id="f0_checkbox_div" class="row">
-                <span class="reference_input_checkbox"><input type="checkbox" id="f0_checkbox"  checked disabled title="اظهار العمود"
+                <span class="reference_input_checkbox"><input type="checkbox" id="f0_checkbox" title="اظهار العمود"
                     onchange="filter_outsideCheckbox_date_column_with_select_and_two_inputs(this)"></span>
                 <div  class="checkbox_label">تاريخ الشراء</div>
               </div>
-              <div class="select_and_input_div flex_column y_start gap_05">
+              <div class="select_and_input_div flex_column y_start gap_05 hidden_select_and_input_div">
                 <select id="f0_select" class="dark_select hover"
                   onchange="filter_insideSelect_date_column_with_two_input(this)">
                   <option value="1" selected>تحديد الفتره</option>
@@ -331,6 +331,26 @@
               </div>
             </div>  
             
+
+            <!-- assest_status  -->
+            <div class="filter_div_sub" id="f10_div">
+              <div class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f10_checkbox" checked title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">الحالة</div>
+              </div>
+              <div id="f10_selectAndInput_div" class="select_and_input_div">
+                <select id="f10_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">نشط</option>
+                  <option value="2">غير نشط</option>
+                </select>
+                <input id="f10_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
+
             
             <div class="btn_container_top_border">
               <button id="btn_do" class="btn_do">تطبيق</button>

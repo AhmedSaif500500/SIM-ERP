@@ -13,6 +13,11 @@ function update_input_table_total(input) {
 }
 
 
+function handele_addrow(){
+  addRows()
+  updateFooter()
+}
+
 
 function addRows() {
   var table = document.getElementById("myTable");

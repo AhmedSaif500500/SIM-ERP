@@ -102,9 +102,16 @@ let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
 let f9_select = filter_div.querySelector(`#f9_select`);
 let f9_input = filter_div.querySelector(`#f9_input`);
 
+//! assest_status
+let f10_div = filter_div.querySelector(`#f10_div`);
+let f10_checkbox = filter_div.querySelector(`#f10_checkbox`);
+let f10_selectAndInput_div = filter_div.querySelector(`#f10_selectAndInput_div`);
+let f10_select = filter_div.querySelector(`#f10_select`);
+let f10_input = filter_div.querySelector(`#f10_input`);
+
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -302,7 +309,7 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 function deafult_checkbox() {
     call_default_checkbox('f0',true,true,true) // datex
     call_default_checkbox('f100',true,false,true) // due date
-    call_default_checkbox('f1',true,true,false) // account_no
+    call_default_checkbox('f1',true,false,false) // account_no
     call_default_checkbox('f2',true,false,false) // account_name
     call_default_checkbox('f3',true,false,false) // account_group
     call_default_checkbox('f4',true,false,false) // account_desc
@@ -448,121 +455,124 @@ function showFirst50RowAtTheBegening() {
 
         filteredData_Array = data.filter((row) => {
 
-            const isdatexMatch = 
+            const f0 = 
             filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
                 f0_checkbox,
                 f0_select,
                 f0_input_start_date1,
                 f0_input_end_date1,
-                "datex",
+                "purshases_date",
                 row
             );
 
-            const isDueDateMatch = 
+            const f100 = 
             filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
                 f100_checkbox,
                 f100_select,
                 f100_input_start_date1,
                 f100_input_end_date1,
-                "due_date",
+                "started_depreciation_date",
                 row
             );
 
-            const isReferenceMatch =
-            filterData_number_column_with_showAndHiddenCheckbox(
+            const f1 =
+            filterData_string_column_with_showAndHiddenCheckbox(
                 f1_checkbox,
                 f1_select,
                 f1_input,
-                "referenceconcat",
+                "account_no",
                 row
             );
 
 
-            const isSalesmanMatch =
+            const f2 =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f2_checkbox,
                     f2_select,
                     f2_input,
-                    "salesman_name",
+                    "account_name",
                     row
                 );
 
-                const isSAccountNameMatch =
+                const f3 =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f3_checkbox,
                     f3_select,
                     f3_input,
-                    "customer_name",
+                    "fixed_ssests_group_name",
                     row
                 );                
 
-            const isNoteMatch =
+            const f4 =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f4_checkbox,
                     f4_select,
                     f4_input,
-                    "general_note",
+                    "asset_info",
                     row
                 );
 
-            const isBalanceMatch =
+            const f5 =
                 filterData_number_column_with_showAndHiddenCheckbox(
                     f5_checkbox,
                     f5_select,
                     f5_input,
-                    "total_value",
+                    "un_depericated_value",
                     row
                 );
 
-            const isPaymentstatusstatus = 
-                filterData_string_column_with_showAndHiddenCheckbox(
+            const f6 = 
+                filterData_number_column_with_showAndHiddenCheckbox(
                     f6_checkbox,
                     f6_select,
                     f4_input,
-                    'payment_status',
+                    'rate_value',
                     row
                 );
 
-                const isOrderReference =
+                const f7 =
                 filterData_number_column_with_showAndHiddenCheckbox(
                     f7_checkbox,
                     f7_select,
                     f7_input,
-                    "qutation_reference",
+                    "asset_cost",
                     row
                 );
 
-                const isQutationReference =
+                const f8 =
                 filterData_number_column_with_showAndHiddenCheckbox(
                     f8_checkbox,
                     f8_select,
                     f8_input,
-                    "order_reference",
+                    "depreciation_value",
                     row
                 );
 
-                const isRemaining_balanceeMatch =
+                const f9 =
                 filterData_number_column_with_showAndHiddenCheckbox(
                     f9_checkbox,
                     f9_select,
                     f9_input,
-                    "remaining_balance",
+                    "book_value",
                     row
                 );
 
+                const f10 = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f10_checkbox, f10_select, 'assest_status', row);
+
             return (
 
-                isdatexMatch &&
-                isDueDateMatch &&
-                isReferenceMatch &&
-                isSalesmanMatch &&
-                isSAccountNameMatch &&
-                isNoteMatch &&
-                isBalanceMatch &&
-                isPaymentstatusstatus &&
-                isQutationReference &&
-                isOrderReference &&
-                isRemaining_balanceeMatch
+                f0 &&
+                f100 &&
+                f3 &&
+                f4 &&
+                f5 &&
+                f6 &&
+                f7 &&
+                f8 &&
+                f9 &&
+                f8 &&
+                f9 &&
+                f10
             ); // && otherCondition;
         });
 
@@ -593,22 +603,27 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_due_date = `display:${f100_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_reference = `display: none;`; 
-        let style_referenceCONCAT = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_order_reference = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_qutation_reference = `display:${f8_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_salesman = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let style_accountName = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f4_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
-        let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
-        let style_total_value = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let style_payment_status = `display:${f6_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let style_remaining_balance = `display:${f9_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_account_name = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
+        let style_purshases_date = `display:${f0_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_started_depreciation_date = `display:${f100_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_rate_value = `display:${f6_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_un_depericated_value = `display:${f5_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_asset_info = `display:${f4_checkbox.checked ? "table-cell" : "none"}; width: auto; min-width: 10rem; white-space: wrap; text-align: start`;
+        let style_fixed_ssests_group_name = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; min-width: 10rem; white-space: wrap; text-align: start`;
+        let style_asset_cost = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_depreciation_value = `display:${f8_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_book_value = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_status_value = `display:${f10_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+
 
         total_column1.value = 0;
         total_column2.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        total_column3.value = 0;
+        let fn1 = `onclick = "console.log('yes')"`;
+        let fn2 = `onclick = "console.log('yes')"`;
+        let fn3 = `onclick = "console.log('yes')"`;
+        // let fn3 = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -617,64 +632,57 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${style_datex}">التاريخ</th>
-                                <th style="${style_due_date}">تاريخ الاستحقاق</th>
-                                <th style="${style_reference}">#</th>
-                                <th style="${style_referenceCONCAT}">#</th>
-                                 <th style="${style_id}">id</th>
-                                 <th style="${style_accountName}">العميل</th>
-                                 <th style="${style_id}">id</th>
-                                <th style="${style_salesman}">البائع</th>
-                                <th style="${style_id}">order_id</th>
-                                <th style="${style_order_reference}">امر بيع</th>
-                                <th style="${style_id}">qutation_id</th>
-                                <th style="${style_qutation_reference}">عرض السعر</th>
-                                <th style="${style_note}">البيان</th>
-                                <th style="${style_total_value}">قيمة</th>
-                                <th style="${style_remaining_balance}">المستحق</th>
-                                <th style="${style_payment_status}">الحاله</th>
+                                <th style="${style_account_no}">المعرف</th>
+                                <th style="${style_account_name}">الاصل</th>
+                                <th style="${style_purshases_date}">تاريخ الشراء</th>
+                                <th style="${style_started_depreciation_date}">بداية الاهلاك</th>
+                                <th style="${style_asset_info}">بيانات اخرى</th>
+                                <th style="${style_fixed_ssests_group_name}">وصف المجموعه</th>
+                                <th style="${style_un_depericated_value}">قيمه غير قابلة للاهلاك</th>
+                                <th style="${style_rate_value}">المعدل</th>
+                                <th style="${style_asset_cost}">التكلفة</th>
+                                <th style="${style_depreciation_value}">الاهلاك</th>
+                                <th style="${style_book_value}">القيمة الدفترية</th>
+                                <th style="${style_status_value}">الحالة</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
         slice_array1.forEach((row) => {
                 
-
-            // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let payment_status_class;
+            const rate = row.rate_value ? `${row.rate_value}%` : '';
             
-            if(row.payment_status.includes('مدفوع بالكامل')){
-                payment_status_class = 'table_green_condition'
-            }else if(row.payment_status.includes('مدفوع مقدماً')){
-                payment_status_class = 'table_blue_condition'
-            }else if(row.payment_status.includes('مستحق اليوم')){
-                payment_status_class = 'table_blue_condition'
-            }else if(row.payment_status.includes('مستحق منذ')){
-                payment_status_class = 'table_red_condition'
-            }else if(row.payment_status.includes('يستحق بعد')){
-                payment_status_class = 'table_orange_condition'
-            }
+            // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
+            let asset_status_class = 'table_green_condition';
+            
+            // if(row.payment_status.includes('مدفوع بالكامل')){
+            //     payment_status_class = 'table_green_condition'
+            // }else if(row.payment_status.includes('مدفوع مقدماً')){
+            //     payment_status_class = 'table_blue_condition'
+            // }else if(row.payment_status.includes('مستحق اليوم')){
+            //     payment_status_class = 'table_blue_condition'
+            // }else if(row.payment_status.includes('مستحق منذ')){
+            //     payment_status_class = 'table_red_condition'
+            // }else if(row.payment_status.includes('يستحق بعد')){
+            //     payment_status_class = 'table_orange_condition'
+            // }
 
             tableHTML +=
                      `<tr>
                         <td style="${style_button}"><button class="table_view_btn" onclick="table_update_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
-                        <td style="${style_datex}" class="td_datex">${row.datex}</td>
-                        <td style="${style_due_date}" class="td_due_date">${row.due_date}</td>
-                        <td style="${style_reference}" class="td_reference">${row.reference}</td>
-                        <td style="${style_referenceCONCAT}" class="td_referenceconcat">${row.referenceconcat}</td>
-                        <td style="${style_id}" class="td_customer_id">${row.customer_id}</td>
-                        <td style="${style_accountName}" class="td_customer_name">${row.customer_name}</td>
-                        <td style="${style_id}" class="td_salesman_id">${row.salesman_id}</td>
-                        <td style="${style_salesman}" class="td_salesman_name">${row.salesman_name}</td>
-                        <td style="${style_id}" class="td_order_id">${row.order_id}</td>
-                        <td style="${style_order_reference}" class="td_order_reference">${row.order_reference}</td>
-                        <td style="${style_id}" class="td_qutation_id">${row.qutation_id}</td>
-                        <td style="${style_qutation_reference}" class="td_qutation_reference">${row.qutation_reference}</td>
-                        <td style="${style_note}" class="td_general_note">${row.general_note}</td>
-                        ${tdNumber(true,false,true,row.total_value,style_total_value,total_column1,fn,'td_total_value')}
-                        ${tdNumber(false,false,true,row.remaining_balance,style_remaining_balance,total_column2,fn,'td_remaining_balance')}
-                        <td style="${style_payment_status}"><span class="${payment_status_class} td_payment_status">${row.payment_status}</span></td>               
+                        <td style="${style_account_no}" class="td_account_no">${row.account_no}</td>
+                        <td style="${style_account_name}" class="td_account_name">${row.account_name}</td>
+                        <td style="${style_purshases_date}" class="td_purshases_date">${row.purshases_date}</td>
+                        <td style="${style_started_depreciation_date}" class="td_started_depreciation_date">${row.started_depreciation_date}</td>
+                        <td style="${style_asset_info}" class="td_asset_info">${row.asset_info}</td>
+                        <td style="${style_fixed_ssests_group_name}" class="td_fixed_ssests_group_name">${row.fixed_ssests_group_name}</td>
+                        <td style="${style_un_depericated_value}" class="td_un_depericated_value">${row.un_depericated_value}</td>
+                        <td style="${style_rate_value}" class="td_rate_value">${rate}</td>
+                        ${tdNumber(true,false,true,row.asset_cost,style_asset_cost,total_column1,fn1,'td_asset_cost')}
+                        ${tdNumber(true,false,true,row.depreciation_value,style_depreciation_value,total_column2,fn2,'td_depreciation_value')}
+                        ${tdNumber(true,true,true,row.book_value,style_book_value,total_column3,fn3,'td_book_value')}
+                        <td style="${style_status_value}"><span class="${asset_status_class} td_payment_status">${row.assest_status}</span></td>
                       </tr>`;
         });
 
@@ -682,22 +690,18 @@ function fillTable() {
                     <tr class="table_totals_row">
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id1" style="${style_id}"></td>
-                        <td id="footer_style_datex" style="${style_datex}"></td>
-                        <td id="footer_style_due_date" style="${style_due_date}"></td>
-                        <td id="footer_style_reference" style="${style_reference}"></td>
-                        <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
-                        <td id="footer_style_accountid" style="${style_id}"></td>
-                        <td id="footer_style_accountName" style="${style_accountName}"></td>
-                        <td id="footer_style_salesmanid" style="${style_id}"></td>
-                        <td id="footer_style_salesman" style="${style_salesman}"></td>
-                        <td id="footer_style_order_id" style="${style_id}"></td>
-                        <td id="footer_style_order_reference" style="${style_order_reference}"></td>
-                        <td id="footer_style_qutation_id" style="${style_id}"></td>
-                        <td id="footer_style_qutation_reference" style="${style_qutation_reference}"></td>
-                        <td id="footer_style_note" style="${style_note}"></td>
-                        <td id="footer_style_total_value" style="${style_total_value}"></td>
-                        <td id="footer_style_remaining_balance" style="${style_remaining_balance}"></td>
-                        <td id="footer_style_payment_status" style="${style_payment_status}"></td>
+                        <td id="footer_style_account_no" style="${style_account_no}"></td>
+                        <td id="footer_style_account_name" style="${style_account_name}"></td>
+                        <td id="footer_style_purshases_date" style="${style_purshases_date}"></td>
+                        <td id="footer_style_started_depreciation_date" style="${style_started_depreciation_date}"></td>
+                        <td id="footer_style_asset_info" style="${style_asset_info}"></td>
+                        <td id="footer_style_fixed_ssests_group_name" style="${style_fixed_ssests_group_name}"></td>
+                        <td id="footer_style_un_depericated_value" style="${style_un_depericated_value}"></td>
+                        <td id="footer_style_rate_value" style="${style_rate_value}"></td>
+                        <td id="footer_style_asset_cost" style="${style_asset_cost}"></td>
+                        <td id="footer_style_depreciation_value" style="${style_depreciation_value}"></td>
+                        <td id="footer_style_book_value" style="${style_book_value}"></td>
+                        <td id="footer_style_status_value" style="${style_status_value}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -724,8 +728,9 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
-        tableContainer.querySelector(`#footer_style_remaining_balance`).textContent = floatToString(true,total_column2.value);
+        tableContainer.querySelector(`#footer_style_asset_cost`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_depreciation_value`).textContent = floatToString(true,total_column2.value);
+        tableContainer.querySelector(`#footer_style_book_value`).textContent = floatToString(true,total_column3.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
@@ -747,31 +752,33 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
-            const dueDateMatch = performSearch_Row(f100_checkbox,"due_date",searchValue,row);
-            const reference_Match = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
-            const salesman_Match = performSearch_Row(f2_checkbox,"salesman_name",searchValue,row);
-            const AccountName_Match = performSearch_Row(f3_checkbox,"customer_name",searchValue,row);
-            const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
-            const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
-            const orderReference = performSearch_Row(f7_checkbox,"order_reference",searchValue,row);
-            const qutationReference = performSearch_Row(f8_checkbox,"qutation_reference",searchValue,row);
-            const remaining_balance = performSearch_Row(f9_checkbox,"remaining_balance",searchValue,row);
-            const payment_status = performSearch_Row(f6_checkbox,"payment_status",searchValue,row);
+            const s1 = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
+            const s2 = performSearch_Row(f2_checkbox,"account_name",searchValue,row);
+            const s0 = performSearch_Row(f0_checkbox,"purshases_date",searchValue,row);
+            const s100 = performSearch_Row(f100_checkbox,"started_depreciation_date",searchValue,row);
+            const s6 = performSearch_Row(f6_checkbox,"rate_value",searchValue,row);
+            const s5 = performSearch_Row(f5_checkbox,"un_depericated_value",searchValue,row);
+            const s3 = performSearch_Row(f3_checkbox,"fixed_ssests_group_name",searchValue,row);
+            const s4 = performSearch_Row(f4_checkbox,"asset_info",searchValue,row);
+            const s7 = performSearch_Row(f7_checkbox,"asset_cost",searchValue,row);
+            const s8 = performSearch_Row(f8_checkbox,"depreciation_value",searchValue,row);
+            const s9 = performSearch_Row(f9_checkbox,"book_value",searchValue,row);
+            const s10 = performSearch_Row(f10_checkbox,"assest_status",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                datexInfoMatch ||
-                dueDateMatch ||
-                reference_Match ||
-                salesman_Match ||
-                AccountName_Match ||
-                noteMatch ||
-                balanceMatch ||
-                orderReference ||
-                qutationReference ||
-                remaining_balance ||
-                payment_status
+                s1 ||
+                s2 ||
+                s3 ||
+                s4 ||
+                s5 ||
+                s6 ||
+                s7 ||
+                s8 ||
+                s9 ||
+                s10 ||
+                s0 ||
+                s100
             );
         });
 
@@ -814,7 +821,7 @@ searchInput.addEventListener("keydown", (event) => {
 async function table_update_btn_fn(updateBtn) {
     try {
     showLoadingIcon(updateBtn)
-    const permission = await btn_permission("sales_invoice_permission", "view");
+    const permission = await btn_permission("fixed_assests_permission", "view");
 
     if (!permission) {
         // if false
@@ -824,15 +831,13 @@ async function table_update_btn_fn(updateBtn) {
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
-    const sales_invoice_update_data = {
-        x: row.querySelector(`.td_id`).textContent,
-        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        order_id: row.querySelector(`.td_order_id`).textContent,
+    const fixed_assests_update_data = {
+        x: row.querySelector(`.td_id`).textContent
     };
 
     
-    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_invoice_update_data));                            
-    window.location.href = `sales_invoice_update_ar`;
+    sessionStorage.setItem('fixed_assests_update_data', JSON.stringify(fixed_assests_update_data));                            
+    window.location.href = `fixed_assests_update_ar`;
     hideLoadingIcon(updateBtn)
 } catch (error) {
     hideLoadingIcon(updateBtn)
@@ -844,11 +849,11 @@ function CheckUrlParams_salesInvoice_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "sales_invoice_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
+            "fixed_assests_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاصول الثابتة"
         );
 
-        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
+        if (!urlData || urlData.pageName !== "fixed_assests_update_ar") {
             return true;
         }
 

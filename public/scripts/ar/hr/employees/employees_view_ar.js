@@ -180,7 +180,7 @@ function fillTable() {
     let style_end_date = `display:${checkbox_end_date.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
     let style_balance = `display:${check_balance.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
     let style_is_salesman = `display: none;`
-    let style_active = `display:${checkbox_active.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: center;`
+    let style_active = `display:${checkbox_active.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start;`
 
     total_column1.value = 0
 
