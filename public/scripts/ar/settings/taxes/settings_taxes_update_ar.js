@@ -5,13 +5,13 @@ const obj_settings_tax_view = JSON.parse(sessionStorage.getItem('obj_settings_ta
 sessionStorage.removeItem(`obj_settings_tax_view`)
 
 if (!obj_settings_tax_view){
-    redirection("customers_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
+    redirection("settings_taxes_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الرمز الضريبية الرئيسية")
 }
 
 const obj_settings_tax_update = {pageName : 'settings_taxes_update_ar'}
 
 const encodedData = encodeURIComponent(JSON.stringify(obj_settings_tax_update));
-back_href.href = `customers_view_ar?data=${encodedData}`
+back_href.href = `settings_taxes_view_ar?data=${encodedData}`
 
 
 
@@ -94,7 +94,7 @@ async function getTaxesData_fn() {
         
       const newTr =
        `
-        <tr>
+        <tr class="mainTr">
                 <td style="width: auto;" class="">
                   <div class="dragbutton_table">
                     <button class="drag-handle">
@@ -104,15 +104,15 @@ async function getTaxesData_fn() {
                 </td>
 
                 <td>
-                  <input type="hidden" class="rowId x1 T" id="" readonly>
-                  <div class="div_input_md hover scroll XDesc T" style="max-width: 20rem; min-width: 17rem; width: fit-content" contenteditable="true" oninput="check_parse(this,'string')">${row.tax_name}</div>
+                 <input type="hidden" class="rowId x1 T" id="" readonly>
+                  <div class="div_input_md hover scroll XDesc T" style="max-width: 20rem; min-width: 17rem; width: fit-content" contenteditable="true" oninput="check_parse(this,'string')"></div>
                 </td>
 
                 <td>
-                  <div class="row h_full">
-                    <span class="input_span_start h_full class_unite">%</span>
-                    <div class="div_input_sm hover h_full scroll Xrate T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)">${row.tax_rate}</div>
-                  </div>
+                  <div class="td_rate row h_full">
+                    <div class="div_input_sm hover h_full scroll Xrate T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
+                    <span class="span_end h_full class_unite">%</span>
+                    </div>
                 </td>
 
                 <td>
@@ -122,29 +122,36 @@ async function getTaxesData_fn() {
                   </select>
                 </td>
 
-                <!-- dropdown -->
-                <td style="min-width: 12rem; width: fit-content; height: var(--input_height);">
-                  <div class="dropdown_container_input_table" id="">
-                    <div class="row h_full">
-                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-                        <div class="dropdown_select_input T hover"></div>
-                        <i class="fa-solid fa-caret-down left_icon"></i>
-                        <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                  <!-- dropdown -->
+                  <td style="width: auto; height: var(--input_height);" class="td_account">
+                    <div class="dropdown_container_input_table" id="">
+                      <div class="row h_full">
+                        <div class="dropdown_select_input_table" id=""  onclick="fill_filtered_data_accounts_Array(event)"  style="min-width: 10rem;">
+                          <div id="" class="dropdown_select_input T hover"></div>
+                          <i class="fa-solid fa-caret-down left_icon"></i>
+                          <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event)"></i>
+                          <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                        </div>
+                    </div>
+                      <div class="dropdown_menue hover scroll" id="" style="display: none;">
+                        <div class="dropdown_search">
+                          <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
+                            oninput="tableDropdownList_performSearch(this)" autocomplete="off">
+                        </div>
+                        <div class="inputTable_dropdown_tableContainer" id="">
+                          <!-- قائمة الخيارات تظهر هنا -->
+                        </div>
                       </div>
                     </div>
-                    <div class="dropdown_menue hover scroll" id="" style="display: none;">
-                      <div class="dropdown_search">
-                        <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
-                          oninput="performSearch_accounts_table(this)" autocomplete="off">
-                      </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
-                        <!-- قائمة الخيارات تظهر هنا -->
-                      </div>
-                    </div>
+                  </td>
+
+
+                <td style="display: ${is_multiTaxes? 'table-cell' : 'none'}; width: auto;" class="hiddenCell">
+                  <div class="table_buttons_div">
+                    <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="copyRow(this)" title="نسخ الصف"><i class="fa-regular fa-copy"></i></button>
                   </div>
                 </td>
-
-                <td style="display: ${is_multiTaxes? 'table-cell' : 'none'}; width: auto;" class="hiddenCell"></td>
 
   
         </tr>`;
@@ -162,22 +169,25 @@ async function getTaxesData_fn() {
   
   function handleCurrentTr(row,tr){
     
+    
+
     const select_accountTpe = tr.querySelector(`.account_type`);
+    const XDesc = tr.querySelector(`.XDesc`);
     const id_hidden_input = tr.querySelector(`.id_hidden_input`);
     const dropdown_search_input = tr.querySelector(`.dropdown_select_input`);
+    const Xrate = tr.querySelector(`.td_rate .Xrate`);
     const rowId = tr.querySelector(`.rowId`);
 
 
     select_accountTpe.value = row.is_tax_reverse? 2 : 1
+    Xrate.textContent = row.tax_rate || '' //
     id_hidden_input.value = row.tax_account_id;
     dropdown_search_input.textContent = row.account_name;
+    XDesc.textContent = row.tax_name;
     rowId.value = row.id;
 
   }
-
-
   //-------------------------------------------------------
-
 
 let is_multiTax = true
 

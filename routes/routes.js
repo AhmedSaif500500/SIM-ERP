@@ -883,7 +883,7 @@ router.get('/itemsLocations_view_ar', (req, res) => {
         if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.itemsLocations_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'itemsLocations', 'itemsLocations_view_ar.html'));
         }else{
-            res.redirect('/notes_ar?reason=0');
+            res.redirect('/itemsMain_view_ar?reason=0');
         };
     } else {        
         res.redirect('/login?reason=0');
@@ -915,6 +915,44 @@ router.get('/itemsLocations_update_ar', (req, res) => {
 });
 
 
+
+//-------------------------------
+router.get('/items_transfer_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_transfer_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_transfer', 'items_transfer_view_ar.html'));
+        }else{
+            res.redirect('/itemsMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/items_transfer_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_transfer_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_transfer', 'items_transfer_add_ar.html'));
+        }else{
+            res.redirect('/items_transfer_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/items_transfer_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_transfer_permission > 2) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_transfer', 'items_transfer_update_ar.html'));
+        }else{
+            res.redirect('/items_transfer_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+//-------------------------
 //#region  end itemslocations
 router.get('/items_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {

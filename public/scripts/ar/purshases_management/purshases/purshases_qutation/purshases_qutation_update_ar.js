@@ -326,7 +326,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                 <!-- dropdown -->
                   <div class="dropdown_container_input_table" id="">
                     <div class="row h_full">
-                      <span class="input_span_start account_type_name T">صنف</span>
+                      <span class="span_start account_type_name T">صنف</span>
                       <div class="dropdown_select_input_table" id=""  onclick="tableDropdownList(this, '${encodeURIComponent(JSON.stringify(dataArray))}', '${encodeURIComponent(JSON.stringify(DropDown_accounts_tableColumnsName))}', 'account_type', 'purshasesInvoiceForm')"  style="min-width: 10rem;">
                         <div id="" class="dropdown_select_input T hover"></div>
                         <i class="fa-solid fa-caret-down left_icon"></i>
@@ -354,7 +354,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                 <td style="width: auto;" class="td-amount">
                       <div class="row h_full">
                         <div class="div_input_sm  hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number'),update_table('myTable')" onkeydown="td_EnterkeypressEvent1(event)"></div>
-                        <span class="input_span_end tbody_itemUniteName">الكمية</span>
+                        <span class="span_end tbody_itemUniteName">الكمية</span>
                         </div>
                 </td>
 

@@ -273,6 +273,25 @@
               <tr>
                 <td style="width: auto;">9</td>
                 <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+                <td style="width: auto; text-wrap: nowrap;">تحويلات المخزون</td>
+                <td style="width: auto;">
+                  <select class="select hover s" id="table_permission_items_transfer"
+                    onchange="updatePermissionLevel(this)">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </td>
+                <td style="width: 100%; text-wrap: nowrap;"></td>
+              </tr>
+            
+
+              <!-- items-->
+              <tr>
+                <td style="width: auto;">9</td>
+                <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
                 <td style="width: auto; text-wrap: nowrap;">الاصناف</td>
                 <td style="width: auto;">
                   <select class="select hover s" id="table_permission_items"
@@ -286,7 +305,7 @@
                 </td>
                 <td style="width: 100%; text-wrap: nowrap;"></td>
               </tr>
-            
+
 
               <!-- services-->
               <tr>

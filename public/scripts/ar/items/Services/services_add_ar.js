@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     await redirection('services_view_ar','fail','حدث خطأ اثناء معالجة البيانات : سيتم تحويلك الى صفحه الخدمات الرئيسية')
   }
 
-  create_drop_down_with_External_DataArray(`dropdown_div1`,data.revenueAccountsArray)
+  create_drop_down_with_External_DataArray(`dropdown_div1`,data.revenueAccountsArray); selectedRow_dropdownDiv(`dropdown_div1`,data.revenueAccountsArray,data.revenueDeafulAccount.id);
   create_drop_down_with_External_DataArray(`dropdown_div2`,data.expensesAccountsArray)
             
   hideLoadingIcon(content_space)
@@ -66,10 +66,26 @@ async function save(A_OR_B) {
   const inactive_select_value = inactive_select.value
 
   
-  if (!account_name || account_name === '' || !unite_name || unite_name === '' || !revenueAccount || isNaN(+revenueAccount) || !expenseAccount || isNaN(+expenseAccount)){
-    showAlert('warning','برجاء ادخال البيانات المطلوبه بشكل صحيح')
+  if (!account_name || account_name === '' ){
+    showAlert('warning','برجاء ادخال اسم الخدمة بشكل صحيح')
     return
   }
+
+  if (!unite_name || unite_name === ''){
+    showAlert('warning','برجاء وحدة القياس بشكل صحيح')
+    return
+  }
+
+  if (!revenueAccount || isNaN(+revenueAccount)){
+    showAlert('warning','برجاء اختيار الحساب عند البيع بشكل صحيح')
+    return
+  }
+
+  if (!expenseAccount || isNaN(+expenseAccount)){
+    showAlert('warning','برجاء اختيار الحساب عند الشراء بشكل صحيح')
+    return
+  }
+
 
   const posted_Obj = {accountNo, account_name, unite_name, revenueAccount, expenseAccount, inactive_select_value, sales_price, purshase_price}
 

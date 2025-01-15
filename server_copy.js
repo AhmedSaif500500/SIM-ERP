@@ -1146,7 +1146,6 @@ return res.json({
       let x20 = last_id + 20
       let x21 = last_id + 21
       let x22 = last_id + 22
-      let x23 = last_id + 23
 
       const accountEntries = [
         {id: x1, parent_id: false, account_name: "قائمة المركز المالى", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 0, account_name_en: null, global_id: 1, main_account_id: 0},
@@ -1166,12 +1165,11 @@ return res.json({
         {id: x15, parent_id: x5, account_name: "حسابات رأس المال", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 15, main_account_id: 3},
         {id: x16, parent_id: x5, account_name: "ارباح وخسائر الفترة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 16, main_account_id: 3},
         {id: x17, parent_id: x5, account_name: "ارباح وخسائر فترات سابقة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 23, main_account_id: 3},
-        {id: x18, parent_id: x6, account_name: "ايرادات مبيعات - المخزون", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 19, main_account_id: 4},
-        {id: x19, parent_id: x6, account_name: "ايرادات مبيعات - خدمات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 24, main_account_id: 4},
-        {id: x20, parent_id: x7, account_name: "تكلفة المخزون - المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 17, main_account_id: 5},
-        {id: x21, parent_id: x7, account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 18, main_account_id: 5},
-        {id: x22, parent_id: false, account_name: "مراكز التكلفة", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 21, main_account_id: null},
-        {id: x23, parent_id: x22, account_name: "مجموعة مراكز التكلفة 1", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 22, main_account_id: null},
+        {id: x18, parent_id: x6, account_name: "ايرادات المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 19, main_account_id: 4},
+        {id: x19, parent_id: x7, account_name: "تكلفة المخزون - المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 17, main_account_id: 5},
+        {id: x20, parent_id: x7, account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 18, main_account_id: 5},
+        {id: x21, parent_id: false, account_name: "مراكز التكلفة", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 21, main_account_id: null},
+        {id: x22, parent_id: x21, account_name: "مجموعة مراكز التكلفة 1", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 22, main_account_id: null},
         // أضف باقي الحسابات
       ];
 
@@ -7889,13 +7887,25 @@ SELECT
     ah.item_unite,
     ab.parent_id,
     parent_ah.account_name AS parent_account_name,
-    SUM(tb.item_amount) AS current_amount,
-SUM(
-    CASE 
-        WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
-        ELSE tb.cogs -- زيادة في التكلفة
-    END
-) AS value
+    SUM(
+        CASE 
+            WHEN tb.debit > 0 THEN tb.item_amount 
+            ELSE tb.item_amount * -1 
+        END
+    ) AS current_amount,
+    SUM(
+        CASE 
+	      	WHEN tb.debit > 0 and tb.cogs < 0 THEN tb.cogs*-1 -- ممرتجع المبيعات
+            WHEN tb.debit > 0 THEN tb.debit
+            ELSE 0  -- المبيعات
+        END) 
+        - SUM(
+            CASE 
+	            WHEN tb.credit > 0 and tb.cogs is null THEN tb.credit-- مرتجع المشتريات
+                WHEN tb.credit > 0 THEN tb.cogs
+                ELSE 0 -- المشتريات
+            END
+        ) AS value
 FROM
     accounts_header ah
     LEFT JOIN accounts_body ab ON ab.account_id = ah.id
@@ -7906,10 +7916,9 @@ WHERE
     ah.company_id = $1
     and ah.is_final_account = true
     and ah.account_type_id = 5
-    -- and th.is_including_items is TRUE متشغلوش عشان يجيب الاصناف كلها
     and th.is_deleted is NULL
-    --and th.datex <= $2
-    --and tb.item_id is not NULL متشغلوش عشان يجيب الاصناف كلها
+    -- and th.datex <= $2
+   -- and tb.item_id is not NULL
 GROUP BY
     ah.id, ab.parent_id, parent_ah.account_name
     ;
@@ -8362,7 +8371,7 @@ app.post("/api/transaction_add", async (req, res) => {
 
     //! sql injection check
     let hasBadSymbols = sql_anti_injection([
-      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.is_accumulated_depreciation + obj.note_row + obj.debit + obj.credit + obj.item_amount + obj.items_location_id ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      ...posted_elements.posted_array.map((obj) => obj.account_id + obj.note_row + obj.debt + obj.credit ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
       posted_elements.datex,
       posted_elements.total,
       posted_elements.general_note,
@@ -8408,15 +8417,14 @@ app.post("/api/transaction_add", async (req, res) => {
     //* Start Transaction --------------------------------------------------
 
     //! check diffrence between debit and credit
-    
-      let totaldebit = 0;
+      let totalDebt = 0;
       let totalCredit = 0;
       // المرور على جميع الكائنات في المصفوفة
       posted_elements.posted_array.forEach(item => {
-          totaldebit += parseFloat(item.debit || 0); // التأكد من تحويل القيم إلى أرقام
+          totalDebt += parseFloat(item.debt || 0); // التأكد من تحويل القيم إلى أرقام
           totalCredit += parseFloat(item.credit || 0);
       });
-      if (totaldebit !== totalCredit){
+      if (totalDebt !== totalCredit){
         return res.json({
           success: false,
           message_ar: "القيد غير متوازن",
@@ -8435,13 +8443,11 @@ const dbAccounts = rows02.map(row => ({
   account_type_id: row.account_type_id
 }));
 
-let rowIndex = 1;
 // المرور على كل كائن في posted_elements.posted_array
 for (const rowData of posted_elements.posted_array) {
   const account_typeId = rowData.account_typeId;
   const account_id = rowData.account_id;
   const items_location_id = rowData.items_location_id;
-  const item_amount = rowData.item_amount;
 
   //! make sure from every account_id
   const accountExists = dbAccounts.some(item => 
@@ -8458,17 +8464,9 @@ for (const rowData of posted_elements.posted_array) {
     });
   }
 
-  
   //! make sure from itemLocation It
-  if (+account_typeId === 5){
-      if (!items_location_id){
-        return res.json({
-          success: false,
-          message_ar: `برجاء تحديد موقع المخزون فى السطر رقم ${rowIndex}`,
-        });
-      }
     const locationExists = dbAccounts.some(item => 
-      +item.id === +items_location_id && +item.account_type_id === 7
+      item.id === +items_location_id && +item.account_type_id === 7
     );
     if (!locationExists) {
       await block_user(req,'Sta2')
@@ -8478,9 +8476,7 @@ for (const rowData of posted_elements.posted_array) {
         message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
-  }
-
-  rowIndex++;
+  
 }
 
 
@@ -8522,10 +8518,7 @@ await db.tx(async (tx) => {
     const newId = newId_transaction_body;
     const itemTypeId = 5;
     const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
-    let item_amount = null;
-    if (+element.account_typeId === itemTypeId) {
-        item_amount = element.debit ? element.item_amount || null : (element.item_amount * -1) || null;
-    }    
+    const item_amount = +element.account_typeId === itemTypeId ? element.item_amount : null;
     let item_id = null;
     let is_accumulated_depreciation = null
     if (+element.account_typeId === itemTypeId) { // صنف مخزون
@@ -8545,7 +8538,7 @@ await db.tx(async (tx) => {
       newId,
       newId_transaction_header,
       element.account_id,
-      element.debit,
+      element.debt,
       element.credit,
       element.note_row,
       item_id,
@@ -8616,7 +8609,7 @@ app.post("/api/transaction_update", async (req, res) => {
 
     //! sql injection check
     let hasBadSymbols = sql_anti_injection([
-      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.is_accumulated_depreciation + obj.note_row + obj.debit + obj.credit + obj.item_amount + obj.items_location_id ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      ...posted_elements.posted_array.map((obj) => obj.account_id + obj.note_row + obj.debt + obj.credit ), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
       posted_elements.x,
       posted_elements.total,
       posted_elements.datex,
@@ -8663,14 +8656,14 @@ app.post("/api/transaction_update", async (req, res) => {
     //* Start Transaction --------------------------------------------------
 
     //! check diffrence between debit and credit
-      let totaldebit = 0;
+      let totalDebt = 0;
       let totalCredit = 0;
       // المرور على جميع الكائنات في المصفوفة
       posted_elements.posted_array.forEach(item => {
-          totaldebit += parseFloat(item.debit || 0); // التأكد من تحويل القيم إلى أرقام
+          totalDebt += parseFloat(item.debt || 0); // التأكد من تحويل القيم إلى أرقام
           totalCredit += parseFloat(item.credit || 0);
       });
-      if (totaldebit !== totalCredit){
+      if (totalDebt !== totalCredit){
         return res.json({
           success: false,
           message_ar: "القيد غير متوازن",
@@ -8701,16 +8694,15 @@ const dbAccounts = rows02.map(row => ({
   id: parseInt(row.id),
   account_type_id: row.account_type_id
 }));
-
-let rowIndex = 1;
 // المرور على كل كائن في posted_elements.posted_array
 for (const rowData of posted_elements.posted_array) {
   const account_typeId = rowData.account_typeId;
   const account_id = rowData.account_id;
   const items_location_id = rowData.items_location_id;
-  const item_amount = rowData.item_amount;
 
 
+  
+  
   //! make sure from every account_id
   const accountExists = dbAccounts.some(item => 
     +item.id === +account_id && +item.account_type_id === +account_typeId
@@ -8719,7 +8711,7 @@ for (const rowData of posted_elements.posted_array) {
   
   // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
   if (!accountExists) {
-    await block_user(req,'Stu1')
+    await block_user(req,'Sta1')
     return res.json({
       success: false,
       xx: true,
@@ -8731,12 +8723,6 @@ for (const rowData of posted_elements.posted_array) {
 
   //! make sure from itemLocation It
   if (+account_typeId === 5){
-    if (!items_location_id){
-      return res.json({
-        success: false,
-        message_ar: `برجاء تحديد موقع المخزون فى السطر رقم ${rowIndex}`,
-      });
-    }
     const locationExists = dbAccounts.some(item => 
       +item.id === +items_location_id && +item.account_type_id === 7
     );
@@ -8749,8 +8735,6 @@ for (const rowData of posted_elements.posted_array) {
       });
     }
   }
-  rowIndex++;
-
 }
 
 
@@ -8788,14 +8772,7 @@ for (const rowData of posted_elements.posted_array) {
     const newId = newId_transaction_body;
     const itemTypeId = 5;
     const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
-    let item_amount = null;
-    if (+element.account_typeId === itemTypeId) {
-      console.log(`debit : ${element.debit}`);
-      
-        item_amount = element.debit ? element.item_amount || null : (element.item_amount * -1) || null;
-    }
-    console.log(item_amount);
-    
+    const item_amount = +element.account_typeId === itemTypeId ? element.item_amount : null;
     let item_id = null;
     let is_accumulated_depreciation = null;
 
@@ -8812,7 +8789,7 @@ for (const rowData of posted_elements.posted_array) {
       newId,
       posted_elements.x,
       element.account_id,
-      element.debit,
+      element.debt,
       element.credit,
       element.note_row,
       item_id,
@@ -9069,7 +9046,7 @@ where
     tb.debit,
     tb.credit,
     tb.row_note,
-    ABS(tb.item_amount) as item_amount,
+    tb.item_amount,
     tb.item_location_id_tb,
     tb.account_id,
     tb.is_accumulated_depreciation,
@@ -13044,7 +13021,12 @@ where
       const query_items = `
        select 
     	tb.item_id,
-    	sum(tb.item_amount) as current_location_amount
+    	sum(
+    		case 
+    			when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+    		end
+    		
+    	) as current_location_amount
     from
     	transaction_body tb
 	inner join transaction_header th on th.id = tb.transaction_header_id
@@ -13186,7 +13168,7 @@ where
             null,
             +Val_beforTax,
             element.row_note,
-            +element.row_amount *-1,
+            +element.row_amount,
             +element.row_unitPrice,
             +account_id,
             +element.row_discountTypeId === 1 ? true : null,
@@ -13474,7 +13456,7 @@ WHERE
       ah.account_name,
       ah.item_unite,
       ah.account_type_id as item_type_id,
-    ABS(tb.item_amount) AS amount,
+    tb.item_amount as amount,
     tb.item_price as unite_price,
     COALESCE(tb.row_note, '') as row_note,
     tb.is_discount_percentage,
@@ -14333,7 +14315,12 @@ WHERE
       const query_items = `
        select 
     	tb.item_id,
-    	sum(tb.item_amount) as current_location_amount
+    	sum(
+    		case 
+    			when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+    		end
+    		
+    	) as current_location_amount
     from
     	transaction_body tb
 	inner join transaction_header th on th.id = tb.transaction_header_id
@@ -14508,7 +14495,7 @@ WHERE
             null,
             +Val_beforTax,
             element.row_note,
-            +element.row_amount *-1,
+            +element.row_amount,
             +element.row_unitPrice,
             +account_id,
             +element.row_discountTypeId === 1 ? true : null,
@@ -18414,7 +18401,7 @@ WHERE
             ah.account_name,
             ah.item_unite,
             ah.account_type_id as item_type_id,
-          ABS(tb.item_amount) AS amount,
+          tb.item_amount as amount,
           tb.item_price as unite_price,
           COALESCE(tb.row_note, '') as row_note,
           tb.is_discount_percentage,
@@ -18725,7 +18712,31 @@ WHERE
             }
             }
         
-
+      
+            //! فحص الجرد الكميات حسب الموقع
+        //     const query_items = `
+        //      select 
+        //     tb.item_id,
+        //     sum(
+        //       case 
+        //         when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+        //       end
+              
+        //     ) as current_location_amount
+        //   from
+        //     transaction_body tb
+        // inner join transaction_header th on th.id = tb.transaction_header_id
+        // where 
+        //   th.company_id = $1
+        //   and th.is_deleted is null
+        //   and th.is_including_items is TRUE
+        //   and tb.item_id IN (${items_array.join(',')})
+        //   and tb.item_location_id_tb = $2
+        // group by
+        //   tb.item_id;
+        //     `
+      
+        //     const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId])
             const newId_transaction_header = await newId_fn("transaction_header", 'id');
             const year = getYear(posted_elements.datex)
             const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', 6, year, req);
@@ -19372,7 +19383,32 @@ WHERE
             }
         
       
-
+            //! فحص الجرد الكميات حسب الموقع      
+        //     const query_items = `
+        //      select 
+        //     tb.item_id,
+        //     sum(
+        //       case 
+        //         when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+        //       end
+              
+        //     ) as current_location_amount
+        //   from
+        //     transaction_body tb
+        // inner join transaction_header th on th.id = tb.transaction_header_id
+        // where 
+        //   th.company_id = $1
+        //   and th.is_deleted is null
+        //   and th.is_including_items is TRUE
+        //   and th.id != $2
+        //   and tb.item_id IN (${items_array.join(',')})
+        //   and tb.item_location_id_tb = $3
+        // group by
+        //   tb.item_id;
+        //     `
+      
+        //     const items_amount_location = await db.any(query_items,[req.session.company_id, posted_elements.x, +posted_elements.itemLocationId])
+            
             
             const year = getYear(posted_elements.datex)
       
@@ -19910,39 +19946,29 @@ let params1 = [req.session.company_id]
 
 let query2 = `
 -- المصروفات
-SELECT
+select
 ah.id,
 ah.account_name,
 ah.global_id
-FROM
+from
 accounts_header ah
-WHERE 
+where 
 ah.company_id = $1
-AND ah.is_final_account IS TRUE
-AND ah.account_type_id = 1
-AND ah.is_inactive IS NULL
-AND ah.main_account_id = 5
-AND (ah.global_id NOT IN (17, 18) OR ah.global_id IS NULL);
-
+and ah.is_final_account is true
+and ah.account_type_id = 1
+and ah.is_inactive is null
+and ah.main_account_id = 5
 ;
 `;
 let params2 = [req.session.company_id]
-
-let query3 = `
--- حساب الايرادات الافتراضى - ايرادات مبيعات - خدمات
-  select id from accounts_header ah where ah.global_id = 24 and ah.company_id = $1
-;
-`;
-let params3 = [req.session.company_id]
 
 await db.tx(async (tx) => {
 
   const revenueAccountsArray = await tx.any(query1, params1);
   const expensesAccountsArray = await tx.any(query2, params2);
-  const revenueDeafulAccount = await tx.oneOrNone(query3, params3);
 
 
-  const postedData = { revenueAccountsArray, expensesAccountsArray, revenueDeafulAccount};
+  const postedData = { revenueAccountsArray, expensesAccountsArray};
   res.json(postedData);
 })
 
@@ -20017,7 +20043,6 @@ and ah.is_final_account is true
 and ah.account_type_id = 1
 and ah.is_inactive is null
 and ah.main_account_id = 5
-AND (ah.global_id NOT IN (17, 18) OR ah.global_id IS NULL);
 ;
 `;
 let params2 = [req.session.company_id]
@@ -20956,6 +20981,31 @@ WHERE
       }
       }
   
+/*
+      //! فحص الجرد الكميات حسب الموقع
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(
+    		case 
+    			when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+    		end
+    		
+    	) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+		and tb.item_id IN (${items_array.join(',')})
+		and tb.item_location_id_tb = $2
+	group by
+		tb.item_id;
+      `
+         const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId])
+  */
 
    
       
@@ -21392,7 +21442,33 @@ WHERE
       }
       }
   
-
+/*
+      //! فحص الجرد الكميات حسب الموقع
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(
+    		case 
+    			when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+    		end
+    		
+    	) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+    and th.id != $2
+		and tb.item_id IN (${items_array.join(',')})
+		and tb.item_location_id_tb = $3
+	group by
+		tb.item_id;
+      `
+      const items_amount_location = await db.any(query_items,[req.session.company_id, posted_elements.x, +posted_elements.itemLocationId])
+      */
+      
       const year = getYear(posted_elements.datex)
 
       // const items_avg = await get_last_avg_cost(items_array, posted_elements.datex, req)
@@ -21941,7 +22017,7 @@ WHERE
       ah.account_name,
       ah.item_unite,
       ah.account_type_id as item_type_id,
-    ABS(tb.item_amount) as amount,
+    tb.item_amount as amount,
     tb.item_price as unite_price,
     COALESCE(tb.row_note, '') as row_note,
     tb.is_discount_percentage,
@@ -22172,7 +22248,7 @@ WHERE
       ah.account_name,
       ah.item_unite,
       ah.account_type_id as item_type_id,
-    ABS(tb.item_amount) as amount,
+    tb.item_amount as amount,
     tb.item_price as unite_price,
     COALESCE(tb.row_note, '') as row_note,
     tb.is_discount_percentage,
@@ -22709,7 +22785,12 @@ for (const rowData of posted_elements.posted_array) {
     const query_items = `
      select 
     tb.item_id,
-    sum(tb.item_amount) as current_location_amount
+    sum(
+      case 
+        when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+      end
+      
+    ) as current_location_amount
   from
     transaction_body tb
 inner join transaction_header th on th.id = tb.transaction_header_id
@@ -22844,7 +22925,7 @@ group by
           null,
           +Val_beforTax,
           element.row_note,
-          +element.row_amount *-1,
+          +element.row_amount,
           +element.row_unitPrice,
           +account_id,
           +element.row_discountTypeId === 1 ? true : null,
@@ -23166,7 +23247,11 @@ for (const rowData of posted_elements.posted_array) {
     const query_items = `
      select 
     tb.item_id,
-    sum(tb.item_amount) as current_location_amount
+    sum(
+      case 
+        when tb.debit > 0 then tb.item_amount else tb.item_amount *-1
+      end
+    ) as current_location_amount
   from
     transaction_body tb
 inner join transaction_header th on th.id = tb.transaction_header_id
@@ -23294,7 +23379,7 @@ group by
           null,
           +Val_beforTax,
           element.row_note,
-          +element.row_amount * -1,
+          +element.row_amount,
           +element.row_unitPrice,
           +account_id,
           +element.row_discountTypeId === 1 ? true : null,
@@ -23575,7 +23660,7 @@ select
     ah.account_name,
     ah.item_unite,
     ah.account_type_id as item_type_id,
-  ABS(tb.item_amount) as amount,
+  tb.item_amount as amount,
   tb.item_price as unite_price,
   COALESCE(tb.row_note, '') as row_note,
   tb.is_discount_percentage,
@@ -23806,7 +23891,7 @@ select
     ah.account_name,
     ah.item_unite,
     ah.account_type_id as item_type_id,
-  ABS(tb.item_amount) as amount,
+  tb.item_amount as amount,
   tb.item_price as unite_price,
   COALESCE(tb.row_note, '') as row_note,
   tb.is_discount_percentage,
@@ -26099,13 +26184,13 @@ from
 //!====================================================================================================================================
 
 
-
+//500500
 async function update_items_cogs(items_array,datex, req, tx) {
   
   //   اخر شرط تم اضافته امبارح
   // باقى اختبار الجرد مع المرتجعات والفواتير
   
-  /*
+  
     const query0 = `SELECT
       tb.item_id,
       SUM(
@@ -26143,34 +26228,8 @@ async function update_items_cogs(items_array,datex, req, tx) {
       AND NOT (th.transaction_type IN (3,4) AND th.datex = $1) -- استثناء العمليات
   GROUP BY
       tb.item_id;`
-    */ 
-
-      const query0 = `
-    SELECT
-      tb.item_id,
-      SUM(tb.item_amount ) AS Current_amount,
-      SUM(
-          CASE
-        	WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
-        	ELSE tb.cogs -- زيادة في التكلفة		
-          END			
-      ) AS value
-  FROM
-      transaction_body tb
-  INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
-  inner join accounts_header ah on ah.id = tb.item_id
-  where
-  	  ah.account_type_id = 5
-      and th.datex < $1
-      AND th.company_id = $2
-      AND tb.item_id IN (${items_array.join(',')})
-      AND th.is_deleted IS NULL
-      AND th.is_including_items IS TRUE
-      AND NOT (th.transaction_type IN (3,4) AND th.datex = $1) -- استثناء العمليات
-  GROUP by
-  tb.item_id
-  ;`
-
+  
+     
     const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
     
   
@@ -26193,6 +26252,7 @@ async function update_items_cogs(items_array,datex, req, tx) {
             AND th.is_deleted IS NULL
             AND tb.item_id IS NOT NULL
             AND th.datex >= $2
+            AND NOT (th.transaction_type IN (6,7,2) AND th.datex = $2) -- استثناء عمليات ( المشتريات ومرتجع المشتريات التى فى نفس التاريخ )
         ORDER BY 
             th.datex ASC,
             CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
@@ -26228,7 +26288,7 @@ async function update_items_cogs(items_array,datex, req, tx) {
   
   
     const item_transaction_arry = items_transactions_array.filter(item => +item.item_id === +item_id)  
-/*
+
     for (const row of item_transaction_arry) {
       
       const type = +row.transaction_type
@@ -26264,52 +26324,6 @@ async function update_items_cogs(items_array,datex, req, tx) {
   
   
     }
-*/
-
-console.table(item_transaction_arry);
-
-console.log(started_amount);
-console.log(started_value);
-
-for (const row of item_transaction_arry) {
-      
-  const type = +row.transaction_type
-  let cogs = 0;
-  
-    const row_amount = Math.abs(row.item_amount)
-
-    if (type === 6 || (type === 2 && row.debit && !row.credit)){ // فاتورة مشتريات او قيد محاسبى مدين
-      cogs = +row.debit
-      started_amount += +row_amount;
-      started_value += +cogs;
-      updatedRecords.push({ id: row.id, cogs});
-    }else if(type === 7 || (type === 2 && row.credit && !row.debit)){ // مرتجع المشتريات قيد محاسبى دائن
-      cogs = +row.credit
-      started_amount -= +row_amount;
-      started_value -= +cogs;
-      updatedRecords.push({ id: row.id, cogs});
-    }else if(type === 3){ // فاتورة مبيعات
-      if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
-        cogs = 0  
-      }else{
-        cogs = (started_value / started_amount) * row_amount;
-      }
-      started_amount -= +row_amount;
-      started_value -= cogs;
-      updatedRecords.push({ id: row.id, cogs});
-    }else if(type === 4){ // مرتجع مبيعات
-      if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
-        cogs = 0  
-      }else{
-        cogs = (started_value / started_amount) * Math.abs(row_amount)
-      }
-      started_amount += +row_amount;
-      started_value += cogs; // عملنا دى بالسالب لانى ضربت الكوجز فوق بالسالب  وبالتالى هيدينى زائد
-      updatedRecords.push({id: row.id, cogs});
-    }
-    
-    old_cogs += cogs;
-}
   }
   
   // console.table(updatedRecords);

@@ -74,13 +74,13 @@ try {
             </td>
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
-                <span class="input_span_start">عدد</span>
+                <span class="span_start">عدد</span>
                 <input value="${row.amount}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
             <td style="width: auto;" class="">
               <div class="input_table_input_div">
-                <span class="input_span_start">جرام</span>
+                <span class="span_start">جرام</span>
                 <input value="${row.wazn}" type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
               </div>
             </td>
@@ -197,13 +197,13 @@ function addRows() {
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span_start">عدد</span>
+                      <span class="span_start">عدد</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" value="1000" autocomplete="off">
                     </div>
                   </td>
                   <td style="width: auto;" class="">
                     <div class="input_table_input_div">
-                      <span class="input_span_start">جرام</span>
+                      <span class="span_start">جرام</span>
                       <input type="search" class="input_table_normal_input_text hover" oninput="handle_input_event(this)" autocomplete="off">
                     </div>
                   </td>

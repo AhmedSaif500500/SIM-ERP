@@ -30,12 +30,12 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="accumulated_depreciation_view_ar" title="اهلاكات الاصول الثابتة">
+            <a id="back_href" class="back_href" href="items_transfer_view_ar" title="التحويلات بين مواقع المخزون">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="accumulated_depreciation_add_ar" title="اعادة تحميل الصفحة">
-                 اهلاكات الاصول الثابتة
+              <a id="h2_text_div" class="h2_text_div" href="items_transfer_add_ar" title="اعادة تحميل الصفحة">
+                   التحويلات بين مواقع المخزون
               </a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
             </div>
@@ -66,35 +66,18 @@
               </div>
             </div>
 
-
-
-            <label for="" class="lbl_sm">تحديد فترة الاهلاك</label>
-            <div class="reference_and_date_div mb_10">
-              <div class="row x_start y_center gap_10 w_fit">
-                <!-- purshases_date -->
-                <label for="start_date_input" class="lbl_sm">من</label>
-                <div class="input_with_icon_div m_0">
-                  <input type="search" id="start_date_input" class="hover input_date datepicker" placeholder="التاريخ..." readonly
-                    autocomplete="off">
-                  <i class="fa-regular fa-calendar left_icon"></i>
-                </div>
+            <label for="note_inpute" class="lbl_sm">مواقع المخزون</label>
+            <div class="row gap_10 mb_10">
+              <div class="row">
+                <span class="span_start">من</span>
+                <div id="dropdown_div1" class="dropdown_container" style="width: 15rem; margin: 0;"></div>
               </div>
-
-              <div class="row x_start y_center gap_05 w_fit">
-                <!-- Due Date -->
-                <label for="end_date_input" class="lbl_sm">الى</label>
-                <div class="input_with_icon_div m_0">
-                  <input type="search" id="end_date_input" class="hover input_date datepicker" placeholder="التاريخ..." readonly
-                    autocomplete="off">
-                  <i class="fa-regular fa-calendar left_icon"></i>
-                </div>
-              </div>
+              <div class="row">
+                <span class="span_start">الى</span>
+                <div id="dropdown_div2" class="dropdown_container" style="width: 15rem; margin: 0;"></div>
+              </div>  
             </div>
 
-            <div class="info_div_with_normal_nput mt_10">
-              <button id="calculate_depreciation_btn" class="btn_update">حساب الاهلاك</button>
-              <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `حساب الإهلاك يعتمد على معدل الإهلاك السنوي والفترة الزمنية المحددة. يمكنك تعديل البيانات وفقًا لاحتياجاتك.`)"></i>
-            </div>
 
             <label for="note_inpute" class="lbl_sm">البيان العام</label>
             <input type="search" id="note_inpute" class="input_text_xl hover" autocomplete="off">
@@ -131,8 +114,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/fixed_assests_management/accumulated_depreciation/accumulated_depreciation_multipages_ar.js"></script>
-  <script src="/public/scripts/ar/fixed_assests_management/accumulated_depreciation/accumulated_depreciation_add_ar.js"></script>
+  <script src="/public/scripts/ar/items/items_transfer/items_transfer_multipages_ar.js"></script>
+  <script src="/public/scripts/ar/items/items_transfer/items_transfer_add_ar.js"></script>
 
 
 </body>

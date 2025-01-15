@@ -2611,7 +2611,7 @@ height: 100%;
 }
 
 
-.input_span_start,.input_span_end{
+.span_start,.span_end{
   display: flex; flex-direction: column; justify-content: center;
   background-color: var(--btn_search_backcolor);
   color: var(--btn_search_color);
@@ -2625,11 +2625,11 @@ height: 100%;
   transition: var(--transition);
 }
 
-.input_span_start{
+.span_start{
   border-inline-end: none;
 }
 
-.input_span_end{
+.span_end{
   border-inline-start: none;
 }
 .input_table_normal_input_text{

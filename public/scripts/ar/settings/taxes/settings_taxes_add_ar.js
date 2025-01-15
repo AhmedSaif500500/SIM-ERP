@@ -36,6 +36,7 @@ function addRow() {
   // إضافة صف جديد فارغ في نهاية الجدول
   for (var i = 0; i < numRows; i++) {
     var emptyRow = document.createElement("tr");
+    emptyRow.classList.add(`mainTr`)
     emptyRow.innerHTML = `
                 <td style="width: auto;" class="">
                   <div class="dragbutton_table">
@@ -46,14 +47,15 @@ function addRow() {
                 </td>
 
                 <td>
+                 <input type="hidden" class="rowId x1 T" id="" readonly>
                   <div class="div_input_md hover scroll XDesc T" style="max-width: 20rem; min-width: 17rem; width: fit-content" contenteditable="true" oninput="check_parse(this,'string')"></div>
                 </td>
 
                 <td>
-                  <div class="row h_full">
-                    <span class="input_span_start h_full class_unite">%</span>
+                  <div class="td_rate row h_full">
                     <div class="div_input_sm hover h_full scroll Xrate T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
-                  </div>
+                    <span class="span_end h_full class_unite">%</span>
+                    </div>
                 </td>
 
                 <td>
@@ -63,28 +65,28 @@ function addRow() {
                   </select>
                 </td>
 
-                <!-- dropdown -->
-                <td style="min-width: 12rem; width: fit-content; height: var(--input_height);">
-                  <div class="dropdown_container_input_table" id="">
-                    <div class="row h_full">
-                      <div class="dropdown_select_input_table" id="" onclick="toggleDropdown(this)">
-                        <div id="" class="dropdown_select_input T hover"></div>
-                        <i class="fa-solid fa-caret-down left_icon"></i>
-                        <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                  <!-- dropdown -->
+                  <td style="width: auto; height: var(--input_height);" class="td_account">
+                    <div class="dropdown_container_input_table" id="">
+                      <div class="row h_full">
+                        <div class="dropdown_select_input_table" id=""  onclick="fill_filtered_data_accounts_Array(event)"  style="min-width: 10rem;">
+                          <div id="" class="dropdown_select_input T hover"></div>
+                          <i class="fa-solid fa-caret-down left_icon"></i>
+                          <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event)"></i>
+                          <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                        </div>
+                    </div>
+                      <div class="dropdown_menue hover scroll" id="" style="display: none;">
+                        <div class="dropdown_search">
+                          <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
+                            oninput="tableDropdownList_performSearch(this)" autocomplete="off">
+                        </div>
+                        <div class="inputTable_dropdown_tableContainer" id="">
+                          <!-- قائمة الخيارات تظهر هنا -->
+                        </div>
                       </div>
                     </div>
-                    <div class="dropdown_menue hover scroll" id="" style="display: none;">
-                      <div class="dropdown_search">
-                        <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
-                          oninput="performSearch_accounts_table(this)" autocomplete="off">
-                      </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
-                        <!-- قائمة الخيارات تظهر هنا -->
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
+                  </td>
 
 
                 <td style="display: ${is_multiTaxes? 'table-cell' : 'none'}; width: auto;" class="hiddenCell">

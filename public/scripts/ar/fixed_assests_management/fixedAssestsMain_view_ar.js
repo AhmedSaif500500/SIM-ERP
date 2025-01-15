@@ -8,9 +8,9 @@ const disposed_fixed_asset_btn = document.querySelector(`#disposed_fixed_asset_b
 
 
 function showData(){
-  fixed_assests_btn.style.display = style= module_display("sales_qutation_permission") // 
-  accumulated_depreciation_btn.style.display = style= module_display("sales_order_permission") // 
-  disposed_fixed_asset_btn.style.display = style= module_display("sales_invoice_permission") // 
+  fixed_assests_btn.style.display = style= module_display("fixed_assests_permission") // 
+  accumulated_depreciation_btn.style.display = style= module_display("accumulated_depreciation_permission") // 
+  disposed_fixed_asset_btn.style.display = style= module_display("disposed_fixed_asset_permission") // 
 
 
   fixed_assests_btn.onclick = function(){
@@ -24,6 +24,8 @@ function showData(){
   }
   
   disposed_fixed_asset_btn.onclick = function(){
+    showAlert('info', 'قريباً.....')
+    return
     sessionStorage.removeItem('disposed_fixed_asset_btn_Array');
     window.location.href = "/sales_invoice_view_ar";
   }

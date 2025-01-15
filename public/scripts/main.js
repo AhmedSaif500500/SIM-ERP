@@ -206,7 +206,7 @@ function loadSidebarContents() {
       الموردين
     </a>
 
-    <a href="itemsMain_view_ar" target="_self" class="" style="display: ${module_display("items_permission","itemsLocations_permission","services_permission")}">
+    <a href="itemsMain_view_ar" target="_self" class="" style="display: ${module_display("items_permission","itemsLocations_permission","services_permission","items_transfer_permission")}">
       <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
        إدارة المخزون
     </a>
@@ -2836,6 +2836,7 @@ const internal_permissions = [
   "fixed_assests_permission",
   "accumulated_depreciation_permission",
   "disposed_fixed_asset_permission",
+  "items_transfer_permission",
 ];
 
 
@@ -3803,76 +3804,6 @@ async function tableDropdownList_showFirst50RowAtTheBegening() {
   tableDropdownList_fillTable()
 }
 
-/*
-async function tableDropdownList_fillTable() {
-  if (!slice_tableDropdownList_Array1 || slice_tableDropdownList_Array1.length === 0) {
-    tableDropdownList_TableMainTd.querySelector('.inputTable_dropdown_tableContainer').innerHTML = `<p class="no_data" style="line-height: 3.2rem; padding-inline-start: 0.6rem;">لا توجد بيانات..</p>`;
-    return;
-  }
-
-  // استخراج أسماء الأعمدة التي ستظهر فقط
-  const columnNames = Object.keys(slice_tableDropdownList_Array1[0]).filter(colName =>
-    tableDropdownList_ArraycolumnsNameToSHow.includes(colName)
-  );
-
-  if (columnNames.length === 0) {
-    console.error("لا توجد أعمدة تطابق الأسماء المحددة.");
-    return;
-  }
-
-  // إنشاء هيكل الجدول
-  let tableHTML = `<table id="accounts_table" class="inputTable_dropdown_table">
-                    <thead style='display: none;'>
-                      <tr>`;
-
-  // إنشاء الأعمدة في رأس الجدول
-  columnNames.forEach((colName, index) => {
-    const displayStyle = index === 1 ? "" : "style='display: none;'"; // إخفاء الأعمدة ما عدا العمود الثاني
-    tableHTML += `<th ${displayStyle}>${colName}</th>`;
-  });
-
-  tableHTML += `</tr>
-                </thead>
-                <tbody>`;
-
-                    
-  // إنشاء الصفوف بناءً على البيانات
-  slice_tableDropdownList_Array1.forEach(row => {
-    tableHTML += `<tr onclick="tableDropdownList_selectedRow(this)">`;
-
-    columnNames.forEach((colName, index) => {
-      const displayStyle = index === 1 ? "" : "style='display: none;'"; // إخفاء الأعمدة ما عدا العمود الثاني
-      tableHTML += `<td ${displayStyle}>${row[colName] || ""}</td>`;
-    });
-
-    tableHTML += `</tr>`;
-  });
-
-  tableHTML += `</tbody>
-                <tfoot>
-                  <tr id="table_fotter_buttons_row">
-                    <td colspan="${columnNames.length}">
-                      <div class='flex_H'>
-                        <button class="table_footer_show_data" id="w1" onclick="tableDropdownList_ShowAllDataInTable(this)">All</button>
-                        <button class="table_footer_show_data" id="w2" onclick="tableDropdownList_showFirst50RowInTable(this)">50</button>
-                      </div>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>`;
-
-  // تحديث محتوى الصفحة بالجدول
-  tableDropdownList_TableMainTd.querySelector('.inputTable_dropdown_tableContainer').innerHTML = tableHTML;
-
-  // إخفاء أزرار التذييل إذا كانت الصفوف أقل من 50
-  if (tableDropdownList_Array1.length > 0 && tableDropdownList_Array1.length <= 50) {
-    tableDropdownList_DropdownMenue.querySelector('#table_fotter_buttons_row').style.display = "none";
-  } else if (tableDropdownList_Array1.length < 1) {
-    tableDropdownList_TableMainTd.querySelector('#table_fotter_buttons_row').innerHTML = `<td colspan="${columnNames.length}" class="td_no_result">لا نتائج</td>`;
-  }
-  
-}
-*/
 
 async function tableDropdownList_fillTable() {
   if (!slice_tableDropdownList_Array1 || slice_tableDropdownList_Array1.length === 0) {
@@ -3955,20 +3886,25 @@ async function tableDropdownList_showFirst50RowInTable(button) {
 
 
 async function tableDropdownList_performSearch(input) {
-  const td = input.closest("td");
-  const searchValue = td.querySelector('.dropdown_search_input').value.trim().toLowerCase();
-  if (!tableDropdownList_Array1 || !Array.isArray(tableDropdownList_Array1)) {
-    console.error("tableDropdownList_Array1 غير معرّف أو ليس مصفوفة.");
-    return;
-  }
-  tableDropdownList_Array1 = tableDropdownList_DataFilterdArray.filter(row => {
-    const secondColumnValue = Object.values(row)[1];
-    return secondColumnValue && secondColumnValue.toString().toLowerCase().includes(searchValue);
-  });
-  slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice(0, 50);
-  await tableDropdownList_fillTable();
-  if (slice_tableDropdownList_Array1.length > 0) {
-    tableDropdownList_handle_dropdown_row_selection();
+  try {
+    
+    const td = input.closest("td");
+    const searchValue = td.querySelector('.dropdown_search_input').value.trim().toLowerCase();
+    if (!tableDropdownList_Array1 || !Array.isArray(tableDropdownList_Array1)) {
+      console.error("tableDropdownList_Array1 غير معرّف أو ليس مصفوفة.");
+      return;
+    }
+    tableDropdownList_Array1 = tableDropdownList_DataFilterdArray.filter(row => {
+      const secondColumnValue = Object.values(row)[1];
+      return secondColumnValue && secondColumnValue.toString().toLowerCase().includes(searchValue);
+    });
+    slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice(0, 50);
+    await tableDropdownList_fillTable();
+    if (slice_tableDropdownList_Array1.length > 0) {
+      tableDropdownList_handle_dropdown_row_selection();
+    }
+  } catch (error) {
+    catch_error(error)
   }
 }
 
@@ -3992,42 +3928,50 @@ function tableDropdownList_handleResizeOrScroll() {
 
 //500500
 function tableDropdownList_selectedRow(row) {
+  try {
+    const mainTd = row.closest("td");
+    const mainRow = row.closest(`.mainTr`);
 
-try {
+    // تعيين القيم المشتركة
+    mainTd.querySelector('.id_hidden_input').value = row.querySelector(`.td_id`).textContent;
+    mainTd.querySelector('.dropdown_select_input').textContent = row.querySelector(`.td_account_name`).textContent;
 
-  const mainTd = row.closest("td")
-  const mainRow = row.closest(`.mainTr`)
+    switch (tableDropdownList_transaction_type_for_select_row) {
+      case 'transaction':
+        mainRow.querySelector('.td_account .is_accumulated_depreciation').value = row.querySelector(`.td_is_accumulated_depreciation`).textContent || false;
+        break;
 
-  // مشكله شائعه
-  // 1 : ta2kd en el el est3lam fe malaf el server ya7tawy 3ala as id  AND as account_name   
+      case 'salesInvoiceForm':
+        mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
+        mainRow.querySelector('.td-unitePrice').textContent = row.querySelector(`.td_item_sales_price`).textContent || '';
+        break;
 
-  mainTd.querySelector('.id_hidden_input').value = row.querySelector(`.td_id`).textContent; // row.id
-  mainTd.querySelector('.dropdown_select_input').textContent = row.querySelector(`.td_account_name`).textContent; // row.employee_name
-  
-  if (tableDropdownList_transaction_type_for_select_row === 'salesInvoiceForm'){
-    mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية'; // row.employee_name
-    mainRow.querySelector('.td-unitePrice').textContent = row.querySelector(`.td_item_sales_price`).textContent || ''; // سعر البيع
+      case 'salesReturnsForm':
+        mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
+        break;
+
+      case 'purshasesInvoiceForm':
+        mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
+        mainRow.querySelector('.td-unitePrice').textContent = row.querySelector(`.td_item_purshas_price`).textContent || '';
+        break;
+
+      case 'items_transfer_Form':
+        mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
+        break;
+
+      default:
+   //     console.warn("Invalid transaction type:", tableDropdownList_transaction_type_for_select_row);
+        break;
+    }
+
+    mainTd.querySelector('.clear_icon').style.display = 'flex';
+
+    tableDropdownList_hideDropdown();
+  } catch (error) {
+    tableDropdownList_hideDropdown();
+    catch_error(error);
   }
-  
-  if (tableDropdownList_transaction_type_for_select_row === 'salesReturnsForm'){
-    mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية'; // row.employee_name
-    // mainRow.querySelector('.td-unitePrice').textContent = row.querySelector(`.td_item_sales_price`).textContent || ''; // سعر البيع
-  }
-
-  if (tableDropdownList_transaction_type_for_select_row === 'purshasesInvoiceForm'){
-    mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية'; // row.employee_name
-    mainRow.querySelector('.td-unitePrice').textContent = row.querySelector(`.td_item_purshas_price`).textContent || ''; // سعر البيع
-  }
-
-  mainTd.querySelector('.clear_icon').style.display = 'flex'; // row.id
-
-  tableDropdownList_hideDropdown();
-    
-} catch (error) {
-  tableDropdownList_hideDropdown();
-  catch_error(error)
 }
-};
 
 
 
@@ -4264,3 +4208,11 @@ function processPastedData() {
 }
   */
 //#endregion 
+
+
+function clear_tbody(str_tableName) {
+  const tbody = document.querySelector(`#${str_tableName} tbody`); // تحديد tbody
+  while (tbody.rows.length) { // التكرار حتى حذف جميع الصفوف
+    tbody.deleteRow(0); // حذف الصف الأول
+  }
+}

@@ -3,8 +3,9 @@ pagePermission("view", "accumulated_depreciation_permission");
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
-    sessionStorage.removeItem('accumulated_depreciation_update_data')
-    window.location.href = "/accumulated_depreciation_add_ar";
+    sessionStorage.removeItem('items_transfer_update_data')
+    sessionStorage.removeItem('itemsTransferViewArray')
+    window.location.href = "/items_transfer_add_ar";
   }
 
 const h2_text_div = document.querySelector(`#h2_text_div`);

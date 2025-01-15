@@ -12,8 +12,8 @@ date1.value = today
 
 async function save(A_OR_B) {
 
-  const difference_debet_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debet_cerdit`).textContent)
-  if (difference_debet_cerdit !== 0) {
+  const difference_debit_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debit_cerdit`).textContent)
+  if (difference_debit_cerdit !== 0) {
     showAlert(`warning`, 'القيد غير متوازن');
     return
   }
@@ -35,19 +35,19 @@ async function save(A_OR_B) {
     for (const row of tableRows) {
       const account_typeId = parseInt(row.querySelector('.td_account_type .account_type').value);
       const account_id = parseInt(row.querySelector('.td_account .id_hidden_input').value);
-
+      const is_accumulated_depreciation = row.querySelector(`.td_account .is_accumulated_depreciation`).value
+      
       if (isNaN(account_id)) {
         showAlert(`warning`, 'توجد صفوف لا تحتوى على حساب')
         return;
       }
 
       const note_row = row.querySelector(`.td_row_note`).textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
-      const debt = parseFloat(row.querySelector(`.td_debt`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+      const debit = parseFloat(row.querySelector(`.td_debit`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
       const credit = parseFloat(row.querySelector(`.td_credit`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
       const item_amount = parseFloat(row.querySelector('.td_account .Xitem_amount').textContent || 0)
       const items_locations_select = row.querySelector('.td_account .items_locations_select').value
-
-      if (debt < 0 || credit < 0) {
+      if (debit < 0 || credit < 0) {
         showAlert(`warning`, `لا يمكن ادخل قيمه بالسالب فى القيد`);
         return;
       }
@@ -55,8 +55,9 @@ async function save(A_OR_B) {
       const rowData = {
         account_typeId :account_typeId,
         account_id: account_id,
+        is_accumulated_depreciation: is_accumulated_depreciation,
         note_row: note_row,
-        debt: debt,
+        debit: debit,
         credit: credit,
         item_amount: item_amount,
         items_location_id: items_locations_select,

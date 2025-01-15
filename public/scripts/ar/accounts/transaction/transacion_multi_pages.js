@@ -4,6 +4,7 @@ function build_table(){
     table.querySelector('thead').innerHTML  = `
                   <tr>
                     <th style="width: auto;" class="notViewTd"></th>
+                    <th style="width: auto;">#</th>
                     <th style="width: auto;">النوع</th>
                     <th style="width: auto;">الحساب</th>
                     <th style="width: 100%;">البيان</th>
@@ -19,6 +20,7 @@ function build_table(){
   <tr class="table_total_row">
       <td id="lengthColumn1" class="notViewTd"></td>
       <td id="sumColumn1"></td>
+      <td id="footer_total_recount"></td>
       <td id="sumColumn2" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
       <td id="sumColumn3" style="padding-inline-start: 2.5rem; font-weight: bold; opacity: 0.8;"></td>
       <td id="totalDebit" style="text-align: center">0</td>
@@ -29,8 +31,8 @@ function build_table(){
   
   <tr>
     <td class="notViewTd"></td>
-    <td colspan="3">
-      <div class="row x_start y_center w_full h_full" style="gap: 0.5rem; ">
+    <td colspan="4" class="">
+      <div class="row x_start y_center w_full h_full notView" style="gap: 0.5rem;">
         <button id="btn_newRow" class="btn_new" onclick="addRow()">سطر جديد</button>
         <select id="columnSelect" class="select m_0" style="width: fit-content; height: 3.5rem;">
           <option value="1">1</option>
@@ -41,8 +43,8 @@ function build_table(){
       </div>
     </td>
   
-    <td></td>
-    <td id="difference_debet_cerdit" class=""
+   
+    <td colspan="2" id="difference_debit_cerdit" class=""
       style="text-align: center; opacity: 0.5; color: var(--Font_Color); transition: var(--transition);">0
     </td>
   
@@ -77,7 +79,8 @@ function build_table(){
                       </button>
                     </div>
                   </td>
-  
+                  <td class="span_Total_In_Table rowCount td-account_type" style="min-width:fit-content"></td>
+
                     <td class="td_account_type">
                       <select name="" id="" class="account_type select h_full" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
                     </td>
@@ -88,22 +91,23 @@ function build_table(){
                   <td style="width: auto; height: var(--input_height);" class="td_account">
                     <div class="dropdown_container_input_table" id="">
                       <div class="row h_full">
-                        <span class="input_span_start account_type_name T">حساب عام</span>
+                        <span class="span_start account_type_name T">حساب عام</span>
 
                         <div class="dropdown_select_input_table" id=""  onclick="fill_filtered_data_accounts_Array(event)"  style="min-width: 10rem;">
                           <div id="" class="dropdown_select_input T hover"></div>
                           <i class="fa-solid fa-caret-down left_icon"></i>
                           <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>
                           <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                          <input type="hidden" class="is_accumulated_depreciation x1 T" id="" readonly>
                         </div>
                         <!-- items -->
                          <div class="row items_div" style="gap:0.2rem; display:none">
                             <div class="row">
-                              <span class="input_span_start class_unite">الكمية</span>
+                              <span class="span_start class_unite">الكمية</span>
                               <div class="div_input_sm hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
                             </div>
                             <div class="row">
-                              <span class="input_span_start">موقع المخزون</span>
+                              <span class="span_start">موقع المخزون</span>
                               <select name="" id="" class="select h_full items_locations_select">${get_items_locations_array}</select>
                             </div>
                          </div>
@@ -111,7 +115,7 @@ function build_table(){
                       <div class="dropdown_menue hover scroll" id="" style="display: none;">
                         <div class="dropdown_search">
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
-                            oninput="performSearch_accounts_table(this)" autocomplete="off">
+                            oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
                         <div class="inputTable_dropdown_tableContainer" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
@@ -124,7 +128,7 @@ function build_table(){
 
 
                   <td style="width: 100%;" class="inputTable_noteTd td_row_note hover" contenteditable="true" onkeydown="td_EnterkeypressEvent1(event)"></td>
-                  <td style="width: auto;" class="inputTable_NumberTd td_debt sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
+                  <td style="width: auto;" class="inputTable_NumberTd td_debit sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
                   <td style="width: auto;" class="inputTable_NumberTd td_credit sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
   
   
@@ -136,8 +140,8 @@ function build_table(){
                   </td>
   `;
       table.querySelector('tbody').appendChild(emptyRow);
-  
     }
+    reset_rowcount_in_table(`myTable`)
   }
   
 
@@ -156,6 +160,7 @@ function build_table(){
     }
     const row = btn.closest("tr");
     row.remove();
+    reset_rowcount_in_table(`myTable`)
     updateFooter()
   }
   
@@ -168,6 +173,7 @@ function build_table(){
   
     // إدراج الصف المستنسخ بعد الصف الحالي
     row.parentNode.insertBefore(newRow, row.nextSibling);
+    reset_rowcount_in_table(`myTable`)
     updateFooter()
   }
 
@@ -242,14 +248,14 @@ async function get_items_locations() {
 
   function handle_input_event(input) {
     const currentRow = input.closest("tr"); // حدد الصف الحالي
-    const td_debt = currentRow.querySelector(`.td_debt`); // ابحث عن عمود المدين
+    const td_debit = currentRow.querySelector(`.td_debit`); // ابحث عن عمود المدين
     const td_credit = currentRow.querySelector(`.td_credit`); // ابحث عن عمود الدائن
 
-    // تحقق إذا كان المستخدم يقوم بالإدخال في td_debt أو td_credit
-    if (input.classList.contains("td_debt") && td_credit) { 
+    // تحقق إذا كان المستخدم يقوم بالإدخال في td_debit أو td_credit
+    if (input.classList.contains("td_debit") && td_credit) { 
         td_credit.textContent = ""; // امسح محتوى الدائن
-    } else if (input.classList.contains("td_credit") && td_debt) { 
-        td_debt.textContent = ""; // امسح محتوى المدين
+    } else if (input.classList.contains("td_credit") && td_debit) { 
+        td_debit.textContent = ""; // امسح محتوى المدين
     }
 
     check_parse(input, 'number'); // تحقق من القيمة المدخلة
@@ -318,7 +324,7 @@ function updateFooter() {
     }
 
     // التحقق من نوع العمود باستخدام classList
-    if (cell.classList.contains("td_debt")) {
+    if (cell.classList.contains("td_debit")) {
       sumDebit += cellValue;
     } else if (cell.classList.contains("td_credit")) {
       sumCredit += cellValue;
@@ -330,7 +336,7 @@ function updateFooter() {
   document.getElementById("totalCredit").textContent = sumCredit;
 
   // حساب الفرق بين المدين والدائن
-  document.querySelector(`#difference_debet_cerdit`).textContent = sumDebit - sumCredit;
+  document.querySelector(`#difference_debit_cerdit`).textContent = sumDebit - sumCredit;
 }
 
 
@@ -384,7 +390,7 @@ function fill_filtered_data_accounts_Array(event) {
 
     filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value);
 
-    const DropDown_accounts_tableColumnsName = ['id', 'account_name', 'item_unite'];
+    const DropDown_accounts_tableColumnsName = ['id', 'account_name', 'item_unite', 'is_accumulated_depreciation'];
 
     // استدعاء tableDropdownList بعد التحديث
     tableDropdownList(

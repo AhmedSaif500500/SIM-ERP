@@ -4,12 +4,14 @@ pagePermission("view", "items_permission", "itemsLocations_permission", "service
 const items_btn = document.querySelector(`#items_btn`)
 const itemsLocations_btn = document.querySelector(`#itemsLocations_btn`)
 const services_btn = document.querySelector(`#services_btn`)
+const items_transfer_btn = document.querySelector(`#items_transfer_btn`)
 
 
 function showData(){
     items_btn.style.display = style= module_display("items_permission")
     itemsLocations_btn.style.display = style= module_display("itemsLocations_permission")
     services_btn.style.display = style= module_display("services_permission")
+    items_transfer_btn.style.display = style= module_display("items_transfer_permission")
    
 
     items_btn.onclick = function(){
@@ -22,6 +24,11 @@ function showData(){
     window.location.href = "/itemsLocations_view_ar";
   }
   
+  items_transfer_btn.onclick = function(){
+    sessionStorage.removeItem('itemsTransferViewArray');
+    window.location.href = "/items_transfer_view_ar";
+  }
+
   services_btn.onclick = function(){
     sessionStorage.removeItem('services_Array');
     window.location.href = "/services_view_ar";

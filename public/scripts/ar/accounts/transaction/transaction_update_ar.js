@@ -29,8 +29,8 @@ let tableTfoot = table.querySelector(`tfoot`);
 
 async function update() {
 
-  const difference_debet_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debet_cerdit`).textContent)
-  if (difference_debet_cerdit !== 0) {
+  const difference_debit_cerdit = parseFloat(document.querySelector(`#myTable > tfoot #difference_debit_cerdit`).textContent)
+  if (difference_debit_cerdit !== 0) {
     showAlert(`warning`, 'القيد غير متوازن');
     return
   }
@@ -52,6 +52,7 @@ async function update() {
     for (const row of tableRows) {
       const account_typeId = parseInt(row.querySelector('.td_account_type .account_type').value);
       const account_id = parseInt(row.querySelector('.td_account .id_hidden_input').value);
+      const is_accumulated_depreciation = row.querySelector(`.td_account .is_accumulated_depreciation`).value
 
       if (isNaN(account_id)) {
         showAlert(`warning`, 'توجد صفوف لا تحتوى على حساب')
@@ -60,13 +61,13 @@ async function update() {
 
       
       const note_row = row.querySelector(`.td_row_note`).textContent; // الوصول لمحتوى الخليه فى العاممود رقم 3 داخل الصف
-      const debt = parseFloat(row.querySelector(`.td_debt`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
+      const debit = parseFloat(row.querySelector(`.td_debit`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
       const credit = parseFloat(row.querySelector(`.td_credit`).textContent || 0); // لو ملقاش قيمه يعتبرها صفر
       const item_amount = parseFloat(row.querySelector('.td_account .Xitem_amount').textContent || 0)
       const items_locations_select = row.querySelector('.td_account .items_locations_select').value
 
 
-      if (debt < 0 || credit < 0) {
+      if (debit < 0 || credit < 0) {
         showAlert(`warning`, `لا يمكن ادخل قيمه بالسالب فى القيد`);
         return;
       }
@@ -74,8 +75,9 @@ async function update() {
       const rowData = {
         account_typeId :account_typeId,
         account_id: account_id,
+        is_accumulated_depreciation: is_accumulated_depreciation,
         note_row: note_row,
-        debt: debt,
+        debit: debit,
         credit: credit,
         item_amount: item_amount,
         items_location_id: items_locations_select,
@@ -111,7 +113,7 @@ btn_update.onclick = async function () {
 async function deleteX() {
 
   const datex = date1.value;
-  const x = transaction_data.x
+  const x = transaction_update_data.x
 
       const post = await new_fetchData_postAndGet(
         "/api/transaction_delete",
@@ -147,11 +149,8 @@ let slice_Array1 = [];
 
 
 async function getTransactionData_fn() {
-
-  console.log(transaction_update_data);
   
   const x =  transaction_update_data.x
-console.log(x);
 
 
   r = await new_fetchData_postAndGet(
@@ -203,7 +202,8 @@ console.log(x);
                       </button>
                     </div>
                   </td>
-  
+                  <td class="span_Total_In_Table rowCount td-account_type" style="min-width:fit-content"></td>
+
                     <td class="td_account_type">
                       <select name="" id="" class="account_type select h_full" onchange="change_select_account_type(this)">${get_accounts_type_array}</select>
                     </td>
@@ -214,22 +214,23 @@ console.log(x);
                   <td style="width: auto; height: var(--input_height);" class="td_account">
                     <div class="dropdown_container_input_table" id="">
                       <div class="row h_full">
-                        <span class="input_span_start account_type_name T">حساب عام</span>
+                        <span class="span_start account_type_name T">حساب عام</span>
 
                         <div class="dropdown_select_input_table" id=""  onclick="fill_filtered_data_accounts_Array(event)"  style="min-width: 10rem;">
                           <div id="" class="dropdown_select_input T hover"></div>
                           <i class="fa-solid fa-caret-down left_icon"></i>
                           <i class="fa-solid fa-xmark clear_icon" style="display: none;" onclick="clear_icon_on_table_td(event),reset_row_unit(event)"></i>
                           <input type="hidden" class="id_hidden_input x1 T" id="" readonly>
+                          <input type="hidden" class="is_accumulated_depreciation x1 T" id="" readonly>
                         </div>
                         <!-- items -->
                          <div class="row items_div" style="gap:0.2rem; display:none">
                             <div class="row">
-                              <span class="input_span_start class_unite">الكمية</span>
+                              <span class="span_start class_unite">الكمية</span>
                               <div class="div_input_sm hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
                             </div>
                             <div class="row">
-                              <span class="input_span_start">موقع المخزون</span>
+                              <span class="span_start">موقع المخزون</span>
                               <select name="" id="" class="select h_full items_locations_select">${get_items_locations_array}</select>
                             </div>
                          </div>
@@ -237,7 +238,7 @@ console.log(x);
                       <div class="dropdown_menue hover scroll" id="" style="display: none;">
                         <div class="dropdown_search">
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
-                            oninput="performSearch_accounts_table(this)" autocomplete="off">
+                            oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
                         <div class="inputTable_dropdown_tableContainer" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
@@ -246,11 +247,8 @@ console.log(x);
                     </div>
                   </td>
   
-
-
-
                   <td style="width: 100%;" class="inputTable_noteTd td_row_note hover" contenteditable="true" onkeydown="td_EnterkeypressEvent1(event)"></td>
-                  <td style="width: auto;" class="inputTable_NumberTd td_debt sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
+                  <td style="width: auto;" class="inputTable_NumberTd td_debit sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
                   <td style="width: auto;" class="inputTable_NumberTd td_credit sum hover" contenteditable="true" oninput="handle_input_event(this)" onkeydown="td_EnterkeypressEvent1(event)"></td>
   
   
@@ -272,8 +270,8 @@ console.log(x);
     const balance = data.bodyData.reduce((sum, item) => sum + (+item.debit ?? 0), 0);
     tableTfoot.querySelector(`#totalDebit`).textContent = balance
     tableTfoot.querySelector(`#totalCredit`).textContent = balance
-    tableTfoot.querySelector(`#difference_debet_cerdit`).textContent = 0
-          
+    tableTfoot.querySelector(`#difference_debit_cerdit`).textContent = 0
+    reset_rowcount_in_table(`myTable`)          
   } catch (error) {
     catch_error(error)
   } 
@@ -282,17 +280,17 @@ console.log(x);
 
   function handleCurrentTr(row,tr){
     
-
       // const data_account_row = data_accounts.find(item => +item.id === +select_accountTpe.value);
-     
+      
         tr.querySelector(`.td_account_type .account_type`).value = row.account_type_id;
         tr.querySelector(`.td_account .id_hidden_input`).value = row.account_id;
         tr.querySelector(`.td_account .dropdown_select_input`).textContent = row.account_name;
+        tr.querySelector(`.td_account .is_accumulated_depreciation`).value = row.is_accumulated_depreciation ? true : false;
         tr.querySelector(`.td_account .Xitem_amount`).textContent = row.item_amount;
         tr.querySelector(`.td_account .items_locations_select`).value = row.item_location_id_tb;
         tr.querySelector(`.td_account .class_unite`).textContent = row.item_unite;
         tr.querySelector(`.td_row_note`).textContent = row.row_note ? row.row_note : "";
-        tr.querySelector(`.td_debt`).textContent = row.debit ? row.debit : "";
+        tr.querySelector(`.td_debit`).textContent = row.debit ? row.debit : "";
         tr.querySelector(`.td_credit`).textContent = row.credit ? row.credit : "";
         
 

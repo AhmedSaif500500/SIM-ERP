@@ -96,6 +96,7 @@ async function get_user_data_fn() {
     document.querySelector("#table_permission_fixed_assests").value = array1.fixed_assests_permission || 0;
     document.querySelector("#table_permission_accumulated_depreciation").value = array1.accumulated_depreciation_permission || 0;
     document.querySelector("#table_permission_disposed_fixed_asset").value = array1.disposed_fixed_asset_permission || 0;
+    document.querySelector("#table_permission_items_transfer").value = array1.items_transfer_permission || 0;
   } catch (error) {
     catch_error(error)
   };
@@ -242,6 +243,7 @@ try {
   let table_permission_fixed_assests = A("#table_permission_fixed_assests");
   let table_permission_accumulated_depreciation = A("#table_permission_accumulated_depreciation");
   let table_permission_disposed_fixed_asset = A("#table_permission_disposed_fixed_asset");
+  let table_permission_items_transfer = A("#table_permission_items_transfer");
 
     // ضبط قيم الصلاحيات
     if (general_permission_select != "1" || general_permission_select == '') {
@@ -271,6 +273,7 @@ try {
       table_permission_fixed_assests = '';
       table_permission_accumulated_depreciation = '';
       table_permission_disposed_fixed_asset = '';
+      table_permission_items_transfer = '';
       // add here all tables select permission id
     };
 
@@ -305,7 +308,8 @@ try {
           table_permission_purshases_returns,
           table_permission_fixed_assests,
           table_permission_accumulated_depreciation,
-          table_permission_disposed_fixed_asset
+          table_permission_disposed_fixed_asset,
+          table_permission_items_transfer,
         },
         'users_permission','update',
         20,

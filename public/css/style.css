@@ -2057,11 +2057,29 @@ html[dir="rtl"] {
   width: fit-content;
   text-wrap: nowrap;
   padding: 0.5rem;
-  text-align: center;
+  text-align: start;
   background-color: var(--btn_search_backcolor);
   color: var(--Font_Color);
   border-radius: 0.3rem;
   border: var(--border_normal);
+  height: 100%;
+  transition: var(--transition);
+}
+
+.normal_Total_In_Table {
+  position: relative;
+  /* display: flex; */
+  /* text-align: center; */
+  align-items: center;
+  /* min-width: 7rem; */
+  width: fit-content;
+  text-wrap: nowrap;
+  padding: 0.5rem;
+  text-align: start;
+  /* background-color: var(--btn_search_backcolor); */
+  color: var(--Font_Color);
+  /* border-radius: 0.3rem; */
+  /* border: var(--border_normal); */
   height: 100%;
   transition: var(--transition);
 }
@@ -3004,8 +3022,12 @@ html[dir="rtl"] {
   align-items: center;
 }
 
-.input_span_start,
-.input_span_end {
+
+
+
+
+.span_start,
+.span_end {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -3021,18 +3043,19 @@ html[dir="rtl"] {
   transition: var(--transition);
 }
 
-.input_span_start {
+.span_start {
   border-start-start-radius: 0.3rem;
   border-end-start-radius: 0.3rem;
   border-inline-end: none;
 }
 
 
-.input_span_end {
+.span_end {
   border-end-end-radius: 0.3rem;
   border-start-end-radius: 0.3rem;
   border-inline-start: none;
 }
+
 .input_table_normal_input_text {
   position: relative;
   height: 100%;
@@ -3915,6 +3938,7 @@ html[dir="rtl"] {
   font-weight: bold;
   padding: 1.5rem 1rem; /* طول كبير وعرض صغير */
   border: none;
+  margin: 0.5rem;
   border-radius: 10px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* تأثير الظل */
   cursor: pointer;
