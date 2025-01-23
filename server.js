@@ -828,7 +828,7 @@ async function check_settings_validation(options = {}, req) {
 //   }
 // }
 
-
+/*
 function turn_EmptyValues_TO_null(object_Var) {
   for (let key in object_Var) {
     // إذا كانت القيمة عبارة عن مصفوفة
@@ -849,6 +849,31 @@ function turn_EmptyValues_TO_null(object_Var) {
       object_Var[key] = null; // تغيير القيمة إلى null
       // طباعة القيمة الجديدة
       // console.log(`Changed: ${key} = ${object_Var[key]}`);
+    }
+  }
+}
+*/
+
+function turn_EmptyValues_TO_null(object_Var) {
+  for (let key in object_Var) {
+    // إذا كانت القيمة عبارة عن مصفوفة
+    if (Array.isArray(object_Var[key])) {
+      // المرور عبر العناصر في المصفوفة
+      object_Var[key].forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+          // إذا كان العنصر كائن، نفحص خصائصه
+          turn_EmptyValues_TO_null(item); // استدعاء الدالة نفسها على الكائن
+        }
+      });
+    } else if (typeof object_Var[key] === 'object' && object_Var[key] !== null) {
+      // إذا كانت القيمة كائن، نفحص خصائصه
+      turn_EmptyValues_TO_null(object_Var[key]);
+    } else if (object_Var[key] === "" || object_Var[key] === 0 || parseFloat(object_Var[key]) === 0) {
+      // إذا كانت القيمة فارغة، تغييرها إلى null
+      object_Var[key] = null;
+    } else if (typeof object_Var[key] === "number") {
+      // إذا كانت القيمة رقمية، نقوم بتقريبها لأقرب رقمين عشريين
+      object_Var[key] = parseFloat(object_Var[key].toFixed(2));
     }
   }
 }
@@ -903,8 +928,7 @@ function isInValidDateFormat(valuesAsArray) {
 
 /*
 const dates = ['2024-08-23', '2024-12-01', '2023-11-31']; // هنا كل الصيغ صحيحة حتى لو كانت بعض التواريخ غير منطقية
-ex console.log(isValidDateFormat(dates)); 
-or console.log(isValidDateFormat([date1, date2])); 
+
 */
 //#region stop_hackers
 
@@ -1034,9 +1058,6 @@ where owner_id = $1`
 let r2 = await db.oneOrNone(q2,[req.session.owner_id])
 r2 = r2.id ? r2.id : 0 
 
-
-console.log(r1);
-console.log(r2);
 
 if(!r1 || isNaN(r1) || r1 < 1){
 return res.json({
@@ -1175,7 +1196,6 @@ return res.json({
         // أضف باقي الحسابات
       ];
 
-      //500500
 
 
 
@@ -1342,7 +1362,9 @@ const query_permissions =
     uc.fixed_assests_permission,
     uc.accumulated_depreciation_permission,
     uc.disposed_fixed_asset_permission,
-    uc.items_transfer_permission
+    uc.items_transfer_permission,
+    uc.cash_accounts_permission,
+    uc.cash_transaction_permission
 FROM user_company uc 
     left join companies c on uc.company_id = c.id
 WHERE
@@ -1387,6 +1409,8 @@ if (data) {
   req.session.accumulated_depreciation_permission = data.accumulated_depreciation_permission
   req.session.disposed_fixed_asset_permission = data.disposed_fixed_asset_permission
   req.session.items_transfer_permission = data.items_transfer_permission
+  req.session.cash_accounts_permission = data.cash_accounts_permission
+  req.session.cash_transaction_permission = data.cash_transaction_permission
 
 
   res.json(data);
@@ -2876,7 +2900,9 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
                         fixed_assests_permission = $25,
                         accumulated_depreciation_permission = $26,
                         disposed_fixed_asset_permission = $27,
-                        items_transfer_permission = $28
+                        items_transfer_permission = $28,
+                        cash_accounts_permission = $29,
+                        cash_transaction_permission = $30
                       WHERE user_id = $1
                         AND company_id = $2`;
 
@@ -2909,7 +2935,9 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
           posted_elements.table_permission_fixed_assests,
           posted_elements.table_permission_accumulated_depreciation,
           posted_elements.table_permission_disposed_fixed_asset,
-          posted_elements.table_permission_items_transfer
+          posted_elements.table_permission_items_transfer,
+          posted_elements.table_permission_cash_accounts,
+          posted_elements.table_permission_cash_transaction
         ]);
 
         return res.json({
@@ -4156,6 +4184,10 @@ app.post("/delete_employee", async (req, res) => {
       });
     }
 
+    console.log(result.count_actions);
+    console.log(result.count_effects);
+    
+
     if (result.count_actions > 0 || result.count_effects > 0){
       return res.json({
         success: false,
@@ -4904,7 +4936,6 @@ ORDER BY
           LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
           WHERE
               A.company_id = $1
-              AND (A.is_deleted IS DISTINCT FROM TRUE) -- جلب كل البيانات بإستثناء الحقل الذي قيمته ترو
               AND ah.account_type_id = 4
               AND ah.is_final_account = true
               AND (A.datex BETWEEN $2 AND $3 )
@@ -5132,7 +5163,7 @@ app.post("/effects_delete", async (req, res) => {
     }
 
     //* Start--------------------------------------------------------------
-    let query1 = `update effects set is_deleted = TRUE WHERE company_id = $1 AND id = $2`;
+    let query1 = `delete from effects WHERE company_id = $1 AND id = $2`;
     let params1 = [req.session.company_id, posted_elements.id];
 
 
@@ -6939,7 +6970,6 @@ WHERE
     }
   });
 
-  //500500
   app.post("/items_transfer_main_data", async (req, res) => {
     try {
       //! Permission معلق
@@ -7019,12 +7049,11 @@ let params2 = [req.session.company_id]
     }
   });
 
-  //500500
   app.post("/api/items_transfer_add", async (req, res) => {
     try {
   
       //! Permission معلق
-      await permissions(req, "accumulated_depreciation_permission_permission", "add");
+      await permissions(req, "items_transfer_permission", "add");
       if (!permissions) {
         return res.status(403).json({
           success: false,
@@ -7036,16 +7065,16 @@ let params2 = [req.session.company_id]
   
   
       const posted_elements = req.body;
-      const transaction_type = 15 // اهلاك الاصول الثابتة
-      let items_array = []
+      const transaction_type = 12 //   تحويلات بين المخزون
+      
     
   
       //! sql injection check
       let hasBadSymbols = sql_anti_injection([
-        ...posted_elements.posted_array.map((obj) => obj.account_id + obj.depreciation_value), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+        ...posted_elements.posted_array.map((obj) => obj.rowAccountId + obj.rowNote +obj.rowAmount), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
         posted_elements.datex,
-        posted_elements.startDate,
-        posted_elements.endDate,
+        posted_elements.location_from,
+        posted_elements.location_to,
         posted_elements.note,
       ]);
       if (hasBadSymbols) {
@@ -7057,7 +7086,7 @@ let params2 = [req.session.company_id]
       }
   
   
-      const InValidDateFormat = isInValidDateFormat([posted_elements.datex, posted_elements.startDate, posted_elements.endDate]);
+      const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
       if (InValidDateFormat) {
         return res.status(400).json({
           success: false,
@@ -7089,67 +7118,42 @@ let params2 = [req.session.company_id]
   
       //* Start Transaction --------------------------------------------------
   
-      if (posted_elements.startDate > posted_elements.endDate){
+      if (!posted_elements.location_from || !posted_elements.location_to){
         return res.json({
           success: false,
-          message_ar: 'برجاء تحديد فترة الاهلاك بشكل صحيح',
+          message_ar: 'برجاء تحديد مواقع المخزون بشكل صحيح',
         });
       }
   
   
-      const accounts_array = posted_elements.posted_array.map(row => parseInt(row.account_id)); // ستظهر النتيجة: [15, 54, 51]
+      const accounts_array = posted_elements.posted_array.map(row => parseInt(row.rowAccountId)); // ستظهر النتيجة: [15, 54, 51]
+      
+      //! فحص الجرد الكميات حسب الموقع
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(tb.item_amount) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+		and tb.item_id IN (${accounts_array.join(',')})
+		and tb.item_location_id_tb = $2
+    and th.datex <= $3
+	group by
+		tb.item_id;
+      `
+
+      const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.location_from, posted_elements.datex]) || [];
       
   
-      const query001 = `
-  WITH main_query AS (
-      SELECT
-          ah.id,
-          ah.account_no,
-          ah.account_name,
-          ah.item_expense_account,
-          ah.str10_data_column1 AS purchases_date,
-          ah.str10_data_column2 AS started_depreciation_date,
-          COALESCE(ah.numeric_column1 / 100, 0) AS rate_value,
-          COALESCE(ah.numeric_column2, 0) AS un_depreciated_value,
-          ah.str50_column1 AS fixed_assets_group_name,
-          ah.str_textarea_column1 AS asset_info,
-          SUM(CASE 
-                  WHEN tb.is_accumulated_depreciation IS NULL THEN (COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0))
-                  ELSE 0
-              END) AS asset_cost,
-          SUM(CASE 
-                  WHEN tb.is_accumulated_depreciation IS TRUE THEN (COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0))
-                  ELSE 0
-              END) AS depreciation_value
-      FROM
-          accounts_header ah
-      left JOIN transaction_body tb ON tb.account_id = ah.id
-      left JOIN transaction_header th ON th.id = tb.transaction_header_id
-      WHERE
-          ah.company_id = $1
-          AND ah.finance_statement = 1
-          AND ah.account_type_id = 6
-          AND (th.is_deleted IS NULL OR th.is_deleted = FALSE)
-          AND ah.id IN (${accounts_array.join(',')})
-      GROUP BY
-          ah.id
-  )
-      SELECT
-          mq.id,
-          mq.item_expense_account,
-          mq.started_depreciation_date,
-          mq.asset_cost - mq.un_depreciated_value - mq.depreciation_value AS viable_value_to_depreciate
-      FROM main_query mq
-        ;
-        `
-        const params001 = [req.session.company_id]
-        const result = await db.any(query001, params001) || [];
-  
-    
-        if (result.length === 0) {
+        if (items_amount_location.length === 0) {
           return res.json({
             success: false,
-            message_ar: 'برجاء انشاء اصول ثابتة اولا : Sadd002',
+            message_ar: "لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
           });
         }
     
@@ -7157,104 +7161,72 @@ let params2 = [req.session.company_id]
         const newId_transaction_header = await newId_fn("transaction_header", 'id');
         let newId_transaction_body = await newId_fn("transaction_body", 'id');
         const year = getYear(posted_elements.datex)
-        // const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
         const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
         const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
   
-        let total = 0
         let tb_posted_array = []
-        const frontEndDatex = posted_elements.startDate
         let index = 1
         for ( const row of posted_elements.posted_array){
-          const dbRow = result.find(item => +item.id === row.account_id);
+          const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
           
           if (!dbRow){
-            await block_user(req,'Sada03')
             return res.json({
               success: false,
-              xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-            });
-          }
-  
-          if (!dbRow.item_expense_account){
-            return res.json({
-              success: false,
-              message_ar: ` حدث خطأ اثناء تحديد حساب مصروف الاهلاك المخصص فى السطر رقم: ${index}`,
+              message_ar: `لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`,
             });
           }
           
-          if (!dbRow.started_depreciation_date){
+
+  
+          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)){
             return res.json({
               success: false,
-              message_ar: ` حدث خطأ اثناء تحديد حساب تاريخ بداية الاهلاك فى السطر رقم: ${index}`,
+              message_ar: ` لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`,
             });
           }
-  
-          
-  
-          if (frontEndDatex < dbRow.started_depreciation_date){
-            return res.json({
-              success: false,
-              message_ar: `التاريخ المحدد أصغر من تاريخ بداية فترة الإهلاك للأصل في السطر رقم: ${index}`,
-            });
-          }
-       
-  
-          if ((+dbRow.viable_value_to_depreciate || 0) - (+row.depreciation_value || 0) < 0) {
-            return res.json({
-              success: false,
-              message_ar: `القيمة المدخلة للإهلاك تتجاوز القيمة المتاحة للإهلاك في السطر رقم: ${index}.`,
-            });
-          }
-          
-          // سطر المصورف
+
+          // الموقع المحول منه
           tb_posted_array.push([
             newId_transaction_body++, // id
             newId_transaction_header, // transaction_header_id
-            +row.depreciation_value || 0, // debit
-            null, //credit          
-            +dbRow.item_expense_account, // حساب مصروف الاهلاك المخصص
-            null // is_accumulated_depreciation
+            +row.rowAccountId, // item_id
+            +posted_elements.location_from, //الموق
+            +row.rowAmount * -1, // الكمية بالسالب
           ]);
   
   
-          // سطر المجمع
+          // الموقع المحول اليه
           tb_posted_array.push([
             newId_transaction_body++, // id
             newId_transaction_header, // transaction_header_id
-            null, //debit
-            +row.depreciation_value || 0, // credit
-            +row.account_id, // حساب الاصل
-            true // is_accumulated_depreciation
+            +row.rowAccountId, // item_id
+            +posted_elements.location_to, //الموق
+            +row.rowAmount, // الكمية 
           ]);
-  
-  
-          total += +row.depreciation_value || 0
+    
           index++;
         }
   
         let query2 = `INSERT INTO transaction_body
-        (id, transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
-        VALUES($1, $2, $3, $4, $5, $6);`;
+        (id, transaction_header_id, item_id, item_location_id_tb, item_amount)
+        VALUES($1, $2, $3, $4, $5);`;
   
   
   
         let query1 = `INSERT INTO transaction_header
-                      (id, reference, company_id, transaction_type, total_value, general_note, datex, general_reference, str10_date_column1, str10_date_column2)
-                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10);`;
+                      (id, reference, company_id, transaction_type, general_note, datex, general_reference, items_location_id, items_location_id2)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9);`;
         
         let params1 = [
           newId_transaction_header,
           newReference_transaction_header,
           req.session.company_id,
           transaction_type,
-          total.toFixed(2),
           posted_elements.note,
           posted_elements.datex,
           newId_general_reference,
-          posted_elements.startDate,
-          posted_elements.endDate,
+          +posted_elements.location_from,
+          +posted_elements.location_to,
         ]                    
   
       // تنفيذ معاملة قاعدة البيانات
@@ -7275,11 +7247,11 @@ let params2 = [req.session.company_id]
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم إنشاء اهلاك اصول ثابتة بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `تم إنشاء تحويلات المخزون بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
-      console.error("Error accumulated_depreciation_add:", error);
+      console.error("Error items_transfer_add:", error);
   
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
@@ -7289,6 +7261,558 @@ let params2 = [req.session.company_id]
     }
   });
   
+
+  app.post("/get_items_transfer_Data_view", async (req, res) => {
+    try {
+      
+      //! Permission  
+      await permissions(req, "items_transfer_permission", "view");
+      if (!permissions) {
+        return;
+      }
+        
+  
+      const posted_elements = req.body;
+  
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+        
+            const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+            if (InValidDateFormat){
+              return res.json({
+                success: false,
+                message_ar: InValidDateFormat_message_ar,
+              });
+            }
+          
+  
+  
+        turn_EmptyValues_TO_null(posted_elements);
+      //* Start--------------------------------------------------------------
+  
+  
+  let quer1 = `
+  select
+	th.id,
+	th.datex,
+	    CONCAT(
+        tt.doc_prefix, '-',
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+    COALESCE(th.general_note, '') as general_note, 
+    ah1.account_name as location_from,
+    ah2.account_name as location_to
+from
+	transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
+inner join accounts_header ah1 on ah1.id = th.items_location_id
+inner join accounts_header ah2 on ah2.id = th.items_location_id2
+where
+    th.company_id = $1
+    AND (th.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
+    AND th.transaction_type = 12
+    AND th.is_deleted is null
+  order by
+    th.datex DESC,
+    th.reference DESC	
+  `;
+  
+  // تنفيذ الاستعلامات
+  let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+  
+      res.json(data);
+    } catch (error) {
+      console.error("Error get_items_transfer_Data_view:", error);
+      res.status(500).send("Error:");
+    }
+  });
+  
+
+  app.post("/get_items_transfer_data_for_update", async (req, res) => {
+    try {
+      // //! Permission
+      await permissions(req, "items_transfer", "add");
+      if (!permissions) {
+        return;
+      }
+  
+      const posted_elements = req.body;
+  
+  
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+          
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+  
+      // const InValidDateFormat = isInValidDateFormat([posted_elements.startDate, posted_elements.endDate]);
+      // if (InValidDateFormat) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message_ar: InValidDateFormat_message_ar,
+      //   });
+      // }
+  
+  
+      turn_EmptyValues_TO_null(posted_elements);
+      //* Start--------------------------------------------------------------
+      // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+  
+      
+  
+      let query1 = `
+       --  مواقع المخزون
+select 
+	ah.id,
+	ah.account_name
+from
+	accounts_header ah
+where
+	ah.company_id = $1
+	and ah.account_type_id = 7
+  and ah.is_inactive is null
+    ;
+  `;
+  let params1 = [req.session.company_id]
+  
+  
+  let query2 = `
+  --  الاصناف
+select 
+	ah.id,
+	ah.account_name,
+	ah.item_unite
+from
+	accounts_header ah
+where
+	ah.company_id = $1
+	and ah.account_type_id = 5
+	and ah.is_final_account is true
+	and ah.is_inactive is null
+;
+`;
+let params2 = [req.session.company_id]
+  
+
+  let query3 = `
+  --  header data query
+select
+	th.id,
+	th.datex,
+	th.general_note,
+	th.items_location_id as location_from,
+	th.items_location_id2 as location_to,
+	CONCAT(
+      tt.doc_prefix, '-',
+    	SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat
+from
+	transaction_header th
+ LEFT JOIN transaction_type tt ON tt.id = th.transaction_type 
+where
+	th.company_id = $1
+	and th.id = $2
+	and th.is_deleted is null
+	and th.transaction_type = 12
+  ;
+  `;
+  let params3 = [req.session.company_id, posted_elements.x]
+  
+
+  let query4 = `
+  -- body data
+select
+	tb.id,
+	COALESCE(tb.row_note, ''), row_note, 
+	tb.item_id,
+	ah1.account_name as item_name,
+  ah1.item_unite,
+  tb.item_amount
+from
+	transaction_body tb
+inner join transaction_header th on th.id = tb.transaction_header_id	
+inner join accounts_header ah1 on ah1.id = tb.item_id
+where
+	th.id = $1
+	and th.company_id = $2
+	and th.transaction_type = 12
+	and th.is_deleted is null
+  and tb.item_amount > 0
+	`
+  let params4 = [posted_elements.x,req.session.company_id]
+  await db.tx(async (tx) => {
+  
+    const itemsLocationsArray = await tx.any(query1, params1);
+    const itemsArray = await tx.any(query2, params2);
+    const haderDataArray = await tx.oneOrNone(query3, params3);
+    const bodyDataArray = await tx.any(query4, params4);
+  
+    const postedData = {itemsLocationsArray, itemsArray, haderDataArray, bodyDataArray};
+    res.json(postedData);
+  })
+  
+  
+      await last_activity(req)
+    } catch (error) {
+      await last_activity(req)
+      console.error("Error while get_calculated_depreacation_values", error);
+      res.join;
+      res
+        .status(500)
+        .json({ success: false, message_ar: "Error while get Employees Data" });
+    }
+  });
+
+  app.post("/api/items_transfer_update", async (req, res) => {
+    try {
+  
+      //! Permission معلق
+      await permissions(req, "items_transfer_permission", "update");
+      if (!permissions) {
+        return res.status(403).json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+        });
+      }
+  
+  
+  
+  
+      const posted_elements = req.body;
+      const transaction_type = 12 //   تحويلات بين المخزون
+      
+    
+  
+      //! sql injection check
+      let hasBadSymbols = sql_anti_injection([
+        ...posted_elements.posted_array.map((obj) => obj.rowAccountId + obj.rowNote +obj.rowAmount), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+        posted_elements.x,
+        posted_elements.datex,
+        posted_elements.location_from,
+        posted_elements.location_to,
+        posted_elements.note,
+      ]);
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar: sql_injection_message_ar,
+          message_en: sql_injection_message_en,
+        });
+      }
+  
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+      if (InValidDateFormat) {
+        return res.status(400).json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+  
+      //! settings
+      const settings = await check_settings_validation({
+        check_futureDate: true,
+        check_closingDate: true,
+        datex: posted_elements.datex,
+        type: 'update',
+        tableName: 'transaction_header', // if type = 'update' or 'delete' only
+        transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+      }, req);
+  
+      
+      if (!settings.valid) {
+        return res.json({
+          success: false,
+          message_ar: settings.message_ar,
+        });
+      }
+  
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      
+  
+      //* Start Transaction --------------------------------------------------
+  
+      let query0 = `select id, reference from transaction_header where id = $1 and company_id = $2 and transaction_type = 12`
+      let result0 = await db.oneOrNone(query0, [posted_elements.x, req.session.company_id])
+      if (!result0) {
+        await block_user(req,'Situ01');
+        return res.json({
+          success: false,
+          message_ar: "تم حظر الحساب",
+          xx: true,
+          message_en: "Cannot delete account with sub-accounts",
+        });
+      }
+
+
+
+      if (!posted_elements.location_from || !posted_elements.location_to){
+        return res.json({
+          success: false,
+          message_ar: 'برجاء تحديد مواقع المخزون بشكل صحيح',
+        });
+      }
+  
+  
+      const accounts_array = posted_elements.posted_array.map(row => parseInt(row.rowAccountId)); // ستظهر النتيجة: [15, 54, 51]
+      
+      //! فحص الجرد الكميات حسب الموقع
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(tb.item_amount) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+    and th.id != $2 -- استثناء المعامله نفسها 
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+		and tb.item_id IN (${accounts_array.join(',')})
+		and tb.item_location_id_tb = $3
+    and th.datex <= $4
+	group by
+		tb.item_id;
+      `
+
+      const items_amount_location = await db.any(query_items,[req.session.company_id, posted_elements.x, +posted_elements.location_from, posted_elements.datex]) || [];
+      
+  
+        if (items_amount_location.length === 0) {
+          return res.json({
+            success: false,
+            message_ar: "لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
+          });
+        }
+    
+        // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+        let newId_transaction_body = await newId_fn("transaction_body", 'id');
+        const year = getYear(posted_elements.datex)
+
+        let tb_posted_array = []
+        let index = 1
+        for ( const row of posted_elements.posted_array){
+          const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
+          
+          if (!dbRow){
+            return res.json({
+              success: false,
+              message_ar: `لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`,
+            });
+          }
+          
+
+  
+          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)){
+            return res.json({
+              success: false,
+              message_ar: ` لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`,
+            });
+          }
+
+          // الموقع المحول منه
+          tb_posted_array.push([
+            newId_transaction_body++, // id
+            posted_elements.x, // transaction_header_id
+            +row.rowAccountId, // item_id
+            +posted_elements.location_from, //الموق
+            +row.rowAmount * -1, // الكمية بالسالب
+          ]);
+  
+  
+          // الموقع المحول اليه
+          tb_posted_array.push([
+            newId_transaction_body++, // id
+            posted_elements.x, // transaction_header_id
+            +row.rowAccountId, // item_id
+            +posted_elements.location_to, //الموق
+            +row.rowAmount, // الكمية 
+          ]);
+    
+          index++;
+        }
+  
+        let query2 = `INSERT INTO transaction_body
+        (id, transaction_header_id, item_id, item_location_id_tb, item_amount)
+        VALUES($1, $2, $3, $4, $5);`;
+  
+  
+        let query02 = 'DELETE FROM transaction_body where transaction_header_id = $1'
+        let params02 = [posted_elements.x]
+
+  
+        let query1 = `UPDATE transaction_header
+                      set general_note = $1, datex = $2, items_location_id = $3, items_location_id2 = $4 
+                        WHERE id = $5 AND company_id = $6 AND transaction_type = 12
+                      ;`;
+        
+        let params1 = [
+          posted_elements.note,
+          posted_elements.datex,
+          +posted_elements.location_from,
+          +posted_elements.location_to,
+          posted_elements.x,
+          req.session.company_id
+        ]                    
+  
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+  
+        await tx.none(query02, params02); // delete
+        await tx.none(query1, params1); // update
+  
+        // استخدم tx.batch بدلاً من tx.none
+        await tx.batch(tb_posted_array.map(data => tx.none(query2, data))); // new insert
+  
+        //! history
+        await history(transaction_type,2,posted_elements.x,result0.reference,req,tx);
+      });
+  
+      // await update_items_cogs(req,items_array,posted_elements.datex)
+      const new_referenceFormatting = formatFromFiveDigits(result0.reference);
+      await last_activity(req);
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+        success: true,
+        message_ar: `تم تحديث تحويلات المخزون بمرجع : ${new_referenceFormatting}-${year}`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error items_transfer_update:", error);
+  
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+        success: false,
+        message_ar: error.message,
+      });
+    }
+  });
+  
+  app.post("/api/items_transfer_delete", async (req, res) => {
+
+    try {
+  
+      //! Permission
+      await permissions(req, "items_transfer_permission", "delete");
+      if (!permissions) {
+        return res.status(403).json({
+          success: false,
+          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+        });
+      }
+      const posted_elements = req.body;
+  
+      const transaction_type = 12 // تحويلات المخزون
+    
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+  
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+    
+        const InValidDateFormat = isInValidDateFormat([posted_elements.datex])
+        if (InValidDateFormat){
+          return res.json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+      
+  
+  
+      //! settings
+      const settings = await check_settings_validation({
+        check_futureDate: true,
+        check_closingDate: true,
+        datex: false, // if // if type = 'update' or 'add' only
+        type: 'delete',
+        tableName: 'transaction_header', // if type = 'update' or 'delete' only
+        transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+      }, req);
+  
+      
+      if (!settings.valid) {
+        return res.json({
+          success: false,
+          message_ar: settings.message_ar,
+        });
+      }
+      
+  
+      turn_EmptyValues_TO_null(posted_elements);
+  
+      //* Start Transaction --------------------------------------------------
+  
+      let reference;
+      await db.tx(async (tx) => {
+              //! Security hacking check id for company_name and transactio type
+              let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+              let rows01 = await tx.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+          
+              if (!rows01 || !rows01.id) {
+                throw new Error("لا يوجد تحويل مخزون  بهذا المرجع");
+              }
+              reference = rows01.reference
+            
+                    //? Clear transaction_body
+        let query0 = `Delete FROM transaction_body WHERE transaction_header_id = $1`
+        await tx.none(query0,[posted_elements.x])
+  
+        //? update transaction_header
+        let query1 = `update transaction_header set 
+                        is_deleted = true
+                      WHERE
+                        id = $1;`;
+  
+        await tx.none(query1, [
+          posted_elements.x
+        ]);
+  
+        //! history
+        await history(transaction_type,3,posted_elements.x,reference,req,tx);
+      })
+  
+  
+      const new_referenceFormatting = formatFromFiveDigits(reference);
+      const year = getYear(posted_elements.datex)
+  
+      await last_activity(req);
+      // إذا تم تنفيذ جميع الاستعلامات بنجاح
+      return res.json({
+        success: true,
+        message_ar: `تم حذف تحويل المخزون  بمرجع : ${new_referenceFormatting}-${year}`,
+      });
+    } catch (error) {
+      await last_activity(req);
+      console.error("Error items_transfer_delete:", error);
+  
+      // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+      return res.json({
+        success: false,
+        message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+      });
+    }
+  });
   //#region items
 
  //#region 1 : view items - tree
@@ -8311,26 +8835,29 @@ app.post("/get_All_transaction_Data", async (req, res) => {
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
     let query1 = `
-    select
-	    id,
-      reference,
-	    CONCAT(
-        SUBSTRING(datex, 1, 4), '-',  -- استخراج السنة من datex
-        LPAD(CAST(reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
-      ) AS referenceconcat,
-	    datex,
-	    COALESCE(general_note, '') AS general_note,
-	    COALESCE(total_value, 0) AS total_value
-    from
-      transaction_header
-    where
-      company_id = $1 AND
-      transaction_type = 2
-      AND (is_deleted IS NULL OR is_deleted != true)
-      AND (datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
-    ORDER BY
-      datex DESC,
-      reference desc;
+ SELECT
+    th.id,
+    th.reference,
+    CONCAT(
+        tt.doc_prefix, '-',          -- إضافة الحرفين (doc_prefix) من جدول transaction_type
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+    th.datex,
+    COALESCE(th.general_note, '') AS general_note,
+    COALESCE(th.total_value, 0) AS total_value
+FROM
+    transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+WHERE
+    th.company_id = $1 AND
+    th.transaction_type = 2
+    AND (th.is_deleted IS NULL OR th.is_deleted != true)
+   	AND (th.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
+ORDER BY
+    th.datex DESC,
+    th.reference DESC;
+
 `;
     let data = await db.any(query1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
 
@@ -8413,20 +8940,23 @@ app.post("/api/transaction_add", async (req, res) => {
       let totalCredit = 0;
       // المرور على جميع الكائنات في المصفوفة
       posted_elements.posted_array.forEach(item => {
+        console.log(item.debit);
+        console.log(item.credit);
+        
           totaldebit += parseFloat(item.debit || 0); // التأكد من تحويل القيم إلى أرقام
           totalCredit += parseFloat(item.credit || 0);
       });
       if (totaldebit !== totalCredit){
         return res.json({
           success: false,
-          message_ar: "القيد غير متوازن",
+          message_ar: "القيد غير متوزن : برجاء تقريب الارقام الى اقرب رقمين عشريين",
         });
       }
 
 
         // //! Security hacking  accounts id
 // جلب الحسابات من قاعدة البيانات
-let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1`;
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND is_final_account IS TRUE`;
 let rows02 = await db.any(query02, [req.session.company_id]);
 
 // تحويل النتائج إلى مصفوفة للتسهيل في الفحص
@@ -8487,7 +9017,7 @@ for (const rowData of posted_elements.posted_array) {
 
 const newId_transaction_header = await newId_fn("transaction_header", 'id');
 const year = getYear(posted_elements.datex);
-const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
+const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req);
 const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
 // تنفيذ معاملة قاعدة البيانات
@@ -8790,11 +9320,9 @@ for (const rowData of posted_elements.posted_array) {
     const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
     let item_amount = null;
     if (+element.account_typeId === itemTypeId) {
-      console.log(`debit : ${element.debit}`);
       
         item_amount = element.debit ? element.item_amount || null : (element.item_amount * -1) || null;
     }
-    console.log(item_amount);
     
     let item_id = null;
     let is_accumulated_depreciation = null;
@@ -9046,13 +9574,15 @@ app.post("/get_transaction_Data", async (req, res) => {
 let query1 = `select 
 	th.id,
   CONCAT(
+    tt.doc_prefix, '-',
     SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
     LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
   ) AS referenceconcat,
 	th.datex,
   COALESCE(th.general_note, '') as general_note 
 from
-	transaction_header th 
+	transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
 where
 	th.id = $1
 	and th.company_id = $2
@@ -9394,14 +9924,17 @@ select
 	bih.qutation_id,
 	bih.is_delivered,
 	bih.items_location_id,
-	bih.is_row_note_show,
-	bih.is_row_dicount_show,
+	bih.is_column2 as is_row_note_show,
+	bih.is_column1 as is_row_dicount_show,
+	bih.is_column3 as is_row_tax_show,
   CONCAT(
+    tt.doc_prefix, '-',
     SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
     LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
   ) AS referenceconcat
 from
 	befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
 where 
 bih.id = $1
 and bih.company_id = $2
@@ -9586,11 +10119,13 @@ WHERE
 select 
 	bih.id,
 	    CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS account_name
 from
 	befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
 where
 	bih.transaction_type = 23
 	and bih.company_id = $1
@@ -9775,14 +10310,17 @@ select
 	bih.qutation_id,
 	bih.is_delivered,
 	bih.items_location_id,
-	bih.is_row_note_show,
-	bih.is_row_dicount_show,
+	bih.is_column2 as is_row_note_show,
+	bih.is_column1 as is_row_dicount_show, 
+	bih.is_column3 as is_row_tax_show, 
   CONCAT(
+    tt.doc_prefix, '-',
     SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
     LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
   ) AS referenceconcat
 from
 	befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
 where 
 bih.id = $1
 and bih.company_id = $2
@@ -9820,11 +10358,13 @@ let query9 = `
 select 
 	bih.id,
 	    CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS account_name
 from
 	befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
 where
 	bih.transaction_type = 23
 	and bih.company_id = $1
@@ -10533,14 +11073,17 @@ select
         ELSE 'مرفوض'
     END AS qutation_status,
     bih.expire_offer_datex,
-    bih.is_row_note_show,
-    bih.is_row_dicount_show,
+    bih.is_column2 as is_row_note_show,
+    bih.is_column1 as is_row_dicount_show, 
+    bih.is_column3 as is_row_tax_show, 
     CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat
 from
     befor_invoice_header bih
+LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type    
 left join accounts_header ah1 on ah1.id = bih.account_id
 left join accounts_header ah2 on ah2.id = bih.salesman_id
 where
@@ -10811,8 +11354,8 @@ WHERE
         // تنفيذ معاملة قاعدة البيانات
         await db.tx(async (tx) => {
           let query1 = `INSERT INTO befor_invoice_header
-                        (id, reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_row_note_show, is_row_dicount_show, is_qutation_status, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13);`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_column2, is_column1, is_column3, is_qutation_status, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14);`;
     
           await tx.none(query1, [
             newId_transaction_header,
@@ -10826,6 +11369,7 @@ WHERE
             posted_elements.itemLocationId,
             posted_elements.is_RowNote ? true : null,
             posted_elements.is_RowDiscount ? true : null,
+            posted_elements.is_RowTax ? true : null,
             null,
             req.session.company_id
           ]);
@@ -11095,8 +11639,8 @@ WHERE
         // تنفيذ معاملة قاعدة البيانات
         await db.tx(async (tx) => {
           let query1 = `update befor_invoice_header
-                        set total_value = $1, general_note = $2, datex = $3, account_id = $4, salesman_id = $5, items_location_id = $6, is_row_note_show = $7, is_row_dicount_show = $8
-                        where id = $9 and company_id = $10;`;
+                        set total_value = $1, general_note = $2, datex = $3, account_id = $4, salesman_id = $5, items_location_id = $6, is_column2 = $7, is_column1 = $8, is_column3 = $9
+                        where id = $10 and company_id = $11;`;
     
           const resultQ1 = await tx.result(query1, [
             total,
@@ -11107,6 +11651,7 @@ WHERE
             posted_elements.itemLocationId,
             posted_elements.is_RowNote ? true : null,
             posted_elements.is_RowDiscount ? true : null,
+            posted_elements.is_RowTax ? true : null,
             posted_elements.x,
             req.session.company_id
           ]);
@@ -11524,14 +12069,17 @@ WHERE
             ELSE 'غير مفوتر'
         END AS is_invoiced,
         bih.expire_offer_datex,
-        bih.is_row_note_show,
-        bih.is_row_dicount_show,
+        bih.is_column2 as is_row_note_show,
+        bih.is_column1 as is_row_dicount_show, 
+        bih.is_column3 as is_row_tax_show, 
         CONCAT(
+            tt1.doc_prefix, '-',
             SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS referenceconcat,
          bih.qutation_id,
         CONCAT(
+            tt2.doc_prefix, '-',
             SUBSTRING(bih2.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih2.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS qutation_reference
@@ -11541,6 +12089,8 @@ WHERE
     left join accounts_header ah1 on ah1.id = bih.account_id
     left join accounts_header ah2 on ah2.id = bih.salesman_id
     left join befor_invoice_header bih2 on bih2.id = bih.qutation_id
+    LEFT JOIN transaction_type tt1 ON tt1.id = bih.transaction_type
+    LEFT JOIN transaction_type tt2 ON tt2.id = bih2.transaction_type
     where
         bih.company_id = $1
         AND bih.transaction_type = 24
@@ -11794,8 +12344,8 @@ WHERE
 
 
           let query1 = `INSERT INTO befor_invoice_header
-                        (id, reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_row_note_show, is_row_dicount_show,qutation_id, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13);`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_column2, is_column1, is_column3, qutation_id, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14);`;
     
           await tx.none(query1, [
             newId_transaction_header,
@@ -11809,6 +12359,7 @@ WHERE
             posted_elements.itemLocationId,
             posted_elements.is_RowNote ? true : null,
             posted_elements.is_RowDiscount ? true : null,
+            posted_elements.is_RowTax ? true : null,
             posted_elements.qutationReferenceId,
             req.session.company_id
           ]);
@@ -12118,8 +12669,8 @@ WHERE
 
 
               let query1 = `update befor_invoice_header
-                            set total_value = $1, general_note = $2, datex = $3, account_id = $4, salesman_id = $5, items_location_id = $6, is_row_note_show = $7, is_row_dicount_show = $8, qutation_id = $9
-                            where id = $10 and company_id = $11;`;
+                            set total_value = $1, general_note = $2, datex = $3, account_id = $4, salesman_id = $5, items_location_id = $6, is_column_2 = $7, is_column1 = $8, is_column3 = $9, qutation_id = $10
+                            where id = $11 and company_id = $12;`;
         
               const resultQ1 = await tx.result(query1, [
                 total,
@@ -12130,6 +12681,7 @@ WHERE
                 posted_elements.itemLocationId,
                 posted_elements.is_RowNote ? true : null,
                 posted_elements.is_RowDiscount ? true : null,
+                posted_elements.is_RowTax ? true : null,
                 posted_elements.qutation_id ? +posted_elements.qutation_id : null,
                 posted_elements.x,
                 req.session.company_id
@@ -12508,28 +13060,36 @@ ordered_invoices AS (
         th.salesman_id as salesman_id,
         ah2.account_name as salesman_name,
         th.due_date,
-        th.is_row_note_show,
-        th.is_row_dicount_show,
+        th.is_column1 as is_row_dicount_show,
+        th.is_column2 as is_row_note_show,
+        th.is_column3 as is_row_tax_show,
         CONCAT(
+          tt1.doc_prefix, '-',                  
           SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS referenceconcat,
         th.qutation_id,
         CONCAT(
+          tt2.doc_prefix, '-',
           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS qutation_reference,
         th.order_id,
         CONCAT(
+          tt3.doc_prefix, '-',
           SUBSTRING(bih2.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih2.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS order_reference
     FROM
         transaction_header th
+ 
     left join accounts_header ah1 on ah1.id = th.account_id
     left join accounts_header ah2 on ah2.id = th.salesman_id
     left join befor_invoice_header bih on bih.id = th.qutation_id
     left join befor_invoice_header bih2 on bih2.id = th.order_id
+    LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type    
+    LEFT JOIN transaction_type tt2 ON tt2.id = bih.transaction_type    
+    LEFT JOIN transaction_type tt3 ON tt3.id = bih2.transaction_type   
     WHERE
         th.company_id = $1 -- تحديد الشركة بناءً على معرّف الشركة
         AND th.transaction_type = 3 -- تحديد نوع المعاملة (فاتورة بيع)
@@ -12554,8 +13114,9 @@ distributed AS (
         oi.salesman_id,
         oi.salesman_name,
         oi.due_date,
-        oi.is_row_note_show,
         oi.is_row_dicount_show,
+        oi.is_row_note_show,
+        oi.is_row_tax_show,
         oi.referenceconcat,
         oi.qutation_id,
         oi.qutation_reference,
@@ -12593,8 +13154,9 @@ SELECT
     salesman_id,
     salesman_name,
     due_date,
-    is_row_note_show,
     is_row_dicount_show,
+    is_row_note_show,
+    is_row_tax_show,
     referenceconcat,
     qutation_id,
     qutation_reference,
@@ -12603,17 +13165,17 @@ SELECT
     CASE
       WHEN remaining_balance = 0 THEN
         'مدفوع بالكامل'  
-      WHEN due_date::DATE - datex::DATE > 0 THEN
+      WHEN due_date::DATE - $4::DATE > 0 THEN
         CASE
             WHEN remaining_balance <= 0 THEN 
                 'مدفوع مقدماً' -- إذا كان الرصيد المتبقي صفر أو أقل
             ELSE 
-                CONCAT('يستحق بعد ', due_date::DATE - datex::DATE, ' يوم') -- إذا كان هناك رصيد متبقي
+                CONCAT('يستحق بعد ', due_date::DATE - $4::DATE, ' يوم') -- إذا كان هناك رصيد متبقي
         END
-      WHEN due_date::DATE - datex::DATE = 0 THEN 
+      WHEN due_date::DATE - $4::DATE = 0 THEN 
         'مستحق اليوم' -- إذا كان الفرق صفر
-      WHEN due_date::DATE - datex::DATE < 0 THEN 
-        CONCAT('مستحق منذ ', ABS(datex::DATE - due_date::DATE), ' يوم') -- إذا كان الفرق أقل من صفر
+      WHEN due_date::DATE - $4::DATE < 0 THEN 
+        CONCAT('مستحق منذ ', ABS($4::DATE - due_date::DATE), ' يوم') -- إذا كان الفرق أقل من صفر
     END AS payment_status,
     remaining_balance -- الرصيد المتبقي بعد توزيع الرصيد
 FROM
@@ -12627,7 +13189,7 @@ ORDER BY
         `;
         
         // تنفيذ الاستعلامات
-        let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+        let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date, today]);
 
             res.json(data);
           } catch (error) {
@@ -12755,11 +13317,13 @@ WHERE
 select 
 	bih.id,
 	    CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS account_name
 from
 	befor_invoice_header bih
+LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
 where
 	bih.transaction_type = 23
 	and bih.company_id = $1
@@ -12772,11 +13336,13 @@ where
    select 
      bih.id,
          CONCAT(
+          tt.doc_prefix, '-',
            SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
            LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
        ) AS account_name
    from
      befor_invoice_header bih
+    LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
    where
      bih.transaction_type = 24
      and bih.company_id = $1
@@ -13064,7 +13630,6 @@ where
       
       const newId_transaction_header = await newId_fn("transaction_header", 'id');
       const year = getYear(posted_elements.datex)
-      // const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',3, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
@@ -13098,8 +13663,8 @@ where
 
 
         let query1 = `INSERT INTO transaction_header
-                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, due_date, is_row_dicount_show, is_row_note_show, items_location_id, order_id, qutation_id, general_reference, is_including_items)
-                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17);`;
+                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, due_date, is_column1, is_column2, is_column3, items_location_id, order_id, qutation_id, general_reference, is_including_items)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17, $18);`;
   
         await tx.none(query1, [
           newId_transaction_header,
@@ -13114,6 +13679,7 @@ where
           posted_elements.dueDate,
           posted_elements.is_RowDiscount ? true : null,
           posted_elements.is_RowNote ? true : null,
+          posted_elements.is_RowTax ? true : null,
           posted_elements.itemLocationId,
           posted_elements.orderReferenceId,
           posted_elements.qutationReferenceId,
@@ -13441,17 +14007,21 @@ WHERE
     th.order_id,
     th.is_delivered,
     th.items_location_id,
-    th.is_row_note_show,
-    th.is_row_dicount_show,
+    th.is_column1 as is_row_dicount_show,
+    th.is_column2 as is_row_note_show,
+    th.is_column3 as is_row_tax_show,
     CONCAT(
+      tt1.doc_prefix, '-',
       SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
     CONCAT(
+      tt2.doc_prefix, '-',
       SUBSTRING(bih_qutation.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(bih_qutation.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat_qutation,
     CONCAT(
+      tt3.doc_prefix, '-',
       SUBSTRING(bih_order.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(bih_order.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat_order
@@ -13459,6 +14029,9 @@ WHERE
     transaction_header th
 	left join befor_invoice_header bih_qutation on bih_qutation.id = th.qutation_id
 	left join befor_invoice_header bih_order on bih_order.id = th.order_id
+  LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+  LEFT JOIN transaction_type tt2 ON tt2.id = bih_qutation.transaction_type
+  LEFT JOIN transaction_type tt3 ON tt3.id = bih_order.transaction_type
   where 
   th.id = $1
   and th.company_id = $2
@@ -13498,11 +14071,13 @@ WHERE
   select 
     bih.id,
         CONCAT(
+          tt.doc_prefix, '-',
           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
           LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS account_name
   from
     befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
   where
     bih.transaction_type = 23
     and bih.company_id = $1
@@ -13517,11 +14092,13 @@ WHERE
      select 
        bih.id,
            CONCAT(
+              tt.doc_prefix, '-',
              SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
              LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
          ) AS account_name
      from
        befor_invoice_header bih
+       LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
      where
        bih.transaction_type = 24
        and bih.company_id = $1
@@ -13707,13 +14284,16 @@ WHERE
     bih.qutation_id,
     bih.is_delivered,
     bih.items_location_id,
-    bih.is_row_note_show,
-    bih.is_row_dicount_show,
+    bih.is_column2 as is_row_note_show,
+    bih.is_column1 as is_row_dicount_show, 
+    bih.is_column3 as is_row_tax_show, 
     CONCAT(
+      tt1.doc_prefix, '-',
       SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
     CONCAT(
+      tt2.doc_prefix, '-',
       SUBSTRING(qt.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(qt.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat_qutation,
@@ -13721,6 +14301,8 @@ WHERE
   from
     befor_invoice_header bih
     left join befor_invoice_header qt on qt.id = bih.qutation_id
+    LEFT JOIN transaction_type tt1 ON tt1.id = bih.transaction_type
+    LEFT JOIN transaction_type tt2 ON tt2.id = qt.transaction_type
   where 
   bih.id = $1
   and bih.company_id = $2
@@ -13759,11 +14341,13 @@ WHERE
   select 
     bih.id,
         CONCAT(
+          tt.doc_prefix, '-',
           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
           LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS account_name
   from
     befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
   where
     bih.transaction_type = 23
     and bih.company_id = $1
@@ -13778,11 +14362,13 @@ WHERE
      select 
        bih.id,
            CONCAT(
+              tt.doc_prefix, '-',
              SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
              LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
          ) AS account_name
      from
        befor_invoice_header bih
+      LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
      where
        bih.transaction_type = 24
        and bih.company_id = $1
@@ -13970,13 +14556,16 @@ WHERE
     bih.qutation_id,
     bih.is_delivered,
     bih.items_location_id,
-    bih.is_row_note_show,
-    bih.is_row_dicount_show,
+    bih.is_column2 as is_row_note_show,
+    bih.is_column1 as is_row_dicount_show, 
+    bih.is_column3 as is_row_tax_show, 
     CONCAT(
+      tt1.doc_prefix, '-',
       SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
     CONCAT(
+      tt2.doc_prefix, '-',
       SUBSTRING(qt.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(qt.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat_qutation,
@@ -13984,6 +14573,8 @@ WHERE
   from
     befor_invoice_header bih
     left join befor_invoice_header qt on qt.id = bih.qutation_id
+    LEFT JOIN transaction_type tt1 ON tt1.id = bih.transaction_type
+    LEFT JOIN transaction_type tt2 ON tt2.id = qt.transaction_type
   where 
   bih.id = $1
   and bih.company_id = $2
@@ -14024,11 +14615,13 @@ WHERE
   select 
     bih.id,
         CONCAT(
+          tt.doc_prefix, '-',
           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
           LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS account_name
   from
     befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
   where
     bih.transaction_type = 23
     and bih.company_id = $1
@@ -14043,11 +14636,13 @@ WHERE
      select 
        bih.id,
            CONCAT(
+              tt.doc_prefix, '-',
              SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
              LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
          ) AS account_name
      from
        befor_invoice_header bih
+       LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
      where
        bih.transaction_type = 24
        and bih.company_id = $1
@@ -14414,14 +15009,15 @@ WHERE
                         account_id = $4,
                         salesman_id = $5,
                         due_date = $6,
-                        is_row_dicount_show = $7,
-                        is_row_note_show = $8,
-                        items_location_id = $9,
-                        order_id = $10,
-                        qutation_id = $11
+                        is_column1 = $7,
+                        is_column2 = $8,
+                        is_column3 = $9,
+                        items_location_id = $10,
+                        order_id = $11,
+                        qutation_id = $12
                       Where
-                        id = $12
-                        AND company_id = $13
+                        id = $13
+                        AND company_id = $14
                       ;`;
   
         await tx.none(query1, [
@@ -14433,6 +15029,7 @@ WHERE
           posted_elements.dueDate,
           posted_elements.is_RowDiscount ? true : null,
           posted_elements.is_RowNote ? true : null,
+          posted_elements.is_RowTax ? true : null,
           posted_elements.itemLocationId,
           posted_elements.orderReferenceId,
           posted_elements.qutationReferenceId,
@@ -14875,15 +15472,18 @@ select
         ELSE 'مرفوض'
     END AS qutation_status,
     bih.expire_offer_datex,
-    bih.is_row_note_show,
-    bih.is_row_dicount_show,
+    bih.is_column2 as is_row_note_show,
+    bih.is_column1 as is_row_dicount_show, 
+    bih.is_column3 as is_row_tax_show, 
     CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat
 from
     befor_invoice_header bih
 left join accounts_header ah1 on ah1.id = bih.account_id
+LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type
 where
     bih.company_id = $1
     AND bih.transaction_type = 25
@@ -15290,8 +15890,8 @@ app.post("/getItemssData1", async (req, res) => {
         // تنفيذ معاملة قاعدة البيانات
         await db.tx(async (tx) => {
           let query1 = `INSERT INTO befor_invoice_header
-                        (id, reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_row_note_show, is_row_dicount_show, is_qutation_status, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12);`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_column2, is_column1, is_column3, is_qutation_status, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13);`;
     
           await tx.none(query1, [
             newId_transaction_header,
@@ -15304,6 +15904,7 @@ app.post("/getItemssData1", async (req, res) => {
             posted_elements.itemLocationId,
             posted_elements.is_RowNote ? true : null,
             posted_elements.is_RowDiscount ? true : null,
+            posted_elements.is_RowTax ? true : null,
             null,
             req.session.company_id
           ]);
@@ -15508,14 +16109,17 @@ WHERE
       bih.qutation_id,
       bih.is_delivered,
       bih.items_location_id,
-      bih.is_row_note_show,
-      bih.is_row_dicount_show,
+      bih.is_column2 as is_row_note_show,
+      bih.is_column1 as is_row_dicount_show, 
+      bih.is_column3 as is_row_tax_show, 
       CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS referenceconcat
     from
       befor_invoice_header bih
+    LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
     where 
     bih.id = $1
     and bih.company_id = $2
@@ -15782,8 +16386,8 @@ WHERE
         // تنفيذ معاملة قاعدة البيانات
         await db.tx(async (tx) => {
           let query1 = `update befor_invoice_header
-                        set total_value = $1, general_note = $2, datex = $3, account_id = $4, items_location_id = $5, is_row_note_show = $6, is_row_dicount_show = $7
-                        where id = $8 and company_id = $9 and transaction_type = $10 AND is_deleted IS NULL;`;
+                        set total_value = $1, general_note = $2, datex = $3, account_id = $4, items_location_id = $5, is_column2 = $6, is_column1 = $7, is_column3 = $8
+                        where id = $9 and company_id = $10 and transaction_type = $11 AND is_deleted IS NULL;`;
     
           const resultQ1 = await tx.result(query1, [
             total,
@@ -15793,6 +16397,7 @@ WHERE
             posted_elements.itemLocationId,
             posted_elements.is_RowNote ? true : null,
             posted_elements.is_RowDiscount ? true : null,
+            posted_elements.is_RowTax ? true : null,
             posted_elements.x,
             req.session.company_id,
             transaction_type
@@ -16210,14 +16815,17 @@ WHERE
             ELSE 'غير مفوتر'
         END AS is_invoiced,
         bih.expire_offer_datex,
-        bih.is_row_note_show,
-        bih.is_row_dicount_show,
+        bih.is_column2 as is_row_note_show,
+        bih.is_column1 as is_row_dicount_show, 
+        bih.is_column3 as is_row_tax_show, 
         CONCAT(
+            tt1.doc_prefix, '-',
             SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS referenceconcat,
          bih.qutation_id,
         CONCAT(
+            tt2.doc_prefix, '-',
             SUBSTRING(bih2.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih2.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS qutation_reference
@@ -16226,6 +16834,8 @@ WHERE
         befor_invoice_header bih
     left join accounts_header ah1 on ah1.id = bih.account_id
     left join befor_invoice_header bih2 on bih2.id = bih.qutation_id
+    LEFT JOIN transaction_type tt1 ON tt1.id = bih.transaction_type
+    LEFT JOIN transaction_type tt2 ON tt2.id = bih2.transaction_type
     where
         bih.company_id = $1
         AND bih.transaction_type = 26
@@ -16477,8 +17087,8 @@ WHERE
 
 
           let query1 = `INSERT INTO befor_invoice_header
-                        (id, reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_row_note_show, is_row_dicount_show,qutation_id, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12);`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_column2, is_column1, is_column3, qutation_id, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13);`;
     
           await tx.none(query1, [
             newId_transaction_header,
@@ -16491,6 +17101,7 @@ WHERE
             posted_elements.itemLocationId,
             posted_elements.is_RowNote ? true : null,
             posted_elements.is_RowDiscount ? true : null,
+            posted_elements.is_Rowtax ? true : null,
             posted_elements.qutationReferenceId,
             req.session.company_id
           ]);
@@ -16673,11 +17284,13 @@ WHERE
   select 
     bih.id,
         CONCAT(
+          tt.doc_prefix, '-',
           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
           LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS account_name
   from
     befor_invoice_header bih
+  LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
   where
     bih.transaction_type = 25
     and bih.company_id = $1
@@ -16957,8 +17570,8 @@ WHERE
 
 
               let query1 = `update befor_invoice_header
-                            set total_value = $1, general_note = $2, datex = $3, account_id = $4, items_location_id = $5, is_row_note_show = $6, is_row_dicount_show = $7, qutation_id = $8
-                            where id = $9 and company_id = $10;`;
+                            set total_value = $1, general_note = $2, datex = $3, account_id = $4, items_location_id = $5, is_column2 = $6, is_column1 = $7, is_column3 = $8, qutation_id = $9
+                            where id = $10 and company_id = $11;`;
         
               const resultQ1 = await tx.result(query1, [
                 total,
@@ -16968,6 +17581,7 @@ WHERE
                 posted_elements.itemLocationId,
                 posted_elements.is_RowNote ? true : null,
                 posted_elements.is_RowDiscount ? true : null,
+                posted_elements.is_Rowtax ? true : null,
                 posted_elements.qutation_id ? +posted_elements.qutation_id : null,
                 posted_elements.x,
                 req.session.company_id
@@ -17188,14 +17802,17 @@ WHERE
       bih.qutation_id,
       bih.is_delivered,
       bih.items_location_id,
-      bih.is_row_note_show,
-      bih.is_row_dicount_show,
+      bih.is_column2 as is_row_note_show,
+      bih.is_column1 as is_row_dicount_show, 
+      bih.is_column3 as is_row_tax_show, 
       CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS referenceconcat
     from
       befor_invoice_header bih
+    LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
     where 
     bih.id = $1
     and bih.company_id = $2
@@ -17233,11 +17850,13 @@ WHERE
     select 
       bih.id,
           CONCAT(
+            tt.doc_prefix, '-',
             SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS account_name
     from
       befor_invoice_header bih
+    LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
     where
       bih.transaction_type = 25
       and bih.company_id = $1
@@ -17586,19 +18205,23 @@ ordered_invoices AS (
         th.salesman_id as salesman_id,
         ah2.account_name as salesman_name,
         th.due_date,
-        th.is_row_note_show,
-        th.is_row_dicount_show,
+        th.is_column1 as is_row_dicount_show,
+        th.is_column2 as is_row_note_show,
+        th.is_column3 as is_row_tax_show,
         CONCAT(
+          tt1.doc_prefix, '-',
           SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS referenceconcat,
         th.qutation_id,
         CONCAT(
+          tt2.doc_prefix, '-',
           SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS qutation_reference,
         th.order_id,
         CONCAT(
+          tt3.doc_prefix, '-',
           SUBSTRING(bih2.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih2.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
         ) AS order_reference
@@ -17608,6 +18231,9 @@ ordered_invoices AS (
     left join accounts_header ah2 on ah2.id = th.salesman_id
     left join befor_invoice_header bih on bih.id = th.qutation_id
     left join befor_invoice_header bih2 on bih2.id = th.order_id
+    left JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+    left JOIN transaction_type tt2 ON tt2.id = bih.transaction_type
+    left JOIN transaction_type tt3 ON tt3.id = bih2.transaction_type
     WHERE
         th.company_id = $1 -- تحديد الشركة بناءً على معرّف الشركة
         AND th.transaction_type = 6 -- تحديد نوع المعاملة (فاتورة شراء)
@@ -17632,8 +18258,9 @@ distributed AS (
         oi.salesman_id,
         oi.salesman_name,
         oi.due_date,
-        oi.is_row_note_show,
         oi.is_row_dicount_show,
+        oi.is_row_note_show,
+        oi.is_row_tax_show,
         oi.referenceconcat,
         oi.qutation_id,
         oi.qutation_reference,
@@ -17671,8 +18298,9 @@ SELECT
     salesman_id,
     salesman_name,
     due_date,
-    is_row_note_show,
     is_row_dicount_show,
+    is_row_note_show,
+    is_row_tax_show,
     referenceconcat,
     qutation_id,
     qutation_reference,
@@ -17681,17 +18309,17 @@ SELECT
     CASE
       WHEN remaining_balance = 0 THEN
         'مدفوع بالكامل'  
-      WHEN due_date::DATE - datex::DATE > 0 THEN
+      WHEN due_date::DATE - $4::DATE > 0 THEN
         CASE
             WHEN remaining_balance <= 0 THEN 
                 'مدفوع مقدماً' -- إذا كان الرصيد المتبقي صفر أو أقل
             ELSE 
-                CONCAT('يستحق بعد ', due_date::DATE - datex::DATE, ' يوم') -- إذا كان هناك رصيد متبقي
+                CONCAT('يستحق بعد ', due_date::DATE - $4::DATE, ' يوم') -- إذا كان هناك رصيد متبقي
         END
-      WHEN due_date::DATE - datex::DATE = 0 THEN 
+      WHEN due_date::DATE - $4::DATE = 0 THEN 
         'مستحق اليوم' -- إذا كان الفرق صفر
-      WHEN due_date::DATE - datex::DATE < 0 THEN 
-        CONCAT('مستحق منذ ', ABS(datex::DATE - due_date::DATE), ' يوم') -- إذا كان الفرق أقل من صفر
+      WHEN due_date::DATE - $4::DATE < 0 THEN 
+        CONCAT('مستحق منذ ', ABS($4::DATE - due_date::DATE), ' يوم') -- إذا كان الفرق أقل من صفر
     END AS payment_status,
     remaining_balance -- الرصيد المتبقي بعد توزيع الرصيد
 FROM
@@ -17705,7 +18333,7 @@ ORDER BY
         `;
         
         // تنفيذ الاستعلامات
-        let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+        let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date, today]);
 
 
             res.json(data);
@@ -17858,13 +18486,16 @@ WHERE
           bih.qutation_id,
           bih.is_delivered,
           bih.items_location_id,
-          bih.is_row_note_show,
-          bih.is_row_dicount_show,
+          bih.is_column2 as is_row_note_show,
+          bih.is_column1 as is_row_dicount_show,
+          bih.is_column3 as is_row_tax_show,
           CONCAT(
+            tt1.doc_prefix, '-',
             SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat,
           CONCAT(
+            tt2.doc_prefix, '-',
             SUBSTRING(qt.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(qt.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat_qutation,
@@ -17872,6 +18503,8 @@ WHERE
         from
           befor_invoice_header bih
           left join befor_invoice_header qt on qt.id = bih.qutation_id
+          LEFT JOIN transaction_type tt1 ON tt1.id = bih.transaction_type
+          LEFT JOIN transaction_type tt2 ON tt2.id = qt.transaction_type
         where 
         bih.id = $1
         and bih.company_id = $2
@@ -17910,11 +18543,13 @@ WHERE
         select 
           bih.id,
               CONCAT(
+                tt.doc_prefix, '-',
                 SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                 LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
             ) AS account_name
         from
           befor_invoice_header bih
+        LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
         where
           bih.transaction_type = 25
           and bih.company_id = $1
@@ -17929,11 +18564,13 @@ WHERE
            select 
              bih.id,
                  CONCAT(
+                  tt.doc_prefix, '-',
                    SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                    LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
                ) AS account_name
            from
              befor_invoice_header bih
+            LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
            where
              bih.transaction_type = 26
              and bih.company_id = $1
@@ -18119,13 +18756,16 @@ WHERE
           bih.qutation_id,
           bih.is_delivered,
           bih.items_location_id,
-          bih.is_row_note_show,
-          bih.is_row_dicount_show,
+          bih.is_column2 as is_row_note_show,
+          bih.is_column1 as is_row_dicount_show,
+          bih.is_column3 as is_row_tax_show,
           CONCAT(
+            tt1.doc_prefix, '-',
             SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat,
           CONCAT(
+            tt2.doc_prefix, '-',
             SUBSTRING(qt.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(qt.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat_qutation,
@@ -18133,6 +18773,8 @@ WHERE
         from
           befor_invoice_header bih
           left join befor_invoice_header qt on qt.id = bih.qutation_id
+          LEFT JOIN transaction_type tt1 ON tt1.id = bih.transaction_type
+          LEFT JOIN transaction_type tt2 ON tt2.id = qt.transaction_type
         where 
         bih.id = $1
         and bih.company_id = $2
@@ -18172,11 +18814,13 @@ WHERE
         select 
           bih.id,
               CONCAT(
+                tt.doc_prefix, '-',
                 SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                 LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
             ) AS account_name
         from
           befor_invoice_header bih
+        LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
         where
           bih.transaction_type = 25
           and bih.company_id = $1
@@ -18191,11 +18835,13 @@ WHERE
            select 
              bih.id,
                  CONCAT(
+                  tt.doc_prefix, '-',
                    SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                    LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
                ) AS account_name
            from
              befor_invoice_header bih
+            LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
            where
              bih.transaction_type = 26
              and bih.company_id = $1
@@ -18381,17 +19027,21 @@ WHERE
           th.order_id,
           th.is_delivered,
           th.items_location_id,
-          th.is_row_note_show,
-          th.is_row_dicount_show,
+          th.is_column1 as is_row_dicount_show,
+          th.is_column2 as is_row_note_show,
+          th.is_column3 as is_row_tax_show,
           CONCAT(
+            tt1.doc_prefix, '-',
             SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat,
           CONCAT(
+            tt2.doc_prefix, '-',
             SUBSTRING(bih_qutation.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih_qutation.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat_qutation,
           CONCAT(
+            tt3.doc_prefix, '-',
             SUBSTRING(bih_order.datex, 1, 4), '-',  -- استخراج السنة من datex
             LPAD(CAST(bih_order.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS referenceconcat_order
@@ -18399,6 +19049,9 @@ WHERE
           transaction_header th
         left join befor_invoice_header bih_qutation on bih_qutation.id = th.qutation_id
         left join befor_invoice_header bih_order on bih_order.id = th.order_id
+        LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+        LEFT JOIN transaction_type tt2 ON tt2.id = bih_qutation.transaction_type
+        LEFT JOIN transaction_type tt3 ON tt3.id = bih_order.transaction_type
         where 
         th.id = $1
         and th.company_id = $2
@@ -18438,11 +19091,13 @@ WHERE
         select 
           bih.id,
               CONCAT(
+                tt.doc_prefix, '-',
                 SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                 LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
             ) AS account_name
         from
           befor_invoice_header bih
+        LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
         where
           bih.transaction_type = 25
           and bih.company_id = $1
@@ -18457,11 +19112,13 @@ WHERE
            select 
              bih.id,
                  CONCAT(
+                  tt.doc_prefix, '-',
                    SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                    LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
                ) AS account_name
            from
              befor_invoice_header bih
+            LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
            where
              bih.transaction_type = 26
              and bih.company_id = $1
@@ -18762,8 +19419,8 @@ WHERE
       
       
               let query1 = `INSERT INTO transaction_header
-                            (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, due_date, is_row_dicount_show, is_row_note_show, items_location_id, order_id, qutation_id, general_reference, is_including_items)
-                            VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16);`;
+                            (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, due_date, is_column1, is_column2, is_column3, items_location_id, order_id, qutation_id, general_reference, is_including_items)
+                            VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17);`;
         
               await tx.none(query1, [
                 newId_transaction_header,
@@ -18777,6 +19434,7 @@ WHERE
                 posted_elements.dueDate,
                 posted_elements.is_RowDiscount ? true : null,
                 posted_elements.is_RowNote ? true : null,
+                posted_elements.is_RowTax ? true : null,
                 posted_elements.itemLocationId,
                 posted_elements.orderReferenceId,
                 posted_elements.qutationReferenceId,
@@ -19081,11 +19739,13 @@ WHERE
       select 
         bih.id,
             CONCAT(
+              tt.doc_prefix, '-',
               SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
               LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
           ) AS account_name
       from
         befor_invoice_header bih
+      LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type  
       where
         bih.transaction_type = 25
         and bih.company_id = $1
@@ -19098,11 +19758,13 @@ WHERE
          select 
            bih.id,
                CONCAT(
+                tt.doc_prefix, '-',
                  SUBSTRING(bih.datex, 1, 4), '-',  -- استخراج السنة من datex
                  LPAD(CAST(bih.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
              ) AS account_name
          from
            befor_invoice_header bih
+          LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
          where
            bih.transaction_type = 26
            and bih.company_id = $1
@@ -19435,15 +20097,16 @@ WHERE
                               datex = $3,
                               account_id = $4,
                               due_date = $5,
-                              is_row_dicount_show = $6,
-                              is_row_note_show = $7,
-                              items_location_id = $8,
-                              order_id = $9,
-                              qutation_id = $10
+                              is_column1 = $6,
+                              is_column2 = $7,
+                              is_column3 = $8,
+                              items_location_id = $9,
+                              order_id = $10,
+                              qutation_id = $11
                             Where
-                              id = $11
-                              AND company_id = $12
-                              AND transaction_type = $13
+                              id = $12
+                              AND company_id = $13
+                              AND transaction_type = $14
                               AND is_deleted IS NULL
                             ;`;
         
@@ -19455,6 +20118,7 @@ WHERE
                 posted_elements.dueDate,
                 posted_elements.is_RowDiscount ? true : null,
                 posted_elements.is_RowNote ? true : null,
+                posted_elements.is_RowTax ? true : null,
                 posted_elements.itemLocationId,
                 posted_elements.orderReferenceId,
                 posted_elements.qutationReferenceId,
@@ -20552,6 +21216,7 @@ select
     th.id,
     th.reference,
         CONCAT(
+        tt1.doc_prefix, '-',
         SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
@@ -20564,10 +21229,12 @@ select
     ah2.account_name as salesman_name,
     '' AS is_invoiced,
     th.due_date,
-    th.is_row_note_show,
-    th.is_row_dicount_show,
+    th.is_column1 as is_row_dicount_show,
+    th.is_column2 as is_row_note_show,
+    th.is_column3 as is_row_tax_show,
      th.invoice_id,
     CONCAT(
+        tt2.doc_prefix, '-',
         SUBSTRING(th_invoice.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th_invoice.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS invoice_reference
@@ -20576,7 +21243,8 @@ from
 left join accounts_header ah1 on ah1.id = th.account_id
 left join accounts_header ah2 on ah2.id = th.salesman_id
 left join transaction_header th_invoice on th_invoice.invoice_id = th.id 
-
+LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+LEFT JOIN transaction_type tt2 ON tt2.id = th_invoice.transaction_type
 where
     th.company_id = $1
     AND th.transaction_type = 4
@@ -20713,11 +21381,13 @@ WHERE
    select 
      th.id,
          CONCAT(
+          tt.doc_prefix, '-',
            SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
            LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
        ) AS account_name
    from
      transaction_header th
+    LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
    where
      th.transaction_type = 3
      and th.company_id = $1
@@ -20961,7 +21631,6 @@ WHERE
       
       const newId_transaction_header = await newId_fn("transaction_header", 'id');
       const year = getYear(posted_elements.datex)
-      // const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',4, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
@@ -20973,8 +21642,8 @@ WHERE
      
 
         let query1 = `INSERT INTO transaction_header
-                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, is_row_dicount_show, is_row_note_show, items_location_id, invoice_id, general_reference, is_including_items)
-                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15);`;
+                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, is_column1, is_column2, is_column3, items_location_id, invoice_id, general_reference, is_including_items)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17);`;
   
         await tx.none(query1, [
           newId_transaction_header,
@@ -20988,6 +21657,7 @@ WHERE
           posted_elements.salesmanId,
           posted_elements.is_RowDiscount ? true : null,
           posted_elements.is_RowNote ? true : null,
+          posted_elements.is_RowTax ? true : null,
           posted_elements.itemLocationId,
           posted_elements.invoiceReferenceId,
           newId_general_reference,
@@ -21405,13 +22075,14 @@ WHERE
                         datex = $3,
                         account_id = $4,
                         salesman_id = $5,
-                        is_row_dicount_show = $6,
-                        is_row_note_show = $7,
-                        items_location_id = $8,
-                        invoice_id = $9
+                        is_column1 = $6,
+                        is_column2 = $7,
+                        is_column3 = $8,
+                        items_location_id = $9,
+                        invoice_id = $10
                       Where
-                        id = $10
-                        AND company_id = $11
+                        id = $11
+                        AND company_id = $12
                       ;`;
   
         await tx.none(query1, [
@@ -21422,6 +22093,7 @@ WHERE
           posted_elements.salesmanId,
           posted_elements.is_RowDiscount ? true : null,
           posted_elements.is_RowNote ? true : null,
+          posted_elements.is_RowTax ? true : null,
           posted_elements.itemLocationId,
           posted_elements.invoiceReferenceId,
           posted_elements.x,
@@ -21913,19 +22585,24 @@ WHERE
     th.invoice_id,
     th.is_delivered,
     th.items_location_id,
-    th.is_row_note_show,
-    th.is_row_dicount_show,
+    th.is_column1 as is_row_dicount_show,
+    th.is_column2 as is_row_note_show,
+    th.is_column3 as is_row_tax_show,
     CONCAT(
+      tt1.doc_prefix, '-',
       SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
     CONCAT(
+      tt2.doc_prefix, '-',
       SUBSTRING(th_invoice.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(th_invoice.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat_invoice
   from
     transaction_header th
 	left join transaction_header th_invoice on th_invoice.id = th.invoice_id
+  LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+  LEFT JOIN transaction_type tt2 ON tt2.id = th_invoice.transaction_type
   where 
   th.id = $1
   and th.company_id = $2
@@ -21965,11 +22642,13 @@ WHERE
   select 
     th.id,
         CONCAT(
+          tt.doc_prefix, '-',
           SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
           LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS account_name
   from
     transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
   where
     th.transaction_type = 3
     and th.company_id = $1
@@ -22149,14 +22828,17 @@ WHERE
     th.account_id,
     th.salesman_id,
     th.items_location_id,
-    th.is_row_note_show,
-    th.is_row_dicount_show,
+    th.is_column1 as is_row_dicount_show,
+    th.is_column2 as is_row_note_show,
+    th.is_column3 as is_row_tax_show,
     CONCAT(
+      tt.doc_prefix, '-',
       SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
       LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat
   from
     transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
   where 
   th.id = $1
   and th.company_id = $2
@@ -22196,11 +22878,13 @@ WHERE
   select 
     th.id,
         CONCAT(
+          tt.doc_prefix, '-',
           SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
           LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
       ) AS account_name
   from
     transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
   where
     th.transaction_type = 3
     and th.company_id = $1
@@ -22288,7 +22972,8 @@ app.post("/get_purshases_returns_Data_view", async (req, res) => {
 select 
     th.id,
     th.reference,
-        CONCAT(
+    CONCAT(
+        tt1.doc_prefix, '-',  
         SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
@@ -22298,10 +22983,12 @@ select
     th.account_id as vendor_id,
     ah1.account_name as vendor_name,
     '' AS is_invoiced,
-    th.is_row_note_show,
-    th.is_row_dicount_show,
+    th.is_column1 as is_row_dicount_show,
+    th.is_column2 as is_row_note_show,
+    th.is_column3 as is_row_tax_show,
      th.invoice_id,
     CONCAT(
+        tt2.doc_prefix, '-',
         SUBSTRING(th_invoice.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th_invoice.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS invoice_reference
@@ -22309,8 +22996,9 @@ from
     transaction_header th
 left join accounts_header ah1 on ah1.id = th.account_id
 left join accounts_header ah2 on ah2.id = th.salesman_id
-left join transaction_header th_invoice on th_invoice.invoice_id = th.id 
-
+left join transaction_header th_invoice on th_invoice.invoice_id = th.id
+LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+LEFT JOIN transaction_type tt2 ON tt2.id = th_invoice.transaction_type
 where
     th.company_id = $1
     AND th.transaction_type = 7
@@ -22449,11 +23137,13 @@ where
  select 
    th.id,
        CONCAT(
+        tt.doc_prefix, '-',
          SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
          LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
      ) AS account_name
  from
    transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type 
  where
    th.transaction_type = 6 -- فواتير المشتريات
    and th.company_id = $1
@@ -22738,13 +23428,14 @@ group by
                       general_note = $2,
                       datex = $3,
                       account_id = $4,
-                      is_row_dicount_show = $5,
-                      is_row_note_show = $6,
-                      items_location_id = $7,
-                      invoice_id = $8
+                      is_column1 = $5,
+                      is_column2 = $6,
+                      is_column3 = $7,
+                      items_location_id = $8,
+                      invoice_id = $9
                     Where
-                      id = $9
-                      AND company_id = $10
+                      id = $10
+                      AND company_id = $11
                     ;`;
 
       await tx.none(query1, [
@@ -22754,6 +23445,7 @@ group by
         posted_elements.vendorId,
         posted_elements.is_RowDiscount ? true : null,
         posted_elements.is_RowNote ? true : null,
+        posted_elements.is_RowTax ? true : null,
         posted_elements.itemLocationId,
         posted_elements.invoiceReferenceId,
         posted_elements.x,
@@ -23184,7 +23876,6 @@ group by
     
     const newId_transaction_header = await newId_fn("transaction_header", 'id');
     const year = getYear(posted_elements.datex)
-    // const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
     const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
     const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
@@ -23194,8 +23885,8 @@ group by
     await db.tx(async (tx) => {
 
       let query1 = `INSERT INTO transaction_header
-                    (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, is_row_dicount_show, is_row_note_show, items_location_id, invoice_id, general_reference, is_including_items)
-                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14);`;
+                    (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, is_column1, is_column2, is_column3, items_location_id, invoice_id, general_reference, is_including_items)
+                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15);`;
 
       await tx.none(query1, [
         newId_transaction_header,
@@ -23208,6 +23899,7 @@ group by
         posted_elements.vendorId,
         posted_elements.is_RowDiscount ? true : null,
         posted_elements.is_RowNote ? true : null,
+        posted_elements.is_RowTax ? true : null,
         posted_elements.itemLocationId,
         posted_elements.invoiceReferenceId,
         newId_general_reference,
@@ -23547,19 +24239,24 @@ select
   th.invoice_id,
   th.is_delivered,
   th.items_location_id,
-  th.is_row_note_show,
-  th.is_row_dicount_show,
+  th.is_column2 as is_row_note_show,
+  th.is_column1 as is_row_dicount_show,
+  th.is_column3 as is_row_tax_show,
   CONCAT(
+    tt1.doc_prefix, '-',
     SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
     LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
   ) AS referenceconcat,
   CONCAT(
+    tt2.doc_prefix, '-',
     SUBSTRING(th_invoice.datex, 1, 4), '-',  -- استخراج السنة من datex
     LPAD(CAST(th_invoice.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
   ) AS referenceconcat_invoice
 from
   transaction_header th
 left join transaction_header th_invoice on th_invoice.id = th.invoice_id
+LEFT JOIN transaction_type tt1 ON tt1.id = th.transaction_type
+LEFT JOIN transaction_type tt2 ON tt2.id = th_invoice.transaction_type
 where 
 th.id = $1
 and th.company_id = $2
@@ -23599,11 +24296,13 @@ let query9 = `
 select 
   th.id,
       CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS account_name
 from
   transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
 where
   th.transaction_type = 6 -- فواتير المشتريات
   and th.company_id = $1
@@ -23783,14 +24482,17 @@ select
   th.datex,
   th.account_id,
   th.items_location_id,
-  th.is_row_note_show,
-  th.is_row_dicount_show,
+  th.is_column1 as is_row_dicount_show,
+  th.is_column2 as is_row_note_show,
+  th.is_column3 as is_row_tax_show,
   CONCAT(
+    tt.doc_prefix, '-',
     SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
     LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
   ) AS referenceconcat
 from
   transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
 where 
 th.id = $1
 and th.company_id = $2
@@ -23830,11 +24532,13 @@ let query9 = `
 select 
   th.id,
       CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS account_name
 from
   transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
 where
   th.transaction_type = 6
   and th.company_id = $1
@@ -24749,8 +25453,6 @@ app.post("/fixed_assests_delete", async (req, res) => {
   }
 });
 
-
-
 app.post("/get_accumulated_depreciation_Data_view", async (req, res) => {
   try {
     
@@ -24790,24 +25492,26 @@ app.post("/get_accumulated_depreciation_Data_view", async (req, res) => {
 
 let quer1 = `
 select
-	ah.id,
-	ah.datex,
+	th.id,
+	th.datex,
 	CONCAT(
-  		SUBSTRING(ah.datex, 1, 4), '-',  -- استخراج السنة من datex
-    	LPAD(CAST(ah.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+      tt.doc_prefix, '-',
+  		SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+    	LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
 	) AS referenceconcat,
-	ah.general_note,
-	ah.total_value
+	th.general_note,
+	th.total_value
 from 
-	transaction_header ah
+	transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
 where 
-	ah.company_id = $1
-  AND (ah.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
-	AND ah.transaction_type = 15
-	AND ah.is_deleted is null
+	th.company_id = $1
+  AND (th.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
+	AND th.transaction_type = 15
+	AND th.is_deleted is null
 order by
-  ah.datex DESC,
-  ah.reference DESC
+  th.datex DESC,
+  th.reference DESC
 `;
 
 // تنفيذ الاستعلامات
@@ -25178,7 +25882,6 @@ WITH main_query AS (
       const newId_transaction_header = await newId_fn("transaction_header", 'id');
       let newId_transaction_body = await newId_fn("transaction_body", 'id');
       const year = getYear(posted_elements.datex)
-      // const newReference_transaction_header = await newReference_fn('transaction_header', year, req);
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
@@ -25401,7 +26104,6 @@ app.post("/api/accumulated_depreciation_update", async (req, res) => {
     const accounts_array = posted_elements.posted_array.map(row => parseInt(row.account_id)); // ستظهر النتيجة: [15, 54, 51]
     
 
-    //500500
     const query001 = `
 WITH main_query AS (
     SELECT
@@ -25625,25 +26327,27 @@ app.post("/get_calculated_depreacation_data_for_update", async (req, res) => {
     
 
     let query1 = `
-    -- header data query
-    select
-	ah.id,
-	ah.datex,
+ -- header data query
+select
+	th.id,
+	th.datex,
 	CONCAT(
-  		SUBSTRING(ah.datex, 1, 4), '-',  -- استخراج السنة من datex
-    	LPAD(CAST(ah.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+      tt.doc_prefix, '-',
+  		SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+    	LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
 	) AS referenceconcat,
-	ah.general_note,
-	ah.total_value,
-	ah.str10_date_column1 as started_date,
-	ah.str10_date_column2 as end_date
+	th.general_note,
+	th.total_value,
+	th.str10_date_column1 as started_date,
+	th.str10_date_column2 as end_date
 from 
-	transaction_header ah
+	transaction_header th
+  LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
 where 
-	ah.company_id = $1
-	and ah.id = $2
-	and ah.transaction_type = 15
-	and ah.is_deleted is null
+	th.company_id = $1
+	and th.id = $2
+	and th.transaction_type = 15
+	and th.is_deleted is null
   ;
 `;
 
@@ -25716,7 +26420,7 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
   try {
 
     //! Permission
-    await permissions(req, "accumulated_depreciation", "delete");
+    await permissions(req, "accumulated_depreciation_permission", "delete");
     if (!permissions) {
       return res.status(403).json({
         success: false,
@@ -25823,6 +26527,2905 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
 //#endregion
 
 
+//#region cash_managemenet
+app.post("/cash_accounts_view", async (req, res) => {
+  try {
+    
+    //! Permission  
+    await permissions(req, "cash_accounts_permission", "view");
+    if (!permissions) {
+      return;
+    }
+      
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+ 
+
+let quer1 = `
+select
+	ah.id,
+	ah.account_name,
+	ah.account_no,
+	ah.str50_column1 as group_name,
+	sum(COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)) as balance
+from
+	accounts_header ah
+left join transaction_body tb on tb.account_id = ah.id
+left join transaction_header th on th.id = tb.transaction_header_id
+where
+	ah.company_id = $1
+	and ah.is_final_account is true
+	and ah.account_type_id = 9 -- الحسابات  النقدية
+	and th.is_deleted is null
+group by
+	ah.id
+;
+`;
+
+// تنفيذ الاستعلامات
+let data = await db.any(quer1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error cash_accounts_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+app.post("/cash_accounts_add", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "cash_accounts_permission", "add");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.cash_accounts_name_input_value || posted_elements.cash_accounts_name_input_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "برجاء ادخال اسم الحساب",
+      });
+    }          
+    
+   
+    //* Start--------------------------------------------------------------
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 9) as count_account_name,
+               (select main_account_id FROM accounts_header WHERE company_id = $1 AND global_id = 11) as parent_main_account_id,
+               (select id FROM accounts_header WHERE company_id = $1 AND global_id = 11) as parent_id
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.cash_accounts_name_input_value
+        ]);
+    
+    
+
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "اسم الحساب موجود بالفعل"
+      });
+    }
+
+
+    if (!result.parent_main_account_id || !result.parent_id) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "حدث خطأ غير متوقع : برجاء التواصل مع الدعم الفنى والابلاغ عن كود الخطأ (Scaa01)"
+      });
+    }
+
+    //3: insert data into db
+    
+    
+
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
+
+
+    let query1 = `
+  INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, str50_column1, str_textarea_column1)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+`;
+
+  let params1 =[
+    newId_header,
+    posted_elements.cash_accounts_name_input_value,
+    posted_elements.cash_accounts_input_value,
+    true,
+    1,
+    req.session.company_id,
+    9,
+    +result.parent_main_account_id,
+    posted_elements.cash_accounts_group_name_input_value,
+    posted_elements.cash_info_input_value
+  ]
+
+
+  let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                VALUES ($1, $2, $3)`
+
+  let params2 = [newId_body,
+    +result.parent_id,
+    newId_header
+  ]               
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await tx.none(query2, params2);
+    await history(9, 1, newId_header, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حفظ بيانات الحساب النقدى بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error cash_accounts_add:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+
+app.post("/get_cash_accounts_data_for_update_page", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "cash_accounts_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+     --  تفاصيل الحساب النقدى
+select
+	ah.id,
+	ah.account_name,
+	COALESCE(ah.account_no, '') as account_no,
+	COALESCE(ah.str50_column1, '') as group_name,
+	COALESCE(ah.str_textarea_column1, '') as account_inf
+from
+	accounts_header ah
+where
+	ah.id = $1
+	and ah.company_id = $2
+	and ah.account_type_id = 9
+  ;
+`;
+let params1 = [posted_elements.x, req.session.company_id]
+
+
+
+
+await db.tx(async (tx) => {
+
+  const accountData = await tx.oneOrNone(query1, params1);
+
+  const postedData = {accountData};
+  res.json(postedData);
+})
+
+
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while get_cash_accounts_data_for_update_page", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error while get Employees Data" });
+  }
+});
+
+app.post("/cash_accounts_update", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "cash_accounts_permission", "update");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.cash_accounts_name_input_value || posted_elements.cash_accounts_name_input_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "برجاء ادخال اسم الحساب",
+      });
+    }          
+    
+   
+    //* Start--------------------------------------------------------------
+
+    let query0 = `SELECT
+                
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3 AND account_type_id = 9) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3) as count_id
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.cash_accounts_name_input_value,
+      posted_elements.x
+        ]);
+    
+    
+
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "اسم الحساب موجود بالفعل"
+      });
+    }
+
+
+    if (!result.count_id === 0) {
+      await block_user(req,'Scau01')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    //3: insert data into db
+    
+    
+
+    let query1 = `
+  update accounts_header set account_name = $1, account_no = $2, str50_column1 = $3, str_textarea_column1 = $4
+    where id = $5 AND company_id = $6
+`;
+
+  let params1 =[
+    posted_elements.cash_accounts_name_input_value,
+    posted_elements.cash_accounts_input_value,
+    posted_elements.cash_accounts_group_name_input_value,
+    posted_elements.cash_info_input_value,
+    posted_elements.x,
+    req.session.company_id
+  ]
+          
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await history(9, 2, posted_elements.x, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم تعديل بيانات الحساب النقدى بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error cash_accounts_update:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+
+app.post("/cash_accounts_delete", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "cash_accounts_permission", "delete");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+       
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $2 AND is_final_account IS TRUE and account_type_id = 9) as count_id,
+               (select count(id) FROM transaction_body WHERE account_id = $2) as count_transaction_body
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.x
+    ]);
+
+
+    if (result.count_id === 0) {
+      await block_user(req,'Scad01')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    if (result.count_transaction_body > 0) {
+      return res.json({
+        success: false,
+        message_ar: 'يوجد حركات على الحساب النقدى ولا يمكن حذفه',
+      });
+    }
+
+
+    let query1 = `
+  delete from accounts_header where id = $1 AND company_id = $2 AND is_final_account is true AND account_type_id = 9;
+  `;
+
+  let params1 =[
+    posted_elements.x,
+    req.session.company_id
+  ]
+
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await history(9, 3, posted_elements.x, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم حذف بيانات الحساب النقدى بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error cash_accounts_delete:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: "حدث خطأ أثناء اضافة الموظف",
+    });
+  }
+});
+
+app.post("/cash_rc_view", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+ SELECT
+    th.id,
+    ah.account_name,
+    CONCAT(
+        tt.doc_prefix, '-',          -- إضافة الحرفين (doc_prefix) من جدول transaction_type
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+    th.datex,
+    COALESCE(th.general_note, '') AS general_note,
+    COALESCE(th.total_value, 0) AS total_value
+FROM
+    transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+left join accounts_header ah on ah.id = th.account_id
+WHERE
+    th.company_id = $1 AND
+    th.transaction_type = 28
+    AND (th.is_deleted IS NULL OR th.is_deleted != true)
+   	AND (th.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
+ORDER BY
+    th.datex DESC,
+    th.reference DESC;
+
+`;
+    let data = await db.any(query1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error cash_transaction_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+
+app.post("/cash_pv_view", async (req, res) => {
+  try {
+    //! Permission
+    await permissions(req, "transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let query1 = `
+ SELECT
+    th.id,
+    ah.account_name,
+    CONCAT(
+        tt.doc_prefix, '-',          -- إضافة الحرفين (doc_prefix) من جدول transaction_type
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+    th.datex,
+    COALESCE(th.general_note, '') AS general_note,
+    COALESCE(th.total_value, 0) AS total_value
+FROM
+    transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+left join accounts_header ah on ah.id = th.account_id
+WHERE
+    th.company_id = $1 AND
+    th.transaction_type = 29
+    AND (th.is_deleted IS NULL OR th.is_deleted != true)
+   	AND (th.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
+ORDER BY
+    th.datex DESC,
+    th.reference DESC;
+
+`;
+    let data = await db.any(query1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error cash_pv_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+app.post("/api/cash_transaction_accounts_types", async (req, res) => {
+  try {
+    let query1 = `select id, account_type_name
+from account_type
+where id IN (1, 2, 3, 4 , 10)
+order by order_asc ASC;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+    // استعلام SQL لجلب بيانات الشجرة
+    let data = await db.any(query1);
+    res.json(data);
+  } catch (error) {
+    console.error("/api/transaction_accounts_types:", error);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+app.post("/getCash_rc_AccountsData1", async (req, res) => {
+  try {
+    // //! Permission
+    // await permissions(req, "effects_permission", "view");
+    // if (!permissions) {
+    //   return;
+    // }
+
+    //* Start--------------------------------------------------------------
+
+
+      let query1 = `
+SELECT
+  A.id,
+  A.account_name,
+  A.account_type_id
+FROM
+  accounts_header A
+WHERE
+  A.company_id = $1
+  AND is_final_account = true
+  and a.is_inactive is null
+  and a.account_type_id in (1, 2, 3, 4, 10) -- nafs id el   /api/cash_transaction_accounts_types
+  AND (a.global_id NOT IN (8, 17, 18, 19) OR a.global_id IS NULL)
+;
+`;
+let params1 = [req.session.company_id]
+
+    let query2 = `
+    SELECT
+      A.id,
+      A.account_name
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      and a.is_inactive is null
+      and a.account_type_id = 9
+    ;
+    `;
+    let params2 = [req.session.company_id] 
+
+    await db.tx(async (tx) => {
+
+      const accounts_data = await tx.any(query1, params1);
+      const cash_accounts = await tx.any(query2, params2);
+    
+      const postedData = { accounts_data, cash_accounts};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash_transaction_AccountsData1", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+  }
+});
+
+app.post("/getCash_pv_AccountsData1", async (req, res) => {
+  try {
+    // //! Permission
+    // await permissions(req, "effects_permission", "view");
+    // if (!permissions) {
+    //   return;
+    // }
+
+    //* Start--------------------------------------------------------------
+
+
+      let query1 = `
+SELECT
+  A.id,
+  A.account_name,
+  A.account_type_id
+FROM
+  accounts_header A
+WHERE
+  A.company_id = $1
+  AND is_final_account = true
+  and a.is_inactive is null
+  and a.account_type_id in (1, 2, 3, 4, 10) -- nafs id el   /api/cash_transaction_accounts_types
+  AND (a.global_id NOT IN (8, 17, 18, 19) OR a.global_id IS NULL)
+;
+`;
+let params1 = [req.session.company_id]
+
+    let query2 = `
+    SELECT
+      A.id,
+      A.account_name
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      and a.is_inactive is null
+      and a.account_type_id = 9
+    ;
+    `;
+    let params2 = [req.session.company_id] 
+
+    await db.tx(async (tx) => {
+
+      const accounts_data = await tx.any(query1, params1);
+      const cash_accounts = await tx.any(query2, params2);
+    
+      const postedData = { accounts_data, cash_accounts};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash_transaction_AccountsData1", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+  }
+});
+
+
+app.post("/api/cash_rc_add", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "cash_transaction_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 28
+  
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.value), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.datex,
+      posted_elements.total,
+      posted_elements.general_note,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'add',
+      tableName: false, // if type = 'update' or 'delete' only
+      transaction_id: false, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+
+        // //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND is_final_account IS TRUE`;
+let rows02 = await db.any(query02, [req.session.company_id]);
+
+
+
+
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
+
+//! التأكد من الحساب الاساسى
+const mainAccountExists = dbAccounts.some(item => 
+  +item.id === +posted_elements.main_account && +item.account_type_id === 9
+);
+
+if (!mainAccountExists){
+  await block_user(req,'Sta1')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
+
+
+let rowIndex = 1;
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+  const value = +rowData.value;
+
+  if (!value || isNaN(value) || value <= 0){
+    return res.json({
+      success: false,
+      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+    });
+  }
+
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
+  );
+
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Sta1')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+
+  
+  rowIndex++;
+}
+
+
+
+const newId_transaction_header = await newId_fn("transaction_header", 'id');
+const year = getYear(posted_elements.datex);
+const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req)
+const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+  let query1 = `INSERT INTO transaction_header
+                (id, reference, datex, company_id, transaction_type, total_value, general_note, general_reference, account_id)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+
+  await tx.none(query1, [
+    newId_transaction_header,
+    newReference_transaction_header,
+    posted_elements.datex,
+    req.session.company_id,
+    transaction_type,
+    posted_elements.total,
+    posted_elements.general_note,
+    newId_general_reference,
+    posted_elements.main_account
+  ]);
+
+  let insert_array2 = [];
+  let items_array = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
+
+  let query2 = `INSERT INTO transaction_body
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+ //todo main_account
+ insert_array2.push([
+  newId_transaction_body,
+  newId_transaction_header,
+  posted_elements.main_account,
+  posted_elements.total,
+  null,
+  null,
+]);
+
+newId_transaction_body++;
+
+  for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
+  
+    insert_array2.push([
+      newId,
+      newId_transaction_header,
+      element.account_id,
+      null,
+      element.value, //! da msh debit da el value ely hayt7t fe ele credit
+      element.note_row
+    ]);
+
+    newId_transaction_body += 1;
+  }
+
+  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم إنشاء سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_transaction_add:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+
+app.post("/api/cash_pv_add", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "cash_transaction_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 29
+  
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.vale), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.datex,
+      posted_elements.total,
+      posted_elements.general_note,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'add',
+      tableName: false, // if type = 'update' or 'delete' only
+      transaction_id: false, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+
+        // //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND is_final_account IS TRUE`;
+let rows02 = await db.any(query02, [req.session.company_id]);
+
+
+
+
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
+
+//! التأكد من الحساب الاساسى
+const mainAccountExists = dbAccounts.some(item => 
+  +item.id === +posted_elements.main_account && +item.account_type_id === 9
+);
+
+if (!mainAccountExists){
+  await block_user(req,'Sta1')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
+
+
+let rowIndex = 1;
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+  const value = +rowData.value;
+
+  if (!value || isNaN(value) || value <= 0){
+    return res.json({
+      success: false,
+      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+    });
+  }
+
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
+  );
+
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Sta1')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+
+  
+  rowIndex++;
+}
+
+
+
+const newId_transaction_header = await newId_fn("transaction_header", 'id');
+const year = getYear(posted_elements.datex);
+const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req)
+const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+  let query1 = `INSERT INTO transaction_header
+                (id, reference, datex, company_id, transaction_type, total_value, general_note, general_reference, account_id)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+
+  await tx.none(query1, [
+    newId_transaction_header,
+    newReference_transaction_header,
+    posted_elements.datex,
+    req.session.company_id,
+    transaction_type,
+    posted_elements.total,
+    posted_elements.general_note,
+    newId_general_reference,
+    posted_elements.main_account
+  ]);
+
+  let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
+
+  let query2 = `INSERT INTO transaction_body
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+
+
+newId_transaction_body++;
+
+  for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
+  
+    insert_array2.push([
+      newId,
+      newId_transaction_header,
+      element.account_id,
+      element.value, // debit
+      null,
+      element.note_row
+    ]);
+
+    newId_transaction_body += 1;
+  }
+
+   //todo main_account
+ insert_array2.push([
+  newId_transaction_body,
+  newId_transaction_header,
+  posted_elements.main_account,
+  null,
+  posted_elements.total, // credit
+  null,
+]);
+
+  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم إنشاء سند دفغ بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_pv_add:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+
+app.post("/getCash_rc_AccountsData2", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "cash_transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+      let query1 = `
+SELECT
+  A.id,
+  A.account_name,
+  A.account_type_id
+  --COALESCE(A.item_unite, 'الكمية') AS item_unite,
+  --NULL AS is_accumulated_depreciation
+FROM
+  accounts_header A
+WHERE
+  A.company_id = $1
+  AND is_final_account = true
+  and a.is_inactive is null
+  and a.account_type_id in (1, 2, 3, 4, 10) -- nafs id el   /api/cash_transaction_accounts_types
+  AND (a.global_id NOT IN (8, 17, 18, 19) OR a.global_id IS NULL)
+;
+`;
+let params1 = [req.session.company_id]
+
+    let query2 = `
+    SELECT
+      A.id,
+      A.account_name
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      and a.is_inactive is null
+      and a.account_type_id = 9
+    ;
+    `;
+    let params2 = [req.session.company_id] 
+
+
+    let query3 = `
+    SELECT
+      th.id,
+      th.datex,
+      CONCAT(
+        tt.doc_prefix, '-',
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+      ) AS referenceconcat,
+      th.account_id,
+      ah.account_name,
+      th.general_note
+    FROM
+      transaction_header th
+    inner join accounts_header ah on ah.id = th.account_id
+    LEFT JOIN transaction_type tt ON tt.id = th.transaction_type 
+    WHERE
+      th.company_id = $1
+      AND th.id = $2
+      AND th.transaction_type = 28
+      and th.is_deleted IS NULL
+    ;
+    `;
+    let params3 = [req.session.company_id, posted_elements.x] 
+
+    
+    let query4 = `
+    SELECT
+      ah.account_type_id,
+      tb.account_id,
+      ah.account_name,
+      tb.credit as value,
+      COALESCE(tb.row_note, '') as row_note
+    FROM
+      transaction_body tb
+    inner join accounts_header ah on ah.id = tb.account_id
+    inner join transaction_header th on th.id = tb.transaction_header_id
+    WHERE
+      th.company_id = $1
+      AND th.id = $2
+      AND th.transaction_type = 28
+      and th.is_deleted IS NULL
+      AND tb.credit IS NOT NULL
+    ;
+    `;
+    let params4 = [req.session.company_id, posted_elements.x] 
+
+
+
+    await db.tx(async (tx) => {
+
+      const accounts_data = await tx.any(query1, params1);
+      const cash_accounts = await tx.any(query2, params2);
+      const headerData = await tx.oneOrNone(query3, params3);
+      const bodyData = await tx.any(query4, params4);
+
+    
+      const postedData = { accounts_data, cash_accounts, headerData, bodyData};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash_transaction_AccountsData1", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+  }
+});
+
+app.post("/getCash_pv_AccountsData2", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "cash_transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+      let query1 = `
+SELECT
+  A.id,
+  A.account_name,
+  A.account_type_id
+FROM
+  accounts_header A
+WHERE
+  A.company_id = $1
+  AND is_final_account = true
+  and a.is_inactive is null
+  and a.account_type_id in (1, 2, 3, 4, 10) -- nafs id el   /api/cash_transaction_accounts_types
+  AND (a.global_id NOT IN (8, 17, 18, 19) OR a.global_id IS NULL)
+;
+`;
+let params1 = [req.session.company_id]
+
+    let query2 = `
+    SELECT
+      A.id,
+      A.account_name
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      and a.is_inactive is null
+      and a.account_type_id = 9
+    ;
+    `;
+    let params2 = [req.session.company_id] 
+
+
+    let query3 = `
+    SELECT
+      th.id,
+      th.datex,
+      CONCAT(
+        tt.doc_prefix, '-',
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+      ) AS referenceconcat,
+      th.account_id,
+      ah.account_name,
+      th.general_note
+    FROM
+      transaction_header th
+    inner join accounts_header ah on ah.id = th.account_id
+    LEFT JOIN transaction_type tt ON tt.id = th.transaction_type 
+    WHERE
+      th.company_id = $1
+      AND th.id = $2
+      AND th.transaction_type = 29 -- ## سند الصرف
+      and th.is_deleted IS NULL
+    ;
+    `;
+    let params3 = [req.session.company_id, posted_elements.x] 
+
+    
+    let query4 = `
+    SELECT
+      ah.account_type_id,
+      tb.account_id,
+      ah.account_name,
+      tb.debit as value,
+      COALESCE(tb.row_note, '') as row_note
+    FROM
+      transaction_body tb
+    inner join accounts_header ah on ah.id = tb.account_id
+    inner join transaction_header th on th.id = tb.transaction_header_id
+    WHERE
+      th.company_id = $1
+      AND th.id = $2
+      AND th.transaction_type = 29 -- ## سند الصرف
+      and th.is_deleted IS NULL
+      AND tb.debit IS NOT NULL
+    ;
+    `;
+    let params4 = [req.session.company_id, posted_elements.x] 
+
+
+
+    await db.tx(async (tx) => {
+
+      const accounts_data = await tx.any(query1, params1);
+      const cash_accounts = await tx.any(query2, params2);
+      const headerData = await tx.oneOrNone(query3, params3);
+      const bodyData = await tx.any(query4, params4);
+
+    
+      const postedData = { accounts_data, cash_accounts, headerData, bodyData};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash_pv_AccountsData2", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_pv_AccountsData2" });
+  }
+});
+
+app.post("/api/cash_rc_update", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "cash_transaction_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 28
+  
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.value), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.x,
+      posted_elements.datex,
+      posted_elements.total,
+      posted_elements.general_note,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'update',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+
+//500500
+        // //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+let rows01 = await db.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+
+
+
+if (!rows01 || !rows01.id) {
+  await block_user(req,'Scta01')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
+const reference = rows01.reference
+
+
+
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND is_final_account IS TRUE`;
+let rows02 = await db.any(query02, [req.session.company_id]);
+
+
+
+
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
+
+//! التأكد من الحساب الاساسى
+const mainAccountExists = dbAccounts.some(item => 
+  +item.id === +posted_elements.main_account && +item.account_type_id === 9
+);
+
+if (!mainAccountExists){
+  await block_user(req,'Scta02')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
+
+
+let rowIndex = 1;
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+  const value = +rowData.value;
+
+  if (!value || isNaN(value) || value <= 0){
+    return res.json({
+      success: false,
+      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+    });
+  }
+
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
+  );
+
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Scta03')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+
+  
+  rowIndex++;
+}
+
+
+
+const year = getYear(posted_elements.datex);
+
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+  let query1 = `update transaction_header set
+                datex = $1, total_value = $2, general_note = $3, account_id = $4
+                where id = $5 and company_id = $6 and transaction_type = $7;`;
+
+  await tx.none(query1, [
+    posted_elements.datex,
+    posted_elements.total,
+    posted_elements.general_note,
+    posted_elements.main_account,
+    posted_elements.x,
+    req.session.company_id,
+    transaction_type
+  ]);
+
+
+
+  let query001 = `delete from transaction_body where transaction_header_id = $1`
+  await tx.none(query001,[posted_elements.x])
+
+  let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
+
+  let query2 = `INSERT INTO transaction_body
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+ //todo main_account
+ insert_array2.push([
+  newId_transaction_body,
+  posted_elements.x,
+  posted_elements.main_account,
+  posted_elements.total,
+  null,
+  null,
+]);
+
+newId_transaction_body++;
+
+  for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
+  
+    insert_array2.push([
+      newId,
+      posted_elements.x,
+      element.account_id,
+      null,
+      element.value, //! da msh debit da el value ely hayt7t fe ele credit
+      element.note_row
+    ]);
+
+    newId_transaction_body += 1;
+  }
+
+  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  await history(transaction_type, 1, posted_elements.x, reference, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم تعديل سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_transaction_update:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+app.post("/api/cash_pv_update", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "cash_transaction_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 29
+  
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.value), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
+      posted_elements.x,
+      posted_elements.datex,
+      posted_elements.total,
+      posted_elements.general_note,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'update',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+
+        // //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+let rows01 = await db.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+
+
+
+if (!rows01 || !rows01.id) {
+  await block_user(req,'Scpu01')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
+const reference = rows01.reference
+
+
+
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND is_final_account IS TRUE`;
+let rows02 = await db.any(query02, [req.session.company_id]);
+
+
+
+
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
+
+//! التأكد من الحساب الاساسى
+const mainAccountExists = dbAccounts.some(item => 
+  +item.id === +posted_elements.main_account && +item.account_type_id === 9
+);
+
+if (!mainAccountExists){
+  await block_user(req,'Scpu02')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
+
+
+let rowIndex = 1;
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+  const value = +rowData.value;
+
+  if (!value || isNaN(value) || value <= 0){
+    return res.json({
+      success: false,
+      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+    });
+  }
+
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
+  );
+
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Scta03')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+
+  
+  rowIndex++;
+}
+
+
+
+const year = getYear(posted_elements.datex);
+
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+  let query1 = `update transaction_header set
+                datex = $1, total_value = $2, general_note = $3, account_id = $4
+                where id = $5 and company_id = $6 and transaction_type = $7;`;
+
+  await tx.none(query1, [
+    posted_elements.datex,
+    posted_elements.total,
+    posted_elements.general_note,
+    posted_elements.main_account,
+    posted_elements.x,
+    req.session.company_id,
+    transaction_type
+  ]);
+
+
+
+  let query001 = `delete from transaction_body where transaction_header_id = $1`
+  await tx.none(query001,[posted_elements.x])
+
+  let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
+
+  let query2 = `INSERT INTO transaction_body
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+
+
+newId_transaction_body++;
+
+  for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
+  
+    insert_array2.push([
+      newId,
+      posted_elements.x,
+      element.account_id,
+      element.value, // debit
+      null,
+      element.note_row
+    ]);
+
+    newId_transaction_body += 1;
+  }
+
+   //todo main_account
+ insert_array2.push([
+  newId_transaction_body,
+  posted_elements.x,
+  posted_elements.main_account,
+  null,
+  posted_elements.total, // credit
+  null,
+]);
+
+  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  await history(transaction_type, 1, posted_elements.x, reference, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم تعديل سند دفع بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_pv_update:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+
+app.post("/api/cash_rc_delete", async (req, res) => {
+
+  try {
+
+    //! Permission
+    await permissions(req, "cash_transaction_permission", "delete");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+    const posted_elements = req.body;
+
+    const transaction_type = 28
+  
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.datex])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
+
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: false, // if // if type = 'update' or 'add' only
+      type: 'delete',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+    
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    let reference;
+    await db.tx(async (tx) => {
+            //! Security hacking check id for company_name and transactio type
+            let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+            let rows01 = await tx.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+        
+            if (!rows01 || !rows01.id) {
+              throw new Error("لا يوجد سند قبض بهذا المرجع");
+            }
+            reference = rows01.reference
+
+          
+                  //? Clear transaction_body
+      let query0 = `Delete FROM transaction_body WHERE transaction_header_id = $1`
+      await tx.none(query0,[posted_elements.x])
+
+      //? update transaction_header
+      let query1 = `update transaction_header set 
+                      is_deleted = true
+                    WHERE
+                      id = $1;`;
+
+      await tx.none(query1, [
+        posted_elements.x
+      ]);
+  
+      //! history
+      await history(transaction_type,3,posted_elements.x,reference,req,tx);
+    })
+
+
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    const year = getYear(posted_elements.datex)
+
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم حذف سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_rc_delete:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+    });
+  }
+});
+
+app.post("/api/cash_pv_delete", async (req, res) => {
+
+  try {
+
+    //! Permission
+    await permissions(req, "cash_transaction_permission", "delete");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+    const posted_elements = req.body;
+
+    const transaction_type = 29
+  
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.datex])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
+
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: false, // if // if type = 'update' or 'add' only
+      type: 'delete',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+    
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    let reference;
+    await db.tx(async (tx) => {
+            //! Security hacking check id for company_name and transactio type
+            let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
+            let rows01 = await tx.oneOrNone(query01, [posted_elements.x, req.session.company_id, transaction_type]);
+        
+            if (!rows01 || !rows01.id) {
+              throw new Error("لا يوجد سند دفع بهذا المرجع");
+            }
+            reference = rows01.reference
+
+          
+                  //? Clear transaction_body
+      let query0 = `Delete FROM transaction_body WHERE transaction_header_id = $1`
+      await tx.none(query0,[posted_elements.x])
+
+      //? update transaction_header
+      let query1 = `update transaction_header set 
+                      is_deleted = true
+                    WHERE
+                      id = $1;`;
+
+      await tx.none(query1, [
+        posted_elements.x
+      ]);
+  
+      //! history
+      await history(transaction_type,3,posted_elements.x,reference,req,tx);
+    })
+
+
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    const year = getYear(posted_elements.datex)
+
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم حذف سند دفع بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_pv_delete:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+    });
+  }
+});
+
+
+app.post("/get_cash_transfer_Data_view", async (req, res) => {
+  try {
+    
+    //! Permission  
+    await permissions(req, "cash_transfer_permission", "view");
+    if (!permissions) {
+      return;
+    }
+      
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+let quer1 = `
+select
+th.id,
+th.datex,
+th.total_value,
+    CONCAT(
+      tt.doc_prefix, '-',
+      SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+      LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+  ) AS referenceconcat,
+  COALESCE(th.general_note, '') as general_note, 
+  ah1.account_name as location_from,
+  ah2.account_name as location_to
+from
+transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type  
+inner join accounts_header ah1 on ah1.id = th.items_location_id
+inner join accounts_header ah2 on ah2.id = th.items_location_id2
+where
+  th.company_id = $1
+  AND (th.datex BETWEEN $2 AND $3) -- تحديد الفترة الزمنية بين تاريخين
+  AND th.transaction_type = 11
+  AND th.is_deleted is null
+order by
+  th.datex DESC,
+  th.reference DESC	
+`;
+
+// تنفيذ الاستعلامات
+let data = await db.any(quer1, [req.session.company_id, posted_elements.start_date, posted_elements.end_date]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error get_cash_transfer_Data_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+
+app.post("/getCash", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "cash_transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    let query1 = `
+    SELECT
+      A.id,
+      A.account_name
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      and a.is_inactive is null
+      and a.account_type_id = 9
+    ;
+    `;
+    let params1 = [req.session.company_id] 
+
+
+
+    await db.tx(async (tx) => {
+      const cash_accounts = await tx.any(query1, params1);
+ 
+      const postedData = {cash_accounts};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_pv_AccountsData2" });
+  }
+});
+
+
+app.post("/get_cash_transfer_data_for_update", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "cash_transaction_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    let query1 = `
+    SELECT
+      A.id,
+      A.account_name
+    FROM
+      accounts_header A
+    WHERE
+      A.company_id = $1
+      AND is_final_account = true
+      and a.is_inactive is null
+      and a.account_type_id = 9
+    ;
+    `;
+    let params1 = [req.session.company_id] 
+
+
+    let query2 = `
+    select
+	th.id,
+	th.datex,
+	CONCAT(
+    	tt.doc_prefix, '-',
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+    th.total_value,
+    th.general_note,
+    th.items_location_id as account_from_id,
+    th.items_location_id2 as account_to_id
+from
+	transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type 
+where
+	th.id = $1
+	and th.company_id = $2
+	and th.transaction_type = 11
+	and th.is_deleted is null
+
+    `
+    let params2 = [posted_elements.x, req.session.company_id]
+
+    await db.tx(async (tx) => {
+      const cash_accounts = await tx.any(query1, params1);
+      const headerData = await tx.oneOrNone(query2, params2);
+ 
+      const postedData = {cash_accounts, headerData};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_pv_AccountsData2" });
+  }
+});
+
+
+app.post("/api/cash_transfer_add", async (req, res) => {
+  try {
+
+    //! Permission معلق
+    await permissions(req, "cash_transfer_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+
+
+
+    const posted_elements = req.body;
+    const transaction_type = 11 //   تحويلات بين الحسابات النقدية
+    
+  
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'add',
+      tableName: false, // if type = 'update' or 'delete' only
+      transaction_id: false, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    
+
+    //* Start Transaction --------------------------------------------------
+    
+
+    if (!posted_elements.value || isNaN(+posted_elements.value) || +posted_elements.value <= 0){
+      return res.json({
+        success: false,
+        message_ar: 'برجاء ادخال المبلغ المحول بشكل صحيح',
+      });
+    }
+
+
+
+    if (!posted_elements.account_from || !posted_elements.account_to){
+      return res.json({
+        success: false,
+        message_ar: 'برجاء تحديد مواقع المخزون بشكل صحيح',
+      });
+    }
+
+    let quer1 = `
+    select
+      (select count(id) as count_id from accounts_header where id = $1 and company_id = $3 and account_type_id = 9 and is_final_account IS TRUE and is_inactive IS NULL) as count_id1,
+      (select count(id) as count_id from accounts_header where id = $2 and company_id = $3 and account_type_id = 9 and is_final_account IS TRUE and is_inactive IS NULL) as count_id2
+  `;
+  
+  let result1 = await db.oneOrNone(quer1, [posted_elements.account_from, posted_elements.account_to, req.session.company_id]);
+  
+  if (!result1 || result1.count_id1 === 0 || result1.count_id2 === 0) {
+    await block_user(req, 'SCta01');
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+    });
+  }
+  
+  
+  
+      // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+      const newId_transaction_header = await newId_fn("transaction_header", 'id');
+      let newId_transaction_body = await newId_fn("transaction_body", 'id');
+      const year = getYear(posted_elements.datex)
+      const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
+      const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+      let tb_posted_array = []
+
+      tb_posted_array.push([
+        newId_transaction_body++, // id
+        newId_transaction_header, // transaction_header_id
+        posted_elements.account_from, // account_id
+        posted_elements.value, // debit 
+        null //credit
+      ]);
+
+      tb_posted_array.push([
+        newId_transaction_body++, // id
+        newId_transaction_header, // transaction_header_id
+        posted_elements.account_to, // account_id
+        null, // debit 
+        posted_elements.value //credit
+      ]);
+
+
+      let query2 = `INSERT INTO transaction_body
+      (id, transaction_header_id, account_id, debit, credit)
+      VALUES($1, $2, $3, $4, $5);`;
+
+
+
+      let query1 = `INSERT INTO transaction_header
+                    (id, reference, company_id, transaction_type, total_value, general_note, datex, general_reference, items_location_id, items_location_id2)
+                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9, $10);`;
+      
+      let params1 = [
+        newId_transaction_header,
+        newReference_transaction_header,
+        req.session.company_id,
+        transaction_type,
+        posted_elements.value,
+        posted_elements.note,
+        posted_elements.datex,
+        newId_general_reference,
+        +posted_elements.account_from,
+        +posted_elements.account_to,
+      ]                    
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+
+      await tx.none(query1, params1);
+
+      // استخدم tx.batch بدلاً من tx.none
+      await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
+
+      //! history
+      await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
+    });
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم إنشاء تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_transfer_add:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message,
+    });
+  }
+});
+
+app.post("/api/cash_transfer_update", async (req, res) => {
+  try {
+
+    //! Permission معلق
+    await permissions(req, "cash_transfer_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+
+
+
+    const posted_elements = req.body;
+    const transaction_type = 11 //   تحويلات بين الحسابات النقدية
+    
+  
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'update',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    
+
+    //* Start Transaction --------------------------------------------------
+    
+
+    if (!posted_elements.value || isNaN(+posted_elements.value) || +posted_elements.value <= 0){
+      return res.json({
+        success: false,
+        message_ar: 'برجاء ادخال المبلغ المحول بشكل صحيح',
+      });
+    }
+
+
+
+    if (!posted_elements.account_from || !posted_elements.account_to){
+      return res.json({
+        success: false,
+        message_ar: 'برجاء تحديد مواقع المخزون بشكل صحيح',
+      });
+    }
+
+
+    let quer001 = `select id, reference from transaction_header where id = $1 AND company_id = $2 AND transaction_type = $3 AND is_deleted IS NULL`;
+    let result001 = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id, transaction_type])
+
+    if (!result001 || !result001.id) {
+      await block_user(req, 'SCtu001');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+      });
+    }
+    const reference = result001.reference
+    
+
+
+    let quer1 = `
+    select
+      (select count(id) as count_id from accounts_header where id = $1 and company_id = $3 and account_type_id = 9 and is_final_account IS TRUE and is_inactive IS NULL) as count_id1,
+      (select count(id) as count_id from accounts_header where id = $2 and company_id = $3 and account_type_id = 9 and is_final_account IS TRUE and is_inactive IS NULL) as count_id2
+  `;
+  
+  let result1 = await db.oneOrNone(quer1, [posted_elements.account_from, posted_elements.account_to, req.session.company_id]);
+  
+  if (!result1 || result1.count_id1 === 0 || result1.count_id2 === 0) {
+    await block_user(req, 'SCtu01');
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+    });
+  }
+    
+      // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+      let newId_transaction_body = await newId_fn("transaction_body", 'id');
+      const year = getYear(posted_elements.datex)
+
+      let tb_posted_array = []
+
+      tb_posted_array.push([
+        newId_transaction_body++, // id
+        posted_elements.x, // transaction_header_id
+        posted_elements.account_from, // account_id
+        posted_elements.value, // debit 
+        null //credit
+      ]);
+
+      tb_posted_array.push([
+        newId_transaction_body++, // id
+        posted_elements.x, // transaction_header_id
+        posted_elements.account_to, // account_id
+        null, // debit 
+        posted_elements.value //credit
+      ]);
+
+
+      let query2 = `INSERT INTO transaction_body
+      (id, transaction_header_id, account_id, debit, credit)
+      VALUES($1, $2, $3, $4, $5);`;
+
+
+      let query0 = `DELETE FROM transaction_body WHERE transaction_header_id = $1`
+      let params0 = [posted_elements.x]
+
+
+      let query1 = `UPDATE transaction_header
+                    set total_value = $1, general_note = $2, datex = $3, items_location_id = $4, items_location_id2 = $5
+                    WHERE id = $6 AND company_id = $7 and transaction_type = $8 and is_deleted IS NULL;`;
+      
+      let params1 = [
+        posted_elements.value,
+        posted_elements.note,
+        posted_elements.datex,
+        +posted_elements.account_from,
+        +posted_elements.account_to,
+        posted_elements.x,
+        req.session.company_id,
+        transaction_type
+      ]                    
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+
+      await tx.none(query1, params1); // update
+      await tx.none(query0, params0); // delete
+
+      // استخدم tx.batch بدلاً من tx.none
+      await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
+
+      //! history
+      await history(transaction_type,2,posted_elements.x,reference,req,tx);
+    });
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم تعديل تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_transfer_update:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message,
+    });
+  }
+});
+
+//500500
+app.post("/api/cash_transfer_delete", async (req, res) => {
+  try {
+
+    //! Permission معلق
+    await permissions(req, "cash_transfer_permission", "delete");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+
+
+
+    const posted_elements = req.body;
+    const transaction_type = 11 //   تحويلات بين الحسابات النقدية
+    
+  
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'delete',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    
+
+    //* Start Transaction --------------------------------------------------
+
+
+    let quer001 = `select id, reference, datex from transaction_header where id = $1 AND company_id = $2 AND transaction_type = $3 AND is_deleted IS NULL`;
+    let result001 = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id, transaction_type])
+
+    if (!result001 || !result001.id) {
+      await block_user(req, 'SCtd001');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+      });
+    }
+
+    //500500
+    const reference = result001.reference
+    const datex = result001.datex
+    const year = getYear(datex)
+
+  
+
+      let query0 = `DELETE FROM transaction_body WHERE transaction_header_id = $1`
+      let params0 = [posted_elements.x]
+
+
+      let query1 = `UPDATE transaction_header
+                    set is_deleted = true
+                    WHERE id = $1 AND company_id = $2 and transaction_type = $3 and is_deleted IS NULL;`;
+      
+      let params1 = [
+        posted_elements.x,
+        req.session.company_id,
+        transaction_type
+      ]                    
+
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
+
+      await tx.none(query1, params1); // update
+      await tx.none(query0, params0); // delete
+
+      //! history
+      await history(transaction_type,3,posted_elements.x,reference,req,tx);
+    });
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `تم حذف تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error cash_transfer_delete:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message,
+    });
+  }
+});
+
+//#endregion
+
+
+
+
+
+
 //#region reports
   //#region statememnts
     //#region trial_balance
@@ -25864,6 +29467,8 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
         //* Start--------------------------------------------------------------
         // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     //50000
+
+    /*
         let query1 = `
 WITH 
 stock_balances as(
@@ -26008,9 +29613,157 @@ from
 	main_trial_balance mt
   order by
     mt.main_account_id asc, mt.parent_id asc, mt.id asc
-
       ;
     `;
+    */
+
+
+    let query1 = `
+WITH 
+stock_balances as(
+select
+	sum(case when ah.account_type_id = 5 AND th2.datex < $2 and tb2.item_amount > 0 then tb2.cogs else 0 end) as stock_debit_begining,
+	sum(case when (ah.account_type_id = 5 or ah.global_id = 17) AND th2.datex < $2 and tb2.item_amount < 0 then tb2.cogs else 0 end) as cost_value_begining,
+	sum(case when ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 and tb2.item_amount > 0 then tb2.cogs else 0 end) as stock_debit_current,
+	sum(case when (ah.account_type_id = 5 or ah.global_id = 17) AND th2.datex BETWEEN $2 AND $3 and tb2.item_amount < 0 then tb2.cogs else 0 end) as cost_value_current
+from transaction_body tb2
+INNER JOIN accounts_header ah ON ah.id = tb2.item_id
+LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
+WHERE ah.company_id = $1 AND th2.is_deleted IS NULL
+),
+previous_profit_query as(
+select
+	sum(tb2.credit) - sum(tb2.debit) as previous_profit_value
+from transaction_body tb2
+INNER JOIN accounts_header ah ON ah.id = tb2.account_id
+LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
+where
+	ah.company_id = $1 
+	AND th2.is_deleted IS null
+	and (ah.main_account_id in (4,5) or ah.global_id in (23,16))  -- حساب الارباح الحالية و الارباح السابقه
+	AND th2.datex < $2
+),
+main_trial_balance AS (
+    SELECT
+        ah.id,
+        ah.account_name,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
+            	case
+            		when (sb.stock_debit_begining - sb.cost_value_begining) > 0 then (sb.stock_debit_begining - sb.cost_value_begining)
+            		else 0
+            	end
+            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
+            	case
+             		when ppq.previous_profit_value < 0 then ABS(ppq.previous_profit_value)
+            		else 0
+            	end
+            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
+            ELSE 
+                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex < $2 THEN tb.debit ELSE 0 END)
+        END AS debit_first,
+                CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
+            	case
+            		when (sb.stock_debit_begining - sb.cost_value_begining) < 0 then ABS(sb.stock_debit_begining - sb.cost_value_begining)
+            		else 0
+            	end
+            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
+            	case
+            		when ppq.previous_profit_value > 0 then ppq.previous_profit_value
+            		else 0
+            	end
+            	 WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده   
+            ELSE 
+                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex < $2 THEN tb.credit ELSE 0 END)
+        END AS credit_first,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
+            	case
+            		when (sb.stock_debit_current - sb.cost_value_current) > 0 then (sb.stock_debit_current - sb.cost_value_current)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when sb.cost_value_current > 0 then sb.cost_value_current
+            		else 0
+            	end
+            ELSE 
+                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.debit ELSE 0 END)
+        END AS debit_current,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
+            	case
+            		when (sb.stock_debit_current - sb.cost_value_current) < 0 then ABS(sb.stock_debit_current - sb.cost_value_current)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when sb.cost_value_current < 0 then ABS(sb.cost_value_current)
+            		else 0
+            	end
+            ELSE 
+                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.credit ELSE 0 END)
+        END AS credit_current,        
+        ah.is_final_account,
+        ah.account_no,
+        ah.finance_statement,
+        ah.cashflow_statement,
+        ah.account_type_id,
+        ah.account_name_en,
+        ah.global_id,
+        ah.main_account_id,
+        ah.is_inactive,
+        ab.parent_id
+    FROM
+        accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+    LEFT JOIN previous_profit_query ppq ON true -- ربط الاستعلام فى حاله الصف الواحد
+    WHERE
+        ah.company_id = $1
+        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
+       -- AND NOT (ah.account_type_id = 5 AND ah.global_id != 12)
+        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
+    GROUP BY
+        ah.id, ab.parent_id, sb.stock_debit_begining, sb.cost_value_begining, ppq.previous_profit_value, sb.stock_debit_current, sb.cost_value_current
+)
+select
+    mt.id,
+    mt.account_name,
+          CASE
+        WHEN (mt.debit_first + mt.debit_current) > (mt.credit_first + mt.credit_current)
+        THEN (mt.debit_first + mt.debit_current) - (mt.credit_first + mt.credit_current)
+        ELSE NULL
+    END AS debit_end,
+        CASE
+        WHEN (mt.debit_first + mt.debit_current) < (mt.credit_first + mt.credit_current)
+        THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
+        ELSE NULL
+    END AS credit_end,
+    mt.debit_first,
+    mt.debit_current,
+    mt.credit_first,
+    mt.credit_current,
+    mt.is_final_account,
+    mt.account_no,
+    mt.finance_statement,
+    mt.cashflow_statement,
+    mt.account_type_id,
+    mt.account_name_en,
+    mt.global_id,
+    mt.main_account_id,
+    mt.is_inactive,
+    mt.parent_id,
+    null as padding
+from 
+	main_trial_balance mt
+  order by
+    mt.main_account_id asc, mt.parent_id asc, mt.id asc
+        `;
+
     let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
     
     await db.tx(async (tx) => {
@@ -26024,49 +29777,812 @@ from
       async function addSubAccounts(row, trial_balance, currentPadding = 0) {
         const id = row.id;
         const is_final_account = row.is_final_account;
-      
+    
         // التحقق إذا كان الحساب قد أُضيف بالفعل
         if (!addedAccounts.has(id)) {
-          addedAccounts.add(id); // تسجيل الحساب كمضاف
-      
-          // تحديث قيم padding و is_main
-          row.padding = currentPadding;
-      
-          if (!is_final_account) {
-            // إذا كان hide_zero مفعلاً وكان الحساب لا يحتوي على حسابات فرعية وجميع الأعمدة الستة تساوي صفر
-            const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
-            const allColumnsZero = 
-              +row.debit_first === 0 && +row.credit_first === 0 && 
-              +row.debit_current === 0 && +row.credit_current === 0 && 
-              +row.debit_end === 0 && +row.credit_end === 0;
-      
-            if (hide_zero && sub_accounts_array.length === 0 && allColumnsZero) {
-              // إذا كانت جميع الشروط متحققة لا نضيف الحساب
-              return;
-            }
-      
-            new_array.push(row);
-      
-            // البحث عن الحسابات الفرعية لهذا الحساب
-            if (sub_accounts_array.length > 0) {
-              for (const subrow of sub_accounts_array) {
-                // إضافة الحساب الفرعي مع زيادة قيمة padding
-                await addSubAccounts(subrow, trial_balance, currentPadding + 1.5); // 1rem
-              }
-            }
-          } else {
-            // التحقق من إخفاء الأرصدة الصفرية
-            if (hide_zero) {
-              if (+row.debit_first !== 0 || +row.credit_first !== 0 || +row.debit_current !== 0 || +row.credit_current !== 0 || +row.debit_end !== 0 || +row.credit_end !== 0) {
-                new_array.push(row);
-              }
+            addedAccounts.add(id); // تسجيل الحساب كمضاف
+    
+            // تحديث قيم padding
+            row.padding = currentPadding;
+    
+            // إذا كان الحساب الرئيسي
+            if (!is_final_account) {
+                const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
+                const allColumnsZero =
+                    +row.debit_first === 0 && +row.credit_first === 0 &&
+                    +row.debit_current === 0 && +row.credit_current === 0 &&
+                    +row.debit_end === 0 && +row.credit_end === 0;
+              
+                    
+                if (hide_zero && sub_accounts_array.length === 0 && allColumnsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
+                    // إذا كانت جميع الشروط متحققة لا نضيف الحساب
+                    return;
+                }
+    
+
+                // التحقق من الحسابات الفرعية
+                if (sub_accounts_array.length > 0) {
+                    let areAllSubAccountsZero = true;
+    
+                    for (const subrow of sub_accounts_array) {
+                        const allSubColumnsZero =
+                            +subrow.debit_first === 0 && +subrow.credit_first === 0 &&
+                            +subrow.debit_current === 0 && +subrow.credit_current === 0 &&
+                            +subrow.debit_end === 0 && +subrow.credit_end === 0;
+    
+                        if (!allSubColumnsZero || !hide_zero) {
+                            areAllSubAccountsZero = false;
+                            break;
+                        }
+                    }
+                    
+                    // إذا كانت جميع الحسابات الفرعية صفر، لا تضف الحساب الرئيسي
+                    if (hide_zero && areAllSubAccountsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
+                        return;
+                    }
+                    
+                    // أضف الحساب الرئيسي
+                    new_array.push(row);
+    
+                    // البحث عن الحسابات الفرعية
+                    for (const subrow of sub_accounts_array) {
+                        await addSubAccounts(subrow, trial_balance, currentPadding + 1.5); // 1rem
+                    }
+                } else {
+                    // إذا لم تكن هناك حسابات فرعية
+                    new_array.push(row);
+                }
             } else {
-              new_array.push(row);
+                // التحقق من إخفاء الأرصدة الصفرية للحساب النهائي
+                if (hide_zero) {
+                    if (+row.debit_first !== 0 || +row.credit_first !== 0 || +row.debit_current !== 0 ||
+                        +row.credit_current !== 0 || +row.debit_end !== 0 || +row.credit_end !== 0) {
+                        new_array.push(row);
+                    }
+                } else {
+                    new_array.push(row);
+                }
             }
-          }
         }
+    }
+    
+    
+      // معالجة الـ trial_balance
+      for (const row of trial_balance) {
+        await addSubAccounts(row, trial_balance, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
       }
-      
+      trial_balance = new_array;
+          
+      const postedData = { trial_balance/*, customersDataArray */};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while reports_trialBalance_view", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
+      }
+    });
+
+
+
+    app.post("/reports_finance_statement_view", async (req, res) => {
+      try {
+
+    //! Permission معلق
+    // await permissions(req, "purshases_returns_permission", "delete");
+    // if (!permissions) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+    //   });
+    // }
+
+    const posted_elements = req.body;
+    // const transaction_type = 7
+  
+
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.end_date]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    //50000
+        let query1 = `
+WITH 
+stock_balances as (
+select
+	SUM(CASE 
+            WHEN ah.account_type_id = 5 AND tb.item_amount > 0 THEN tb.cogs
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs * -1
+            ELSE 0 
+        END
+    ) AS stock_value,
+
+    SUM(CASE 
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs
+            ELSE 0 
+        END
+    ) AS cogs_value
+FROM transaction_body tb
+INNER JOIN accounts_header ah ON ah.id = tb.item_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE ah.company_id = $1
+  and ah.is_final_account is true
+  AND th.is_deleted IS NULL
+  AND th.datex <= $2
+),
+balances as(
+    SELECT
+
+    SUM(CASE 
+            WHEN ah.account_type_id = 1 AND ah.main_account_id = 4 THEN COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS revenue_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 1 AND ah.main_account_id = 5 THEN COALESCE(tb.debit, 0)  - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS expenses_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS NULL THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS fixed_assests_cost,
+
+    SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS TRUE THEN  COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS fixed_assests_accumulated_depreciation,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 2 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS customers_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 3 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS vendors_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 9 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS cash_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 4 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS employees_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 10 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS capital_value
+    
+FROM transaction_body tb
+INNER JOIN accounts_header ah ON ah.id = tb.account_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE ah.company_id = $1
+  and ah.is_final_account is true
+  AND th.is_deleted IS NULL
+  AND th.datex <= $2
+  
+),
+main_trial_balance AS (
+    SELECT
+        ah.id,
+        ah.account_name,
+        CASE
+            WHEN ah.global_id = 12  THEN sb.stock_value -- قيمه مخزون اول المدة
+            WHEN ah.global_id = 9 then  -- الاصول الثابتة
+            	case
+            		when ah.main_account_id = 1 then b.fixed_assests_cost
+            		when ah.main_account_id != 1 then b.fixed_assests_cost * -1
+            		else 0
+            	end
+            WHEN ah.global_id = 10 then  -- امجمع اصول ثابتة
+            	case
+            		when ah.main_account_id = 1 then b.fixed_assests_accumulated_depreciation * -1
+            		when ah.main_account_id != 1 then b.fixed_assests_accumulated_depreciation
+            		else 0
+            	end	
+            WHEN ah.global_id = 11 then  -- االنقدية وما فى حكمها
+            	case
+            		when ah.main_account_id = 1 then b.cash_value
+            		when ah.main_account_id != 1 then b.cash_value * -1
+            		else 0
+            	end	
+            WHEN ah.global_id = 13 then  -- االعملاء
+            	case
+            		when ah.main_account_id = 1 then b.customers_value
+            		when ah.main_account_id != 1 then b.customers_value * -1
+            		else 0
+            	end	            	
+            WHEN ah.global_id = 14 then  -- الموردين
+            	case
+            		when ah.main_account_id = 1 then b.vendors_value * -1
+            		when ah.main_account_id != 1 then b.vendors_value
+            		else 0
+            	end
+            WHEN ah.global_id = 20 then  -- الموظفين
+            	case
+            		when ah.main_account_id = 1 then b.employees_value * -1
+            		when ah.main_account_id != 1 then b.employees_value
+            		else 0
+            	end	            	
+            WHEN ah.global_id = 15 then  -- رأس المال
+            	case
+            		when ah.main_account_id = 1 then b.capital_value *-1
+            		when ah.main_account_id != 1 then b.capital_value
+            		else 0
+            	end
+            WHEN ah.global_id = 16 then  -- ارباح وخسائر الفتره
+					b.revenue_value - b.expenses_value - sb.cogs_value
+            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
+            ELSE 
+                SUM(
+                case
+                	when ah.account_type_id not in (2,3,4,5,6,7,8,9,10) then
+                		case
+                	    	when ah.main_account_id in (1,5) THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+                		 	when ah.main_account_id in (2,3,4) THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+                		 	else 0
+                		end
+                end
+                 )
+        END AS balance,
+        ah.is_final_account,
+        ah.account_no,
+        ah.finance_statement,
+        ah.cashflow_statement,
+        ah.account_type_id,
+        ah.account_name_en,
+        ah.global_id,
+        ah.main_account_id,
+        ah.is_inactive,
+        ab.parent_id
+    FROM
+        accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
+    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+    WHERE
+        ah.company_id = $1
+        and (ah.global_id != 1 or ah.global_id is null)
+        and ah.finance_statement = 1
+        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
+        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
+		AND (
+    		(ah.account_type_id IS NULL OR ah.account_type_id NOT IN (2, 3, 6, 4, 9, 10)) 
+    		OR ah.global_id IN (13, 14, 9, 20, 11, 15)
+		)
+    GROUP BY
+        ah.id, ab.parent_id, b.capital_value, b.employees_value, b.cash_value, b.vendors_value, b.customers_value, b.fixed_assests_accumulated_depreciation, b.fixed_assests_cost, b.expenses_value, b.revenue_value, sb.cogs_value, sb.stock_value
+),
+main_accounts_totals as (
+select
+	SUM(CASE 
+            WHEN mt.main_account_id = 1 THEN COALESCE(mt.balance, 0)
+            ELSE 0 
+        END
+    ) AS assets_value,
+	SUM(CASE 
+            WHEN mt.main_account_id = 2 THEN COALESCE(mt.balance, 0)
+            ELSE 0 
+        END
+    ) AS liablities_value,
+	SUM(CASE 
+            WHEN mt.main_account_id = 3 THEN COALESCE(mt.balance, 0)
+            ELSE 0 
+        END
+    ) AS equity_value
+from
+	main_trial_balance as mt
+)
+select
+    mt.id,
+    mt.account_name,
+    case
+	    when mt.global_id = 3 then mat.assets_value
+	    when mt.global_id = 4 then mat.liablities_value
+	    when mt.global_id = 5 then mat.equity_value
+	    else balance
+    end as balance,
+    mt.is_final_account,
+    mt.account_no,
+    mt.finance_statement,
+    mt.cashflow_statement,
+    mt.account_type_id,
+    mt.account_name_en,
+    mt.global_id,
+    mt.main_account_id,
+    mt.is_inactive,
+    mt.parent_id,
+    null as padding
+from 
+	main_trial_balance mt
+left join main_accounts_totals mat on true
+  order by
+    mt.main_account_id asc, mt.parent_id asc, mt.id asc
+      ;
+    `;
+    let params1 = [req.session.company_id, posted_elements.end_date]
+    
+    await db.tx(async (tx) => {
+      let trial_balance = await tx.any(query1, params1);
+    
+      const hide_zero = posted_elements.is_hiding_zero_balances;
+      let new_array = [];
+      let addedAccounts = new Set(); // لتتبع الحسابات التي تمت إضافتها
+    
+      // دالة تكرارية للبحث عن الحسابات الفرعية
+
+
+      async function addSubAccounts(row, trial_balance, currentPadding = 0) {
+        const id = row.id;
+        const is_final_account = row.is_final_account;
+        
+
+        // التحقق إذا كان الحساب قد أُضيف بالفعل
+        if (!addedAccounts.has(id)) {
+            addedAccounts.add(id); // تسجيل الحساب كمضاف
+          
+            // تحديث قيم padding
+            row.padding = currentPadding;
+              
+            // إذا كان الحساب الرئيسي
+            if (!is_final_account) {
+                const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
+
+                
+                
+                if (hide_zero && sub_accounts_array.length === 0 && +row.balance === 0) {
+                    // إذا كانت جميع الشروط متحققة لا نضيف الحساب
+                    return;
+                }
+
+                // التحقق من الحسابات الفرعية
+                if (sub_accounts_array.length > 0) {
+                    let areAllSubAccountsZero = true;
+                  
+                    for (const subrow of sub_accounts_array) {
+
+                        if (+subrow.balance !== 0 || !hide_zero) {
+                            areAllSubAccountsZero = false;
+                            break;
+                        }
+                    }
+                    
+                    // إذا كانت جميع الحسابات الفرعية صفر، لا تضف الحساب الرئيسي
+                    if (hide_zero && areAllSubAccountsZero) {
+                        return;
+                    }
+
+                    // أضف الحساب الرئيسي
+                    new_array.push(row);
+    
+                    // البحث عن الحسابات الفرعية
+                    for (const subrow of sub_accounts_array) {
+                        await addSubAccounts(subrow, trial_balance, currentPadding + 1.5); // 1rem
+                    }
+                } else {
+                    // إذا لم تكن هناك حسابات فرعية
+                    new_array.push(row);
+                }
+            } else {
+                // التحقق من إخفاء الأرصدة الصفرية للحساب النهائي
+                if (hide_zero) {
+                    if (+row.balance !== 0) {
+                        new_array.push(row);
+                    }
+                } else {
+                    new_array.push(row);
+                }
+            }
+        }
+    }
+    
+    
+      // معالجة الـ trial_balance
+      for (const row of trial_balance) {
+        await addSubAccounts(row, trial_balance, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
+      }
+      trial_balance = new_array;
+          
+      const postedData = { trial_balance/*, customersDataArray */};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while reports_trialBalance_view", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
+      }
+    });
+
+
+    app.post("/reports_income_statement_view_ar", async (req, res) => {
+      try {
+
+    //! Permission معلق
+    // await permissions(req, "purshases_returns_permission", "delete");
+    // if (!permissions) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+    //   });
+    // }
+
+    const posted_elements = req.body;
+    // const transaction_type = 7
+  
+
+      //! sql injection check
+      const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+      if (hasBadSymbols) {
+        return res.json({
+          success: false,
+          message_ar:
+            "Invalid input detected due to prohibited characters. Please review your input and try again.",
+        });
+      }
+
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.end_date]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    //50000
+        let query1 = `
+WITH 
+stock_balances as (
+select
+	SUM(CASE 
+            WHEN ah.account_type_id = 5 AND tb.item_amount > 0 THEN tb.cogs
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs * -1
+            ELSE 0 
+        END
+    ) AS stock_value,
+
+    SUM(CASE 
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs
+            ELSE 0 
+        END
+    ) AS cogs_value
+FROM transaction_body tb
+INNER JOIN accounts_header ah ON ah.id = tb.item_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE ah.company_id = $1
+  and ah.is_final_account is true
+  AND th.is_deleted IS NULL
+  AND th.datex <= $2
+),
+balances as(
+    SELECT
+
+    SUM(CASE 
+            WHEN ah.account_type_id = 1 AND ah.main_account_id = 4 THEN COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS revenue_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 1 AND ah.main_account_id = 5 THEN COALESCE(tb.debit, 0)  - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS expenses_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS NULL THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS fixed_assests_cost,
+
+    SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS TRUE THEN  COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS fixed_assests_accumulated_depreciation,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 2 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS customers_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 3 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS vendors_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 9 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS cash_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 4 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS employees_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 10 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS capital_value
+    
+FROM transaction_body tb
+INNER JOIN accounts_header ah ON ah.id = tb.account_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE ah.company_id = $1
+  and ah.is_final_account is true
+  AND th.is_deleted IS NULL
+  AND th.datex <= $2
+  
+),
+main_trial_balance AS (
+    SELECT
+        ah.id,
+        ah.account_name,
+        CASE
+            WHEN ah.global_id = 12  THEN sb.stock_value -- قيمه مخزون اول المدة
+            WHEN ah.global_id = 9 then  -- الاصول الثابتة
+            	case
+            		when ah.main_account_id = 1 then b.fixed_assests_cost
+            		when ah.main_account_id != 1 then b.fixed_assests_cost * -1
+            		else 0
+            	end
+            WHEN ah.global_id = 10 then  -- امجمع اصول ثابتة
+            	case
+            		when ah.main_account_id = 1 then b.fixed_assests_accumulated_depreciation *-1
+            		when ah.main_account_id != 1 then b.fixed_assests_accumulated_depreciation
+            		else 0
+            	end	
+            WHEN ah.global_id = 11 then  -- االنقدية وما فى حكمها
+            	case
+            		when ah.main_account_id = 1 then b.cash_value
+            		when ah.main_account_id != 1 then b.cash_value *-1
+            		else 0
+            	end	
+            WHEN ah.global_id = 13 then  -- االعملاء
+            	case
+            		when ah.main_account_id = 1 then b.customers_value
+            		when ah.main_account_id != 1 then b.customers_value *-1
+            		else 0
+            	end	            	
+            WHEN ah.global_id = 14 then  -- الموردين
+            	case
+            		when ah.main_account_id = 1 then b.vendors_value * -1
+            		when ah.main_account_id != 1 then b.vendors_value
+            		else 0
+            	end
+            WHEN ah.global_id = 20 then  -- الموظفين
+            	case
+            		when ah.main_account_id = 1 then b.employees_value *-1
+            		when ah.main_account_id != 1 then b.employees_value
+            		else 0
+            	end	            	
+            WHEN ah.global_id = 15 then  -- رأس المال
+            	case
+            		when ah.main_account_id = 1 then b.capital_value *-1
+            		when ah.main_account_id != 1 then b.capital_value
+            		else 0
+            	end
+            WHEN ah.global_id = 16 then  -- ارباح وخسائر الفتره
+					b.revenue_value - b.expenses_value - sb.cogs_value
+            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
+            ELSE 
+                SUM(
+                case
+                	when ah.account_type_id not in (2,3,4,5,6,7,8,9,10) then
+                		case
+                	    	when ah.main_account_id in (1,5) THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+                		 	when ah.main_account_id in (2,3,4) THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+                		 	else 0
+                		end
+                end
+                 )
+        END AS balance,
+        ah.is_final_account,
+        ah.account_no,
+        ah.finance_statement,
+        ah.cashflow_statement,
+        ah.account_type_id,
+        ah.account_name_en,
+        ah.global_id,
+        ah.main_account_id,
+        ah.is_inactive,
+        ab.parent_id
+    FROM
+        accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
+    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+    WHERE
+        ah.company_id = $1
+        and (ah.global_id != 1 or ah.global_id is null)
+        and ah.finance_statement = 1
+        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
+        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
+		AND (
+    		(ah.account_type_id IS NULL OR ah.account_type_id NOT IN (2, 3, 6, 4, 9, 10)) 
+    		OR ah.global_id IN (13, 14, 9, 20, 11, 15)
+		)
+    GROUP BY
+        ah.id, ab.parent_id, b.capital_value, b.employees_value, b.cash_value, b.vendors_value, b.customers_value, b.fixed_assests_accumulated_depreciation, b.fixed_assests_cost, b.expenses_value, b.revenue_value, sb.cogs_value, sb.stock_value
+),
+main_accounts_totals as (
+select
+	SUM(CASE 
+            WHEN mt.main_account_id = 1 THEN COALESCE(mt.balance, 0)
+            ELSE 0 
+        END
+    ) AS assets_value,
+	SUM(CASE 
+            WHEN mt.main_account_id = 2 THEN COALESCE(mt.balance, 0)
+            ELSE 0 
+        END
+    ) AS liablities_value,
+	SUM(CASE 
+            WHEN mt.main_account_id = 3 THEN COALESCE(mt.balance, 0)
+            ELSE 0 
+        END
+    ) AS equity_value
+from
+	main_trial_balance as mt
+)
+select
+    mt.id,
+    mt.account_name,
+    case
+	    when mt.global_id = 3 then mat.assets_value
+	    when mt.global_id = 4 then mat.liablities_value
+	    when mt.global_id = 5 then mat.equity_value
+	    else balance
+    end as balance,
+    mt.is_final_account,
+    mt.account_no,
+    mt.finance_statement,
+    mt.cashflow_statement,
+    mt.account_type_id,
+    mt.account_name_en,
+    mt.global_id,
+    mt.main_account_id,
+    mt.is_inactive,
+    mt.parent_id,
+    null as padding
+from 
+	main_trial_balance mt
+left join main_accounts_totals mat on true
+  order by
+    mt.main_account_id asc, mt.parent_id asc, mt.id asc
+      ;
+    `;
+    let params1 = [req.session.company_id, posted_elements.end_date]
+    
+    await db.tx(async (tx) => {
+      let trial_balance = await tx.any(query1, params1);
+    
+      const hide_zero = posted_elements.is_hiding_zero_balances;
+      let new_array = [];
+      let addedAccounts = new Set(); // لتتبع الحسابات التي تمت إضافتها
+    
+      // دالة تكرارية للبحث عن الحسابات الفرعية
+
+
+      async function addSubAccounts(row, trial_balance, currentPadding = 0) {
+        const id = row.id;
+        const is_final_account = row.is_final_account;
+        
+
+        // التحقق إذا كان الحساب قد أُضيف بالفعل
+        if (!addedAccounts.has(id)) {
+            addedAccounts.add(id); // تسجيل الحساب كمضاف
+          
+            // تحديث قيم padding
+            row.padding = currentPadding;
+              
+            // إذا كان الحساب الرئيسي
+            if (!is_final_account) {
+                const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
+
+                
+                
+                if (hide_zero && sub_accounts_array.length === 0 && +row.balance === 0) {
+                    // إذا كانت جميع الشروط متحققة لا نضيف الحساب
+                    return;
+                }
+
+                // التحقق من الحسابات الفرعية
+                if (sub_accounts_array.length > 0) {
+                    let areAllSubAccountsZero = true;
+                  
+                    for (const subrow of sub_accounts_array) {
+
+                        if (+subrow.balance !== 0 || !hide_zero) {
+                            areAllSubAccountsZero = false;
+                            break;
+                        }
+                    }
+                    
+                    // إذا كانت جميع الحسابات الفرعية صفر، لا تضف الحساب الرئيسي
+                    if (hide_zero && areAllSubAccountsZero) {
+                        return;
+                    }
+
+                    // أضف الحساب الرئيسي
+                    new_array.push(row);
+    
+                    // البحث عن الحسابات الفرعية
+                    for (const subrow of sub_accounts_array) {
+                        await addSubAccounts(subrow, trial_balance, currentPadding + 1.5); // 1rem
+                    }
+                } else {
+                    // إذا لم تكن هناك حسابات فرعية
+                    new_array.push(row);
+                }
+            } else {
+                // التحقق من إخفاء الأرصدة الصفرية للحساب النهائي
+                if (hide_zero) {
+                    if (+row.balance !== 0) {
+                        new_array.push(row);
+                    }
+                } else {
+                    new_array.push(row);
+                }
+            }
+        }
+    }
+    
     
       // معالجة الـ trial_balance
       for (const row of trial_balance) {
@@ -26266,10 +30782,6 @@ async function update_items_cogs(items_array,datex, req, tx) {
     }
 */
 
-console.table(item_transaction_arry);
-
-console.log(started_amount);
-console.log(started_value);
 
 for (const row of item_transaction_arry) {
       
@@ -26313,13 +30825,14 @@ for (const row of item_transaction_arry) {
   }
   
   // console.table(updatedRecords);
-  
+  turn_EmptyValues_TO_null(updatedRecords)
     // إعداد استعلامات التحديث دفعة واحدة
     const queries = updatedRecords.map(
         ({ id, cogs }) =>
             `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id};`
     );
   
+
     // تنفيذ التحديثات باستخدام tx.batch
       
             await tx.batch(queries.map((query) => tx.none(query)));

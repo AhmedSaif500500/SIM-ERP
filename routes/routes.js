@@ -193,7 +193,7 @@ router.get('/employees_add_ar', (req, res) => {
 
 router.get('/employees_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.employees_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.employees_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'employees' ,'employees_update_ar.html'));
         }else{
             res.redirect('/employees_view_ar?reason=2');
@@ -234,7 +234,7 @@ router.get('/effects_add_ar', (req, res) => {
 
 router.get('/effects_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.effects_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'effects' ,'effects_update_ar.html'));
         }else{
             res.redirect('/effects_view_ar?reason=2');
@@ -276,7 +276,7 @@ router.get('/departments_add_ar', (req, res) => {
 
 router.get('/departments_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.departments_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.departments_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'hr', 'departments' ,'departments_update_ar.html'));
         }else{
             res.redirect('/departments_view_ar?reason=2');
@@ -636,7 +636,7 @@ router.get('/customers_add_ar', (req, res) => {
 
 router.get('/customers_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.customers_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.customers_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'customers' ,'customers_update_ar.html'));
         }else{
             res.redirect('/customers_view_ar?reason=0');
@@ -674,7 +674,7 @@ router.get('/vendors_add_ar', (req, res) => {
 
 router.get('/vendors_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.vendors_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.vendors_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'vendors' ,'vendors_update_ar.html'));
         }else{
             res.redirect('/vendors_view_ar?reason=0');
@@ -715,7 +715,7 @@ router.get('/effects_add_ar', (req, res) => {
 
 router.get('/effects_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.effects_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'effects' ,'effects_update_ar.html'));
         }else{
             res.redirect('/effects_view_ar?reason=2');
@@ -757,7 +757,7 @@ router.get('/production_add_ar', (req, res) => {
 
 router.get('/production_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.production_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.production_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'production' ,'production_update_ar.html'));
         }else{
             res.redirect('/production_view_ar?reason=2');
@@ -799,7 +799,7 @@ router.get('/bread_add_ar', (req, res) => {
 
 router.get('/bread_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.bread_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.bread_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_update_ar.html'));
         }else{
             res.redirect('/bread_view_ar?reason=2');
@@ -837,7 +837,7 @@ router.get('/accounts_add_ar', (req, res) => {
 
 router.get('/accounts_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.accounts_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.accounts_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_update_ar.html'));
         }else{
             res.redirect('/accounts_view_ar?reason=1');
@@ -866,7 +866,7 @@ router.get('/accounts_update_ar', (req, res) => {
 
 router.get('/itemsMain_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 0 || req.session.itemsLocations_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.items_permission > 0 || req.session.itemsLocations_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'itemsMain_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
@@ -880,7 +880,7 @@ router.get('/itemsMain_view_ar', (req, res) => {
 //#region itemsLocations
 router.get('/itemsLocations_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.itemsLocations_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.itemsLocations_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'itemsLocations', 'itemsLocations_view_ar.html'));
         }else{
             res.redirect('/itemsMain_view_ar?reason=0');
@@ -904,7 +904,7 @@ router.get('/itemsLocations_add_ar', (req, res) => {
 
 router.get('/itemsLocations_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.itemsLocations_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.itemsLocations_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'itemsLocations', 'itemsLocations_update_ar.html'));
         }else{
             res.redirect('/itemsLocations_view_ar?reason=1');
@@ -943,7 +943,7 @@ router.get('/items_transfer_add_ar', (req, res) => {
 
 router.get('/items_transfer_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_transfer_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.items_transfer_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items_transfer', 'items_transfer_update_ar.html'));
         }else{
             res.redirect('/items_transfer_view_ar?reason=1');
@@ -956,7 +956,7 @@ router.get('/items_transfer_update_ar', (req, res) => {
 //#region  end itemslocations
 router.get('/items_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.items_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items', 'items_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
@@ -969,7 +969,7 @@ router.get('/items_view_ar', (req, res) => {
 
 router.get('/items_table_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 0) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.items_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items', 'items_table_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
@@ -995,7 +995,7 @@ router.get('/items_add_ar', (req, res) => {
 
 router.get('/items_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.items_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.items_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items', 'items_update_ar.html'));
         }else{
             res.redirect('/items_view_ar?reason=1');
@@ -1038,7 +1038,7 @@ router.get('/transaction_add_ar', (req, res) => {
 
 router.get('/transaction_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 ||  req.session.transaction_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.transaction_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'transactions', 'transaction_update_ar.html'));
         }else{
             res.redirect('/transaction_view_ar?reason=2');
@@ -1079,7 +1079,7 @@ router.get('/settings_taxes_add_ar', (req, res) => {
 
 router.get('/settings_taxes_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3) {
+        if (req.session.is_owner || req.session.general_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'taxes' ,'settings_taxes_update_ar.html'));
         }else{
             res.redirect('/settings_taxes_view_ar?reason=0');
@@ -1143,7 +1143,7 @@ router.get('/services_add_ar', (req, res) => {
 
 router.get('/services_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 3 || req.session.services_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.services_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'items', 'services' ,'services_update_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
@@ -1277,7 +1277,7 @@ router.get('/fixed_assests_add_ar', (req, res) => {
 
 router.get('/fixed_assests_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'fixed_assests', 'fixed_assests_update_ar.html'));
         }else{
             res.redirect('/fixed_assests_view?reason=0');
@@ -1314,7 +1314,7 @@ router.get('/accumulated_depreciation_add_ar', (req, res) => {
 
 router.get('/accumulated_depreciation_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.accumulated_depreciation_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.accumulated_depreciation_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'accumulated_depreciation', 'accumulated_depreciation_update_ar.html'));
         }else{
             res.redirect('/accumulated_depreciation_view_ar?reason=0');
@@ -1351,7 +1351,7 @@ router.get('/disposed_fixed_asset_add_ar', (req, res) => {
 
 router.get('/disposed_fixed_asset_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.disposed_fixed_asset_permission > 2) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.disposed_fixed_asset_permission > 0) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'disposed_fixed_asset', 'disposed_fixed_asset_update_ar.html'));
         }else{
             res.redirect('/disposed_fixed_asset_view_ar?reason=0');
@@ -1364,6 +1364,176 @@ router.get('/disposed_fixed_asset_update_ar', (req, res) => {
 //#region fixed assests
 
 //#endregionend fixed assets
+
+
+//#region cash management
+router.get('/cashMain_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.fixed_assests_permission > 0 || req.session.cash_accounts_permission > 0 || req.session.cash_accounts_permission_permission > 0) {  //! معلق
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management' ,'cashMain_view_ar.html'));
+        }else{
+            res.redirect('/nots_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/cash_accounts_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_accounts_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_accounts', 'cash_accounts_view_ar.html'));
+        }else{
+            res.redirect('/cashMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/cash_accounts_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_accounts_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_accounts', 'cash_accounts_add_ar.html'));
+        }else{
+            res.redirect('/cash_accounts_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/cash_accounts_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_accounts_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_accounts', 'cash_accounts_update_ar.html'));
+        }else{
+            res.redirect('/cash_accounts_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/cash_rc_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_rc', 'cash_rc_view_ar.html'));
+        }else{
+            res.redirect('/cashMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/cash_rc_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_rc', 'cash_rc_add_ar.html'));
+        }else{
+            res.redirect('/cash_rc_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/cash_rc_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_rc', 'cash_rc_update_ar.html'));
+        }else{
+            res.redirect('/cash_rc_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+
+
+router.get('/cash_pv_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_pv', 'cash_pv_view_ar.html'));
+        }else{
+            res.redirect('/cashMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/cash_pv_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_pv', 'cash_pv_add_ar.html'));
+        }else{
+            res.redirect('/cash_pv_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/cash_pv_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_pv', 'cash_pv_update_ar.html'));
+        }else{
+            res.redirect('/cash_pv_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/cash_transfer_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_transfer', 'cash_transfer_view_ar.html'));
+        }else{
+            res.redirect('/cashMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/cash_transfer_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_transfer', 'cash_transfer_add_ar.html'));
+        }else{
+            res.redirect('/cash_transfer_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/cash_transfer_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_transfer', 'cash_transfer_update_ar.html'));
+        }else{
+            res.redirect('/cash_transfer_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+//#endregion
 
 
 
@@ -1389,7 +1559,31 @@ router.get('/disposed_fixed_asset_update_ar', (req, res) => {
                 if (req.session.is_owner || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
                     res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'statements' , 'trial_balance', 'trial_balance_view_ar.html'));
                 }else{
-                    res.redirect('/notes_ar?reason=0');
+                    res.redirect('/report_map_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
+
+        router.get('/finance_statement_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'statements' , 'finance_statement', 'finance_statement_view_ar.html'));
+                }else{
+                    res.redirect('/report_map_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
+
+        router.get('/income_statement_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'statements' , 'income_statement', 'income_statement_view_ar.html'));
+                }else{
+                    res.redirect('/report_map_ar?reason=0');
                 };
             } else {        
                 res.redirect('/login?reason=0');

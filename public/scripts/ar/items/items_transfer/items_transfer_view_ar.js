@@ -1,5 +1,5 @@
-setActiveSidebar("fixedAssestsMain_view_ar");  
-pagePermission("view", "accumulated_depreciation_permission"); 
+setActiveSidebar("itemsMain_view_ar");  
+pagePermission("view", "items_transfer_permission"); 
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
@@ -39,24 +39,31 @@ let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! note
+//! from
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
 let f2_select = filter_div.querySelector(`#f2_select`);
 let f2_input = filter_div.querySelector(`#f2_input`);
 
-//! total
+//! to
 let f3_div = filter_div.querySelector(`#f3_div`);
 let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
 let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
 let f3_select = filter_div.querySelector(`#f3_select`);
 let f3_input = filter_div.querySelector(`#f3_input`);
 
+//! note
+let f4_div = filter_div.querySelector(`#f4_div`);
+let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
+let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
+let f4_select = filter_div.querySelector(`#f4_select`);
+let f4_input = filter_div.querySelector(`#f4_input`);
+
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1, 2, 3, 4]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -96,13 +103,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('accumulated_depreciation_ViewArray')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('items_transfer_viewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('accumulated_depreciation_ViewArray', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('items_transfer_viewArray', JSON.stringify(conditionsArray));
 }
 
 
@@ -110,12 +117,12 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`accumulated_depreciation_ViewArray`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`items_transfer_viewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `fixedAssestsMain_view_ar`;
+            window.location.href = `itemsMain_view_ar`;
        
     }else{
 
@@ -129,7 +136,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("accumulated_depreciation_ViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("items_transfer_viewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -139,7 +146,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("accumulated_depreciation_ViewArray", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("items_transfer_viewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -256,8 +263,9 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 function deafult_checkbox() {
     call_default_checkbox('f0',true,true,true) // datex
     call_default_checkbox('f1',true,true,false) // reference
-    call_default_checkbox('f2',true,true,false) // note
-    call_default_checkbox('f3',true,true,false) // total
+    call_default_checkbox('f2',true,true,false) // from
+    call_default_checkbox('f3',true,true,false) // to
+    call_default_checkbox('f4',true,true,false) // note
 }
 
 
@@ -276,7 +284,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('accumulated_depreciation_ViewArray');
+            sessionStorage.removeItem('items_transfer_viewArray');
             conditionsArray = []
             
         }
@@ -309,16 +317,16 @@ async function getData_fn() {
        
         //  معلق
         data = await new_fetchData_postAndGet(
-            "/get_accumulated_depreciation_Data_view",
+            "/get_items_transfer_Data_view",
             {start_date, end_date},
-            "accumulated_depreciation_permission","view",
+            "items_transfer_permission","view",
             15,
             false,'',
             false,
             true,content_space,
             false,false,'',
             false,'',
-            false,'fixedAssestsMain_view_ar',
+            false,'itemsMain_view_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
 
@@ -417,17 +425,27 @@ function showFirst50RowAtTheBegening() {
                     f2_checkbox,
                     f2_select,
                     f2_input,
-                    "general_note",
+                    "location_from",
                     row
                 );
 
         
             const f3 =
-                filterData_number_column_with_showAndHiddenCheckbox(
+                filterData_string_column_with_showAndHiddenCheckbox(
                     f3_checkbox,
                     f3_select,
                     f3_input,
-                    "total_value",
+                    "location_to",
+                    row
+                );
+
+
+            const f4 =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f4_checkbox,
+                    f4_select,
+                    f4_input,
+                    "general_note",
                     row
                 );
 
@@ -437,7 +455,8 @@ function showFirst50RowAtTheBegening() {
                 f0 &&
                 f1 &&
                 f2 &&
-                f3 
+                f3 &&
+                f4
             ); // && otherCondition;
         });
 
@@ -470,10 +489,11 @@ function fillTable() {
         let style_id = `display: none;`;
         let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
         let style_referenceCONCAT = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_note = `display:${f2_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
-        let style_total_value = `display:${f3_checkbox.checked ? "table-cell" : "none" }; width: ${f2_checkbox.checked ? "auto" : "100%"}; white-space: nowrap; text-align: start`;
+        let style_note = `display:${f4_checkbox.checked ? "table-cell" : "none"}; min-width: 15rem; width: 100%; white-space: wrap; text-align: start;`;
+        let style_location_from = `display:${f2_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_location_to = `display:${f3_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
-        total_column1.value = 0;
+        // total_column1.value = 0;
         let fn = `onclick = "table_view_btn(this)"`;
 
         // إعداد رأس الجدول
@@ -485,8 +505,9 @@ function fillTable() {
                                 <th style="${style_id}">ID</th>
                                 <th style="${style_datex}">التاريخ</th>
                                 <th style="${style_referenceCONCAT}">#</th>
+                                <th style="${style_location_from}">من</th>
+                                <th style="${style_location_to}">الى</th>
                                 <th style="${style_note}">البيان</th>
-                                <th style="${style_total_value}">قيمة</th>
 
                             </tr>
                         </thead>
@@ -518,8 +539,10 @@ function fillTable() {
                         <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${style_datex}" class="td_datex">${row.datex}</td>
                         <td style="${style_referenceCONCAT}" class="td_referenceconcat">${row.referenceconcat}</td>
+                        <td style="${style_location_from}" class="td_location_from">${row.location_from}</td>
+                        <td style="${style_location_to}" class="td_location_to">${row.location_to}</td>
                         <td style="${style_note}" class="td_general_note">${row.general_note}</td>
-                        ${tdNumber(true,false,true,row.total_value,style_total_value,total_column1,fn,'td_total_value')}             
+                                   
                       </tr>`;
         });
 
@@ -529,8 +552,9 @@ function fillTable() {
                         <td id="footer_style_id1" style="${style_id}"></td>
                         <td id="footer_style_datex" style="${style_datex}"></td>
                         <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
+                        <td id="footer_style_location_from" style="${style_location_from}"></td>
+                        <td id="footer_style_location_to" style="${style_location_to}"></td>
                         <td id="footer_style_note" style="${style_note}"></td>
-                        <td id="footer_style_total_value" style="${style_total_value}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -557,7 +581,7 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
+        // tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
@@ -581,15 +605,17 @@ function performSearch() {
         array1 = filteredData_Array.filter((row) => {
             const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
             const reference_Match = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
+            const location_from = performSearch_Row(f2_checkbox,"location_from",searchValue,row);
+            const location_to = performSearch_Row(f3_checkbox,"location_to",searchValue,row);
             const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
-            const balanceMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 datexInfoMatch ||
                 reference_Match ||
-                noteMatch ||
-                balanceMatch
+                location_from ||
+                location_to ||
+                noteMatch
             );
         });
 
@@ -632,7 +658,7 @@ searchInput.addEventListener("keydown", (event) => {
 async function table_view_btn(updateBtn) {
     try {
     showLoadingIcon(updateBtn)
-    const permission = await btn_permission("accumulated_depreciation_permission", "view");
+    const permission = await btn_permission("items_transfer_permission", "view");
 
     if (!permission) {
         // if false
@@ -642,14 +668,14 @@ async function table_view_btn(updateBtn) {
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
-    const accumulated_depreciation_update_data = {
+    const items_transfer_update_data = {
         x: row.querySelector(`.td_id`).textContent,
         //addmore
     };
 
     
-    sessionStorage.setItem('accumulated_depreciation_update_data', JSON.stringify(accumulated_depreciation_update_data));                            
-    window.location.href = `accumulated_depreciation_update_ar`;
+    sessionStorage.setItem('items_transfer_update_data', JSON.stringify(items_transfer_update_data));                            
+    window.location.href = `items_transfer_update_ar`;
     hideLoadingIcon(updateBtn)
 } catch (error) {
     hideLoadingIcon(updateBtn)
@@ -657,15 +683,15 @@ async function table_view_btn(updateBtn) {
 }
 }
 
-function CheckUrlParams_accumulated_depreciation_update_ar() {
+function CheckUrlParams_items_transfer_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "accumulated_depreciation_view_ar",
+            "items_transfer_view_ar",
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاهلاكات الرئيسية"
         );
 
-        if (!urlData || urlData.pageName !== "accumulated_depreciation_update_ar") {
+        if (!urlData || urlData.pageName !== "items_transfer_update_ar") {
             return true;
         }
 
@@ -692,13 +718,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
     
-    const result2 = CheckUrlParams_accumulated_depreciation_update_ar();
+    const result2 = CheckUrlParams_items_transfer_update_ar();
     if (!result2) {
         return;
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`accumulated_depreciation_ViewArray`);
+    const conditionsArray = sessionStorage.getItem(`items_transfer_viewArray`);
 
     if (!conditionsArray){
      

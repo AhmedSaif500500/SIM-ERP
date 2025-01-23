@@ -1,18 +1,18 @@
-setActiveSidebar('salesMain_view_ar');
-pagePermission("add","sales_invoice_permission");
+setActiveSidebar('itemsMain_view_ar');
+pagePermission("view","items_transfer_permission");
 
 
-const accumulated_depreciation_update_data = JSON.parse(sessionStorage.getItem('accumulated_depreciation_update_data'));
+const items_transfer_update_data = JSON.parse(sessionStorage.getItem('items_transfer_update_data'));
 // sessionStorage.removeItem(`purshases_invoice_update_data`)
 
-if (!accumulated_depreciation_update_data){
-    redirection("accumulated_depreciation_view_data","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الاهلاكات الرئيسية")
+if (!items_transfer_update_data){
+    redirection("items_transfer_view_data","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الاهلاكات الرئيسية")
 }
 
-const obj_accumulated_depreciation_update = {pageName : 'accumulated_depreciation_update_ar'}
+const obj_items_transfer_update = {pageName : 'items_transfer_update_ar'}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_accumulated_depreciation_update));
-back_href.href = `accumulated_depreciation_view_ar?data=${encodedData}`
+const encodedData = encodeURIComponent(JSON.stringify(obj_items_transfer_update));
+back_href.href = `items_transfer_view_ar?data=${encodedData}`
 
  date1.value = today
 // const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_qutation_multi_pages
@@ -28,54 +28,63 @@ btn_update.onclick = async function(){
   try {
     const x = haderDataArray.id
     const datex = date1.value;
-    const startDate = start_date_input.value;
-    const endDate = end_date_input.value;
     const note = note_inpute.value.trim()
+    const location_from = document.querySelector(`#dropdown_div1_hidden_input`).value 
+    const location_to = document.querySelector(`#dropdown_div2_hidden_input`).value 
+    
+    if (!location_from || !location_to) {
+      showAlert(`warning`, `يرجى تحديد مواقع المخزون بشكل صحيح`)
+      return;
+    }
+  
     const tableRows = document.querySelectorAll('#myTable > tbody > .mainTr');
-
+  
     const posted_array = []; 
-    if (tableRows.length > 0) { 
-      let currentIndex = 1;
-      for (const row of tableRows) {
-        
-        const account_id = parseInt(row.querySelector('.id_hidden_input').value);
-        const depreciation_value = row.querySelector('.td-value').textContent;
-        
-  
-        if (!account_id ||isNaN(account_id)) {
-          showAlert(`warning`, `يرجى تحديد الاصل فى السطر رقم ${currentIndex}`)
-          return;
-        }
-  
-        if (!depreciation_value || isNaN(depreciation_value)){
-          showAlert(`warning`, ` يرجى تحديد فيمة الاهلاك فى السطر رقم ${currentIndex}`)
-          return;
-        }
-  
-        // انشاء اوبجيكت لوضع بيانات الخلايا فيه  ثم اضافة الاوبجيكت الى عناصر المصفوفه الفارغه
-        const rowData = {
-          account_id :account_id,
-          depreciation_value: depreciation_value,
-        };
-        posted_array.push(rowData); // اضافة الاوبجيكت الى عناصر المصفوفه
-        currentIndex++; // زيادة العدّاد بعد كل تكرار
+  if (tableRows.length > 0) { 
+    let currentIndex = 1;
+    for (const row of tableRows) {
+      
+      const rowAccountId = parseInt(row.querySelector('.id_hidden_input').value);
+      const rowNote = row.querySelector('.inputTable_noteTd').textContent.trim();
+      const rowAmount = row.querySelector('.Xitem_amount').textContent;
+      
+
+      if (!rowAccountId ||isNaN(rowAccountId)) {
+        showAlert(`warning`, `يرجى تحديد الاصل فى السطر رقم ${currentIndex}`)
+        return;
       }
-  
+
+      if (!rowAmount || isNaN(rowAmount)){
+        showAlert(`warning`, ` يرجى تحديد الكمية  فى السطر رقم ${currentIndex}`)
+        return;
+      }
+
+      // انشاء اوبجيكت لوضع بيانات الخلايا فيه  ثم اضافة الاوبجيكت الى عناصر المصفوفه الفارغه
+      const rowData = {
+        rowAccountId :rowAccountId,
+        rowNote: rowNote,
+        rowAmount: rowAmount,
+      };
+      posted_array.push(rowData); // اضافة الاوبجيكت الى عناصر المصفوفه
+      currentIndex++; // زيادة العدّاد بعد كل تكرار
+    }
+
+    const posted_Obj = {x, datex, location_from, location_to, note, posted_array}
+
         const post = await new_fetchData_postAndGet(
-          "/api/accumulated_depreciation_update",
-          {x, datex, startDate, endDate, note, posted_array},
-          'accumulated_depreciation_permission', 'update',
+          "/api/items_transfer_update",
+          posted_Obj,
+          'items_transfer_permission', 'update',
           15,
-          true,"هل تريد تعديل  بيانات إهلاكات الاصول الثابتة؟",
+          true,"هل تريد تعديل  بيانات تحويلات المخزون ؟",
           true,
           false,false,
-          true,obj_accumulated_depreciation_update,'accumulated_depreciation_view_ar',
+          true,obj_items_transfer_update,'items_transfer_view_ar',
           false,false,
           false,false,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
-  
-      
+   
     } else {
       showAlert('fail', 'لا توجد بيانات')
       return
@@ -85,19 +94,20 @@ btn_update.onclick = async function(){
   }
 }
 
-const datex = date1.value
+
 btn_delete.onclick = async function () {
   try {
+    const datex = date1.value
     const x = haderDataArray.id
     const post = await new_fetchData_postAndGet(
-      "/api/accumulated_depreciation_delete",
+      "/api/items_transfer_delete",
       {x, datex},
-      'accumulated_depreciation_permission', 'delete',
+      'items_transfer_permission', 'delete',
       15,
-      true,"هل تريد تعديل  بيانات إهلاكات الاصول الثابتة؟",
+      true,"هل تريد حذف  بيانات تحويل المخزون؟",
       true,
       false,false,
-      true,obj_accumulated_depreciation_update,'accumulated_depreciation_view_ar',
+      true,obj_items_transfer_update,'items_transfer_view_ar',
       false,false,
       false,false,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
@@ -107,38 +117,40 @@ btn_delete.onclick = async function () {
   }
 }
 
+
+
+
 document.addEventListener('DOMContentLoaded', async function () {
   try {
 
   showLoadingIcon(content_space)
 
-  const x = accumulated_depreciation_update_data.x
+  const x = items_transfer_update_data.x
 
-  Data =  await get_calculated_depreacation_data_for_update(x)
+  Data =  await get_items_transfer_data_for_update(x)
   
-  if (!Data || !Data.haderDataArray || !Data.bodyDataArray || !Data.fixedAssestsAccounts){
-    redirection('accumulated_depreciation_view_ar', 'fail', 'حدث خطأ اثناء معالجة البيانات : سيتم تحويلك الى صفحة الاهلاكات الرئيسية')
+  if (!Data || !Data.itemsLocationsArray || !Data.itemsArray || !Data.haderDataArray || !Data.bodyDataArray){
+    redirection('items_transfer_view_ar', 'fail', 'حدث خطأ اثناء معالجة البيانات : سيتم تحويلك الى صفحة الاهلاكات الرئيسية')
     return;
   }
 
+  itemsLocationsArray = Data.itemsLocationsArray;
+  itemsArray = Data.itemsArray;
   haderDataArray = Data.haderDataArray;
   bodyDataArray = Data.bodyDataArray;
-  assestsAccountsArray = Data.fixedAssestsAccounts;
 
-    
-
-
+  
+  create_drop_down_with_External_DataArray(`dropdown_div1`,itemsLocationsArray); selectedRow_dropdownDiv(`dropdown_div1`,itemsLocationsArray,haderDataArray.location_from);
+  create_drop_down_with_External_DataArray(`dropdown_div2`,itemsLocationsArray); selectedRow_dropdownDiv(`dropdown_div2`,itemsLocationsArray,haderDataArray.location_to);
 
   date1.value = haderDataArray.datex;
   reference_input.value = haderDataArray.referenceconcat;
-  start_date_input.value = haderDataArray.started_date;
-  end_date_input.value = haderDataArray.end_date;
   note_inpute.value = haderDataArray.general_note;
 
   build_table()
-  fillTable(assestsAccountsArray)
+  fillTable(itemsArray)
   
-  viewMode(true,'accumulated_depreciation_permission','view')
+  viewMode(true,'items_transfer_permission','view')
   handle_fn_options()
   //makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)
@@ -151,8 +163,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 function handle_fn_options(){  
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'accumulated_depreciation_permission','update')">وضع التعديل</div>
-    <div id="fn_option_view_btn" onclick="viewMode(true,'accumulated_depreciation_permission','view')" style="display: none;">وضع العرض</div>
+    <div id="fn_option_update_btn" onclick="viewMode(false,'items_transfer_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'items_transfer_permission','view')" style="display: none;">وضع العرض</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
 }

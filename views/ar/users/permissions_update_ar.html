@@ -138,7 +138,44 @@
               <td style="width: 100%; text-wrap: nowrap;"></td>
             </tr>    
             
+
+            <!-- table_permission_cash_accounts-->
+            <tr>
+              <td style="width: auto;">12</td>
+              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+              <td style="width: auto; text-wrap: nowrap;">حسابات النقد وما فى حكمه</td>
+              <td style="width: auto;">
+                <select class="select hover s" id="table_permission_cash_accounts"
+                  onchange="updatePermissionLevel(this)">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </td>
+              <td style="width: 100%; text-wrap: nowrap;"></td>
+            </tr>    
             
+            
+            <!-- table_permission_cash_transaction-->
+            <tr>
+              <td style="width: auto;">12</td>
+              <td style="display: none;">id</td> <!-- تم إخفاء العمود ID -->
+              <td style="width: auto; text-wrap: nowrap;">حركات النقد وما فى حكمه</td>
+              <td style="width: auto;">
+                <select class="select hover s" id="table_permission_cash_transaction"
+                  onchange="updatePermissionLevel(this)">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </td>
+              <td style="width: 100%; text-wrap: nowrap;"></td>
+            </tr>    
+                        
               <!-- المستخدمين -->
               <tr>
                 <td style="width: auto;">1</td>

@@ -55,6 +55,8 @@ async function save(A_OR_B) {
   
 const is_RowDiscount = is_RowDiscount_checkBox.checked
 const is_RowNote  = is_RowNote_checkBox.checked
+const is_RowTax  = is_RowTax_checkBox.checked
+
 
   const tableRows = document.querySelectorAll('#myTable > tbody > .mainTr');
 
@@ -113,7 +115,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       currentIndex++; // زيادة العدّاد بعد كل تكرار
     }
 
-    const posted_Obj = {customerId, total, datex, qutationReferenceId, itemLocationId, salesmanId, is_RowNote, is_RowDiscount, general_note, posted_array}
+    const posted_Obj = {customerId, total, datex, qutationReferenceId, itemLocationId, salesmanId, is_RowNote, is_RowTax, is_RowDiscount, general_note, posted_array}
 
     if (A_OR_B == 'B'){
       const post = await new_fetchData_postAndGet(

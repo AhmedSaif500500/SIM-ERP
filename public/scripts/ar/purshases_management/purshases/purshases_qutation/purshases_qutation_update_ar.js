@@ -73,6 +73,8 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
 const is_RowDiscount = is_RowDiscount_checkBox.checked
 const is_RowNote  = is_RowNote_checkBox.checked
+const is_RowTax  = is_RowTax_checkBox.checked
+
 
   const tableRows = document.querySelectorAll('#myTable > tbody > .mainTr');
 
@@ -130,7 +132,7 @@ const is_RowNote  = is_RowNote_checkBox.checked
       currentIndex++; // زيادة العدّاد بعد كل تكرار
     }
 
-    const posted_Obj = {x,vendorId, total, datex,itemLocationId, is_RowNote, is_RowDiscount, general_note, posted_array}
+    const posted_Obj = {x,vendorId, total, datex,itemLocationId, is_RowNote, is_RowDiscount, general_note, is_RowTax, posted_array}
 
 
       const post = await new_fetchData_postAndGet(
@@ -224,6 +226,9 @@ function showHeaderData(){
   is_RowDiscount_checkBox.checked = headerDataArray.is_row_dicount_show;
     tableColumn_hidden_and_show(headerDataArray.is_row_dicount_show,'myTable','td-dsicount');
     is_column_discount_show = headerDataArray.is_row_dicount_show ? 'table-cell' : 'none';
+  is_RowTax_checkBox.checked = headerDataArray.is_row_tax_show;
+    tableColumn_hidden_and_show(headerDataArray.is_row_tax_show,'myTable','td-tax');
+    is_column_tax_show = headerDataArray.is_row_tax_show ? 'table-cell' : 'none';  
 
 }
 
@@ -370,9 +375,9 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                       </div>
                 </td>
                 
-                <td style="width: auto; margin: 0" class="span_Total_In_Table td-totalBeforTax"></td>
+                  <td style="display: ${is_column_tax_show}; width: auto; margin: 0" class="span_Total_In_Table td-totalBeforTax td-tax"></td>
                 
-                <td style="width: auto;" class="td-taxHeader">
+                  <td style="display: ${is_column_tax_show}; width: auto;" class="td-taxHeader td-tax">
                   <!-- dropdown -->
                   <div class="dropdown_container_input_table taxHeaderDiv" id="">
                     <div class="row h_full">
@@ -397,7 +402,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                 <!-- END dropdown -->
                 </td>
 
-                <td style="width: auto; margin: 0" class="span_Total_In_Table td-taxValue"></td>
+                  <td style="width: auto; margin: 0; display: ${is_column_tax_show};" class="span_Total_In_Table td-taxValue td-tax"></td>
 
                 <td style="width: auto; margin: 0" class="span_Total_In_Table td-totalAfterTax"></td>
 

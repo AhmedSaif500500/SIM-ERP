@@ -1,5 +1,5 @@
 setActiveSidebar("salesMain_view_ar");  
-pagePermission("view", "sales_invoice_permission");  // معلق
+pagePermission("view", "fixed_assests_permission");  // معلق
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){

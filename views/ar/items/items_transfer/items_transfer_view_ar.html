@@ -31,11 +31,11 @@
           <div id="fn_container_div" class="fn_container_div"></div>
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="fixedAssestsMain_view_ar" title="إدارة الاصول الثابتة">
+            <a id="back_href" class="back_href" href="itemsMain_view_ar" title="إدارة المخزون">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="accumulated_depreciation_view_ar" title="اعادة تحميل الصفحة">اهلاكات الاصول الثابتة</a>
+              <a id="h2_text_div" class="h2_text_div" href="items_transfer_view_ar" title="اعادة تحميل الصفحة">تحويلات المخزون</a>
               <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
           </h2>
@@ -123,7 +123,7 @@
 
 
 
-            <!-- note  -->
+            <!-- from  -->
             <div class="filter_div_sub" id="f2_div">
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f2_checkbox" title="اظهار العمود"
@@ -144,33 +144,50 @@
               </div>
             </div>
 
-            
-
-        
-            <!-- total_value  -->
-            <div id="f3_div" class="filter_div_sub">
+            <!-- to  -->
+            <div class="filter_div_sub" id="f3_div">
               <div class="row">
-                <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" checked
-                    title="اظهار العمود"
-                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                <div class="checkbox_label">القيمة</div>
+                <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
+                <div class="checkbox_label">البيان</div>
               </div>
               <div id="f3_selectAndInput_div" class="select_and_input_div">
                 <select id="f3_select" class="dark_select hover"
-                  onchange="filter_insideSelect_number_column_with_input(this)">
+                  onchange="filter_insideSelect_string_column_with_input(this)">
                   <option value="0" selected>اظهار الكل</option>
-                  <option value="1">اكبر من</option>
-                  <option value="2">اصغر من</option>
-                  <option value="3">تساوى</option>
-                  <option value="4">صفر</option>
-                  <option value="5">ليس صفر</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
                 </select>
                 <input id="f3_input" name="inside_input_search" type="search" class="input_text_sm hover"
-                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
               </div>
             </div>
 
+                        
+            <!-- note -->
+            <div class="filter_div_sub" id="f4_div">
+              <div class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f4_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
+                <div class="checkbox_label">البيان</div>
+              </div>
+              <div id="f4_selectAndInput_div" class="select_and_input_div">
+                <select id="f4_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f4_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
 
+                  
 
             <div class="btn_container_top_border">
               <button id="btn_do" class="btn_do">تطبيق</button>

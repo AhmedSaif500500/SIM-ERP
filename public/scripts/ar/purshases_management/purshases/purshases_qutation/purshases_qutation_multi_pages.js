@@ -18,21 +18,33 @@ const order_reference_div = document.querySelector(`.order_reference_div`)
 
 let is_column_Note_show = 'none'
 let is_column_discount_show = 'none'
+let is_column_tax_show = 'none'
 
 const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`)
 const is_RowDiscount_checkBox = document.querySelector(`#is_RowDiscount_checkBox`)
+const is_RowTax_checkBox = document.querySelector(`#is_RowTax_checkBox`)
+
 
 is_RowNote_checkBox.onchange = function(){
   const x = is_RowNote_checkBox.checked
     tableColumn_hidden_and_show(x,'myTable','td-inputTable_noteTd')
-    is_column_Note_show = x
+    is_column_Note_show = x === true ? x : 'none'
+    
 }
 
 is_RowDiscount_checkBox.onchange = function(){
   const x = is_RowDiscount_checkBox.checked
     tableColumn_hidden_and_show(x,'myTable','td-dsicount')
-    is_column_discount_show = x
+    is_column_discount_show = x === true ? x : 'none'
 }
+
+
+is_RowTax_checkBox.onchange = function(){
+  const x = is_RowTax_checkBox.checked
+    tableColumn_hidden_and_show(x,'myTable','td-tax')
+    is_column_tax_show = x === true ? x : 'none'
+}
+
 
 function build_table(){
 
@@ -46,10 +58,9 @@ function build_table(){
                     <th style="width: auto;">الكميه</th>
                     <th style="width: auto;">السعر</th>
                     <th style="display: ${is_column_discount_show}; width: auto;" class="td-dsicount">الخصم</th>
-                    <th style="width: auto;">الاجمالى</th>
-                    <th style="width: auto;">الضريبة</th>
-                    <th style="width: auto;">مبلغ الضريبه</th>
-                    <th style="width: auto; text-align: center;">الاجمالى</th>
+                    <th style="display: ${is_column_tax_show}; width: auto;" class="td-tax">الاجمالى</th>
+                    <th style="display: ${is_column_tax_show}; width: auto;" class="td-tax">الضريبة</th>
+                    <th style="display: ${is_column_tax_show}; width: auto;" class="td-tax">مبلغ الضريبه</th>
                     <th style="width: auto;" class="notViewTd"></th>
                   </tr>
                 
@@ -66,8 +77,8 @@ function build_table(){
       <td id="" style="text-align: center"></td>
       <td id=""></td>
       <td id="" style="display: ${is_column_discount_show};" class="td-dsicount"></td>
-
-      <td id="" colspan="3">
+      <td id="" style="display: ${is_column_tax_show}; width: auto;" class="td-tax"></td>
+      <td id="" colspan="2" style="display: ${is_column_tax_show};" class="td-tax">
         <div class="tfoot_totalDiv_note">
              <!-- يتم ملء أسماء الضرائب هنا ديناميكيًا -->
         </div>
@@ -185,9 +196,8 @@ function build_table(){
                         </div>
                   </td>
                   
-                  <td style="width: auto; margin: 0" class="span_Total_In_Table td-totalBeforTax"></td>
-                  
-                  <td style="width: auto;" class="td-taxHeader">
+                  <td style="display: ${is_column_tax_show}; width: auto; margin: 0" class="span_Total_In_Table td-totalBeforTax td-tax"></td>
+                  <td style="display: ${is_column_tax_show}; width: auto;" class="td-taxHeader td-tax">
                     <!-- dropdown -->
                     <div class="dropdown_container_input_table taxHeaderDiv" id="">
                       <div class="row h_full">
@@ -212,7 +222,7 @@ function build_table(){
                   <!-- END dropdown -->
                   </td>
 
-                  <td style="width: auto; margin: 0" class="span_Total_In_Table td-taxValue"></td>
+                  <td style="width: auto; margin: 0; display: ${is_column_tax_show};" class="span_Total_In_Table td-taxValue td-tax"></td>
 
                   <td style="width: auto; margin: 0" class="span_Total_In_Table td-totalAfterTax"></td>
   

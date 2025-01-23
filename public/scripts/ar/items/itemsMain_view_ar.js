@@ -25,7 +25,7 @@ function showData(){
   }
   
   items_transfer_btn.onclick = function(){
-    sessionStorage.removeItem('itemsTransferViewArray');
+    sessionStorage.removeItem('items_transfer_viewArray');
     window.location.href = "/items_transfer_view_ar";
   }
 

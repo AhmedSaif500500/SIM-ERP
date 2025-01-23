@@ -414,7 +414,8 @@ function CheckUrlParams(){
 
     showRedirectionReason();
     await getData_fn()
-  });
+    showAlert('info', 'عرض البيانات الافتراضي يشمل الموظفين النشطين فقط. لتظهر بيانات موظف غير نشط، يرجى تعديل الحالة من الفلتر.');
+});
   
 
 

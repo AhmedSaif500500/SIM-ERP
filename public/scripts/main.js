@@ -124,10 +124,12 @@ function loadHeaderContents() {
           <a href="" id="lang_btn" class=""> en </a>
       </div>
       <div class="header_menue">
-          <a href="companies_ar" title="الاعمال التجارية"
+          <a href="companies_ar" title="الاعمال التجارية">
             <i class="fa-duotone fa-solid fa-books" style="font-size: 2.5rem"></i>
           </a>
-
+<a href="companies_ar" title="الاعمال التجارية">
+  <img src="public/images/book.png" alt="الأعمال التجارية" style="width: 3rem; height: auto;">
+</a>
 
       </div>
       <div class="header_user_div" style="gap: 0.7rem;">
@@ -181,6 +183,12 @@ function loadSidebarContents() {
        إدارة الاصول الثابتة
     </a>
 
+    <a href="cashMain_view_ar" target="_self" class="" style="display: ${module_display("cash_accounts_permission","cash_transaction_permission")}">
+      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
+       إدارة النقد وما فى حكمه
+    </a>
+
+
     <a href="hr_ar" target="_self" class="" style="display: ${module_display("departments_permission","employees_permission","effects_permission")}">
       <i class="fa-duotone fa-user-tie"></i>
       الموارد البشريه
@@ -222,12 +230,6 @@ function loadSidebarContents() {
     </a>
 
 
-    <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")}">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
-      شطب المخزون
-    </a>
-
-
     <a href="permissions_view_ar" target="_self" id="users_control_a" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-user"></i>
       الصلاحيات
@@ -258,8 +260,6 @@ function loadSidebarContents() {
        <i class="fa-duotone fa-gear"></i>
       الاعدادت
     </a>
-
-
 
     <a id="Custmize_sidebar" href="#" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-gear"></i>
@@ -896,6 +896,8 @@ function tdNumber(is_link, is_bold, is_showZero, number, style_class, var_total_
     if (+value === 0) {
       value = is_showZero ? "0.00" : "";
     }
+
+
 
     return `<td style="min-width: 1rem; width: auto; font-weight: ${fontweight}; ${style_class}" class="${classX} ${idClassName}" ${string_eventWithFunction}>${value}</td>`;
   } catch (error) {
@@ -2837,6 +2839,8 @@ const internal_permissions = [
   "accumulated_depreciation_permission",
   "disposed_fixed_asset_permission",
   "items_transfer_permission",
+  "cash_accounts_permission",
+  "cash_transaction_permission"
 ];
 
 

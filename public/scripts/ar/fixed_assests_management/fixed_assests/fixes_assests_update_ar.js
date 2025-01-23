@@ -10,6 +10,12 @@ if (!fixed_assests_update_data){
     redirection("fixed_assests_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الاصول الثابتة الرئيسية")
 }
 
+const obj_items_fixed_assests = {pageName : 'fixed_assests_update_ar'}
+
+const encodedData = encodeURIComponent(JSON.stringify(obj_items_fixed_assests));
+back_href.href = `fixed_assests_view_ar?data=${encodedData}`
+
+
     const h2_text_div = document.querySelector(`#h2_text_div`)
     const sub_h2_header = document.querySelector(`#sub_h2_header`)
 
@@ -105,8 +111,8 @@ if (!fixed_assests_update_data){
         true,'هل تريد تعديل  بيانات الاصل الثابت ؟',
         true,
         false,"",
-        false,false,false,
-        true,'fixed_assests_view_ar',
+        true,obj_items_fixed_assests,'fixed_assests_view_ar',
+        false,false,
         false,false,
         "حدث حطأ اثناء معالجة البيانات"
       )      

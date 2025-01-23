@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+
+
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="cash_accounts_view_ar" title="الحسابات النقدية">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="cash_accounts_update_ar" title="اعادة تحميل الصفحة">
+                  الحسابات النقدية
+              </a>
+              <span id="sub_h2_header" class="sub_h2_header">عرض</span>
+            </div>
+          </h2>
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+
+          <div id="page_content" style="display: none;">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+
+
+            <label for="cash_accounts_input" class="lbl_sm">المعرف</label>
+            <input type="search" id="cash_accounts_input" class="input_text_sm hover" placeholder="اختياري" autocomplete="off" oninput="check_parse(this,'string')">
+         
+            <label for="cash_accounts_name_input" class="lbl_sm">اسم الحساب</label>
+            <input type="search" id="cash_accounts_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')" placeholder="مطلوب">
+            
+
+            <label for="cash_accounts_group_name_input" class="lbl_sm">النوع</label>
+            <div class="info_div_with_normal_nput">
+              <input type="search" id="cash_accounts_group_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')" placeholder="اختيارى">
+              <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `إضافة وصف واضح ودقيق لنوع الحساب يساهم في تحسين عمليات البحث والتصفية. مثال: حساب بنكي.`)"></i>
+            </div>
+            
+
+            <label for="cash_info_input" class="lbl_sm">البيانات الاخرى للحساب</label>
+            <textarea name="" id="cash_info_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري" style="margin-block-end: 1rem;"></textarea>
+      
+
+
+
+
+            <div class="btn_container_top_border notView">
+              <button class="btn_update" id="btn_update">تعديل</button>
+              <button class="btn_cancel" id="btn_delete">حذف</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <!-- <script src="/public/scripts/ar/sales_management/sales/sales_invoice/sales_invoice_multi_pages.js"></script> -->
+  <script src="/public/scripts/ar/cash_management/cash_accounts/cash_accounts_update_ar.js"></script>
+
+
+</body>
+
+</html>

@@ -9,8 +9,10 @@ const style_note = `width: fit-content; min-width: 20rem`
 const style_amount = `width: fit-content; min-width: 10rem`
 
 let Data = [];
-let itemsLocationArray = [];
+let itemsLocationsArray = [];
 let itemsArray = [];
+let haderDataArray = [];
+let bodyDataArray = [];
 
 
 function build_table(){
@@ -110,7 +112,7 @@ function build_table(){
   
                   <td style="${style_amount}" class="td-amount">
                         <div class="row h_full">
-                          <div class="div_input_sm  hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number'),updateFooter('myTable')" onkeydown="td_EnterkeypressEvent1(event)"></div>
+                          <div class="div_input_sm  hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
                           <span class="span_end tbody_itemUniteName">الكمية</span>
                         </div>
                   </td>
@@ -146,7 +148,6 @@ function build_table(){
     const row = btn.closest("tr");
     row.remove();
     reset_rowcount_in_table(`myTable`)
-    updateFooter()
     
 
     } catch (error) {
@@ -166,35 +167,12 @@ function build_table(){
     row.parentNode.insertBefore(newRow, row.nextSibling);
     
     reset_rowcount_in_table(`myTable`)
-    updateFooter()
           
   } catch (error) {
     catch_error
   }
   }
 
-  function updateFooter() {
-    // تحديد الجدول بناءً على الـ ID الخاص به
-    const table = document.getElementById(`myTable`);
-    if (!table) {
-        return
-    }
-
-    let total = 0;
-
-    // البحث عن جميع الخلايا ذات الفئة المحددة داخل الجدول
-    const cells = table.querySelectorAll(`.Xitem_amount`);
-    cells.forEach(cell => {
-        // محاولة تحويل محتوى الخلية إلى رقم
-        const cellValue = parseFloat(cell.textContent.trim());
-        if (!isNaN(cellValue)) {
-            total += cellValue;
-        }
-    });
-
-  //  return total;
-  document.querySelector(`#footer_amount`).textContent = total
-}
 
 
  function tableColumn_hidden_and_show(is_hide_or_show,str_tableId,str_className){
@@ -270,7 +248,7 @@ function fillTable(dataArray) { //! mtnsash te3del el addRow beta3 el zeror ely 
                    <td style="${style_note}" class="td-inputTable_noteTd inputTable_noteTd T hover" contenteditable="true" onkeydown="td_EnterkeypressEvent1(event)"></td>
                   <td style="${style_amount}" class="td-amount">
                         <div class="row h_full">
-                          <div class="div_input_sm  hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number'),updateFooter('myTable')" onkeydown="td_EnterkeypressEvent1(event)"></div>
+                          <div class="div_input_sm  hover scroll Xitem_amount T" contenteditable="true" oninput="check_parse(this,'number')" onkeydown="td_EnterkeypressEvent1(event)"></div>
                           <span class="span_end tbody_itemUniteName">الكمية</span>
                         </div>
                   </td>                    
@@ -290,16 +268,17 @@ function fillTable(dataArray) { //! mtnsash te3del el addRow beta3 el zeror ely 
     handleCurrentTr(row,tr)
 
   });
-  updateFooter()
   reset_rowcount_in_table(`myTable`)
 }
 
 function handleCurrentTr(row,tr){
 try {
   
-  tr.querySelector(`.td_account .dropdown_select_input`).textContent = row.account_name;
-  tr.querySelector(`.td_account .id_hidden_input`).value = row.id;
-  tr.querySelector(`.td-value`).textContent = row.depreciated_value;
+  tr.querySelector(`.td_account .id_hidden_input`).value = row.item_id;
+  tr.querySelector(`.td_account .dropdown_select_input`).textContent = row.item_name;
+  tr.querySelector(`.td-amount .Xitem_amount`).textContent = row.item_amount;
+  tr.querySelector(`.td-amount .tbody_itemUniteName`).textContent = row.item_unite;
+  tr.querySelector(`.td-inputTable_noteTd`).textContent = row.row_note;
 
 } catch (error) {
   catch_error(error)
@@ -307,20 +286,20 @@ try {
 }
 
 
-async function get_calculated_depreacation_data_for_update(x) {
+async function get_items_transfer_data_for_update(x) {
 
   
   const data1 = await new_fetchData_postAndGet(
-    "/get_calculated_depreacation_data_for_update",
+    "/get_items_transfer_data_for_update",
     {x},
-    'accumulated_depeciaton_permission', 'view',
+    'items_transfer_permission', 'view',
     15,
     false,false,
     true,
     false,false,
     false,false,
     false,false,false,
-    false,"accumulated_depreciation_view_ar",
+    false,"items_transfer_view_ar",
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
   

@@ -118,7 +118,7 @@ async function deleteX() {
       const post = await new_fetchData_postAndGet(
         "/api/transaction_delete",
         {x, datex},
-        'transaction_permission', 'update',
+        'transaction_permission', 'delete',
         15,
         true,"هل تريد حذف بيانات القيد المحاسبى ؟",
         true,

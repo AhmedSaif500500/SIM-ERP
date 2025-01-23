@@ -283,7 +283,12 @@ let array1 = [];
 let slice_array1 = [];
 let filteredData_Array = [];
 
-async function getData_fn(start_date, end_date, is_hiding_zero_balances, is_show_account_no) {
+let is_show_account_no = false;
+let start_date;
+let end_date;
+let is_hiding_zero_balances;
+
+async function getData_fn() {
     try {       
         //  معلق
         data = await new_fetchData_postAndGet(
@@ -503,7 +508,7 @@ const handle_account_name_style = `padding-inline-start:${current_padding}rem; f
 
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
-        setupColumnSorting("review_table");
+        // setupColumnSorting("review_table");
         hideLoadingIcon(content_space);
         page_content.style.display = "flex";
         //  عمليات صف الاجمالى
@@ -658,19 +663,22 @@ const checked_hide_zero_balabce = document.querySelector(`#checked_hide_zero_bal
 // const checked_show_account_no = document.querySelector(`#checked_show_account_no`);
 const view_report_btn = document.querySelector(`#view_report_btn`);
 const cancel_report_btn = document.querySelector(`#cancel_report_btn`);
+const report_setting_icon = document.querySelector(`#report_setting_icon`);
+
 
 
 view_report_btn.onclick = async function () {
     try {
 
-        const start_date = start_date_input.value; 
-        const end_date = end_date_input.value ;
-        const is_hide_zero = checked_hide_zero_balabce.checked
-                
+        start_date = start_date_input.value; 
+        end_date = end_date_input.value ;
+        is_hiding_zero_balances = checked_hide_zero_balabce.checked
+        is_show_account_no = false;
+        
         showLoadingIcon(view_report_btn)
         h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'ميزان المراجعه' 
         sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
-        await getData_fn(start_date, end_date,is_hide_zero,false);
+        await getData_fn();
         const conditionsArray = sessionStorage.getItem(`trialBalanace_view_Array`);
     
         if (!conditionsArray){
@@ -694,7 +702,7 @@ function show_dialogx(){
 }
 
 
-sub_h2_header.onclick = function(){
+report_setting_icon.onclick = function(){
     show_dialogx()
 }
 

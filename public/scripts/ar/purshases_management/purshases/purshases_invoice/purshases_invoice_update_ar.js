@@ -78,6 +78,8 @@ document.querySelector(`#btn_update`).onclick = async function () {
   
   const is_RowDiscount = is_RowDiscount_checkBox.checked
   const is_RowNote  = is_RowNote_checkBox.checked
+  const is_RowTax  = is_RowTax_checkBox.checked
+
   
     const tableRows = document.querySelectorAll('#myTable > tbody > .mainTr');
   
@@ -139,7 +141,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
         currentIndex++; // زيادة العدّاد بعد كل تكرار
       }
   
-      const posted_Obj = {x, vendorId, total, datex, dueDate, orderReferenceId, qutationReferenceId, itemLocationId, is_RowNote, is_RowDiscount, general_note, location_name, posted_array}
+      const posted_Obj = {x, vendorId, total, datex, dueDate, orderReferenceId, qutationReferenceId, itemLocationId, is_RowNote, is_RowDiscount, is_RowTax, general_note, location_name, posted_array}
   
         const post = await new_fetchData_postAndGet(
           "/api/purshases_invoice_update",

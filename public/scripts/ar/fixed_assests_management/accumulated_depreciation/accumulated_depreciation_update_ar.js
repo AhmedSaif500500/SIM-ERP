@@ -1,5 +1,5 @@
 setActiveSidebar('salesMain_view_ar');
-pagePermission("add","sales_invoice_permission");
+pagePermission("view","sales_invoice_permission");
 
 
 const accumulated_depreciation_update_data = JSON.parse(sessionStorage.getItem('accumulated_depreciation_update_data'));

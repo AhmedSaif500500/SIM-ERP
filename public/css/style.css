@@ -1635,10 +1635,11 @@ html[dir="rtl"] {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  min-width: 15rem;
-  width: 15rem;
+  min-width: 16rem;
+  /* width: fit-content; */
+  width: 16rem;
   background-color: var(--bg_sidebar);
-  /* padding: 1rem; */
+  padding: 0.5rem;
   transition: var(--transition);
   margin-inline-end: 0.5rem;
   height: 100%; /* تأكد من أن sidebar تملأ الحيز العمودي */
@@ -1725,7 +1726,7 @@ html[dir="rtl"] {
   position: relative;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: start;
   align-items: center;
   gap: 1.3rem;
@@ -3072,7 +3073,7 @@ html[dir="rtl"] {
 .reference_input {
   position: relative;
   height: var(--input_height);
-  width: 10rem;
+  width: fit-content;
   background-color: var(--input_text_background_color);
   color: var(--Font_Color);
   padding: 0 0.5rem;
@@ -3086,7 +3087,7 @@ html[dir="rtl"] {
 .reference_input_auto_mode {
   position: relative;
   height: var(--input_height);
-  width: 10rem;
+  width: 12rem;
   background-color: var(--btn_search_backcolor);
   color: var(--btn_search_color);
   padding: 0 0.5rem;
@@ -3104,6 +3105,7 @@ html[dir="rtl"] {
   justify-content: center;
   background-color: var(--btn_search_backcolor);
   color: var(--btn_search_color);
+  width: fit-content;
   height: var(--input_height);
   border: var(--border_normal);
   border-inline-end: none;
@@ -3930,6 +3932,23 @@ html[dir="rtl"] {
   scale: 1.2;
 }
 
+
+.custom_setting_button {
+  background: linear-gradient(to bottom, #bebebe, #808080); /* تغميق الألوان */  
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 0.5rem; /* طول كبير وعرض صغير */
+  border: none;
+  margin: 0.5rem;
+  border-radius: 50%;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* تأثير الظل */
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  opacity: 0.9;
+}
+
 .custom_button {
   /* background: linear-gradient(to bottom, #d1d1d1, #a0a0a0); */
   background: linear-gradient(to bottom, #bebebe, #808080); /* تغميق الألوان */  
@@ -3946,12 +3965,15 @@ html[dir="rtl"] {
   outline: none;
 }
 
-.custom_button:hover {
+
+.custom_button:hover,
+.custom_setting_button:hover{
   transform: translateY(-4px); /* تأثير البروز عند التمرير */
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); /* تأثير الظل عند التمرير */
 }
 
-.custom_button:active {
+.custom_button:active,
+.custom_setting_button:active {
   transform: translateY(2px); /* تأثير الضغط على الزر */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
 }

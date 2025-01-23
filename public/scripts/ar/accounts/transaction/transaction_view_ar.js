@@ -111,7 +111,7 @@ back_href.onclick = async function (event) {
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `purshasesMain_view_ar`;
+            window.location.href = `note_ar_view_ar`;
        
     }else{
 

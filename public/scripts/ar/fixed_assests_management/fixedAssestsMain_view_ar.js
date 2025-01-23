@@ -1,4 +1,4 @@
-setActiveSidebar('salesMain_view_ar');
+setActiveSidebar('fixedAssestsMain_view_ar');
 pagePermission('view','fixed_assests_permission',"accumulated_depreciation_permission","disposed_fixed_asset_permission");
 
 
