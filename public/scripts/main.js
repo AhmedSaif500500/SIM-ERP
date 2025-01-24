@@ -124,11 +124,13 @@ function loadHeaderContents() {
           <a href="" id="lang_btn" class=""> en </a>
       </div>
       <div class="header_menue">
+      <!--
           <a href="companies_ar" title="الاعمال التجارية">
             <i class="fa-duotone fa-solid fa-books" style="font-size: 2.5rem"></i>
           </a>
+       -->   
 <a href="companies_ar" title="الاعمال التجارية">
-  <img src="public/images/book.png" alt="الأعمال التجارية" style="width: 3rem; height: auto;">
+  <img src="public/images/books1.png" alt="الأعمال التجارية" style="width: 3rem; height: auto;">
 </a>
 
       </div>
@@ -318,6 +320,7 @@ function module_display(...permissions) {
 const fn_container_div = document.querySelector(`#fn_container_div`)
 if (fn_container_div) {
   const fn_innerHTML = `
+          
             <i id="fn_icon" class="fa-light fa-ellipsis"></i>
             <div id="fn_options_div" class="fn_options_div hover hidden_height">
 

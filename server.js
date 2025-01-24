@@ -1364,7 +1364,7 @@ const query_permissions =
     uc.disposed_fixed_asset_permission,
     uc.items_transfer_permission,
     uc.cash_accounts_permission,
-    uc.cash_transaction_permission
+    uc.cash_transaction_permisson
 FROM user_company uc 
     left join companies c on uc.company_id = c.id
 WHERE
@@ -30266,7 +30266,7 @@ left join main_accounts_totals mat on true
       }
 
 
-    const InValidDateFormat = isInValidDateFormat([posted_elements.end_date]);
+    const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
     if (InValidDateFormat) {
       return res.status(400).json({
         success: false,
@@ -30281,12 +30281,6 @@ left join main_accounts_totals mat on true
 WITH 
 stock_balances as (
 select
-	SUM(CASE 
-            WHEN ah.account_type_id = 5 AND tb.item_amount > 0 THEN tb.cogs
-            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs * -1
-            ELSE 0 
-        END
-    ) AS stock_value,
 
     SUM(CASE 
             WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs
@@ -30299,8 +30293,9 @@ LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
 WHERE ah.company_id = $1
   and ah.is_final_account is true
   AND th.is_deleted IS NULL
-  AND th.datex <= $2
+  AND th.datex between $2 and $3
 ),
+
 balances as(
     SELECT
 
@@ -30314,49 +30309,7 @@ balances as(
             WHEN ah.account_type_id = 1 AND ah.main_account_id = 5 THEN COALESCE(tb.debit, 0)  - COALESCE(tb.credit, 0)
             ELSE 0 
         END
-    ) AS expenses_value,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS NULL THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
-            ELSE 0 
-        END
-    ) AS fixed_assests_cost,
-
-    SUM(CASE 
-            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS TRUE THEN  COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
-            ELSE 0 
-        END
-    ) AS fixed_assests_accumulated_depreciation,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 2 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
-            ELSE 0 
-        END
-    ) AS customers_value,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 3 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
-            ELSE 0 
-        END
-    ) AS vendors_value,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 9 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
-            ELSE 0 
-        END
-    ) AS cash_value,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 4 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
-            ELSE 0 
-        END
-    ) AS employees_value,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 10 THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
-            ELSE 0 
-        END
-    ) AS capital_value
+    ) AS expenses_value
     
 FROM transaction_body tb
 INNER JOIN accounts_header ah ON ah.id = tb.account_id
@@ -30364,60 +30317,22 @@ LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
 WHERE ah.company_id = $1
   and ah.is_final_account is true
   AND th.is_deleted IS NULL
-  AND th.datex <= $2
-  
+  AND th.datex between $2 and $3
 ),
 main_trial_balance AS (
     SELECT
         ah.id,
         ah.account_name,
         CASE
-            WHEN ah.global_id = 12  THEN sb.stock_value -- قيمه مخزون اول المدة
-            WHEN ah.global_id = 9 then  -- الاصول الثابتة
+            WHEN ah.global_id = 17 then  -- تكلفة البضاعه المباعه
             	case
-            		when ah.main_account_id = 1 then b.fixed_assests_cost
-            		when ah.main_account_id != 1 then b.fixed_assests_cost * -1
+            		when ah.main_account_id = 5 then sb.cogs_value
+            		when ah.main_account_id != 5 then sb.cogs_value * -1
             		else 0
-            	end
-            WHEN ah.global_id = 10 then  -- امجمع اصول ثابتة
-            	case
-            		when ah.main_account_id = 1 then b.fixed_assests_accumulated_depreciation *-1
-            		when ah.main_account_id != 1 then b.fixed_assests_accumulated_depreciation
-            		else 0
-            	end	
-            WHEN ah.global_id = 11 then  -- االنقدية وما فى حكمها
-            	case
-            		when ah.main_account_id = 1 then b.cash_value
-            		when ah.main_account_id != 1 then b.cash_value *-1
-            		else 0
-            	end	
-            WHEN ah.global_id = 13 then  -- االعملاء
-            	case
-            		when ah.main_account_id = 1 then b.customers_value
-            		when ah.main_account_id != 1 then b.customers_value *-1
-            		else 0
-            	end	            	
-            WHEN ah.global_id = 14 then  -- الموردين
-            	case
-            		when ah.main_account_id = 1 then b.vendors_value * -1
-            		when ah.main_account_id != 1 then b.vendors_value
-            		else 0
-            	end
-            WHEN ah.global_id = 20 then  -- الموظفين
-            	case
-            		when ah.main_account_id = 1 then b.employees_value *-1
-            		when ah.main_account_id != 1 then b.employees_value
-            		else 0
-            	end	            	
-            WHEN ah.global_id = 15 then  -- رأس المال
-            	case
-            		when ah.main_account_id = 1 then b.capital_value *-1
-            		when ah.main_account_id != 1 then b.capital_value
-            		else 0
-            	end
+            	end           	
             WHEN ah.global_id = 16 then  -- ارباح وخسائر الفتره
 					b.revenue_value - b.expenses_value - sb.cogs_value
-            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
+            WHEN ah.main_account_id in (1,2,3) then 0  -- لا يجمع بنود قائمة المركز المالى              	
             ELSE 
                 SUM(
                 case
@@ -30449,8 +30364,8 @@ main_trial_balance AS (
     LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
     WHERE
         ah.company_id = $1
-        and (ah.global_id != 1 or ah.global_id is null)
-        and ah.finance_statement = 1
+        and (ah.global_id != 2 or ah.global_id is null)
+        and ah.finance_statement = 2
         AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
         AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
 		AND (
@@ -30458,35 +30373,14 @@ main_trial_balance AS (
     		OR ah.global_id IN (13, 14, 9, 20, 11, 15)
 		)
     GROUP BY
-        ah.id, ab.parent_id, b.capital_value, b.employees_value, b.cash_value, b.vendors_value, b.customers_value, b.fixed_assests_accumulated_depreciation, b.fixed_assests_cost, b.expenses_value, b.revenue_value, sb.cogs_value, sb.stock_value
-),
-main_accounts_totals as (
-select
-	SUM(CASE 
-            WHEN mt.main_account_id = 1 THEN COALESCE(mt.balance, 0)
-            ELSE 0 
-        END
-    ) AS assets_value,
-	SUM(CASE 
-            WHEN mt.main_account_id = 2 THEN COALESCE(mt.balance, 0)
-            ELSE 0 
-        END
-    ) AS liablities_value,
-	SUM(CASE 
-            WHEN mt.main_account_id = 3 THEN COALESCE(mt.balance, 0)
-            ELSE 0 
-        END
-    ) AS equity_value
-from
-	main_trial_balance as mt
+        ah.id, ab.parent_id, b.expenses_value, b.revenue_value, sb.cogs_value
 )
 select
     mt.id,
     mt.account_name,
     case
-	    when mt.global_id = 3 then mat.assets_value
-	    when mt.global_id = 4 then mat.liablities_value
-	    when mt.global_id = 5 then mat.equity_value
+	    when mt.global_id = 6 then b.revenue_value
+	    when mt.global_id = 7 then b.expenses_value + sb.cogs_value
 	    else balance
     end as balance,
     mt.is_final_account,
@@ -30502,12 +30396,13 @@ select
     null as padding
 from 
 	main_trial_balance mt
-left join main_accounts_totals mat on true
-  order by
+LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
+LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+order by
     mt.main_account_id asc, mt.parent_id asc, mt.id asc
       ;
     `;
-    let params1 = [req.session.company_id, posted_elements.end_date]
+    let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
     
     await db.tx(async (tx) => {
       let trial_balance = await tx.any(query1, params1);
@@ -30605,6 +30500,148 @@ left join main_accounts_totals mat on true
           .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
       }
     });
+
+
+    app.post("/report_Account_statement", async (req, res) => {
+      try {
+        //! Permission معلق
+        // await permissions(req, "purshases_returns_permission", "add");
+        // if (!permissions) {
+        //   return;
+        // }
+    
+        
+        const posted_elements = req.body;
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+
+        const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        if (InValidDateFormat) {
+          return res.status(400).json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    
+        const transaction_type = 7
+    
+    
+        let query1 = `
+         -- مواقع المخزون
+WITH previous_balance AS (
+    SELECT 
+        ah.id AS account_id,
+        COALESCE(SUM(COALESCE(tb.debit, 0)), 0) - COALESCE(SUM(COALESCE(tb.credit, 0)), 0) AS balance
+    FROM 
+        accounts_header ah
+        LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+        LEFT JOIN transaction_header th ON tb.transaction_header_id = th.id
+    WHERE 
+        ah.id = $1
+        AND (th.datex IS NULL OR th.datex < $2)
+    GROUP BY 
+        ah.id
+),
+transaction_details AS (
+    SELECT 
+        th.id AS transaction_id,
+        th.datex,
+        th.reference,
+        ah.account_name,
+        th.transaction_type,
+        COALESCE(tb.debit, 0) AS debit,
+        COALESCE(tb.credit, 0) AS credit
+    FROM 
+        accounts_header ah
+        JOIN transaction_body tb ON ah.id = tb.account_id
+        JOIN transaction_header th ON tb.transaction_header_id = th.id
+    WHERE 
+        ah.id = $1
+        AND th.datex BETWEEN $2 AND $3
+    UNION ALL
+    SELECT 
+        NULL AS transaction_id,
+        $2 AS datex, -- تاريخ بداية الفترة
+        NULL AS reference,
+        'الرصيد السابق' AS account_name,
+        NULL AS transaction_type,
+        case
+        	when pb.balance >= 0 then pb.balance
+        	else 0
+        end AS debit,
+        case
+        	when pb.balance <= 0 then pb.balance
+        	else 0
+        end AS credit
+    FROM 
+        previous_balance pb
+),
+cumulative_balance AS (
+    SELECT 
+        transaction_id,
+        datex,
+        reference,
+        account_name,
+        transaction_type,
+        debit,
+        credit,
+        SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) AS cumulative_balance
+    FROM 
+        transaction_details
+)
+SELECT 
+    transaction_id AS id,
+    datex,
+    reference,
+    account_name,
+    transaction_type,
+    debit,
+    credit,
+    cumulative_balance AS balance
+FROM 
+    cumulative_balance
+ORDER BY 
+    datex DESC,
+    reference DESC;
+      ;
+    `;
+    let params1 = [req.session.company_id]
+    
+
+    
+    await db.tx(async (tx) => {
+    
+      const account_statement = await tx.any(query1, params1);
+      const postedData = {account_statement};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_data_for_purshasesInvoiceToreturns", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: "Error while get_data_for_purshasesInvoiceToreturns" });
+      }
+    });
+
+
+
     //#endregion end trial balace
   //#endregion end statements
 

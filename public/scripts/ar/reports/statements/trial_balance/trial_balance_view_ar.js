@@ -23,15 +23,6 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! datex
-let f0_div = filter_div.querySelector(`#f0_div`);
-let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
-let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
-let f0_select = filter_div.querySelector(`#f0_select`);
-let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
-let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
-
-
 
 //! accountName
 let f1_div = filter_div.querySelector(`#f1_div`);
@@ -240,7 +231,6 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f0',true,true,true) // datex
     call_default_checkbox('f1',true,true,false) // accountName
 }
 
@@ -256,7 +246,7 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+            sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
             
             await getData_fn();
             closeDialog();
@@ -314,17 +304,6 @@ async function getData_fn() {
 }
 
 
-function is_datexChanged() {
-    if (
-        f0_input_start_date1.value !== startDate ||
-        f0_input_end_date1.value !== endDate
-    ) {
-
-        return true;
-    } else {
-        return false;
-    }
-}
 
 
 async function Execution() {
@@ -332,14 +311,8 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
-        const datechange = is_datexChanged()
-        if (datechange){
-            await getData_fn();
-        }else{
+        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
             showFirst50RowAtTheBegening();
-        }
-
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
 
@@ -529,8 +502,6 @@ const handle_account_name_style = `padding-inline-start:${current_padding}rem; f
         //     document.querySelector("#table_footer_showRows_div").style.display ="none";
         // }
 
-        startDate = f0_input_start_date1.value;
-        endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);

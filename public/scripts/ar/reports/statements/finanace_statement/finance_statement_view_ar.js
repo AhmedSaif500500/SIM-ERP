@@ -453,19 +453,14 @@ if ((+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5)){
     style_total_value = `padding-inline-start:${current_padding}rem;` + deafult_style_total_value
 }
 
-console.log(row.global_id);
 
     if (+row.global_id === 3){
-        diffrence += +row.balance || 0
+        diffrence = parseFloat(diffrence.toFixed(2)) + +row.balance || 0
     }else if(+row.global_id ===4 || +row.global_id === 5){
-        diffrence -= +row.balance || 0
+        diffrence = parseFloat(diffrence.toFixed(2)) - +row.balance || 0
     }
-console.log(diffrence);
 
     
-    
-
-
             tableHTML +=
                      `<tr>
                         <td style="${style_account_name};${handle_account_name_style}" class="td_account_name">${row.account_name}</td>

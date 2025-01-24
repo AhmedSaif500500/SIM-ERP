@@ -251,7 +251,7 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value)}}`;
+            sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
             
             await getData_fn();
             closeDialog();
@@ -441,25 +441,28 @@ function fillTable() {
 */
 
 const current_padding = row.padding + 0.5;
-const font_size = (+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5) ? `1.7rem` : 'var(--Font_normal)';
-const text_decoration = (+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5) ? 'underline' : 'none';
+const font_size = (+row.global_id === 6 || +row.global_id === 7) ? `1.7rem` : 'var(--Font_normal)';
+const text_decoration = (+row.global_id === 6 || +row.global_id === 7) ? 'underline' : 'none';
 const font_weight = !row.is_final_account ? 'bold;': 'normal';
 let font_color = !row.is_final_account ? 'darkorange': `var(--Font_Color)`;
 
-const handle_account_name_style = `padding-inline-start:${current_padding}rem; font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration}; color:${font_color}`;
-const handle_balance_style = `font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration}`;
+const handle_account_name_style = `padding-inline-start:${current_padding}rem; font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration}; color:${font_color};`;
+const handle_balance_style = `font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration};`;
 
-if ((+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5)){
-    style_total_value = handle_balance_style + deafult_style_total_value
+if ((+row.global_id === 6 || +row.global_id === 7)){
+    style_total_value =`padding-inline-start:${current_padding}rem;` + handle_balance_style + deafult_style_total_value
 }else{
-    style_total_value = deafult_style_total_value
+    style_total_value = `padding-inline-start:${current_padding}rem;` + deafult_style_total_value
 }
 
-    if (+row.global_id === 3){
-        diffrence += +row.balance || 0
-    }else if(+row.global_id ===4 || +row.global_id === 5){
-        diffrence -= +row.balance || 0
-    }
+
+if (+row.global_id === 6){
+    diffrence = parseFloat(diffrence.toFixed(2)) + +row.balance || 0
+}else if(+row.global_id === 7){
+    diffrence = parseFloat(diffrence.toFixed(2)) - +row.balance || 0
+}
+
+    
 
 
             tableHTML +=
@@ -472,8 +475,8 @@ if ((+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5)){
         style_total_value = deafult_style_total_value
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td id="footer_style_account_name" style="${style_account_name}"></td>
-                        <td id="footer_debit_first" style="${style_total_value}; opacity: 0.2;">${diffrence}</td>
+                        <td id="footer_style_account_name" style="${style_account_name}; font-size: 1.7rem;">ارباح / خسائر الفترة</td>
+                        <td id="footer_debit_first" style="${style_total_value}; opacity: 0.9; font-size: 1.7rem;" class="${+diffrence < 0 ? 'td_negative_number' : ''}">${floatToString(true, diffrence)}</td>
                     </tr>
                 </tbody>
             </table>`;
@@ -651,7 +654,7 @@ view_report_btn.onclick = async function () {
                 
         showLoadingIcon(view_report_btn)
         h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'قائمة الدخل' 
-        sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value)}`;
+        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
         await getData_fn();
         const conditionsArray = sessionStorage.getItem(`incomeStatement_view_Array`);
     

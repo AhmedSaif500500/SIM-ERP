@@ -4061,3 +4061,62 @@ html[dir="rtl"] {
   gap: 1rem;
   transition: var(--transition);
 }
+
+
+
+.report_main_container{
+  position: relative;
+  display: flex; flex-direction: row; justify-content: start; align-items: start; gap: 1.3rem; flex-wrap: wrap;
+  padding: 1rem;
+}
+
+.report_contaner_div{
+  position: relative;
+  display: flex; flex-direction: column; justify-content: start; align-items: start;
+}
+
+.report_inside_div{
+  position: relative;
+  display: flex; flex-direction: column; justify-content: start; align-items: start;
+  gap: 1rem;
+  padding-inline-start: 2rem;
+  padding-inline-end: 2rem;
+  padding-block-start: 1rem;
+  padding-block-end: 1rem;
+  list-style-type: disc; /* إضافة هذه الخاصية لعرض النقاط */
+  color: var(--Font_Color);
+  background-color: inherit;
+  transition: var(--transition);
+}
+
+
+.report_row {
+  position: relative;
+  display: list-item; /* تأكد من أن li يعتبر item في القائمة */
+  font-size: 1.7rem;
+  color: var(--Font_Color);
+  background-color: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.report_lbl_sm {
+  position: relative;
+  display: inline-block;
+  word-wrap: none;
+  /* التفاف النص  */
+  display: block;
+  font-weight: bold;
+  font-size: 1.8rem;
+  width: fit-content;
+  margin-inline-start: 0.5rem;
+  margin-block-end: 0.8rem;
+  margin-block-start: 0.7rem;
+  /* color: var(--Font_Color); */
+  color: orange;
+  transition: var(--transition);
+}
+
+.report_row:hover {
+  scale: 1.1;
+}
