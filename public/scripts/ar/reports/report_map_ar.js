@@ -4,6 +4,7 @@
 
 //! statement_div
 const finance_statemebt_dive = document.querySelector(`#finance_statemebt_dive`)
+const account_statment = document.querySelector(`#account_statment`)
 const trial_balance = document.querySelector(`#trial_balance`)
 const finance_statement = document.querySelector(`#finance_statement`)
 const income_statement_view_ar = document.querySelector(`#income_statement_view_ar`)
@@ -16,8 +17,14 @@ function showData(){
   trial_balance.style.display = style= module_display("sales_order_permission") // معلق
   finance_statement.style.display = style= module_display("sales_order_permission") // معلق
   income_statement_view_ar.style.display = style= module_display("sales_order_permission") // معلق
+  account_statment.style.display = style= module_display("sales_order_permission") // معلق
 
    
+  account_statment.onclick = function(){
+    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    window.location.href = "/account_statement_view_ar";
+  }
+
   trial_balance.onclick = function(){
     // sessionStorage.removeItem('sales_qutation_ViewArray');
     window.location.href = "/trial_balance_view_ar";

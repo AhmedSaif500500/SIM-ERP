@@ -28072,7 +28072,6 @@ app.post("/api/cash_rc_update", async (req, res) => {
 
     //! check diffrence between debit and credit
 
-//500500
         // //! Security hacking  accounts id
 // جلب الحسابات من قاعدة البيانات
 let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
@@ -29289,7 +29288,6 @@ app.post("/api/cash_transfer_update", async (req, res) => {
   }
 });
 
-//500500
 app.post("/api/cash_transfer_delete", async (req, res) => {
   try {
 
@@ -29368,7 +29366,6 @@ app.post("/api/cash_transfer_delete", async (req, res) => {
       });
     }
 
-    //500500
     const reference = result001.reference
     const datex = result001.datex
     const year = getYear(datex)
@@ -30502,7 +30499,9 @@ order by
     });
 
 
-    app.post("/report_Account_statement", async (req, res) => {
+
+    
+    app.post("/get_accounts_data_for_report_account_statement", async (req, res) => {
       try {
         //! Permission معلق
         // await permissions(req, "purshases_returns_permission", "add");
@@ -30512,6 +30511,101 @@ order by
     
         
         const posted_elements = req.body;
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+
+        // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        // if (InValidDateFormat) {
+        //   return res.status(400).json({
+        //     success: false,
+        //     message_ar: InValidDateFormat_message_ar,
+        //   });
+        // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    
+        // const transaction_type = 7
+
+        let query1 = `
+        SELECT
+          A.id,
+          A.account_name,
+          A.account_type_id,
+          COALESCE(A.item_unite, 'الكمية') AS item_unite,
+          NULL AS is_accumulated_depreciation
+        FROM
+          accounts_header A
+        WHERE
+          A.company_id = $1
+          AND is_final_account = true
+          AND (global_id != 8 OR global_id IS NULL)
+        
+        UNION ALL
+        
+        SELECT
+          A.id,
+          'مجمع اهلاك - ' || A.account_name AS account_name,
+          A.account_type_id,
+          COALESCE(A.item_unite, 'الكمية') AS item_unite,
+          true AS is_accumulated_depreciation
+        FROM
+          accounts_header A
+        WHERE
+          A.company_id = $1
+          AND is_final_account = true
+          AND (global_id != 8 OR global_id IS NULL)
+          AND A.account_type_id = 6;
+        `;
+        let params1 = [req.session.company_id];
+
+        let query2 = `select id, account_type_name
+          from account_type
+          where id IN (1, 2, 3, 4 ,5, 6, 8, 9, 10)
+          order by order_asc ASC;`;  // in (1,2 ) ya3ny = 1 or 2 
+//500500
+    await db.tx(async (tx) => {
+    
+      const accounts = await tx.any(query1, params1);
+      const accounts_types = await tx.any(query2)
+
+      const postedData = {accounts, accounts_types};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_accounts_data_for_report_account_statement", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: "Error while get_data_for_purshasesInvoiceToreturns" });
+      }
+    });
+
+
+    app.post("/report_account_statement_view_ar", async (req, res) => {
+      try {
+        //! Permission معلق
+        // await permissions(req, "purshases_returns_permission", "add");
+        // if (!permissions) {
+        //   return;
+        // }
+    
+        
+        const posted_elements = req.body;
+        
         const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
     
         if (hasBadSymbols) {
@@ -30534,22 +30628,43 @@ order by
         turn_EmptyValues_TO_null(posted_elements);
         //* Start--------------------------------------------------------------
         // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
-    
+
         const transaction_type = 7
+
+        //! check
+        let quer001 = ` select id, account_name, account_type_id, global_id, main_account_id from accounts_header where id = $1 and company_id = $2;`;
+        let result = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id])
+
+        if (!result || !result.account_name || result.account_name === ''){
+          await block_user(req,'Sras01')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });  
+        }
     
     
         let query1 = `
-         -- مواقع المخزون
-WITH previous_balance AS (
+       WITH previous_balance AS (
     SELECT 
         ah.id AS account_id,
-        COALESCE(SUM(COALESCE(tb.debit, 0)), 0) - COALESCE(SUM(COALESCE(tb.credit, 0)), 0) AS balance
+        ah.main_account_id,
+        case 
+        	when ah.main_account_id in (1,5) then
+        		COALESCE(SUM(COALESCE(tb.debit, 0)), 0) - COALESCE(SUM(COALESCE(tb.credit, 0)), 0)
+        	when ah.main_account_id in (2,3,4) then
+        		COALESCE(SUM(COALESCE(tb.credit, 0)), 0) - COALESCE(SUM(COALESCE(tb.debit, 0)), 0)
+        	else 0
+        end AS balance
     FROM 
         accounts_header ah
         LEFT JOIN transaction_body tb ON ah.id = tb.account_id
         LEFT JOIN transaction_header th ON tb.transaction_header_id = th.id
     WHERE 
         ah.id = $1
+        and ah.company_id = $4
+        and th.company_id = $4
         AND (th.datex IS NULL OR th.datex < $2)
     GROUP BY 
         ah.id
@@ -30559,7 +30674,14 @@ transaction_details AS (
         th.id AS transaction_id,
         th.datex,
         th.reference,
-        ah.account_name,
+       	CONCAT(
+        	tt.doc_prefix, '-',
+        	SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        	LPAD(CAST(th.reference AS TEXT), 5, '0'), ' / ', -- تحويل reference إلى نص وإضافة الأصفار
+    		tt.transaction_type_name
+        ) AS referenceconcat,
+        tb.row_note,
+        ah.main_account_id,
         th.transaction_type,
         COALESCE(tb.debit, 0) AS debit,
         COALESCE(tb.credit, 0) AS credit
@@ -30567,22 +30689,27 @@ transaction_details AS (
         accounts_header ah
         JOIN transaction_body tb ON ah.id = tb.account_id
         JOIN transaction_header th ON tb.transaction_header_id = th.id
+        LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
     WHERE 
         ah.id = $1
+        and ah.company_id = $4
+        and th.company_id = $4
         AND th.datex BETWEEN $2 AND $3
     UNION ALL
     SELECT 
         NULL AS transaction_id,
         $2 AS datex, -- تاريخ بداية الفترة
         NULL AS reference,
-        'الرصيد السابق' AS account_name,
+        'الرصيد السابق' AS referenceconcat,
+        null AS row_note,
+        pb.main_account_id,
         NULL AS transaction_type,
         case
-        	when pb.balance >= 0 then pb.balance
-        	else 0
+	        when pb.main_account_id in (1,5) and pb.balance >= 0 then pb.balance
+        	else 0	
         end AS debit,
         case
-        	when pb.balance <= 0 then pb.balance
+	        when pb.main_account_id in (2,3,4) and pb.balance <= 0 then pb.balance
         	else 0
         end AS credit
     FROM 
@@ -30593,19 +30720,25 @@ cumulative_balance AS (
         transaction_id,
         datex,
         reference,
-        account_name,
+        referenceconcat,
+        row_note,
         transaction_type,
         debit,
         credit,
-        SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) AS cumulative_balance
+        case
+        	when td.main_account_id in (1,5) then SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC)
+        	when td.main_account_id in (2,3,4) then SUM(credit - debit) OVER (ORDER BY datex ASC, reference ASC) 
+        end AS cumulative_balance
     FROM 
-        transaction_details
+        transaction_details td
+        
 )
 SELECT 
     transaction_id AS id,
     datex,
     reference,
-    account_name,
+    referenceconcat,
+    row_note,
     transaction_type,
     debit,
     credit,
@@ -30614,17 +30747,20 @@ FROM
     cumulative_balance
 ORDER BY 
     datex DESC,
-    reference DESC;
+    reference DESC
       ;
     `;
-    let params1 = [req.session.company_id]
+    
+    let params1 = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
     
 
     
     await db.tx(async (tx) => {
     
       const account_statement = await tx.any(query1, params1);
-      const postedData = {account_statement};
+      const account_name = result.account_name
+
+      const postedData = {account_statement, account_name};      
       res.json(postedData);
     })
     

@@ -684,8 +684,8 @@ async function table_update_btn_fn(updateBtn) {
     const row = updateBtn.closest("tr");
     const items_table_view_data = {
         x: row.querySelector(`.td_id`).textContent,
-        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        order_id: row.querySelector(`.td_order_id`).textContent,
+        // qutation_id: row.querySelector(`.td_qutation_id`).textContent,
+        // order_id: row.querySelector(`.td_order_id`).textContent,
     };
 
     

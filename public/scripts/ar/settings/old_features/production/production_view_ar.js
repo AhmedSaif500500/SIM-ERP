@@ -1,16 +1,5 @@
-//setActiveSidebar("salesMain_view_ar");  
-//pagePermission("view", "sales_invoice_permission");  // معلق
-
-/*
-const newBtn = document.querySelector('#newBtn');
-newBtn.onclick = function (){
-    sessionStorage.removeItem('sales_invoice_update_data')
-    window.location.href = "/sales_invoice_add_ar";
-  }
-*/
-
-//income_statement_view_ar.js
-
+setActiveSidebar("salesMain_view_ar");
+pagePermission("view", "sales_permission");
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
@@ -22,26 +11,42 @@ let endDate = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
-let start_date;
-let end_date;
-let is_hiding_zero_balances;
-let is_show_account_no = false;
-
 const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
+let f0_div = filter_div.querySelector(`#f0_div`);
+let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
+let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
+let f0_select = filter_div.querySelector(`#f0_select`);
+let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
 
-//! accountName
+//! note
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
+//! production amount
+let f2_div = filter_div.querySelector(`#f2_div`);
+let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_input = filter_div.querySelector(`#f2_input`);
+
+//! output
+let f3_div = filter_div.querySelector(`#f3_div`);
+let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
+let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
+let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_input = filter_div.querySelector(`#f3_input`);
+
+
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0,1, 2, 3]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -81,13 +86,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('incomeStatement_view_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('productionViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('incomeStatement_view_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('productionViewArray', JSON.stringify(conditionsArray));
 }
 
 
@@ -95,12 +100,12 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`incomeStatement_view_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`productionViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `report_map_ar`;
+            window.location.href = `old_features_main_ar`;
        
     }else{
 
@@ -114,7 +119,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("incomeStatement_view_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("productionViewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -124,7 +129,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("incomeStatement_view_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("productionViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -239,7 +244,12 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f1',true,true,false) // accountName
+    call_default_checkbox('f0',true,true,true)
+    call_default_checkbox('f1',true,true,false)
+    call_default_checkbox('f2',true,true,false)
+    call_default_checkbox('f3',true,true,false)
+
+
 }
 
 
@@ -254,11 +264,10 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
-            
+            sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('incomeStatement_view_Array');
+            sessionStorage.removeItem('productionViewArray');
             conditionsArray = []
             
         }
@@ -280,16 +289,21 @@ let data = [];
 let array1 = [];
 let slice_array1 = [];
 let filteredData_Array = [];
+let opening_balance = 0
 
 async function getData_fn() {
-    try {       
+    try {
+        let start_date;
+        let end_date;
 
-        
-
+        start_date = f0_input_start_date1.value;
+        end_date = f0_input_end_date1.value;
+       
+    
         data = await new_fetchData_postAndGet(
-            "/reports_income_statement_view_ar",
-            {start_date, end_date, is_hiding_zero_balances, is_show_account_no},
-            "pass","pass",
+            "/get_All_production_Data",
+            {start_date, end_date},
+            "production_permission","view",
             15,
             false,'',
             false,
@@ -300,8 +314,8 @@ async function getData_fn() {
             'حدث خطأ اثناء معالجة البيانات'
         )
 
-        data = data.trial_balance
-        
+        opening_balance = data.opening_balance
+        hiddenCumulativeBalanceColumn = false
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -309,7 +323,17 @@ async function getData_fn() {
 }
 
 
+function is_datexChanged() {
+    if (
+        f0_input_start_date1.value !== startDate ||
+        f0_input_end_date1.value !== endDate
+    ) {
 
+        return true;
+    } else {
+        return false;
+    }
+}
 
 
 async function Execution() {
@@ -317,16 +341,18 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value.value)}`;
+        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
         const datechange = is_datexChanged()
         if (datechange){
             await getData_fn();
         }else{
+            hiddenCumulativeBalanceColumn = true
             showFirst50RowAtTheBegening();
         }
 
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
+
 
     } catch (error) {
         hideLoadingIcon(content_space);
@@ -360,19 +386,53 @@ function showFirst50RowAtTheBegening() {
     try {
         page_content.style.display = "none";
 
-        filteredData_Array = data.filter((row) => {
+        filteredData_Array = data.data.filter((row) => {
 
-            const isAccountNameMatch =
-            filterData_string_column_with_showAndHiddenCheckbox(
-                f1_checkbox,
-                f1_select,
-                f1_input,
-                "account_name",
+            const isdatexMatch = 
+            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
+                f0_checkbox,
+                f0_select,
+                f0_input_start_date1,
+                f0_input_end_date1,
+                "datex",
                 row
             );
-               
+              
+
+            const isNoteMatch =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f1_checkbox,
+                    f1_select,
+                    f1_input,
+                    "note",
+                    row
+                );
+
+                const isBalanceMatch1 =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f2_checkbox,
+                    f2_select,
+                    f2_input,
+                    "procution_amount",
+                    row
+                );
+
+                const isBalanceMatch2 =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f3_checkbox,
+                    f3_select,
+                    f3_input,
+                    "sales_amount",
+                    row
+                );
+
+
             return (
-                isAccountNameMatch
+
+                isdatexMatch &&
+                isNoteMatch &&
+                isBalanceMatch1 &&
+                isBalanceMatch2
             ); // && otherCondition;
         });
 
@@ -380,8 +440,10 @@ function showFirst50RowAtTheBegening() {
 
         array1 = filteredData_Array.slice();
 
-       // slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-       slice_array1 = array1
+        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+        opening_balance = data.opening_balance
+        opening_balance = get_cumulative_balance_fn(array1,slice_array1,opening_balance,50)
+
         fillTable();
 
     } catch (error) {
@@ -389,6 +451,7 @@ function showFirst50RowAtTheBegening() {
     }
 }
 
+let hiddenCumulativeBalanceColumn = false
 function fillTable() {
     try {
         //  @@ هاااااام جدا
@@ -402,13 +465,19 @@ function fillTable() {
         page_content.style.display = "none";
         showLoadingIcon(content_space);
 
+        let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_account_name = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
-        let deafult_style_total_value = `display: table-cell; width: auto; white-space: nowrap; text-align: start`; 
-        let style_total_value = deafult_style_total_value;
+        let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_note = `display:${f1_checkbox.checked ? "table-cell" : "none"}; min-width: 25rem; width: 100%; white-space: wrap; text-align: start;`;
+        let style_balance1 = `display:${f2_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_balance2 = `display:${f3_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_balance3 = `display: ${hiddenCumulativeBalanceColumn ? 'none': 'table-cell'}; width: auto; white-space: nowrap; text-align: start`;
 
-        let diffrence = 0
-        total_column1.value = 0;
+        total_column1.value = 0
+        total_column2.value = 0
+
+        
+
         let fn = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
@@ -416,70 +485,60 @@ function fillTable() {
         let tableHTML = `<table id="review_table" class="review_table">
                         <thead>
                             <tr>
-                                <th style="${style_account_name}">الحساب</th>
-                                <th style="${style_total_value}">${end_date_input.value}</th>
-
+                                <th style="${style_button}"></th>
+                                <th style="${style_id}">ID</th>
+                                <th style="${style_datex}">التاريخ</th>
+                                <th style="${style_note}">البيان</th>
+                                <th style="${style_balance1}">الانتاج</th>
+                                <th style="${style_balance2}">المبيعات</th>
+                                <th style="${style_balance3}">الجرد</th>
+                                
                             </tr>
                         </thead>
                         <tbody>`;
+  
 
-                        
+                          
+
+
         slice_array1.forEach((row) => {
-                
-
- /*
-            let payment_status_class;
             
-            if(row.payment_status.includes('مدفوع بالكامل')){
-                payment_status_class = 'table_green_condition'
-            }else if(row.payment_status.includes('مدفوع مقدماً')){
-                payment_status_class = 'table_blue_condition'
-            }else if(row.payment_status.includes('مستحق اليوم')){
-                payment_status_class = 'table_blue_condition'
-            }else if(row.payment_status.includes('مستحق منذ')){
-                payment_status_class = 'table_red_condition'
-            }else if(row.payment_status.includes('يستحق بعد')){
-                payment_status_class = 'table_orange_condition'
-            }
-*/
-
-const current_padding = row.padding + 0.5;
-const font_size = (+row.global_id === 6 || +row.global_id === 7) ? `1.7rem` : 'var(--Font_normal)';
-const text_decoration = (+row.global_id === 6 || +row.global_id === 7) ? 'underline' : 'none';
-const font_weight = !row.is_final_account ? 'bold;': 'normal';
-let font_color = !row.is_final_account ? 'darkorange': `var(--Font_Color)`;
-
-const handle_account_name_style = `padding-inline-start:${current_padding}rem; font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration}; color:${font_color};`;
-const handle_balance_style = `font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration};`;
-
-if ((+row.global_id === 6 || +row.global_id === 7)){
-    style_total_value =`padding-inline-start:${current_padding}rem;` + handle_balance_style + deafult_style_total_value
-}else{
-    style_total_value = `padding-inline-start:${current_padding}rem;` + deafult_style_total_value
-}
-
-
-if (+row.global_id === 6){
-    diffrence = parseFloat(diffrence.toFixed(2)) + +row.balance || 0
-}else if(+row.global_id === 7){
-    diffrence = parseFloat(diffrence.toFixed(2)) - +row.balance || 0
-}
-
-    
-
+            let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_account_name};${handle_account_name_style}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(true,false,false,row.balance,style_total_value,false,fn,'balance')}
+                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                        <td style="${style_id}">${row.id}</td>
+                        <td style="${style_datex}">${row.datex}</td>
+                        <td style="${style_note}">${row.note}</td>
+                        ${tdNumber(true,false,true,row.procution_amount,style_balance1,total_column1,false)}            
+                        ${tdNumber(true,false,true,row.sales_amount,style_balance2,total_column2,false)}                
+                        ${tdNumber(true,false,true,row.cumulative_balance,style_balance3,false,false)}                
                       </tr>`;
         });
 
-        style_total_value = deafult_style_total_value
+        
+        //! el rased el efteta7y
+        tableHTML +=
+        `<tr>
+           <td style="${style_button}"></td>
+           <td style="${style_id}"></td>
+           <td style="${style_datex}">الرصيد السابق</td>
+           <td style="${style_note}"></td>
+           <td style="${style_balance1}"></td>
+           <td style="${style_balance2}"></td>
+           ${tdNumber(true,false,true,opening_balance,style_balance3,false,false)}                
+         </tr>`;
+
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td id="footer_style_account_name" style="${style_account_name}; font-size: 1.7rem;">ارباح / خسائر الفترة</td>
-                        <td id="footer_debit_first" style="${style_total_value}; opacity: 0.9; font-size: 1.7rem;" class="${+diffrence < 0 ? 'td_negative_number' : ''}">${floatToString(true, diffrence)}</td>
+                        <td id="footer_style_button" style="${style_button}"></td>
+                        <td id="footer_style_id1" style="${style_id}"></td>
+                        <td id="footer_style_datex" style="${style_datex}"></td>
+                        <td id="footer_style_note" style="${style_note}"></td>
+                        <td id="footer_style_balance1" style="${style_balance1}"></td>
+                        <td id="footer_style_balance2" style="${style_balance2}"></td>
+                        <td id="footer_style_balance3" style="${style_balance3}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -487,28 +546,34 @@ if (+row.global_id === 6){
         // هنا إضافة صف الأزرار بعد إغلاق الجدول
         tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row_div">
                     <div id="table_footer_showRows_div" class='flex_H'>
+                        <button class="table_footer_show_data" id="" onclick="ShowAllDataInTable()">الكل</button>
+                        <button class="table_footer_show_data" id="" onclick="showFirst50RowInTable()">50</button>
+                    </div>    
+                    <div id="table_footer_showRows_div" class='flex_H'>
                         <button class="table_footer_show_data" id="copy" onclick="copyTableToClipboard(this,'review_table')">نسخ الى الحافظة</button>
                     </div>
                  </div>`;
 
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
-        // setupColumnSorting("review_table");
+        setupColumnSorting("review_table");
         hideLoadingIcon(content_space);
         page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
-      //  tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
+        tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        // tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
-        // tableContainer.querySelector(`#footer_debit_first`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_balance1`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_balance2`).textContent = floatToString(true,total_column2.value);
 
-        // if (array1.length > 0 && array1.length <= 50) {
-        //     document.querySelector("#table_footer_showRows_div").style.display ="none";
-        // }
+        if (array1.length > 0 && array1.length <= 50) {
+            document.querySelector("#table_footer_showRows_div").style.display ="none";
+        }
 
+        startDate = f0_input_start_date1.value;
+        endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
@@ -520,20 +585,36 @@ function performSearch() {
         // الحصول على قيمة البحث
         const searchValue = searchInput.value.trim().toLowerCase();
 
+            if(searchValue){
+                hiddenCumulativeBalanceColumn = true
+            }else{
+                hiddenCumulativeBalanceColumn = false
+
+            }
+
+
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const accountName_Match = performSearch_Row(f1_checkbox,"account_name",searchValue,row);
-
+            const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
+            const noteMatch = performSearch_Row(f1_checkbox,"note",searchValue,row);
+            const balanceMatch1 = performSearch_Row(f2_checkbox,"procution_amount",searchValue,row);
+            const balanceMatch2 = performSearch_Row(f3_checkbox,"sales_amount",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                accountName_Match
+                datexInfoMatch ||
+                noteMatch ||
+                balanceMatch1 ||
+                balanceMatch2
             );
+
+            
         });
 
-     //   slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-        slice_array1 = array1; // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+
+
+        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
         fillTable();
     } catch (error) {
         catch_error;
@@ -546,11 +627,16 @@ function ShowAllDataInTable() {
         "ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات"
     );
     slice_array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+    opening_balance = data.opening_balance
+    opening_balance = get_cumulative_balance_fn(array1,slice_array1,opening_balance,'ALL')
+    
     fillTable();
 }
 
 function showFirst50RowInTable() {
     slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+    opening_balance = data.opening_balance
+    opening_balance = get_cumulative_balance_fn(array1,slice_array1,opening_balance,50)
     fillTable();
 }
 
@@ -569,12 +655,8 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-
-/*
 async function table_update_btn_fn(updateBtn) {
-    try {
-    showLoadingIcon(updateBtn)
-    const permission = await btn_permission("sales_invoice_permission", "view");
+    const permission = await btn_permission("production_permission", "update");
 
     if (!permission) {
         // if false
@@ -584,33 +666,29 @@ async function table_update_btn_fn(updateBtn) {
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
-    const sales_invoice_update_data = {
-        x: row.querySelector(`.td_id`).textContent,
-        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        order_id: row.querySelector(`.td_order_id`).textContent,
-    };
 
+    const production_data = {
+        id_value : row.cells[1].textContent,
+        date_value : row.cells[2].textContent,
+        note_value : row.cells[3].textContent,
+        procution_value :stringToFloat(false,row.cells[4].textContent) ,
+        sales_value : stringToFloat(false,row.cells[5].textContent),
+     }
     
-    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_invoice_update_data));                            
-    window.location.href = `sales_invoice_update_ar`;
-    hideLoadingIcon(updateBtn)
-} catch (error) {
-    hideLoadingIcon(updateBtn)
-    catch_error(error)
-}
-}
-*/
 
-/*
-function CheckUrlParams_salesInvoice_update_ar() {
+     sessionStorage.setItem('production_update_data',JSON.stringify(production_data))
+     window.location.href = 'production_update_ar';
+}
+
+function CheckUrlParams_transaction_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "sales_invoice_view_ar",
+            "transaction_view_ar",
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
 
-        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
+        if (!urlData || urlData.pageName !== "transaction_update_ar") {
             return true;
         }
 
@@ -630,95 +708,26 @@ function CheckUrlParams_salesInvoice_update_ar() {
         return false;
     }
 }
-*/
-
-//#region dialog
-const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
-const report_name_input = document.querySelector(`#report_name_input`);
-const end_date_input = document.querySelector(`#end_date_input`);
-const checked_hide_zero_balabce = document.querySelector(`#checked_hide_zero_balabce`);
-// const checked_show_account_no = document.querySelector(`#checked_show_account_no`);
-const view_report_btn = document.querySelector(`#view_report_btn`);
-const cancel_report_btn = document.querySelector(`#cancel_report_btn`);
-const report_setting_icon = document.querySelector(`#report_setting_icon`);
-
-
-
-
-
-
-view_report_btn.onclick = async function () {
-    try {
-
-        start_date = start_date_input.value ;
-        end_date = end_date_input.value ;
-        is_hiding_zero_balances = checked_hide_zero_balabce.checked
-        is_show_account_no = false
-                
-        showLoadingIcon(view_report_btn)
-        h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'قائمة الدخل' 
-        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
-        await getData_fn();
-        const conditionsArray = sessionStorage.getItem(`incomeStatement_view_Array`);
-    
-        if (!conditionsArray){
-         
-            backUp_filter_div_conditions();
-        }
-
-        hideLoadingIcon(view_report_btn)
-        close_dialogx()
-    } catch (error) {
-        catch_error(error)
-    }
-}
-
-function show_dialogx(){
-    start_date_input.value = firstDayOfYear
-    end_date_input.value = lastDayOfYear
-    checked_hide_zero_balabce.checked = true
-    // checked_show_account_no.checked = false
-    dialogOverlay_input.style.display = 'flex' // show dialog
-}
-
-
-report_setting_icon.onclick = function(){
-    show_dialogx()
-}
-
-
-cancel_report_btn.onclick = function(){
-    close_dialogx()
-}
-
-function close_dialogx(){
-    try {
-        if (!sub_h2_header.textContent){
-            window.location.href = `report_map_ar`;
-        }
-        cancel_dialogOverlay_input(dialogOverlay_input)
-    } catch (error) {
-        catch_error(error)
-    }
-}
-//#endregion end dialog
-
 
 
 document.addEventListener("DOMContentLoaded", async function () {
-
-    show_dialogx()
-    
     showRedirectionReason();
-/*    
-  
-    const result2 = CheckUrlParams_salesInvoice_update_ar();
+
+    sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+    
+    const result2 = CheckUrlParams_transaction_update_ar();
     if (!result2) {
         return;
     }
 
+    await getData_fn();
+    const conditionsArray = sessionStorage.getItem(`productionViewArray`);
 
-*/
+    if (!conditionsArray){
+     
+        backUp_filter_div_conditions();
+    }
+
 });
 
 window.addEventListener("beforeprint", function () {

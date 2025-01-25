@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="accounts_view_ar" title="الحسابات">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="accounts_update_ar" title="اعادة تحميل الصفحة">
+                الحسابات
+              </a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
+          </h2>
+
+          <div id="page_content" style="display: none;">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+            <div id="tree_group_div" class="column" style="display: none;">
+
+                <!-- اسم الحساب -->
+                <label for="input_account_name_input_tree_group_div" id="lbl_acc_name_group" class="lbl_sm">اسم المجموعة</label>
+                <input type="search" id="input_account_name_input_tree_group_div" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')">
+                <input type="hidden" id="account_id_hidden_tree_group_div">
+      
+                <!--   القائمة والمجموعه-->
+                <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
+                <div class="row x_start y_center mb_10">
+                  <span id="statment_type_span_tree_group_div" class="span">المركز المالى</span>
+                  <input type="hidden" id="statment_type_span_hidden_value">
+                  <select  id="select_parent_gruop_name_tree_goup_div" class="select"></select>
+                </div>
+                
+                <div class="btn_container_top_border">
+                    <button class="btn_update" id="btn_update_group">تعديل</button>
+                    <button class="btn_cancel" id="btn_delete_group">حذف</button>
+                </div>
+            </div>
+
+            <div id="tree_add_account" class="column" style="display: none;">
+
+                <!-- معرف الحساب -->
+                <div id="acc_no_div" class="flex_column">
+                  <label for="account_no_input" class="lbl_sm">معرف الحساب</label>
+                  <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختيارى"  autocomplete="off" oninput="check_parse(this,'string')">
+                  <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
+                </div>
+                <!-- اسم الحساب -->
+                <label for="account_name_input" id="lbl_acc_name_account" class="lbl_sm">اسم الحساب</label>
+                <input type="search" id="account_name_input" class="input_text_md hover" autocomplete="off" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                <input type="hidden" id="account_id_hidden">
+      
+                <!--   القائمة والمجموعه-->
+                <label for="account_parent_name_span" class="lbl_sm">المجموعه</label>
+                <div class="row x_start y_center mb_10">
+                  <span id="statment_type_span" class="span">المركز المالى</span>
+                  <input type="hidden" id="statment_type_span_hidden_value">
+                  <select id="parents_group_select" class="select"></select>
+                </div>
+      
+      
+                <div id="final_account_information_div" class="flex_column">
+                  <!-- قائمة التدفقات النقدية -->
+                  <label for="cash_flow_statement" class="lbl_sm">التدفقات النقدية</label>
+                  <select name="cash_flow_statement" id="cash_flow_statement" class="select mb_10" style="border-start-start-radius: none;">
+                    <option value="1">الانشطه التشغيلية</option>
+                    <option value="2">الانشطه الاستثمارية</option>
+                    <option value="3">الانشطه التمويليه</option>
+                    <option value="4">النقد وما فى حكمه</option>
+                  </select>
+                </div>
+      
+                <div class="btn_container_top_border">
+                    <button class="btn_update" id="btn_update_accounts">تعديل</button>
+                    <button class="btn_cancel" id="btn_delete_accounts">حذفف</button>
+                </div>
+      
+              </div>
+      
+
+
+            <!-- ______________________________________________________________________________________________________ -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/accounts/tree/accounts_update_ar.js"></script>
+  <script src="/public/scripts/ar/accounts/tree/accounts_multiPages_ar.js"></script>
+</body>
+
+</html>

@@ -124,15 +124,16 @@ function loadHeaderContents() {
           <a href="" id="lang_btn" class=""> en </a>
       </div>
       <div class="header_menue">
-      <!--
+      
           <a href="companies_ar" title="الاعمال التجارية">
             <i class="fa-duotone fa-solid fa-books" style="font-size: 2.5rem"></i>
           </a>
-       -->   
+          
+ <!--      
 <a href="companies_ar" title="الاعمال التجارية">
   <img src="public/images/books1.png" alt="الأعمال التجارية" style="width: 3rem; height: auto;">
 </a>
-
+-->
       </div>
       <div class="header_user_div" style="gap: 0.7rem;">
           <button id="header_user_today" class="header_user_name" style="display: none;">${today}</button>
@@ -175,103 +176,115 @@ function loadSidebarContents() {
     </div>
 
 <a href="notes_ar" target="_self" class="" onclick="sessionStorage.removeItem('noteViewArray')">
-  <i class="fa-duotone fa-list"></i>
+  <i class="fa-duotone fa-thin fa-pencil"></i>
   الملاحظات
 </a>
 
 
     <a href="fixedAssestsMain_view_ar" target="_self" class="" style="display: ${module_display("fixed_assests_permission","accumulated_depreciation_permission","disposed_fixed_asset_permission")}">
-      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
+      <i class="fa-sharp fa-light fa-chair"></i>
        إدارة الاصول الثابتة
     </a>
 
     <a href="cashMain_view_ar" target="_self" class="" style="display: ${module_display("cash_accounts_permission","cash_transaction_permission")}">
-      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
+    <i class="fa-sharp-duotone fa-solid fa-sack-dollar"></i>
        إدارة النقد وما فى حكمه
     </a>
 
 
     <a href="hr_ar" target="_self" class="" style="display: ${module_display("departments_permission","employees_permission","effects_permission")}">
-      <i class="fa-duotone fa-user-tie"></i>
+      <i class="fa-sharp fa-solid fa-people-roof"></i>
       الموارد البشريه
     </a>
 
+    <!--
     <a href="production_view_ar" target="_self" class="" onclick="sessionStorage.removeItem('productionViewArray')" style="display: ${module_display("production_permission")}">
       <i class="fa-duotone fa-industry"></i>
       الانتاج
     </a>
+    -->
 
+    <!--
     <a href="bread_view_ar" target="_self" class="" style="display: ${module_display("bread_permission")}">
       <i class="fa-duotone fa-bread-slice"></i>
       العيش
     </a>
-
+    -->
     <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}" onclick="sessionStorage.removeItem('customersViewArray')">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+      <i class="fa-duotone fa-user-tie"></i>
       العملاء
     </a>
 
     <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}" onclick="sessionStorage.removeItem('vendorsViewArray')">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+      <i class="fa-duotone fa-solid fa-user-tie"></i>
       الموردين
     </a>
 
     <a href="itemsMain_view_ar" target="_self" class="" style="display: ${module_display("items_permission","itemsLocations_permission","services_permission","items_transfer_permission")}">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+     <i class="fa-duotone fa-solid fa-circle-dollar-to-slot"></i>
        إدارة المخزون
     </a>
 
     <a href="purshasesMain_view_ar" target="_self" class="" style="display: ${module_display("purshases_qutation_permission","purshases_order_permission","purshases_invoice_permission","purshases_returns_permission")}">
-      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
+      <i class="fa-duotone fa-solid fa-cart-shopping"></i>
        إدارة المشتريات
     </a>
 
     <a href="salesMain_view_ar" target="_self" class="" style="display: ${module_display("salesman_permission","sales_qutation_permission","sales_order_permission","sales_invoice_permission","sales_returns_permission")}">
-      <i class="fa-duotone fa-light fa-file-invoice-dollar"></i>
+      <i class="fa-thin fa-lightbulb-dollar"></i>
        إدارة المبيعات
     </a>
 
-
+  <!--
     <a href="permissions_view_ar" target="_self" id="users_control_a" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-user"></i>
       الصلاحيات
     </a>
+  -->
 
+    <!--
     <a href="accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};">
       <i class="fa-duotone fa-tree fa-bounce" style="color: #FFD43B;"></i>
       الحسابات
     </a>
+    -->
 
     <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")};" onclick="sessionStorage.removeItem('transactionViewArray')">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: blue;"></i>
+      <i class="fa-duotone fa-solid fa-scale-balanced"></i>
       القيود المحاسبية
     </a>
 
 
     <a href="report_map_ar" target="_self" class="" style="display: ${module_display("0")};">
-      <i class="fa-duotone fa-tree fa-bounce" style="color: green;"></i>
+      <i class="fa-duotone fa-thin fa-book"></i>
       التقارير
     </a>
 
+    <!--
     <a href="test_ar" target="_self" class="" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-tree fa-bounce" style="color: red;"></i>
       test
     </a>
+    -->
 
     <a href="general_settings_ar" target="_self" class="" style="display: ${module_display("0")};">
        <i class="fa-duotone fa-gear"></i>
       الاعدادت
     </a>
 
+    <!--
     <a id="Custmize_sidebar" href="#" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-gear"></i>
       <p>تخصيص</p>
     </a>
+    -->
 
+    <!--
     <a id="owner_sidebar" href="#" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-gear"></i>
       <p>المالك</p>
     </a>
+    -->
       `;
 
   // إضافة المحتويات إلى الـ header_div
@@ -4221,5 +4234,20 @@ function clear_tbody(str_tableName) {
   const tbody = document.querySelector(`#${str_tableName} tbody`); // تحديد tbody
   while (tbody.rows.length) { // التكرار حتى حذف جميع الصفوف
     tbody.deleteRow(0); // حذف الصف الأول
+  }
+}
+
+
+function aloow_to_add_negative_color(element,num){
+  if(!num || !element){
+    return
+  }
+
+  const value =+ num
+  
+  if (+num < 0){
+    element.classList.add('td_negative_number')
+  }else{
+    element.classList.remove('td_negative_number')
   }
 }

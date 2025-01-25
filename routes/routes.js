@@ -63,8 +63,21 @@ router.get('/home_en', (req, res) => {
 //#region settings
 router.get('/general_settings_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission === 6) {
+        if (req.session.is_owner || req.session.general_permission === 6 || req.session.bread_permission > 0) { //معلق
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'general_settings_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+router.get('/old_features_main_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission === 6 || req.session.bread_permission > 0) { // معلق
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'old_features', 'old_features_main_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=1');
         };
@@ -731,7 +744,7 @@ router.get('/effects_update_ar', (req, res) => {
 router.get('/production_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.production_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'production' ,'production_view_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'old_features', 'production' ,'production_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
         };
@@ -745,7 +758,7 @@ router.get('/production_view_ar', (req, res) => {
 router.get('/production_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.production_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'production' ,'production_add_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'old_features', 'production' ,'production_add_ar.html'));
         }else{
             res.redirect('/production_view_ar?reason=1');
         };
@@ -758,7 +771,7 @@ router.get('/production_add_ar', (req, res) => {
 router.get('/production_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.production_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'production' ,'production_update_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'old_features', 'production' ,'production_update_ar.html'));
         }else{
             res.redirect('/production_view_ar?reason=2');
         };
@@ -773,7 +786,7 @@ router.get('/production_update_ar', (req, res) => {
 router.get('/bread_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.bread_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_view_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'old_features', 'bread' ,'bread_view_ar.html'));
         }else{
             res.redirect('/notes_ar?reason=0');
         };
@@ -787,7 +800,7 @@ router.get('/bread_view_ar', (req, res) => {
 router.get('/bread_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.bread_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_add_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'settings', 'old_features', 'bread' ,'bread_add_ar.html'));
         }else{
             res.redirect('/bread_view_ar?reason=1');
         };
@@ -800,7 +813,7 @@ router.get('/bread_add_ar', (req, res) => {
 router.get('/bread_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.bread_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'bread' ,'bread_update_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'settings', 'old_features', 'bread' ,'bread_update_ar.html'));
         }else{
             res.redirect('/bread_view_ar?reason=2');
         };
@@ -816,7 +829,7 @@ router.get('/bread_update_ar', (req, res) => {
 
 router.get('/accounts_view_ar', async (req, res) => {
     if (req.session.isLoggedIn || req.session.general_permission > 1 ||  req.session.accounts_permission > 0) {  
-        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_view_ar.html'));
+        res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'settings', 'tree', 'accounts_view_ar.html'));
     } else {
         res.redirect('/login');
     }
@@ -825,7 +838,7 @@ router.get('/accounts_view_ar', async (req, res) => {
 router.get('/accounts_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 2 ||  req.session.accounts_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_add_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'settings', 'tree', 'accounts_add_ar.html'));
         }else{
             res.redirect('/accounts_view_ar?reason=1');
         };
@@ -835,10 +848,11 @@ router.get('/accounts_add_ar', (req, res) => {
 });
 
 
+
 router.get('/accounts_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.accounts_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'accounts', 'tree', 'accounts_update_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'settings', 'tree', 'accounts_update_ar.html'));
         }else{
             res.redirect('/accounts_view_ar?reason=1');
         };

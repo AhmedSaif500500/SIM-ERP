@@ -3,6 +3,9 @@ const prevent_futureDate_checkbox = document.querySelector(`#prevent_futureDate_
 const prevent_futureDate_input = document.querySelector(`#prevent_futureDate_checkbox`);
 const btn_save = document.querySelector(`#btn_save`);
 const btn_tax = document.querySelector(`#btn_tax`);
+const btn_accounts_tree = document.querySelector(`#btn_accounts_tree`);
+const btn_permissions = document.querySelector(`#btn_permissions`);
+const btn_old_features = document.querySelector(`#btn_old_features`);
 
 let data = []
 
@@ -99,6 +102,25 @@ btn_tax.onclick = function(){
     sessionStorage.removeItem(`settings_taxes_ViewArray`);
     window.location.href = `settings_taxes_view_ar`;
 }
+
+
+btn_accounts_tree.onclick = function(){
+    // sessionStorage.removeItem(`settings_taxes_ViewArray`); معلق
+    window.location.href = `accounts_view_ar`;
+}
+
+
+btn_permissions.onclick = function(){
+    // sessionStorage.removeItem(`settings_taxes_ViewArray`); معلق
+    window.location.href = `permissions_view_ar`;
+}
+
+btn_old_features.onclick = function(){
+    // sessionStorage.removeItem(`settings_taxes_ViewArray`); معلق
+    window.location.href = `old_features_main_ar`;
+}
+
+
 document.addEventListener("DOMContentLoaded", async function () {
     await getData()
     show_data()

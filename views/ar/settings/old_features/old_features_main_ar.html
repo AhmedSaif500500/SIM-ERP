@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <!-- <div id ="fn_container_div" class="fn_container_div"></div> -->
+
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="general_settings_ar" title="الملاحظات">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="old_features_main_ar" title="اعادة تحميل الصفحة">ميزات قديمة</a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
+          </h2>
+
+          
+          <div id="page_content">
+          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+          <div class="btn_container_bottom_border">
+            <button id="btn_production" class="custom_button">الإنتاج</button>
+            <button id="btn_bread" class="custom_button">استلامات العيش</button>
+          </div>
+      
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/settings/old_features/old_features_main_ar.js"></script>
+
+
+
+</body>
+</html>

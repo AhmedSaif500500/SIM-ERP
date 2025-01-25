@@ -913,8 +913,6 @@ async function table_update_btn_fn(updateBtn) {
 
     const transferedData = { effects_update_data };
     const encodedData = encodeURIComponent(JSON.stringify(transferedData));
- 
-
     window.location.href = `effects_update_ar?data=${encodedData}`;
 }
 
