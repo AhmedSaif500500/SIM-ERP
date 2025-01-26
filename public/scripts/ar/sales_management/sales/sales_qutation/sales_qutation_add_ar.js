@@ -117,7 +117,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/sales_qutation_add",
         posted_Obj,
         'sales_qutation_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ البيانات ؟",
         true,
         false,false,false,false,false,

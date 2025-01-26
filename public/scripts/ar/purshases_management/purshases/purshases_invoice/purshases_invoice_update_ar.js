@@ -147,7 +147,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
           "/api/purshases_invoice_update",
           posted_Obj,
           'purshases_invoice_permission', 'update',
-          15,
+          50,
           true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
           true,
           false,false,false,false,false,

@@ -81,7 +81,7 @@ function addRow() {
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>
@@ -232,7 +232,7 @@ async function save(A_OR_B) {
         "/api/tax_add",
         {tax_package_name, inactive_select_val, posted_array },
         'pass', 'pass',
-        15,
+        50,
         true,"هل تريد حفظ البيانات ؟",
         true,
         false,false,false,false,false,

@@ -124,7 +124,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/purshases_invoice_add",
         posted_Obj,
         'sales_invoice_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
         true,
         false,false,false,false,false,

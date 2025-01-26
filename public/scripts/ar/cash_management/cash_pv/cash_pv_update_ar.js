@@ -75,7 +75,7 @@ try {
         "/api/cash_pv_update",
         {x, main_account, total, datex, general_note, posted_array},
         'cash_transaction_permission', 'update',
-        15,
+        50,
         true,"هل تريد تعديل بيانات سند الدفع ؟",
         true,
         false,false,
@@ -105,7 +105,7 @@ async function deleteX() {
         "/api/cash_pv_delete",
         {x, datex},
         'cash_transaction_permission', 'delete',
-        15,
+        50,
         true,"هل تريد حذف بيانات سند الدفع ؟",
         true,
         false,false,
@@ -213,7 +213,7 @@ async function getTransactionData_fn() {
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>

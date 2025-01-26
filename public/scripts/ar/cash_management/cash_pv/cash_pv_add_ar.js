@@ -57,7 +57,7 @@ async function save(A_OR_B) {
         "/api/cash_pv_add",
         {main_account, total, datex, general_note, posted_array},
         'cash_transaction_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات سند الدفع ؟",
         true,
         false,false,false,false,false,

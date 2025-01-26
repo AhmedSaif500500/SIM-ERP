@@ -70,7 +70,7 @@ async function save(A_OR_B) {
         "/api/transaction_add",
         { total, datex, general_note, posted_array },
         'transaction_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات القيد المحاسبى ؟",
         true,
         false,false,false,false,false,

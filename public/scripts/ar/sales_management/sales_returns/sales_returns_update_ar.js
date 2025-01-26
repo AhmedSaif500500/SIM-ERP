@@ -142,7 +142,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
           "/api/sales_returns_update",
           posted_Obj,
           'sales_returns_permission', 'update',
-          15,
+          50,
           true,"هل تريد تعديل بيانات مرتجع المبيعات ؟",
           true,
           false,false,false,false,false,

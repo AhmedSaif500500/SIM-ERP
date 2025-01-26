@@ -107,7 +107,7 @@ back_href.href = `fixed_assests_view_ar?data=${encodedData}`
         '/fixed_assests_update',
         posted_elements,
         'fixed_assests_permission','update',
-        15,
+        50,
         true,'هل تريد تعديل  بيانات الاصل الثابت ؟',
         true,
         false,"",

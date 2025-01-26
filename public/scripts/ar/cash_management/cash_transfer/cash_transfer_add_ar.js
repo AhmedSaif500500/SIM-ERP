@@ -38,7 +38,7 @@ try {
         "/api/cash_transfer_add",
         posted_Obj,
         'cash_transfer_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات التحويل بين الحسابات النقدية؟",
         true,
         false,false,false,false,false,

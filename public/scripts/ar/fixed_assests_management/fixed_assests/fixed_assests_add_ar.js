@@ -79,7 +79,7 @@
           '/fixed_assests_add',
           posted_elements,
           'fixed_assests_permission','add',
-          15,
+          50,
           true,'هل تريد حفظ بيانات الاصل الجديد ؟',
           true,
           false,"",

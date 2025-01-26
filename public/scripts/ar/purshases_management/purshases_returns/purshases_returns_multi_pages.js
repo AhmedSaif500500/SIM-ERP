@@ -153,7 +153,7 @@ function build_table(){
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>
@@ -201,7 +201,7 @@ function build_table(){
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>
@@ -391,7 +391,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
+                      <div class="inputTable_dropdown_tableContainer scroll" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
                       </div>
                     </div>
@@ -440,7 +440,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
+                      <div class="inputTable_dropdown_tableContainer scroll" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
                       </div>
                     </div>

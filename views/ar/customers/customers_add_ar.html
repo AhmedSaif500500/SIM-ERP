@@ -28,7 +28,7 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="customers_view_ar" title="المؤثرات">
+            <a id="back_href" class="back_href" href="customers_view_ar" title="العملاء">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
@@ -93,6 +93,17 @@
                 <textarea name="" id="delivery_adress_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
                   style="margin-block-end: 1rem;"></textarea>
     
+
+                  <div class="info_div_with_normal_nput">
+                    <div class="input_with_icon_div">
+                      <span class="reference_input_checkbox"><input type="checkbox" id="is_allow_to_buy_and_sell"></span>
+                      <span class="span">تفعيل امكانية الشراء من العميل</span>
+                    </div>
+                    <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `تفعيل خاصية الشراء من العميل تسمح بظهور حساب العميل فى قائمة الموردين عند الشراء`)"></i>
+                  </div>
+
+    
+
                 <!-- <div id="checked_div" class="column x_start y_start" style="display: none">
                   <label for="note_textarea" class="lbl_sm">الحالة</label>
                   <input id="checked_input" type="checkbox">

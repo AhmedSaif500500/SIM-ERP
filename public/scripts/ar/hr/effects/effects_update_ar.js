@@ -2,7 +2,7 @@
 
 
 setActiveSidebar('hr_ar');
-pagePermission('update', 'effects_permission');
+pagePermission('view', 'effects_permission');
 
 page_content.style.display = 'none';
 showLoadingIcon(content_space) 
@@ -180,6 +180,8 @@ document.addEventListener('DOMContentLoaded', async () =>{
     const result = CheckUrlParams(); if (!result) {return}
     await showData()
     colors()
+    viewMode(true,'effects_permission','view')
+    handle_fn_options()
     hideLoadingIcon(content_space)
     page_content.style.display = 'flex';
   } catch (error) {
@@ -189,3 +191,12 @@ document.addEventListener('DOMContentLoaded', async () =>{
   
  
 })
+
+
+function handle_fn_options(){  
+  const newDivs = `
+    <div id="fn_option_update_btn" onclick="viewMode(false,'effects_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'effects_permission','view')" style="display: none;">وضع العرض</div>
+  `;
+  fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+}

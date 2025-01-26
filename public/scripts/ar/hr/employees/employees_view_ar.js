@@ -70,7 +70,7 @@ async function getData_fn() {
         '/get_All_Employees_Data',
         {QKey},
         'employees_permission','view',
-        15,
+        50,
         false,'',
         false,
         true,content_space,
@@ -181,6 +181,7 @@ function fillTable() {
     let style_balance = `display:${check_balance.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
     let style_is_salesman = `display: none;`
     let style_active = `display:${checkbox_active.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start;`
+    let is_allow_to_buy_and_sell = `display: none;`;
 
     total_column1.value = 0
 
@@ -203,6 +204,8 @@ let tableHTML = `<table id="review_table" class="review_table">
                             <th style="${style_balance}">الرصيد</th>
                             <th style="${style_is_salesman}">بائع</th>
                             <th style="${style_active}">الحالة</th>
+                            <th style="${is_allow_to_buy_and_sell}"></th>
+
                         </tr>
                     </thead>
                     <tbody>`;
@@ -211,7 +214,7 @@ slice_array1.forEach(row => {
     let activeClass = row.is_inactive == 'غير نشط' ? 'table_red_condition' : 'table_green_condition';
 
     tableHTML += `<tr>
-                    <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                    <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                     <td style="${style_id}">${row.id}</td>
                     <td style="${style_account_no}">${row.account_no}</td>
                     <td style="${style_name}">${row.account_name}</td>
@@ -225,6 +228,7 @@ slice_array1.forEach(row => {
                     ${tdNumber(true, false, true, row.balance, style_balance, total_column1, '')}
                     <td style="${style_is_salesman}"><input type="checkbox" class="is_salesman" ${row.is_salesman ? 'checked' : ''}></td>
                     <td style="${style_active}"><span class="${activeClass}">${row.is_inactive}</span></td>
+                    <td style="${is_allow_to_buy_and_sell}" class="td_is_allow_to_buy_and_sell">${row.is_allow_to_buy_and_sell}</td>
                   </tr>`;
 });
 
@@ -243,6 +247,7 @@ tableHTML += `
                     <td id="tfooter10" style="${style_end_date}"></td>
                     <td id="tfooter11" style="${style_balance}"></td>
                     <td id="tfooter12" style="${style_active}"></td>
+                    <td id="footer_style_is_allow_to_buy_and_sell" style="${is_allow_to_buy_and_sell}"></td>
                 </tr>
             </tbody>
         </table>`;
@@ -342,7 +347,7 @@ searchInput.addEventListener('keydown', (event) => {
 });
 
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     const permission = await btn_permission('employees_permission','update');
 
     if (!permission){ // if false
@@ -369,7 +374,7 @@ async function table_update_btn_fn(updateBtn) {
         end_date : row.cells[10].textContent,
         is_salesman : row.cells[12].querySelector('.is_salesman').checked,
         is_inactive : is_inactive,
-
+        is_allow_to_buy_and_sell: row.querySelector(`.td_is_allow_to_buy_and_sell`).textContent,
     }
   
     const encodedData = encodeURIComponent(JSON.stringify(employees_update_data));

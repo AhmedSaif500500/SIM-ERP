@@ -122,7 +122,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/sales_order_add",
         posted_Obj,
         'sales_order_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات امر البيع ؟",
         true,
         false,false,false,false,false,

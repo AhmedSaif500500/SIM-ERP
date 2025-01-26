@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "csurf": "^1.11.0",
+    "csurf": "^1.2.2",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
@@ -25,6 +25,7 @@
     "npm": "^10.5.2",
     "pg-format": "^1.0.4",
     "pg-promise": "^11.5.4",
+    "pg-query-stream": "^4.7.1",
     "ping": "^0.4.4",
     "socket.io": "^4.7.5",
     "ws": "^8.17.0"

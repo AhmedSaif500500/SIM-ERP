@@ -75,7 +75,7 @@ btn_update.onclick = async function(){
           "/api/items_transfer_update",
           posted_Obj,
           'items_transfer_permission', 'update',
-          15,
+          50,
           true,"هل تريد تعديل  بيانات تحويلات المخزون ؟",
           true,
           false,false,

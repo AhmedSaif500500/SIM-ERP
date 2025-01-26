@@ -66,7 +66,7 @@ try {
         "/api/items_transfer_add",
         posted_Obj,
         'items_transfer_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات تحويل المخزون؟",
         true,
         false,false,false,false,false,

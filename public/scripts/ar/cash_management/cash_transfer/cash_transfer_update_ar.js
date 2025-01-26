@@ -47,7 +47,7 @@ btn_update.onclick = async function(){
           "/api/cash_transfer_update",
           posted_Obj,
           'cash_transfer_permission', 'update',
-          15,
+          50,
           true,"هل تريد تعديل بيانات التحويل بين الحسابات النقدية ؟",
           true,
           false,false,

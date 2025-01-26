@@ -96,7 +96,7 @@ function build_table(){
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>
@@ -144,10 +144,12 @@ function build_table(){
   function copyRow(btn) {
     // الحصول على الصف الذي يحتوي على الزرار الذي تم النقر عليه
     const row = btn.closest("tr");
-  
+    const select_value = row.querySelector(`.td_account_type .account_type`).value
+
     // استنساخ الصف
     const newRow = row.cloneNode(true);
-  
+    newRow.querySelector(`.td_account_type .account_type`).value = select_value
+
     // إدراج الصف المستنسخ بعد الصف الحالي
     row.parentNode.insertBefore(newRow, row.nextSibling);
     reset_rowcount_in_table(`myTable`)
@@ -164,7 +166,7 @@ async function get_accounts_type() {
       '/api/cash_transaction_accounts_types',
       {},
       '', '',
-      15,
+      50,
       false,
       '',
       true,
@@ -283,7 +285,7 @@ async function getAccounsData_fn() {
     "/getCash_pv_AccountsData1",
     {},
     'cash_transaction_permission', 'view',
-    15,
+    50,
     false,false,
     true,
     false,false,

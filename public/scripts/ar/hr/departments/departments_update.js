@@ -1,7 +1,7 @@
 
 setActiveSidebar('hr_ar');
 //check permissions
-pagePermission('update', 'departments_permission');
+pagePermission('view', 'departments_permission');
 
 // let Authentication = true;
 // //#region  Authentication
@@ -117,3 +117,25 @@ btn_delete_department.onclick = async () => {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        showLoadingIcon(content_space)
+            showData()
+            viewMode(true,'departments_permission','view')
+            handle_fn_options()
+        hideLoadingIcon(content_space)
+    } catch (error) {
+        hideLoadingIcon(content_space)
+        catch_error(error)
+    }
+});
+  
+
+function handle_fn_options(){  
+    const newDivs = `
+      <div id="fn_option_update_btn" onclick="viewMode(false,'departments_permission','update')">وضع التعديل</div>
+      <div id="fn_option_view_btn" onclick="viewMode(true,'departments_permission','view')" style="display: none;">وضع العرض</div>
+    `;
+    fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+  }
+  

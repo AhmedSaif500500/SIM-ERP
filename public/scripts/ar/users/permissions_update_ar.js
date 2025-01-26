@@ -320,7 +320,7 @@ try {
           table_permission_cash_transaction,
         },
         'users_permission','update',
-        20,
+        50,
         true,"هل تريد تعديل صلاحيات المستخدم ؟ ",
         true,
         false,false,

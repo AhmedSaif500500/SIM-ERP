@@ -55,7 +55,7 @@ btn_update.onclick = async function () {
                 account_name_input_value
             },
             'itemsLocations_permission','update',
-            15,
+            50,
             true,'هل تريد تعديل البيانات ؟',
             true,
             false,false,
@@ -88,7 +88,7 @@ btn_delete.onclick = async function () {
                 account_id_hidden_value
             },
             'itemsLocations_permission','delete',
-            15,
+            50,
             true,'هل تريد حذف البيانات ؟',
             true,
             false,false,

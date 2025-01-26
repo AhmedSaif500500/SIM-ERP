@@ -122,7 +122,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/purshases_returns_add",
         posted_Obj,
         'purshases_returns_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات مرتجع المشتريات ؟",
         true,
         false,false,false,false,false,

@@ -92,14 +92,32 @@
         </div>
 
 
-        <div id="is_salesman_div" class="column x_start y_start w_fit">
-          <label for="reference_input" class="lbl_sm">تفعيل كبائع ؟</label>
+        <div class="info_div_with_normal_nput">
+          <div class="input_with_icon_div">
+            <span class="reference_input_checkbox"><input type="checkbox" id="is_salesman"></span>
+            <span class="span">تفعيل الموظف كبائع</span>
+          </div>
+          <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `تفعيل هذه الخاصية يسمح باختيار الموظف كبائع  فى فواتير المبيعات`)"></i>
+        </div>
+
+
+        <div class="info_div_with_normal_nput">
+          <div class="input_with_icon_div">
+            <span class="reference_input_checkbox"><input type="checkbox" id="is_allow_to_buy_and_sell"></span>
+            <span class="span">تفعيل امكانية الشراء من الموظف او البيع له</span>
+          </div>
+          <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `تفعيل خاصية الشراء من الموظف او البيع له تسمح بظهور حساب الموظف فى قائمة العملاء والموردين عند البيع والشراء`)"></i>
+        </div>
+
+
+        <!-- <div id="is_salesman_div" class="column x_start y_start w_fit">
+          <label for="reference_input" class="lbl_sm"></label>
           <div class="input_with_icon_div">
             <span class="reference_input_checkbox"><input type="checkbox" id="is_salesman" title="تفعيل هذه الخاصية يسمح باختيار الموظف كبائع  فى فواتير المبيعات"></span>
             <input type="search" id="reference_input" class="reference_input reference_input_auto_mode hover"
               oninput="check_parse(this,'number')" placeholder="تفعيل" autocomplete="off">
           </div>
-        </div>
+        </div> -->
 
         <label for="inactive_select" class="lbl_sm">الحالة</label>
         <select name="" id="inactive_select" class="select hover">

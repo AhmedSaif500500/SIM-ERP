@@ -123,7 +123,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/sales_returns_add",
         posted_Obj,
         'sales_returns_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات مرتجع المبيعات ؟",
         true,
         false,false,false,false,false,

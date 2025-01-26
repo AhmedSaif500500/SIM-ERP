@@ -143,7 +143,7 @@ document.querySelector(`#btn_update`).onclick = async function () {
           "/api/purshases_returns_update",
           posted_Obj,
           'purshases_returns_permission', 'update',
-          15,
+          50,
           true,"هل تريد تعديل بيانات مرتجع المشتريات ؟",
           true,
           false,false,false,false,false,

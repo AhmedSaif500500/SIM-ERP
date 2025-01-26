@@ -134,7 +134,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/sales_qutation_update",
         posted_Obj,
         'sales_qutation_permission', 'update',
-        15,
+        50,
         true,"هل تريد تحديث بيانات عرض سعر البيع ؟",
         true,
         false,false,false,false,false,
@@ -340,7 +340,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
+                      <div class="inputTable_dropdown_tableContainer scroll" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
                       </div>
                     </div>
@@ -389,7 +389,7 @@ function fillTable(dataArray, taxHeaderArray) { //! mtnsash te3del el addRow bet
                         <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                           oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                       </div>
-                      <div class="inputTable_dropdown_tableContainer" id="">
+                      <div class="inputTable_dropdown_tableContainer scroll" id="">
                         <!-- قائمة الخيارات تظهر هنا -->
                       </div>
                     </div>

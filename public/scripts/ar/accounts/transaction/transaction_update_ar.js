@@ -89,12 +89,12 @@ async function update() {
         "/api/transaction_update",
         { x, total, datex, general_note, posted_array },
         'transaction_permission', 'update',
-        15,
+        50,
         true,"هل تريد تعديل بيانات القيد المحاسبى ؟",
         true,
         false,false,
         true,transaction_update_data,"transaction_view_ar",
-        true,"transaction_view_ar",
+        false,false,
         false,false,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
@@ -119,7 +119,7 @@ async function deleteX() {
         "/api/transaction_delete",
         {x, datex},
         'transaction_permission', 'delete',
-        15,
+        50,
         true,"هل تريد حذف بيانات القيد المحاسبى ؟",
         true,
         false,false,
@@ -240,7 +240,7 @@ async function getTransactionData_fn() {
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>
@@ -341,7 +341,7 @@ try {
 
   viewMode(true,'transaction_permission','view')
   handle_fn_options()
-  makeTableRowsDraggable('myTable'); // make sure that the table already loaded
+  makeTableRowsDraggable('myTable'); 
   hideLoadingIcon(content_space)         
 } catch (error) {
     hideLoadingIcon(content_space)

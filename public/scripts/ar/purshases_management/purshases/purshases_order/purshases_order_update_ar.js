@@ -140,7 +140,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/purshases_order_update",
         posted_Obj,
         'purshases_order_permission', 'update',
-        15,
+        50,
         true,"هل تريد تحديث بيانات امر الشراء ؟",
         true,
         false,false,false,false,false,

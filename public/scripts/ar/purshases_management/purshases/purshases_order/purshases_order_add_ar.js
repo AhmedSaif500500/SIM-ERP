@@ -119,7 +119,7 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/purshases_order_add",
         posted_Obj,
         'purshases_order_permission', 'add', // معلق
-        15,
+        50,
         true,"هل تريد حفظ بيانات امر الشراء ؟",
         true,
         false,false,false,false,false,

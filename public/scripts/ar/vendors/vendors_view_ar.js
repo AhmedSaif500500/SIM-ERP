@@ -378,10 +378,11 @@ function fillTable() {
         let delivery_adress = `display:${f8_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
         let banking_info = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
         let balance = `display:${f10_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let is_allow_to_buy_and_sell = `display: none;`;
 
 
         total_column1.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -400,6 +401,7 @@ function fillTable() {
                                 <th style="${delivery_adress}">عنوان التسليم</th>
                                 <th style="${banking_info}">بيانات بنكية</th>
                                 <th style="${balance}">الرصيد</th>
+                                <th style="${is_allow_to_buy_and_sell}"></th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -407,9 +409,10 @@ function fillTable() {
         slice_array1.forEach((row) => {
                 
 
+
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}">${row.id}</td>
                         <td style="${account_no}">${row.account_no}</td>
                         <td style="${account_name}">${row.account_name}</td>
@@ -420,7 +423,8 @@ function fillTable() {
                         <td style="${contact_info}">${row.contact_info}</td>
                         <td style="${delivery_adress}">${row.delivery_adress}</td>
                         <td style="${banking_info}">${row.banking_info}</td>
-                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn)}                        
+                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn, 'td_balance')}
+                        <td style="${is_allow_to_buy_and_sell}" class="td_is_allow_to_buy_and_sell">${row.is_allow_to_buy_and_sell}</td>                      
                       </tr>`;
         });
 
@@ -438,6 +442,7 @@ function fillTable() {
                         <td id="footer_style_delivery_adress" style="${delivery_adress}"></td>
                         <td id="footer_style_banking_info" style="${banking_info}"></td>
                         <td id="footer_style_balance" style="${balance}"></td>
+                        <td id="footer_style_is_allow_to_buy_and_sell" style="${is_allow_to_buy_and_sell}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -591,9 +596,9 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     try {
-    const permission = await btn_permission('vendors_permission','update');
+    const permission = await btn_permission('vendors_permission','view');
 
     if (!permission){ // if false
         return;
@@ -602,6 +607,7 @@ async function table_update_btn_fn(updateBtn) {
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row  = updateBtn.closest("tr")
     
+
     const obj_vendors_view = {
     x: row.cells[1].textContent,
     account_no_input: row.cells[2].textContent,
@@ -612,7 +618,9 @@ async function table_update_btn_fn(updateBtn) {
     legal_info_input: row.cells[7].textContent,
     contact_info_input: row.cells[8].textContent,
     delivery_adress_input:  row.cells[9].textContent,
-    banking_info_input: row.cells[10].textContent
+    banking_info_input: row.cells[10].textContent,
+    is_allow_to_buy_and_sell: row.querySelector(`.td_is_allow_to_buy_and_sell`).textContent,
+
 }
 
     sessionStorage.setItem('obj_vendors_view', JSON.stringify(obj_vendors_view));                            

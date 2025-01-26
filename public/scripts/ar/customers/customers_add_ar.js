@@ -24,6 +24,7 @@ const contact_info_input = document.querySelector(`#contact_info_input`);
 const banking_info_input = document.querySelector(`#banking_info_input`);
 const delivery_adress_input = document.querySelector(`#delivery_adress_input`);
 const account_id_hidden = document.querySelector(`#account_id_hidden`);
+const is_allow_to_buy_and_sell_checkbox = document.querySelector(`#is_allow_to_buy_and_sell`);
 
 
 async function save(A_B){
@@ -38,6 +39,7 @@ async function save(A_B){
         const contact_info_input_value = contact_info_input.value.trim();
         const banking_info_input_value = banking_info_input.value.trim();
         const delivery_adress_input_value = delivery_adress_input.value.trim();
+        const is_allow_to_buy_and_sell = is_allow_to_buy_and_sell_checkbox.checked;
     
     
         if (!account_name_input_value) {
@@ -56,7 +58,8 @@ async function save(A_B){
                     legal_info_input_value,
                     contact_info_input_value,
                     banking_info_input_value,
-                    delivery_adress_input_value
+                    delivery_adress_input_value,
+                    is_allow_to_buy_and_sell
                 },
                 'customers_permission','add',
                 15,
@@ -79,10 +82,11 @@ async function save(A_B){
                     legal_info_input_value,
                     contact_info_input_value,
                     banking_info_input_value,
-                    delivery_adress_input_value
+                    delivery_adress_input_value,
+                    is_allow_to_buy_and_sell
                 },
                 'customers_permission','add',
-                15,
+                50,
                 true,'هل تريد حفظ البيانات ؟',
                 true,
                 false,false,

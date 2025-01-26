@@ -89,6 +89,7 @@ let f10_select = filter_div.querySelector(`#f10_select`);
 let f10_input = filter_div.querySelector(`#f10_input`);
 
 
+
 const btn_do = filter_div.querySelector(`#btn_do`);
 
 const indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
@@ -377,10 +378,11 @@ function fillTable() {
         let delivery_adress = `display:${f8_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
         let banking_info = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
         let balance = `display:${f10_checkbox.checked ? "table-cell" : "none"};; width: auto; white-space: nowrap; text-align: start;`;
+        let is_allow_to_buy_and_sell = `display: none;`;
 
 
         total_column1.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -399,6 +401,7 @@ function fillTable() {
                                 <th style="${delivery_adress}">عنوان التسليم</th>
                                 <th style="${banking_info}">بيانات بنكية</th>
                                 <th style="${balance}">الرصيد</th>
+                                <th style="${is_allow_to_buy_and_sell}"></th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -408,18 +411,19 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
-                        <td style="${style_id}">${row.id}</td>
-                        <td style="${account_no}">${row.account_no}</td>
-                        <td style="${account_name}">${row.account_name}</td>
-                        <td style="${credit_limit}">${row.credit_limit}</td>
-                        <td style="${email}">${row.email}</td>
-                        <td style="${tasgel_darepy}">${row.tasgel_darepy}</td>
-                        <td style="${legal_info}">${row.legal_info}</td>
-                        <td style="${contact_info}">${row.contact_info}</td>
-                        <td style="${delivery_adress}">${row.delivery_adress}</td>
-                        <td style="${banking_info}">${row.banking_info}</td>
-                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn)}                        
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
+                        <td style="${style_id}" class="td_id">${row.id}</td>
+                        <td style="${account_no} class="td_account_no"">${row.account_no}</td>
+                        <td style="${account_name}" class="td_account_name">${row.account_name}</td>
+                        <td style="${credit_limit}" class="td_credit_limit">${row.credit_limit}</td>
+                        <td style="${email}" class="td_email">${row.email}</td>
+                        <td style="${tasgel_darepy}" class="td_tasgel_darepy">${row.tasgel_darepy}</td>
+                        <td style="${legal_info}" class="td_legal_info">${row.legal_info}</td>
+                        <td style="${contact_info}" class="td_contact_info">${row.contact_info}</td>
+                        <td style="${delivery_adress}" class="td_delivery_adress">${row.delivery_adress}</td>
+                        <td style="${banking_info}" class="td_banking_info">${row.banking_info}</td>
+                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn,'td_balance')}
+                        <td style="${is_allow_to_buy_and_sell}" class="td_is_allow_to_buy_and_sell">${row.is_allow_to_buy_and_sell}</td>                      
                       </tr>`;
         });
 
@@ -437,6 +441,7 @@ function fillTable() {
                         <td id="footer_style_delivery_adress" style="${delivery_adress}"></td>
                         <td id="footer_style_banking_info" style="${banking_info}"></td>
                         <td id="footer_style_balance" style="${balance}"></td>
+                        <td id="footer_style_is_allow_to_buy_and_sell" style="${is_allow_to_buy_and_sell}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -592,7 +597,7 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     try {
     const permission = await btn_permission('customers_permission','update');
 
@@ -613,7 +618,8 @@ async function table_update_btn_fn(updateBtn) {
     legal_info_input: row.cells[7].textContent,
     contact_info_input: row.cells[8].textContent,
     delivery_adress_input:  row.cells[9].textContent,
-    banking_info_input: row.cells[10].textContent
+    banking_info_input: row.cells[10].textContent,
+    is_allow_to_buy_and_sell: row.querySelector(`.td_is_allow_to_buy_and_sell`).textContent,
 }
 
     sessionStorage.setItem('obj_customers_view', JSON.stringify(obj_customers_view));                            

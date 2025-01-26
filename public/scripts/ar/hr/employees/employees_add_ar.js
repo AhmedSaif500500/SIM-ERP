@@ -24,6 +24,7 @@
     const btn_save_and_add_another = document.querySelector(`#btn_save_and_add_another`)
     const is_salesman = document.querySelector(`#is_salesman`)
     const is_salesman_div = document.querySelector(`#is_salesman_div`)
+    const is_allow_to_buy_and_sell_checkbox = document.querySelector(`#is_allow_to_buy_and_sell`);
 
     let isUrlParams_salesman = false
 
@@ -38,7 +39,7 @@
         '/get_All_human_resources_department_Data',
         {},
         'employees_permission','add',
-        15,
+        50,
         false,'',
         false,
         true,content_space,
@@ -93,7 +94,9 @@
       const employee_start_date_value = employee_start_date_input.value
       const employee_leave_date_value = employee_leave_date_input.value
       const inactive_select_value = inactive_select.value
-      const is_salesman_value = is_salesman.checked
+      const is_salesman_value = is_salesman.checked;
+      const is_allow_to_buy_and_sell = is_allow_to_buy_and_sell_checkbox.checked;
+
 
 
       if (!employee_name_value){
@@ -111,7 +114,8 @@
         employee_start_date_value,
         employee_leave_date_value,
         inactive_select_value,
-        is_salesman_value
+        is_salesman_value,
+        is_allow_to_buy_and_sell
       }
 
       if (A_or_B == 'A'){
@@ -120,7 +124,7 @@
           '/employee_add',
           posted_elements,
           isUrlParams_salesman? 'salesman_permission' : 'employees_permission','add',
-          15,
+          50,
           true,'هل تريد حفظ بيانات الموظف الجديد ؟',
           true,
           false,"",
@@ -136,7 +140,7 @@
           '/employee_add',
           posted_elements,
           isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','add',
-          15,
+          50,
           true,'هل تريد حفظ بيانات الموظف الجديد ؟',
           true,
           false,"",

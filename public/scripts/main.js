@@ -1491,7 +1491,7 @@ function makeTableRowsDraggable(tableId) {
   const startDragHandler = function (event) {
     if (event.target.classList.contains('drag-handle')) {
       draggedRow = event.target.closest('tr');
-      draggedRow.style.cursor = 'grabbing';
+      // draggedRow.style.cursor = 'grabbing';
       initialY = event.clientY || event.touches[0].clientY;
     }
   };
@@ -1506,7 +1506,7 @@ function makeTableRowsDraggable(tableId) {
 
   const endDragHandler = function (event) {
     if (draggedRow) {
-      draggedRow.style.cursor = 'grab';
+      // draggedRow.style.cursor = 'grab';
       draggedRow.style.transform = '';
       const targetRow = document.elementFromPoint(
         event.clientX || event.changedTouches[0].clientX,
@@ -3240,23 +3240,17 @@ try {
     </div>
     <div class="dropdown_menue hover scroll" id="${str_dropDownDivId}_menue" style="display: none;">
 
-      <div class="dropdown_menue-items" id="${str_dropDownDivId}_items">
+
+      <div class="dropdown_search">
+        <input type="search" id="${str_dropDownDivId}_search_input" class="dropdown_search_input hover" placeholder="ابحث هنا..."
+          autocomplete="off">
+      </div>  
+
+      <div class="dropdown_menue-items inputTable_dropdown_tableContainer scroll" id="${str_dropDownDivId}_items">
         <!-- قائمة الخيارات تظهر هنا -->
 
               <table id="${str_dropDownDivId}_table" class="review_table">
-        <thead>
-          <tr>
-            <th style="display: none;">ID</th>
-            <th>
-                <input 
-                  type="search" 
-                    class="search_input hover" 
-                    id="${str_dropDownDivId}_search_input" 
-                    placeholder="ابحث هنا..."
-                    autocomplete="off">
-            </th>
-          </tr>
-        </thead>
+
         <tbody></tbody>
         <tfoot>
           <tr id="${str_dropDownDivId}_table_footer_buttons_row">
@@ -3276,6 +3270,7 @@ try {
       </div>
     </div>
   `;
+  
   dropDownDiv.innerHTML = ''
   dropDownDiv.insertAdjacentHTML("beforeend", dropDownDiv_structure);
 
@@ -3659,7 +3654,11 @@ async function tableDropdownList(dropdown, dataArray, Array_columnsNameToSHow, t
   if (tableDropdownList_DropdownMenue.style.display === "none") {
     if (typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse){
       const account_type_id = parseInt(tableDropdownList_TableMainTr.querySelector(`.${typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse}`).value);
-      tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id);
+      if (account_type_id === 2 || account_type_id === 3){
+        tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id || item.is_allow_to_buy_and_sell === true);
+      }else{
+        tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id);
+      }
       tableDropdownList_Array1 = tableDropdownList_DataFilterdArray;
     }else{
       tableDropdownList_DataFilterdArray = dataArray
@@ -3740,7 +3739,7 @@ async function tableDropdownList_showDropdown() {
 
 
 let keydownHandler = null;
-
+/*
 function tableDropdownList_handle_dropdown_row_selection() {
   try {
     const dropdown_search_input = tableDropdownList_TableMainTd.querySelector('.dropdown_search_input');
@@ -3796,6 +3795,68 @@ function tableDropdownList_handle_dropdown_row_selection() {
     catch_error(error);
   }
 }
+*/
+function tableDropdownList_handle_dropdown_row_selection() {
+  try {
+    const dropdown_search_input = tableDropdownList_TableMainTd.querySelector('.dropdown_search_input');
+    dropdown_search_input.focus();
+
+    const rows = tableDropdownList_TableMainTd.querySelectorAll(`.inputTable_dropdown_tableContainer table > tbody > tr`);
+    if (rows.length > 0) {
+      let currentIndex = 0;
+
+      rows[currentIndex].classList.add('custom_tr_hover');
+
+      function updateHighlight(newIndex) {
+        if (newIndex >= 0 && newIndex < rows.length) {
+          rows.forEach(row => row.classList.remove('custom_tr_hover'));
+          currentIndex = newIndex;
+          rows[currentIndex].classList.add('custom_tr_hover');
+
+          // تحديث موضع الصف داخل الـ scrollbar
+          rows[currentIndex].scrollIntoView({
+            behavior: 'smooth', // تحريك ناعم
+            block: 'nearest', // التأكد من عرض الصف بالكامل
+          });
+        }
+      }
+
+      // تعريف مستمع الحدث الجديد
+      const newKeydownHandler = (event) => {
+        switch (event.key) {
+          case 'ArrowDown':
+            updateHighlight(currentIndex + 1);
+            event.preventDefault(); // منع تحريك مؤشر الإدخال
+            break;
+          case 'ArrowUp':
+            updateHighlight(currentIndex - 1);
+            event.preventDefault(); // منع تحريك مؤشر الإدخال
+            break;
+          case 'Enter':
+            if (slice_tableDropdownList_Array1.length > 0) {
+              const currentRow = rows[currentIndex];
+              tableDropdownList_selectedRow(currentRow);
+            }
+            break;
+        }
+      };
+
+      // إزالة المستمع القديم إذا كان موجودًا
+      if (keydownHandler) {
+        dropdown_search_input.removeEventListener('keydown', keydownHandler);
+      }
+
+      // إضافة المستمع الجديد
+      dropdown_search_input.addEventListener('keydown', newKeydownHandler);
+
+      // تحديث المتغير لمستمع الحدث
+      keydownHandler = newKeydownHandler;
+    }
+  } catch (error) {
+    catch_error(error);
+  }
+}
+
 
 
 function tableDropdownList_hideDropdown() {
@@ -3959,6 +4020,7 @@ function tableDropdownList_selectedRow(row) {
     switch (tableDropdownList_transaction_type_for_select_row) {
       case 'transaction':
         mainRow.querySelector('.td_account .is_accumulated_depreciation').value = row.querySelector(`.td_is_accumulated_depreciation`).textContent || false;
+        mainRow.querySelector('.class_unite').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
         break;
 
       case 'salesInvoiceForm':
@@ -4251,3 +4313,44 @@ function aloow_to_add_negative_color(element,num){
     element.classList.remove('td_negative_number')
   }
 }
+
+document.addEventListener("paste", function (event) {
+  try {
+    // الحصول على النص العادي فقط من الحافظة
+    let pastedText = (event.clipboardData || window.clipboardData).getData("text");
+
+    // منع السلوك الافتراضي للصق النص
+    event.preventDefault();
+
+    // إزالة المسافات الزائدة
+    pastedText = pastedText.trim();
+
+    // إزالة الفواصل الخاصة بالآلاف
+    pastedText = pastedText.replace(/,/g, "");
+
+    // التحقق إذا كان النص رقماً
+    if (!isNaN(pastedText)) {
+      // تحويل النص إلى رقم
+      let number = parseFloat(pastedText);
+
+      // تقريب الرقم إلى أقرب رقمين عشريين
+      pastedText = number.toFixed(2);
+    }
+
+    // التعامل مع العنصر المستهدف
+    const activeElement = document.activeElement;
+
+    if (activeElement && activeElement.isContentEditable) {
+      // إذا كان العنصر قابل للتحرير (مثل div أو td مع contentEditable)
+      document.execCommand("insertText", false, pastedText);
+    } else if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+      // إذا كان العنصر input أو textarea
+      activeElement.value += pastedText;
+    } else {
+      console.warn("The active element is not editable or does not support text input.");
+    }
+  } catch (error) {
+    // التعامل مع الأخطاء
+    catch_error(error);
+  }
+});

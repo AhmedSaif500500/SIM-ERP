@@ -65,7 +65,7 @@ btn_update.onclick = async function(){
           "/api/accumulated_depreciation_update",
           {x, datex, startDate, endDate, note, posted_array},
           'accumulated_depreciation_permission', 'update',
-          15,
+          50,
           true,"هل تريد تعديل  بيانات إهلاكات الاصول الثابتة؟",
           true,
           false,false,

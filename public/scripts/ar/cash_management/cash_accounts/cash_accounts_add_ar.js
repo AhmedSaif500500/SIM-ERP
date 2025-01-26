@@ -42,7 +42,7 @@
           '/cash_accounts_add',
           posted_elements,
           'cash_accounts_permission','add',
-          15,
+          50,
           true,'هل تريد حفظ بيانات الاصل الجديد ؟',
           true,
           false,"",

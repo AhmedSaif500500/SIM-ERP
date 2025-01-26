@@ -39,6 +39,7 @@
             </div>
           </h2>
 
+          <div id ="fn_container_div" class="fn_container_div"></div>
           <div id="page_content" style="display: none;">
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
@@ -93,12 +94,20 @@
                 <textarea name="" id="delivery_adress_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري"
                   style="margin-block-end: 1rem;"></textarea>
     
+                  <div class="info_div_with_normal_nput">
+                    <div class="input_with_icon_div">
+                      <span class="reference_input_checkbox"><input type="checkbox" id="is_allow_to_buy_and_sell"></span>
+                      <span class="span">تفعيل امكانية البيع الى المورد</span>
+                    </div>
+                    <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `تفعيل خاصية البيع الى المورد تسمح بظهور حساب المورد فى قائمة العملاء عند البيع`)"></i>
+                  </div>
+                  
                 <!-- <div id="checked_div" class="column x_start y_start" style="display: none">
                   <label for="note_textarea" class="lbl_sm">الحالة</label>
                   <input id="checked_input" type="checkbox">
                 </div> -->
     
-                <div class="btn_container_top_border">
+                <div class="btn_container_top_border notView">
                     <button class="btn_update" id="btn_update">تعديل</button>
                     <button class="btn_cancel" id="btn_delete">حذف</button>
                 </div>

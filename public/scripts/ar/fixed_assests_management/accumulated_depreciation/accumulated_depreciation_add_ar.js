@@ -58,7 +58,7 @@ try {
         "/api/accumulated_depreciation_add",
         posted_Obj,
         'accumulated_depreciation_permission', 'add',
-        15,
+        50,
         true,"هل تريد حفظ بيانات إهلاكات الاصول الثابتة؟",
         true,
         false,false,false,false,false,

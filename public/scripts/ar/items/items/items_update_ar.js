@@ -89,7 +89,7 @@ btn_update_group.onclick = async function () {
                 parent_id
             },
             'items_permission', 'update',
-            15,
+            50,
             true,"هل تريد تعديل بيانات المجموعه ؟ ",
             true,
             false,false,
@@ -181,7 +181,7 @@ async function deleteNode(type) {
             '/api/delete-item',
             { account_id },
             'items_permission', 'delete',
-            15,
+            50,
             true,"هل تريد حذف البيانات من دليل الاصناف ؟",
             true,
             false,false,

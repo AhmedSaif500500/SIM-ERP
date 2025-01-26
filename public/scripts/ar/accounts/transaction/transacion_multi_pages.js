@@ -117,7 +117,7 @@ function build_table(){
                           <input type="search" class="dropdown_search_input hover" id="" placeholder="ابحث هنا..."
                             oninput="tableDropdownList_performSearch(this)" autocomplete="off">
                         </div>
-                        <div class="inputTable_dropdown_tableContainer" id="">
+                        <div class="inputTable_dropdown_tableContainer scroll" id="">
                           <!-- قائمة الخيارات تظهر هنا -->
                         </div>
                       </div>
@@ -167,9 +167,12 @@ function build_table(){
   function copyRow(btn) {
     // الحصول على الصف الذي يحتوي على الزرار الذي تم النقر عليه
     const row = btn.closest("tr");
-  
+    
+    const select_value = row.querySelector(`.td_account_type .account_type`).value
+        
     // استنساخ الصف
     const newRow = row.cloneNode(true);
+    newRow.querySelector(`.td_account_type .account_type`).value = select_value
   
     // إدراج الصف المستنسخ بعد الصف الحالي
     row.parentNode.insertBefore(newRow, row.nextSibling);
@@ -325,18 +328,18 @@ function updateFooter() {
 
     // التحقق من نوع العمود باستخدام classList
     if (cell.classList.contains("td_debit")) {
-      sumDebit += cellValue;
+      sumDebit += cellValue; // جمع القيم بشكل رقمي
     } else if (cell.classList.contains("td_credit")) {
-      sumCredit += cellValue;
+      sumCredit += cellValue; // جمع القيم بشكل رقمي
     }
   });
 
-  // تحديث الإجماليات في الفوتر
-  document.getElementById("totalDebit").textContent = sumDebit;
-  document.getElementById("totalCredit").textContent = sumCredit;
+  // تحديث الإجماليات في الفوتر مع تقريب القيم إلى رقمين عشريين
+  document.getElementById("totalDebit").textContent = sumDebit.toFixed(2);
+  document.getElementById("totalCredit").textContent = sumCredit.toFixed(2);
 
-  // حساب الفرق بين المدين والدائن
-  document.querySelector(`#difference_debit_cerdit`).textContent = sumDebit - sumCredit;
+  // حساب الفرق بين المدين والدائن مع تقريب النتيجة
+  document.querySelector(`#difference_debit_cerdit`).textContent = (sumDebit - sumCredit).toFixed(2);
 }
 
 
@@ -387,9 +390,13 @@ function fill_filtered_data_accounts_Array(event) {
     const clickedIcon = event.target;
     const mainRow = clickedIcon.closest(`.mainTr`);
     const select_value = mainRow.querySelector(`.td_account_type .account_type`).value;
-
-    filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value);
-
+    
+    if (+select_value === 2 || +select_value === 3){
+      filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value || item.is_allow_to_buy_and_sell === true);
+    }else{
+      filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value);
+    }
+    
     const DropDown_accounts_tableColumnsName = ['id', 'account_name', 'item_unite', 'is_accumulated_depreciation'];
 
     // استدعاء tableDropdownList بعد التحديث

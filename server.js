@@ -84,6 +84,7 @@ const express = require("express");
 const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
+const { performance } = require('perf_hooks'); // استيراد performance
 const io = socketIo(server);
 
 io.on('connection', (socket) => {
@@ -3040,8 +3041,9 @@ app.post("/get_All_customers_Data", async (req, res) => {
     COALESCE(A.str_textarea_column2, '') as contact_info,  
     COALESCE(A.str_textarea_column3, '') as delivery_adress,  
     COALESCE(A.str_textarea_column4, '') as banking_info,
-    COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance
-  FROM 
+    COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance,
+    A.is_allow_to_buy_and_sell
+  FROM
     accounts_header A
   LEFT JOIN 
     transaction_body T ON A.id = T.account_id
@@ -3132,8 +3134,8 @@ app.post("/get_All_customers_Data", async (req, res) => {
       const newId_body = await newId_fn("accounts_body",'id');
   
       let query1 = `
-      INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     `;
 
     let query2 = `
@@ -3159,6 +3161,7 @@ app.post("/get_All_customers_Data", async (req, res) => {
           posted_elements.contact_info_input_value,
           posted_elements.delivery_adress_input_value,
           posted_elements.banking_info_input_value,
+          posted_elements.is_allow_to_buy_and_sell ? true : null,
         ]);
 
         await tx.none(query2,[newId_body,result.parent_id,newId_header])
@@ -3244,8 +3247,8 @@ app.post("/get_All_customers_Data", async (req, res) => {
       }
   
       let query1 = `
-    UPDATE accounts_header set account_name = $1, account_no = $2, numeric_column1 = $3, str_textarea_column5 = $4, str20_column1 = $5, str_textarea_column1 = $6, str_textarea_column2 = $7, str_textarea_column3 = $8, str_textarea_column4 = $9
-    WHERE company_id = $10 AND account_type_id = 2 AND id = $11
+    UPDATE accounts_header set account_name = $1, account_no = $2, numeric_column1 = $3, str_textarea_column5 = $4, str20_column1 = $5, str_textarea_column1 = $6, str_textarea_column2 = $7, str_textarea_column3 = $8, str_textarea_column4 = $9, is_allow_to_buy_and_sell = $10
+    WHERE company_id = $11 AND account_type_id = 2 AND id = $12
   `;
 
   
@@ -3259,6 +3262,7 @@ app.post("/get_All_customers_Data", async (req, res) => {
         posted_elements.contact_info_input_value,
         posted_elements.delivery_adress_input_value,
         posted_elements.banking_info_input_value,
+        posted_elements.is_allow_to_buy_and_sell ? true : null,
         req.session.company_id,
         posted_elements.account_id_hidden_value
       ];
@@ -3892,8 +3896,8 @@ app.post("/employee_add", async (req, res) => {
 
 
     let query1 = `
-  INSERT INTO accounts_header (id, account_name, account_no, str_textarea_column1, str_textarea_column5, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id, is_salesman)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+  INSERT INTO accounts_header (id, account_name, account_no, str_textarea_column1, str_textarea_column5, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id, is_salesman, is_allow_to_buy_and_sell)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 `;
 
   let params1 =[newId_header,
@@ -3910,7 +3914,8 @@ app.post("/employee_add", async (req, res) => {
     req.session.company_id,
     4,
     2,
-    posted_elements.is_salesman_value ? true : null
+    posted_elements.is_salesman_value ? true : null,
+    posted_elements.is_allow_to_buy_and_sell ? true : null,
   ]
 
 
@@ -4071,7 +4076,7 @@ app.post("/update_employee", async (req, res) => {
     
 
     let query1 = `
-    UPDATE accounts_header set account_name = $1, account_no = $2, str_textarea_column1 = $3, str_textarea_column5 = $4, str_textarea_column2 = $5, str_textarea_column3 = $6, str_textarea_column4 = $7, is_inactive = $8, is_salesman = $9 WHERE company_id = $10 AND id = $11;
+    UPDATE accounts_header set account_name = $1, account_no = $2, str_textarea_column1 = $3, str_textarea_column5 = $4, str_textarea_column2 = $5, str_textarea_column3 = $6, str_textarea_column4 = $7, is_inactive = $8, is_salesman = $9, is_allow_to_buy_and_sell = $10 WHERE company_id = $11 AND id = $12;
     `;
 
   let params1 =[
@@ -4084,6 +4089,7 @@ app.post("/update_employee", async (req, res) => {
     posted_elements.employee_leave_date_value,
     active_value,
     posted_elements.is_salesman_value? true : null,
+    posted_elements.is_allow_to_buy_and_sell? true : null,
     req.session.company_id,
     posted_elements.id_value,
   ]
@@ -4183,9 +4189,6 @@ app.post("/delete_employee", async (req, res) => {
         message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
-
-    console.log(result.count_actions);
-    console.log(result.count_effects);
     
 
     if (result.count_actions > 0 || result.count_effects > 0){
@@ -4273,8 +4276,8 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         END as is_inactive,
         COALESCE(SUM(T.credit) - SUM(T.debit), 0) AS balance,
         B.parent_id as department_id,
-        COALESCE(ParentAccount.account_name, '') AS department_name
-        
+        COALESCE(ParentAccount.account_name, '') AS department_name,
+        A.is_allow_to_buy_and_sell
     FROM 
         accounts_header A
     LEFT JOIN 
@@ -4346,7 +4349,8 @@ app.post("/get_All_vendors_Data", async (req, res) => {
     COALESCE(A.str_textarea_column2, '') as contact_info,  
     COALESCE(A.str_textarea_column3, '') as delivery_adress,  
     COALESCE(A.str_textarea_column4, '') as banking_info,
-    COALESCE(SUM(T.credit), 0) - COALESCE(SUM(T.debit), 0) AS balance
+    COALESCE(SUM(T.credit), 0) - COALESCE(SUM(T.debit), 0) AS balance,
+    A.is_allow_to_buy_and_sell
   FROM 
     accounts_header A
   LEFT JOIN 
@@ -4438,8 +4442,8 @@ app.post("/get_All_vendors_Data", async (req, res) => {
       const newId_body = await newId_fn("accounts_body",'id');
   
       let query1 = `
-    INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
   `;
 
   let query2 = `
@@ -4463,6 +4467,7 @@ app.post("/get_All_vendors_Data", async (req, res) => {
       posted_elements.contact_info_input_value,
       posted_elements.delivery_adress_input_value,
       posted_elements.banking_info_input_value,
+      posted_elements.is_allow_to_buy_and_sell ? true : null,
     ]);
 
     await tx.none(query2,[newId_body,result.parent_id,newId_header])
@@ -4553,10 +4558,10 @@ app.post("/get_All_vendors_Data", async (req, res) => {
           message_ar: "اسم المورد موجود بالفعل"
         });
       }
-        
+              
       let query1 = `
-    UPDATE accounts_header set account_name = $1, account_no = $2, numeric_column1 = $3, str_textarea_column5 = $4, str20_column1 = $5, str_textarea_column1 = $6, str_textarea_column2 = $7, str_textarea_column3 = $8, str_textarea_column4 = $9
-    WHERE company_id = $10 AND account_type_id = 3 AND id = $11
+    UPDATE accounts_header set account_name = $1, account_no = $2, numeric_column1 = $3, str_textarea_column5 = $4, str20_column1 = $5, str_textarea_column1 = $6, str_textarea_column2 = $7, str_textarea_column3 = $8, str_textarea_column4 = $9, is_allow_to_buy_and_sell = $10
+    WHERE company_id = $11 AND account_type_id = 3 AND id = $12
   `;
       let params1 =  [
         posted_elements.account_name_input_value,
@@ -4568,6 +4573,7 @@ app.post("/get_All_vendors_Data", async (req, res) => {
         posted_elements.contact_info_input_value,
         posted_elements.delivery_adress_input_value,
         posted_elements.banking_info_input_value,
+        posted_elements.is_allow_to_buy_and_sell ? true : null,
         req.session.company_id,
         posted_elements.account_id_hidden_value
       ];
@@ -4897,7 +4903,6 @@ LEFT JOIN
     accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
 WHERE
     A.company_id = $1
-     AND (A.is_deleted IS DISTINCT FROM TRUE) -- جلب كل البيانات بإستثناء الحقل الذي قيمته ترو
     AND ah.account_type_id = 4
     AND ah.is_final_account = true
     AND (A.datex BETWEEN $2 AND $3 )
@@ -6628,7 +6633,8 @@ SELECT
   A.account_name,
   A.account_type_id,
   COALESCE(A.item_unite, 'الكمية') AS item_unite,
-  NULL AS is_accumulated_depreciation
+  NULL AS is_accumulated_depreciation,
+  is_allow_to_buy_and_sell
 FROM
   accounts_header A
 WHERE
@@ -6643,7 +6649,8 @@ SELECT
   'مجمع اهلاك - ' || A.account_name AS account_name,
   A.account_type_id,
   COALESCE(A.item_unite, 'الكمية') AS item_unite,
-  true AS is_accumulated_depreciation
+  true AS is_accumulated_depreciation,
+  null as is_allow_to_buy_and_sell
 FROM
   accounts_header A
 WHERE
@@ -8939,10 +8946,7 @@ app.post("/api/transaction_add", async (req, res) => {
       let totaldebit = 0;
       let totalCredit = 0;
       // المرور على جميع الكائنات في المصفوفة
-      posted_elements.posted_array.forEach(item => {
-        console.log(item.debit);
-        console.log(item.credit);
-        
+      posted_elements.posted_array.forEach(item => {        
           totaldebit += parseFloat(item.debit || 0); // التأكد من تحويل القيم إلى أرقام
           totalCredit += parseFloat(item.credit || 0);
       });
@@ -9200,7 +9204,9 @@ app.post("/api/transaction_update", async (req, res) => {
           totaldebit += parseFloat(item.debit || 0); // التأكد من تحويل القيم إلى أرقام
           totalCredit += parseFloat(item.credit || 0);
       });
-      if (totaldebit !== totalCredit){
+
+      
+      if (+totaldebit.toFixed(2) !== +totalCredit.toFixed(2)){
         return res.json({
           success: false,
           message_ar: "القيد غير متوازن",
@@ -9310,6 +9316,7 @@ for (const rowData of posted_elements.posted_array) {
   let items_array = [];
   let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
+  let start_time = performance.now()
   let query2 = `INSERT INTO transaction_body
   (id, transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
   VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
@@ -9352,7 +9359,12 @@ for (const rowData of posted_elements.posted_array) {
     newId_transaction_body += 1;
   }
 
+
   await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  let end_time = performance.now()
+
+  console.log(end_time - start_time);
+  
 
   // تحديث is_including_items بناءً على محتوى items_array
   let is_including_items = items_array.length > 0 ? true : null;
@@ -9367,7 +9379,6 @@ for (const rowData of posted_elements.posted_array) {
     await update_items_cogs(items_array,posted_elements.datex, req, tx)
   }
       
-
       //! history
       await history(transaction_type,2,posted_elements.x,reference,req,tx);
     });
@@ -9377,6 +9388,8 @@ for (const rowData of posted_elements.posted_array) {
 
     await last_activity(req);
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    
+    
     return res.json({
       success: true,
       message_ar: `تم تعديل قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
@@ -29911,14 +29924,14 @@ WITH
 stock_balances as (
 select
 	SUM(CASE 
-            WHEN ah.account_type_id = 5 AND tb.item_amount > 0 THEN tb.cogs
-            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs * -1
+            WHEN ah.account_type_id = 5 AND tb.item_amount > 0 THEN coalesce(tb.cogs, 0)
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN coalesce(tb.cogs * -1, 0)
             ELSE 0 
         END
     ) AS stock_value,
 
     SUM(CASE 
-            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN coalesce(tb.cogs, 0)
             ELSE 0 
         END
     ) AS cogs_value
@@ -29932,7 +29945,12 @@ WHERE ah.company_id = $1
 ),
 balances as(
     SELECT
-
+    SUM(CASE 
+            WHEN ah.global_id = 16 THEN COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS profit_account_value,
+    
     SUM(CASE 
             WHEN ah.account_type_id = 1 AND ah.main_account_id = 4 THEN COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
             ELSE 0 
@@ -30045,7 +30063,7 @@ main_trial_balance AS (
             		else 0
             	end
             WHEN ah.global_id = 16 then  -- ارباح وخسائر الفتره
-					b.revenue_value - b.expenses_value - sb.cogs_value
+					coalesce(b.profit_account_value, 0) + coalesce(b.revenue_value, 0) - coalesce(b.expenses_value, 0) - coalesce(sb.cogs_value, 0)
             WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
             ELSE 
                 SUM(
@@ -30087,7 +30105,7 @@ main_trial_balance AS (
     		OR ah.global_id IN (13, 14, 9, 20, 11, 15)
 		)
     GROUP BY
-        ah.id, ab.parent_id, b.capital_value, b.employees_value, b.cash_value, b.vendors_value, b.customers_value, b.fixed_assests_accumulated_depreciation, b.fixed_assests_cost, b.expenses_value, b.revenue_value, sb.cogs_value, sb.stock_value
+        ah.id, ab.parent_id, b.capital_value, b.employees_value, b.cash_value, b.vendors_value, b.customers_value, b.fixed_assests_accumulated_depreciation, b.fixed_assests_cost, b.expenses_value, b.profit_account_value, b.revenue_value, sb.cogs_value, sb.stock_value
 ),
 main_accounts_totals as (
 select
@@ -30134,6 +30152,7 @@ from
 left join main_accounts_totals mat on true
   order by
     mt.main_account_id asc, mt.parent_id asc, mt.id asc
+  
       ;
     `;
     let params1 = [req.session.company_id, posted_elements.end_date]

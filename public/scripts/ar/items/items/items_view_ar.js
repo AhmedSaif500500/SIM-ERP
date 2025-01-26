@@ -356,7 +356,7 @@ async function fetchTreeData() {
                                         '/api/delete-item',
                                         { account_id },
                                         'items_permission', 'delete',
-                                        15,
+                                        50,
                                         true,"هل تريد حذف البيانات من دليل الاصناف ؟ ",
                                         true,
                                         false,false,

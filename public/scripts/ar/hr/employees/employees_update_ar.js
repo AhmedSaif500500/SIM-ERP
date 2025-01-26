@@ -1,5 +1,5 @@
 setActiveSidebar('hr_ar');
-pagePermission('update', 'employees_permission','salesman_permissions');
+pagePermission('view', 'employees_permission');
 
 
 let isUrlParams_salesman = false
@@ -60,7 +60,9 @@ const employee_leave_date_input = document.querySelector(`#employee_leave_date_i
 const inactive_select = document.querySelector(`#inactive_select`)
 const btn_update = document.querySelector(`#btn_update`)
 const btn_delete = document.querySelector(`#btn_delete`)
-const h2_header = document.querySelector(`#h2_header`)
+const h2_header = document.querySelector(`#h2_header`);
+const is_allow_to_buy_and_sell_checkbox = document.querySelector(`#is_allow_to_buy_and_sell`);
+
 
 
 
@@ -122,7 +124,9 @@ function show_data() {
       employee_leave_date_input.value = urlData.end_date
       select_department.value = urlData.department_id
       is_salesman.checked = urlData.is_salesman  
-      inactive_select.value = urlData.is_inactive
+      inactive_select.value = urlData.is_inactive;
+      is_allow_to_buy_and_sell_checkbox.checked = urlData.is_allow_to_buy_and_sell === 'true' ? true : false;
+
       
       active_color(inactive_select)
       
@@ -152,11 +156,13 @@ btn_update.onclick = async function update_employee_data() {
     const employee_leave_date_value = employee_leave_date_input.value;
     const is_salesman_value = is_salesman.checked;
     const inactive_select_value = inactive_select.value;
+    const is_allow_to_buy_and_sell = is_allow_to_buy_and_sell_checkbox.checked;
+
 
     
     const post = await new_fetchData_postAndGet(
       '/update_employee',
-      {id_value,employee_name_value,account_no_value,employee_job_value,select_department_value,email_value,other_info_value,employee_start_date_value,employee_leave_date_value,is_salesman_value,inactive_select_value,isUrlParams_salesman},
+      {id_value,employee_name_value,account_no_value,employee_job_value,select_department_value,email_value,other_info_value,employee_start_date_value,employee_leave_date_value,is_salesman_value,inactive_select_value,isUrlParams_salesman, is_allow_to_buy_and_sell},
       isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','update',
       15,
       true,'هل تريد تعديل بيانات الموظف ؟',
@@ -186,7 +192,7 @@ btn_delete.onclick = async function () {
       '/delete_employee',
       {id_value,isUrlParams_salesman},
       isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','delete',
-      15,
+      50,
       true,'هل تريد حذف بيانات الموظف ؟',
       false,false,'',
       true,'employees_view_ar',
@@ -199,3 +205,24 @@ btn_delete.onclick = async function () {
   }
 }
 
+ 
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+      showLoadingIcon(content_space)
+          viewMode(true,'employees_permission','view')
+          handle_fn_options()
+      hideLoadingIcon(content_space)
+  } catch (error) {
+      hideLoadingIcon(content_space)
+      catch_error(error)
+  }
+});
+
+
+function handle_fn_options(){  
+  const newDivs = `
+    <div id="fn_option_update_btn" onclick="viewMode(false,'employees_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'employees_permission','view')" style="display: none;">وضع العرض</div>
+  `;
+  fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+}
