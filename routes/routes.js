@@ -1019,6 +1019,98 @@ router.get('/items_update_ar', (req, res) => {
     }
 });
 
+
+
+
+//! productions
+
+router.get('/productionMain_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 ||  req.session.items_permission > 0 || req.session.production_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'production', 'productionMain_view_ar.html'));
+        }else{
+            res.redirect('/itemsMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/production_forms_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.production_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_forms', 'production_forms_view_ar.html'));
+        }else{
+            res.redirect('/productionMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/production_forms_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 || req.session.production_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_forms', 'production_forms_add_ar.html'));
+        }else{
+            res.redirect('/production_forms_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/production_forms_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.production_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_forms', 'production_forms_update_ar.html'));
+        }else{
+            res.redirect('/production_forms_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+//-------------
+
+router.get('/production_order_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.production_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_order', 'production_order_view_ar.html'));
+        }else{
+            res.redirect('/productionMain_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/production_order_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 2 || req.session.production_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_order', 'production_order_add_ar.html'));
+        }else{
+            res.redirect('/production_order_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/production_order_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner || req.session.general_permission > 1 || req.session.production_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_order', 'production_order_update_ar.html'));
+        }else{
+            res.redirect('/production_order_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
 //#endregion end - items
 
 //#region transaction
@@ -1524,7 +1616,7 @@ router.get('/cash_transfer_view_ar', (req, res) => {
 
 router.get('/cash_transfer_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
-        if (req.session.is_owner || req.session.general_permission > 1 || req.session.cash_transaction_permission > 1) {
+        if (req.session.is_owner || req.session.general_permission > 2 || req.session.cash_transaction_permission > 1) {
             res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'cash_management', 'cash_transfer', 'cash_transfer_add_ar.html'));
         }else{
             res.redirect('/cash_transfer_view_ar?reason=0');

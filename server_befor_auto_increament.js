@@ -267,15 +267,15 @@ async function history(int_transactionTypeId, int_1Add_2Update_3Delete , transac
 
     
     const timex = timeNow();
-    // const id = await newId_fn('history', 'id');
+    const id = await newId_fn('history', 'id');
 
     // قم بتنفيذ استعلام SQL باستخدام `db.none`
     const query = `
-      INSERT INTO history (user_id, transactionType_id, history_type, datex, timex, transaction_id, reference, company_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+      INSERT INTO history (id, user_id, transactionType_id, history_type, datex, timex, transaction_id, reference, company_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     `;
 
-    const params = [
+    const params = [id,
                     req.session.userId,
                     int_transactionTypeId,
                     int_1Add_2Update_3Delete,
@@ -1125,21 +1125,21 @@ return res.json({
     }
 
 
-      
+      const newCompanyId = await newId_fn("companies",'id');
 
       let query1 = `
-      INSERT INTO companies (owner_id, company_name)
-      VALUES ($1, $2) RETURNING id;
+      INSERT INTO companies (id, owner_id, company_name)
+      VALUES ($1, $2, $3)
     `;
 
-      const query1_parameters = [req.session.owner_id,posted_elements.company_name_input_value,]
+      const query1_parameters = [newCompanyId,req.session.owner_id,posted_elements.company_name_input_value,]
+
 
       
     await db.tx(async (tx) => {
       // 1 : add company
-      const insert = await tx.one(query1, query1_parameters);
+      await tx.none(query1, query1_parameters);
 
-      const newCompanyId = insert.id;
       // 2 : add global accounts  in accounts_header
     
       let account_header_new_id = await newId_fn("accounts_header", "id");
@@ -1651,9 +1651,10 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
         
         const inactive_select_value = posted_elements.inactive_select_value == '0'? null : true 
         
-        
-        let query = `INSERT into users (user_name, user_password, user_full_name, is_active, owner_id, is_owner, datex, is_stop) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`;
-        const insert = await tx.one(query, [
+        const newUserId = await newId_fn("users",'id');
+        let query = `INSERT into users (id, user_name, user_password, user_full_name, is_active, owner_id, is_owner, datex, is_stop) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+        await tx.none(query, [
+          newUserId,
           posted_elements.user_name_value,
           pass_input1,
           posted_elements.user_fullName_value,
@@ -1664,7 +1665,6 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
           inactive_select_value
         ]);
 
-        const newUserId = insert.id;
         if (posted_elements.permission_type == "1" && parseInt(posted_elements.selectedCompanies.length) > 0 ) {
           for (const element of posted_elements.selectedCompanies) {
             let query2 = `INSERT INTO user_company
@@ -2409,21 +2409,21 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
   
   
       //3: insert data into db
-    
+      const newId = await newId_fn("todo",'id');
   
       let query = `
-    INSERT INTO todo (user_id, datex, is_done, text, company_id)
-    VALUES ($1, $2, $3, $4, $5) RETURNING id;
+    INSERT INTO todo (id, user_id, datex, is_done, text, company_id)
+    VALUES ($1, $2, $3, $4, $5, $6)
   `;
-  const insert = await db.one(query, [
+      await db.none(query, [
+        newId,
         req.session.userId,
         posted_elements.datex,
         false,
         posted_elements.note,
         req.session.company_id,
       ]);
-      const newId = insert.id;
-
+  
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
@@ -3130,21 +3130,23 @@ app.post("/get_All_customers_Data", async (req, res) => {
       }
   
       //3: insert data into db
-      // const newId_body = await newId_fn("accounts_body",'id');
+      const newId_header = await newId_fn("accounts_header",'id');
+      const newId_body = await newId_fn("accounts_body",'id');
   
       let query1 = `
-      INSERT INTO accounts_header (account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id;
+      INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
     `;
 
     let query2 = `
-    INSERT INTO accounts_body (parent_id, account_id)
-    values ($1, $2)
+    insert into accounts_body (id, parent_id, account_id)
+    values ($1, $2, $3)
     `
 
 
       await db.tx(async (tx) => {
-        const insert = await tx.one(query1, [
+        await tx.none(query1, [
+          newId_header,
           posted_elements.account_name_input_value,
           true,
           posted_elements.acc_no_div_value,
@@ -3162,9 +3164,7 @@ app.post("/get_All_customers_Data", async (req, res) => {
           posted_elements.is_allow_to_buy_and_sell ? true : null,
         ]);
 
-        const newId_header = insert.id;
-
-        await tx.none(query2,[result.parent_id,newId_header])
+        await tx.none(query2,[newId_body,result.parent_id,newId_header])
 
         await history(18,1,newId_header,0,req,tx)
       })
@@ -3554,19 +3554,20 @@ ORDER BY
           active_value = 1
         }
 
-        await db.tx(async (tx) => {
 
-        let query1 = `INSERT INTO accounts_header (account_name, finance_statement, company_id, account_type_id, main_account_id, str_textarea_column1) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;`;
-        let params1 = [posted_elements.name, 1, req.session.company_id, 4, 2, posted_elements.info];
-       
-        const insert = await tx.one(query1, params1);
-        const newId_header = insert.id
 
-        let query2 = `INSERT INTO accounts_body (parent_id, account_id) values ($1, $2)`
-        let params2 = [result.parent_id, newId_header]
+        const newId_header = await newId_fn("accounts_header",'id');
+        const newId_body = await newId_fn("accounts_body",'id');
     
-       
-          
+
+        let query1 = `INSERT INTO accounts_header (id, account_name, finance_statement, company_id, account_type_id, main_account_id, str_textarea_column1) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+        let params1 = [newId_header, posted_elements.name, 1, req.session.company_id, 4, 2, posted_elements.info];
+    
+        let query2 = `insert into accounts_body (id, parent_id, account_id) values ($1, $2, $3)`
+        let params2 = [newId_body, result.parent_id, newId_header]
+    
+        await db.tx(async (tx) => {
+          await tx.none(query1, params1);
           await tx.none(query2,params2);
         })
   
@@ -3890,17 +3891,16 @@ app.post("/employee_add", async (req, res) => {
       active_value = true
     }
 
-   
-    // const newId_body = await newId_fn("accounts_body",'id');
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
 
-    await db.tx(async (tx) => {
 
     let query1 = `
-  INSERT INTO accounts_header (account_name, account_no, str_textarea_column1, str_textarea_column5, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id, is_salesman, is_allow_to_buy_and_sell)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id;
+  INSERT INTO accounts_header (id, account_name, account_no, str_textarea_column1, str_textarea_column5, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_inactive, is_final_account, finance_statement, company_id, account_type_id, main_account_id, is_salesman, is_allow_to_buy_and_sell)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 `;
 
-  let params1 =[
+  let params1 =[newId_header,
     posted_elements.employee_name_value,
     posted_elements.account_no_value,
     posted_elements.employee_job_value,
@@ -3917,17 +3917,19 @@ app.post("/employee_add", async (req, res) => {
     posted_elements.is_salesman_value ? true : null,
     posted_elements.is_allow_to_buy_and_sell ? true : null,
   ]
-  const insert = await tx.one(query1, params1);
-  const newId_header = insert.id
 
-  let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-                VALUES ($1, $2)`
 
-  let params2 = [
+  let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                VALUES ($1, $2, $3)`
+
+  let params2 = [newId_body,
     posted_elements.select_department_value,
     newId_header
   ]               
-   
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
     await tx.none(query2, params2);
     await history(posted_elements.isUrlParams_salesman ? 21 : 20, 1, newId_header, 0, req, tx)
 
@@ -4436,20 +4438,21 @@ app.post("/get_All_vendors_Data", async (req, res) => {
       }
   
       //3: insert data into db
-      
-      // const newId_body = await newId_fn("accounts_body",'id');
+      const newId_header = await newId_fn("accounts_header",'id');
+      const newId_body = await newId_fn("accounts_body",'id');
   
       let query1 = `
-    INSERT INTO accounts_header (account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id;
+    INSERT INTO accounts_header (id, account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
   `;
 
   let query2 = `
-  INSERT INTO accounts_body (parent_id, account_id)
-  values ($1, $2)
+  insert into accounts_body (id, parent_id, account_id)
+  values ($1, $2, $3)
   `
   await db.tx(async (tx) => {
-    const insert =  await tx.one(query1, [
+    await tx.none(query1, [
+      newId_header,
       posted_elements.account_name_input_value,
       true,
       posted_elements.acc_no_div_value,
@@ -4467,8 +4470,7 @@ app.post("/get_All_vendors_Data", async (req, res) => {
       posted_elements.is_allow_to_buy_and_sell ? true : null,
     ]);
 
-    const newId_header = insert.id
-    await tx.none(query2,[result.parent_id,newId_header])
+    await tx.none(query2,[newId_body,result.parent_id,newId_header])
     await history(19,1,newId_header,0,req,tx)
   })
 
@@ -4749,14 +4751,15 @@ app.post("/effects_add", async (req, res) => {
 
     //* Start Transaction --------------------------------------------------
 
-    
+    const newId = await newId_fn("effects", 'id');
     const year = getYear(posted_elements.date_input_val)
     const newReference = await newReference_fn('effects', year, req);
-    const new_referenceFormatting = formatFromFiveDigits(newReference);
-    await db.tx(async (tx) => {
 
-    let query1 = `INSERT INTO effects (employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;`;
+
+
+    let query1 = `INSERT INTO effects (id, employee_id, datex, days, hours, values, note, company_id, reference) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
     let params1 = [
+      newId,
       posted_elements.id_hidden_input_val,
       posted_elements.date_input_val,
       posted_elements.days_input_val,
@@ -4767,11 +4770,11 @@ app.post("/effects_add", async (req, res) => {
       newReference,
     ];
 
-    
+    const new_referenceFormatting = formatFromFiveDigits(newReference);
 
- 
-    const insert = await tx.one(query1, params1);
-      const newId = insert.id
+    await db.tx(async (tx) => {
+      await tx.none(query1, params1);
+
       //! history
       await history(16, 1, newId, newReference, req, tx);
     });
@@ -4989,6 +4992,14 @@ app.post("/updateeffects", async (req, res) => {
 
     //* Start--------------------------------------------------------------
 
+    //2: validation data befor inserting to db
+    // const rows = await db.any(`SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
+    // FROM effects A
+    // LEFT JOIN  employees E on A.employee_id = E.id
+    // where A.id=$1
+    // ORDER BY A.datex DESC`, [
+    //   posted_elements.effects_id,
+    // ]);
 
     let query1 = `SELECT A.id, A.employee_id, E.employee_name, A.days, A.hours, A.values, A.note, A.datex, A.last_update
       FROM effects A
@@ -5220,21 +5231,21 @@ app.post("/production_add_ar", async (req, res) => {
     }
     //* Start--------------------------------------------------------------
 
-   
+    //3: insert data into db
+    const newId = await newId_fn("production",'id');
 
     let query = `
-  INSERT INTO production (datex, procution_amount, sales_amount, note, company_id)
-  VALUES ($1, $2, $3, $4, $5) RETURNING id;
+  INSERT INTO production (id, datex, procution_amount, sales_amount, note, company_id)
+  VALUES ($1, $2, $3, $4, $5, $6)
 `;
-const insert = await db.one(query, [
+    await db.none(query, [
+      newId,
       posted_elements.date1,
       posted_elements.production_amount_input,
       posted_elements.sales_amount_input,
       posted_elements.note1_input,
       req.session.company_id,
     ]);
-
-    const newId = insert.id;
 
     //4: send a response to frontend about success transaction
     res.json({
@@ -5412,7 +5423,10 @@ app.post("/delete_production", async (req, res) => {
 
     //* Start--------------------------------------------------------------
 
-
+    //3: insert data into db
+    // await db.none("DELETE FROM employees WHERE id = $1", [
+    //   posted_elements.employee_id,
+    // ]);
 
     let query1 = `DELETE FROM production WHERE company_id = $1 AND id = $2`;
     await db.none(query1, [req.session.company_id, posted_elements.id]);
@@ -5487,34 +5501,38 @@ app.post("/api/bread_add", async (req, res) => {
   const posted_elements = req.body;
 
   try {
-    
+    const newId_bread_header = await newId_fn("bread_header",'id');
 
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       let query1 = `INSERT INTO bread_header
-                    (datex, vendor_id, note, company_id)
-                    VALUES($1, $2, $3, $4) RETURNING id;`;
+                    (id, datex, vendor_id, note, company_id)
+                    VALUES($1, $2, $3, $4, $5);`;
 
-      const insert =  await tx.one(query1, [
+      await tx.none(query1, [
+        newId_bread_header,
         posted_elements.datex,
         posted_elements.vendore_id,
         posted_elements.note_inpute_value,
         req.session.company_id,
       ]);
 
-      const newId_bread_header = insert.id;
+      let newId_bread_body = await newId_fn("bread_body",'id');
 
       for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_bread_body);
         let query2 = `INSERT INTO bread_body
-                      (bread_header_id, wazn, amount)
-                      VALUES($1, $2, $3);`;
+                      (id, bread_header_id, wazn, amount)
+                      VALUES($1, $2, $3, $4);`;
 
         await tx.none(query2, [
+          newId,
           newId_bread_header,
           element.wazn,
           element.amount,
         ]);
 
+        newId_bread_body = parseInt(newId_bread_body) + 1;
       }
     });
 
@@ -5589,34 +5607,38 @@ app.post("/api/bread_update", async (req, res) => {
       await tx.none(query0, [posted_elements.h_id]);
 
       // add data
-      // 
+      const newId_bread_header = await newId_fn("bread_header",'id');
 
       // تنفيذ معاملة قاعدة البيانات
 
       let query1 = `INSERT INTO bread_header
-                    (datex, vendor_id, note, company_id)
-                    VALUES($1, $2, $3, $4) RETURNING id;`;
+                    (id, datex, vendor_id, note, company_id)
+                    VALUES($1, $2, $3, $4, $5);`;
 
-      const insert = await tx.one(query1, [
+      await tx.none(query1, [
+        newId_bread_header,
         posted_elements.datex,
         posted_elements.vendore_id,
         posted_elements.note,
         req.session.company_id,
       ]);
 
-      const newId_bread_header = insert.id;
+      let newId_bread_body = await newId_fn("bread_body",'id');
 
       for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_bread_body);
         let query2 = `INSERT INTO bread_body
-                      (bread_header_id, wazn, amount)
-                      VALUES($1, $2, $3);`;
+                      (id, bread_header_id, wazn, amount)
+                      VALUES($1, $2, $3, $4);`;
 
         await tx.none(query2, [
+          newId,
           newId_bread_header,
           element.wazn,
           element.amount,
         ]);
 
+        newId_bread_body = parseInt(newId_bread_body) + 1;
       }
     });
 
@@ -5924,21 +5946,21 @@ app.post("/api/addGroup-account", async (req, res) => {
       });
     }
     
-    await db.tx(async (tx) => {
     // Additional logic here if needed
-    
+    let new_account_header_id = await newId_fn('accounts_header','id');
    
-    const query1 = `INSERT INTO accounts_header (account_name, is_final_account, finance_statement,company_id, main_account_id)
-                          values ($1,$2,$3,$4,$5) RETURNING id; `;
-    const query1_parameters = [posted_elements.accountname,false,result.finance_statement,req.session.company_id,result.main_account_id]
+    const query1 = `insert into accounts_header (id, account_name, is_final_account, finance_statement,company_id, main_account_id)
+                          values ($1,$2,$3,$4,$5,$6); `;
+    const query1_parameters = [new_account_header_id,posted_elements.accountname,false,result.finance_statement,req.session.company_id,result.main_account_id]
 
-    const insert = await tx.one(query1,query1_parameters);
-    let new_account_header_id = insert.id;
+    const new_account_body_id = await newId_fn("accounts_body",'id');
 
-    const query2 =`INSERT INTO accounts_body (parent_id,account_id)
-                                      values($1,$2);`;
-    const query2_parameters = [posted_elements.accountParent,new_account_header_id];
-      
+    const query2 =`INSERT INTO accounts_body (id,parent_id,account_id)
+                                      values($1,$2,$3);`;
+    const query2_parameters = [new_account_body_id,posted_elements.accountParent,new_account_header_id];
+
+    await db.tx(async (tx) => {
+      await tx.none(query1,query1_parameters);
       await tx.none(query2,query2_parameters);
 
     })
@@ -6047,10 +6069,11 @@ app.post("/api/add-account", async (req, res) => {
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       // أدخل into accounts_header
-     
-      let query1 = `INSERT INTO accounts_header (account_name, account_no, is_final_account, finance_statement, cashflow_statement, account_type_id, main_account_id, company_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7,$8) RETURNING id;`;
-      const insert = await tx.one(query1, [
+      let new_account_id = await newId_fn("accounts_header",'id');
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, cashflow_statement, account_type_id, main_account_id, company_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7,$8, $9)`;
+      await tx.none(query1, [
+        new_account_id,
         posted_elements.account_name,
         posted_elements.account_no,
         true,
@@ -6060,12 +6083,13 @@ app.post("/api/add-account", async (req, res) => {
         result.main_account_id,
         req.session.company_id,
       ]);
-      let new_account_id = insert.id;
 
       // أدخل into accounts_body
-      let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-                        VALUES ($1, $2)`;
+      let new_id = await newId_fn("accounts_body",'id');
+      let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                        VALUES ($1, $2, $3)`;
       await tx.none(query2, [
+        new_id,
         posted_elements.account_parent_name_id,
         new_account_id,
       ]);
@@ -6732,20 +6756,22 @@ WHERE
         });
       }
 
-      
+      const newId = await newId_fn("accounts_header", 'id');
 
-      await db.tx(async (tx) => {
-      let query1 = `INSERT INTO accounts_header (account_name, account_type_id, company_id, is_final_account) VALUES ($1, $2, $3, $4) RETURNING id;`;
+  
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_type_id, company_id, is_final_account) VALUES ($1, $2, $3, $4, $5)`;
       let params1 = [
+        newId,
         posted_elements.account_name_input_value,
         7,
         req.session.company_id,
         true
       ];
   
-     
-        const insert = await tx.one(query1, params1);
-        const newId = insert.id;
+  
+      await db.tx(async (tx) => {
+        await tx.none(query1, params1);
+  
         //! history
         await history(17, 1, newId, 0, req, tx);
       });
@@ -6799,7 +6825,12 @@ WHERE
       }
       //* Start--------------------------------------------------------------
   
-
+      //2: validation data befor inserting to db
+      // const rows = await db.any(
+      //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+      //   [posted_elements.employee_name_input]
+      // );
+  
 
       let query0 = ` select
                       (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 7 AND account_name = $3 AND id != $2) as count_account_name_exist,
@@ -7135,34 +7166,14 @@ let params2 = [req.session.company_id]
         }
     
         // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+        const newId_transaction_header = await newId_fn("transaction_header", 'id');
+        let newId_transaction_body = await newId_fn("transaction_body", 'id');
         const year = getYear(posted_elements.datex)
         const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
         const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
   
         let tb_posted_array = []
         let index = 1
-        await db.tx(async (tx) => {
-
-          let query1 = `INSERT INTO transaction_header
-          (reference, company_id, transaction_type, general_note, datex, general_reference, items_location_id, items_location_id2)
-          VALUES($1, $2, $3, $4, $5, $6, $7 , $8) RETURNING id;`;
-
-let params1 = [
-newReference_transaction_header,
-req.session.company_id,
-transaction_type,
-posted_elements.note,
-posted_elements.datex,
-newId_general_reference,
-+posted_elements.location_from,
-+posted_elements.location_to,
-]   
-
-  
-const insert = await tx.one(query1, params1);
-const newId_transaction_header = insert.id;
-
-
         for ( const row of posted_elements.posted_array){
           const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
           
@@ -7184,6 +7195,7 @@ const newId_transaction_header = insert.id;
 
           // الموقع المحول منه
           tb_posted_array.push([
+            newId_transaction_body++, // id
             newId_transaction_header, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_from, //الموق
@@ -7193,6 +7205,7 @@ const newId_transaction_header = insert.id;
   
           // الموقع المحول اليه
           tb_posted_array.push([
+            newId_transaction_body++, // id
             newId_transaction_header, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_to, //الموق
@@ -7203,10 +7216,32 @@ const newId_transaction_header = insert.id;
         }
   
         let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, item_id, item_location_id_tb, item_amount)
-        VALUES($1, $2, $3, $4);`;
+        (id, transaction_header_id, item_id, item_location_id_tb, item_amount)
+        VALUES($1, $2, $3, $4, $5);`;
   
-
+  
+  
+        let query1 = `INSERT INTO transaction_header
+                      (id, reference, company_id, transaction_type, general_note, datex, general_reference, items_location_id, items_location_id2)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9);`;
+        
+        let params1 = [
+          newId_transaction_header,
+          newReference_transaction_header,
+          req.session.company_id,
+          transaction_type,
+          posted_elements.note,
+          posted_elements.datex,
+          newId_general_reference,
+          +posted_elements.location_from,
+          +posted_elements.location_to,
+        ]                    
+  
+      // تنفيذ معاملة قاعدة البيانات
+      await db.tx(async (tx) => {
+  
+        await tx.none(query1, params1);
+  
         // استخدم tx.batch بدلاً من tx.none
         await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
   
@@ -7575,6 +7610,7 @@ where
         }
     
         // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+        let newId_transaction_body = await newId_fn("transaction_body", 'id');
         const year = getYear(posted_elements.datex)
 
         let tb_posted_array = []
@@ -7600,6 +7636,7 @@ where
 
           // الموقع المحول منه
           tb_posted_array.push([
+            newId_transaction_body++, // id
             posted_elements.x, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_from, //الموق
@@ -7609,6 +7646,7 @@ where
   
           // الموقع المحول اليه
           tb_posted_array.push([
+            newId_transaction_body++, // id
             posted_elements.x, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_to, //الموق
@@ -7619,8 +7657,8 @@ where
         }
   
         let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, item_id, item_location_id_tb, item_amount)
-        VALUES($1, $2, $3, $4);`;
+        (id, transaction_header_id, item_id, item_location_id_tb, item_amount)
+        VALUES($1, $2, $3, $4, $5);`;
   
   
         let query02 = 'DELETE FROM transaction_body where transaction_header_id = $1'
@@ -7648,7 +7686,7 @@ where
         await tx.none(query1, params1); // update
   
         // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(tb_posted_array.map(data => tx.none(query2, data))); 
+        await tx.batch(tb_posted_array.map(data => tx.none(query2, data))); // new insert
   
         //! history
         await history(transaction_type,2,posted_elements.x,result0.reference,req,tx);
@@ -7939,22 +7977,20 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       }
       
       // Additional logic here if needed
-      await db.tx(async (tx) => {    
+      let new_account_header_id = await newId_fn('accounts_header','id');
      
-      const query1 = `INSERT INTO accounts_header (account_name, is_final_account, account_type_id,company_id)
-                            values ($1,$2,$3,$4) RETURNING id;`;
-      const query1_parameters = [posted_elements.accountname,false,5,req.session.company_id]
+      const query1 = `insert into accounts_header (id, account_name, is_final_account, account_type_id,company_id)
+                            values ($1,$2,$3,$4,$5); `;
+      const query1_parameters = [new_account_header_id,posted_elements.accountname,false,5,req.session.company_id]
   
-      const insert = await tx.one(query1,query1_parameters);
-      let new_account_header_id = insert.id;
-
+      const new_account_body_id = await newId_fn("accounts_body",'id');
   
-      const query2 =`INSERT INTO accounts_body (parent_id,account_id)
-                                        values($1,$2);`;
-      const query2_parameters = [posted_elements.accountParent,new_account_header_id];
+      const query2 =`INSERT INTO accounts_body (id,parent_id,account_id)
+                                        values($1,$2,$3);`;
+      const query2_parameters = [new_account_body_id,posted_elements.accountParent,new_account_header_id];
   
-   
-       
+      await db.tx(async (tx) => {
+        await tx.none(query1,query1_parameters);
         await tx.none(query2,query2_parameters);
   
       })
@@ -8072,9 +8108,11 @@ app.post("/api/add_item", async (req, res) => {
     
 
       // أدخل into accounts_header
-      let query1 = `INSERT INTO accounts_header (account_name, account_no, is_final_account, account_type_id, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, item_amount_reorder_point, item_unite, company_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;`;
-      const insert = await tx.one(query1, [
+      let new_account_id = await newId_fn("accounts_header",'id');
+      let query1 = `INSERT INTO accounts_header (id, account_name, account_no, is_final_account, account_type_id, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, item_amount_reorder_point, item_unite, company_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+      await tx.none(query1, [
+        new_account_id,
         posted_elements.account_name,
         posted_elements.account_no,
         true,
@@ -8088,12 +8126,12 @@ app.post("/api/add_item", async (req, res) => {
         req.session.company_id
       ]);
 
-      let new_account_id = insert.id;
-
       // أدخل into accounts_body
-      let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-                        VALUES ($1, $2)`;
+      let new_id = await newId_fn("accounts_body",'id');
+      let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                        VALUES ($1, $2, $3)`;
       await tx.none(query2, [
+        new_id,
         posted_elements.account_parent_name_id,
         new_account_id,
       ]);
@@ -8982,6 +9020,7 @@ for (const rowData of posted_elements.posted_array) {
 
 
 
+const newId_transaction_header = await newId_fn("transaction_header", 'id');
 const year = getYear(posted_elements.datex);
 const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req);
 const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -8989,10 +9028,11 @@ const newId_general_reference = await newId_fn("transaction_header", 'general_re
 // تنفيذ معاملة قاعدة البيانات
 await db.tx(async (tx) => {
   let query1 = `INSERT INTO transaction_header
-                (reference, datex, company_id, transaction_type, total_value, general_note, general_reference, is_including_items)
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;`;
+                (id, reference, datex, company_id, transaction_type, total_value, general_note, general_reference, is_including_items)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
 
-  const insert = await tx.one(query1, [
+  await tx.none(query1, [
+    newId_transaction_header,
     newReference_transaction_header,
     posted_elements.datex,
     req.session.company_id,
@@ -9003,18 +9043,18 @@ await db.tx(async (tx) => {
     null, // القيمة الافتراضية للحقل is_including_items
   ]);
 
-  const newId_transaction_header = insert.id;
-
   let insert_array2 = [];
   let items_array = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
   let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
-  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+  (id, transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
+  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
 
 
 
   for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
     const itemTypeId = 5;
     const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
     let item_amount = null;
@@ -9032,8 +9072,12 @@ await db.tx(async (tx) => {
       is_accumulated_depreciation = element.is_accumulated_depreciation === 'true' ? true : null; // احد حسابات المجمع
     }
     
+    
+
+    
 
     insert_array2.push([
+      newId,
       newId_transaction_header,
       element.account_id,
       element.debit,
@@ -9044,6 +9088,8 @@ await db.tx(async (tx) => {
       items_location_id,
       is_accumulated_depreciation,
     ]);
+
+    newId_transaction_body += 1;
   }
 
   await tx.batch(insert_array2.map(data => tx.none(query2, data)));
@@ -9269,13 +9315,15 @@ for (const rowData of posted_elements.posted_array) {
 
       let insert_array2 = [];
   let items_array = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
   let start_time = performance.now()
   let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
-  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+  (id, transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
+  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
 
   for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
     const itemTypeId = 5;
     const items_location_id = +element.account_typeId === itemTypeId ? element.items_location_id : null;
     let item_amount = null;
@@ -9297,6 +9345,7 @@ for (const rowData of posted_elements.posted_array) {
     }
 
     insert_array2.push([
+      newId,
       posted_elements.x,
       element.account_id,
       element.debit,
@@ -9307,6 +9356,8 @@ for (const rowData of posted_elements.posted_array) {
       items_location_id,
       is_accumulated_depreciation
     ]);
+
+    newId_transaction_body += 1;
   }
 
 
@@ -10590,37 +10641,48 @@ ORDER BY
     }
     
   }
-    
+  
+  
+  
+      
+      const newId_tax_header = await newId_fn("settings_tax_header", 'id');
+
+  
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
         let query1 = `INSERT INTO settings_tax_header
-                      (taxe_package_name, is_inactive, company_id)
-                      VALUES($1, $2, $3) RETURNING id;`;
+                      (id, taxe_package_name, is_inactive, company_id)
+                      VALUES($1, $2, $3, $4);`;
   
-        const insert = await tx.one(query1, [
+        await tx.none(query1, [
+          newId_tax_header,
           posted_elements.tax_package_name,
           +posted_elements.inactive_select_val === 0 ? null : true, 
           req.session.company_id
         ]);
   
-        const newId_tax_header = insert.id;
-
+        let newId_tax_body = await newId_fn("settings_tax_body",'id');
         for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_tax_body);
   
           //! make sure if account id != item  then location and amount = null
 
   
           let query2 = `INSERT INTO settings_tax_body
-                        (tax_name, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id)
-                        VALUES($1, $2, $3, $4, $5);`;
+                        (id, tax_name, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id)
+                        VALUES($1, $2, $3, $4, $5, $6);`;
   
           await tx.none(query2, [
+            newId,
             element.Desc,
             +element.rate,
             +element.reverse_type === 1? null : true,
             element.account_id,
             newId_tax_header
           ]);
+  
+          
+          newId_tax_body = parseInt(newId_tax_body) + 1;
         }
   
         //! history
@@ -10918,7 +10980,7 @@ ORDER BY
           // //! Security hacking  accounts id
 
       
-      // const newId_tax_header = await newId_fn("settings_tax_header", 'id');
+      const newId_tax_header = await newId_fn("settings_tax_header", 'id');
 
   
       // تنفيذ معاملة قاعدة البيانات
@@ -11292,6 +11354,7 @@ WHERE
     
 
         
+        const newId_transaction_header = await newId_fn("befor_invoice_header", 'id');
         const year = getYear(posted_elements.datex)
         
         const query001 = `SELECT MAX(reference) AS max FROM befor_invoice_header WHERE company_id = $1 AND transaction_Type = 23 AND datex LIKE '${year}-%'; -- التحقق من السنة في بداية التاريخ `;
@@ -11305,10 +11368,11 @@ WHERE
         // تنفيذ معاملة قاعدة البيانات
         await db.tx(async (tx) => {
           let query1 = `INSERT INTO befor_invoice_header
-                        (reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_column2, is_column1, is_column3, is_qutation_status, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13) RETURNING id;`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_column2, is_column1, is_column3, is_qutation_status, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14);`;
     
-          const insert = await tx.one(query1, [
+          await tx.none(query1, [
+            newId_transaction_header,
             newReference_transaction_header,
             transaction_type,
             total,
@@ -11324,9 +11388,9 @@ WHERE
             req.session.company_id
           ]);
     
-          const newId_transaction_header = insert.id;
-
+          let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
+            const newId = parseInt(newId_transaction_body);
     
             //! make sure if account id != item  then location and amount = null
 
@@ -11341,10 +11405,11 @@ WHERE
 
     
             let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                          (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
     
             await tx.none(query2, [
+              newId,
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -11354,7 +11419,10 @@ WHERE
               +element.row_discountTypeId === 1? true : null,
               +element.row_discountValue,
               element.row_taxHeaderId
-            ]);            
+            ]);
+    
+            
+            newId_transaction_body = parseInt(newId_transaction_body) + 1;
           }
     
           //! history
@@ -11609,7 +11677,9 @@ WHERE
           let query0 = `DELETE from befor_invoce_body where header_id = $1`
           await tx.none(query0,[posted_elements.x])
 
+          let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
+            const newId = parseInt(newId_transaction_body);
     
             //! make sure if account id != item  then location and amount = null
 
@@ -11624,10 +11694,11 @@ WHERE
 
     
             let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                          (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
     
             await tx.none(query2, [
+              newId,
               posted_elements.x,
               +element.item_typeId,
               element.item_id,
@@ -11638,7 +11709,9 @@ WHERE
               +element.row_discountValue,
               element.row_taxHeaderId
             ]);
+    
             
+            newId_transaction_body = parseInt(newId_transaction_body) + 1;
           }
     
           //! history
@@ -12257,6 +12330,7 @@ WHERE
     
 
         
+        const newId_transaction_header = await newId_fn("befor_invoice_header", 'id');
         const year = getYear(posted_elements.datex)
     
 
@@ -12284,10 +12358,11 @@ WHERE
 
 
           let query1 = `INSERT INTO befor_invoice_header
-                        (reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_column2, is_column1, is_column3, qutation_id, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13) RETURNING id;`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, salesman_id, items_location_id, is_column2, is_column1, is_column3, qutation_id, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14);`;
     
-          const insert = await tx.one(query1, [
+          await tx.none(query1, [
+            newId_transaction_header,
             newReference_transaction_header,
             transaction_type,
             total,
@@ -12303,10 +12378,9 @@ WHERE
             req.session.company_id
           ]);
     
-          const newId_transaction_header = insert.id;
-
-          // let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
+          let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
+            const newId = parseInt(newId_transaction_body);
     
             //! make sure if account id != item  then location and amount = null
 
@@ -12321,10 +12395,11 @@ WHERE
 
     
             let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                          (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
     
             await tx.none(query2, [
+              newId,
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -12336,6 +12411,8 @@ WHERE
               element.row_taxHeaderId
             ]);
     
+            
+            newId_transaction_body = parseInt(newId_transaction_body) + 1;
           }
     
           //! history
@@ -12631,7 +12708,9 @@ WHERE
               let query0 = `DELETE from befor_invoce_body where header_id = $1`
               await tx.none(query0,[posted_elements.x])
     
+              let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
               for (const element of posted_elements.posted_array) {
+                const newId = parseInt(newId_transaction_body);
         
                 //! make sure if account id != item  then location and amount = null
     
@@ -12646,10 +12725,11 @@ WHERE
     
         
                 let query2 = `INSERT INTO befor_invoce_body
-                              (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                              (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
         
-                const insert = await tx.none(query2, [
+                await tx.none(query2, [
+                  newId,
                   posted_elements.x,
                   +element.item_typeId,
                   element.item_id,
@@ -12660,7 +12740,9 @@ WHERE
                   +element.row_discountValue,
                   element.row_taxHeaderId
                 ]);
-
+        
+                
+                newId_transaction_body = parseInt(newId_transaction_body) + 1;
               }
         
               //! history
@@ -13560,6 +13642,7 @@ where
       const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId, posted_elements.datex])
       
       
+      const newId_transaction_header = await newId_fn("transaction_header", 'id');
       const year = getYear(posted_elements.datex)
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',3, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -13594,10 +13677,11 @@ where
 
 
         let query1 = `INSERT INTO transaction_header
-                      (reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, due_date, is_column1, is_column2, is_column3, items_location_id, order_id, qutation_id, general_reference, is_including_items)
-                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17) RETURNING id;`;
+                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, due_date, is_column1, is_column2, is_column3, items_location_id, order_id, qutation_id, general_reference, is_including_items)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17, $18);`;
   
-        const insert = await tx.one(query1, [
+        await tx.none(query1, [
+          newId_transaction_header,
           newReference_transaction_header,
           req.session.company_id,
           transaction_type,
@@ -13617,8 +13701,6 @@ where
           true
         ]);
   
-        const newId_transaction_header = insert.id;
-
         let DeafultAccounts = await tx.any('select id, item_revenue_account, item_expense_account from accounts_header where is_final_account = true and company_id = $1 and is_inactive IS NULL',[req.session.company_id])
         let taxBodyArray = await tx.any('select id, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id from settings_tax_body')
 
@@ -13626,8 +13708,10 @@ where
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
+        let newId_transaction_body = await newId_fn("transaction_body",'id');
         let insertData2 = []
         for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_transaction_body);
   
           //! make sure if account id != item  then location and amount = null
 
@@ -13673,8 +13757,11 @@ where
             );
           }
           const account_id = +account_row[0].item_revenue_account
-            
+          
+          
+  
           insertData2.push([
+            newId,
             newId_transaction_header,
             null,
             +Val_beforTax,
@@ -13713,6 +13800,8 @@ where
               }
             }
           }
+
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
 
           
@@ -13730,9 +13819,11 @@ where
 
         //! insert the other part to transaction
         for (const object of other_posted_array){
+          const newId = parseInt(newId_transaction_body);
 
 
           insertData2.push([
+          newId,
           newId_transaction_header,
           +object.debit || null,
           +object.credit || null,
@@ -13748,11 +13839,13 @@ where
           null,
           null
           ]);
+
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
   
         let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+        (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
 
         // استخدم tx.batch بدلاً من tx.none
         await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -14968,8 +15061,10 @@ WHERE
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
+        let newId_transaction_body = await newId_fn("transaction_body",'id');
         let insertData2 = []
         for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_transaction_body);
   
           //! make sure if account id != item  then location and amount = null
 
@@ -15019,6 +15114,7 @@ WHERE
           
   
           insertData2.push([
+            newId,
             posted_elements.x,
             null,
             +Val_beforTax,
@@ -15057,6 +15153,8 @@ WHERE
               }
             }
           }
+
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
 
           
@@ -15074,8 +15172,11 @@ WHERE
 
         //! insert the other part to transaction
         for (const object of other_posted_array){
+          const newId = parseInt(newId_transaction_body);
+
 
           insertData2.push([
+          newId,
           posted_elements.x,
           +object.debit || null,
           +object.credit || null,
@@ -15091,11 +15192,13 @@ WHERE
           null,
           null
           ]);
+
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
   
         let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+        (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
 
         // استخدم tx.batch بدلاً من tx.none
         await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -15787,6 +15890,7 @@ app.post("/getItemssData1", async (req, res) => {
     
 
         
+        const newId_transaction_header = await newId_fn("befor_invoice_header", 'id');
         const year = getYear(posted_elements.datex)
         
         const query001 = `SELECT MAX(reference) AS max FROM befor_invoice_header WHERE company_id = $1 AND transaction_Type = 25 AND datex LIKE '${year}-%'; -- التحقق من السنة في بداية التاريخ `;
@@ -15800,10 +15904,11 @@ app.post("/getItemssData1", async (req, res) => {
         // تنفيذ معاملة قاعدة البيانات
         await db.tx(async (tx) => {
           let query1 = `INSERT INTO befor_invoice_header
-                        (reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_column2, is_column1, is_column3, is_qutation_status, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12) RETURNING id;`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_column2, is_column1, is_column3, is_qutation_status, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13);`;
     
-          const insert = await tx.one(query1, [
+          await tx.none(query1, [
+            newId_transaction_header,
             newReference_transaction_header,
             transaction_type,
             total,
@@ -15818,9 +15923,9 @@ app.post("/getItemssData1", async (req, res) => {
             req.session.company_id
           ]);
     
-          const newId_transaction_header = insert.id;
-
+          let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
+            const newId = parseInt(newId_transaction_body);
     
             //! make sure if account id != item  then location and amount = null
 
@@ -15835,10 +15940,11 @@ app.post("/getItemssData1", async (req, res) => {
 
     
             let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                          (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
     
             await tx.none(query2, [
+              newId,
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -15850,6 +15956,8 @@ app.post("/getItemssData1", async (req, res) => {
               element.row_taxHeaderId
             ]);
     
+            
+            newId_transaction_body = parseInt(newId_transaction_body) + 1;
           }
     
           //! history
@@ -16316,7 +16424,9 @@ WHERE
           let query0 = `DELETE from befor_invoce_body where header_id = $1`
           await tx.none(query0,[posted_elements.x])
 
+          let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
+            const newId = parseInt(newId_transaction_body);
     
             //! make sure if account id != item  then location and amount = null
 
@@ -16331,10 +16441,11 @@ WHERE
 
     
             let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                          (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
     
             await tx.none(query2, [
+              newId,
               posted_elements.x,
               +element.item_typeId,
               element.item_id,
@@ -16346,6 +16457,8 @@ WHERE
               element.row_taxHeaderId
             ]);
     
+            
+            newId_transaction_body = parseInt(newId_transaction_body) + 1;
           }
     
           //! history
@@ -16960,6 +17073,7 @@ WHERE
         }
         }
     
+        const newId_transaction_header = await newId_fn("befor_invoice_header", 'id');
         const year = getYear(posted_elements.datex)
     
 
@@ -16987,10 +17101,11 @@ WHERE
 
 
           let query1 = `INSERT INTO befor_invoice_header
-                        (reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_column2, is_column1, is_column3, qutation_id, company_id)
-                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12) RETURNING id;`;
+                        (id, reference,transaction_type, total_value, general_note, datex, account_id, items_location_id, is_column2, is_column1, is_column3, qutation_id, company_id)
+                        VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13);`;
     
-          const insert = await tx.one(query1, [
+          await tx.none(query1, [
+            newId_transaction_header,
             newReference_transaction_header,
             transaction_type,
             total,
@@ -17005,9 +17120,9 @@ WHERE
             req.session.company_id
           ]);
     
-          const newId_transaction_header = insert.id;
-          
+          let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
+            const newId = parseInt(newId_transaction_body);
     
             //! make sure if account id != item  then location and amount = null
 
@@ -17022,10 +17137,11 @@ WHERE
 
     
             let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                          (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
     
             await tx.none(query2, [
+              newId,
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -17037,6 +17153,8 @@ WHERE
               element.row_taxHeaderId
             ]);
     
+            
+            newId_transaction_body = parseInt(newId_transaction_body) + 1;
           }
     
           //! history
@@ -17490,7 +17608,9 @@ WHERE
               let query0 = `DELETE from befor_invoce_body where header_id = $1`
               await tx.none(query0,[posted_elements.x])
     
+              let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
               for (const element of posted_elements.posted_array) {
+                const newId = parseInt(newId_transaction_body);
         
                 //! make sure if account id != item  then location and amount = null
     
@@ -17505,10 +17625,11 @@ WHERE
     
         
                 let query2 = `INSERT INTO befor_invoce_body
-                              (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
+                              (id, header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+                              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
         
                 await tx.none(query2, [
+                  newId,
                   posted_elements.x,
                   +element.item_typeId,
                   element.item_id,
@@ -17520,6 +17641,8 @@ WHERE
                   element.row_taxHeaderId
                 ]);
         
+                
+                newId_transaction_body = parseInt(newId_transaction_body) + 1;
               }
         
               //! history
@@ -19274,6 +19397,7 @@ WHERE
             }
         
 
+            const newId_transaction_header = await newId_fn("transaction_header", 'id');
             const year = getYear(posted_elements.datex)
             const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', 6, year, req);
             const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -19309,10 +19433,11 @@ WHERE
       
       
               let query1 = `INSERT INTO transaction_header
-                            (reference, company_id, transaction_type, total_value, general_note, datex, account_id, due_date, is_column1, is_column2, is_column3, items_location_id, order_id, qutation_id, general_reference, is_including_items)
-                            VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16) RETURNING id;`;
+                            (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, due_date, is_column1, is_column2, is_column3, items_location_id, order_id, qutation_id, general_reference, is_including_items)
+                            VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17);`;
         
-              const insert = await tx.one(query1, [
+              await tx.none(query1, [
+                newId_transaction_header,
                 newReference_transaction_header,
                 req.session.company_id,
                 transaction_type,
@@ -19330,8 +19455,7 @@ WHERE
                 newId_general_reference,
                 true
               ]);
-              const newId_transaction_header = insert.id;
-
+        
               let global_stock_id = await tx.oneOrNone(`select id from accounts_header ah where ah.company_id = 1 and ah.global_id = 12`, [req.session.company_id])
               let DeafultAccounts = await tx.any('select id, item_revenue_account, item_expense_account from accounts_header where is_final_account = true and company_id = $1 and is_inactive IS NULL',[req.session.company_id])
               let taxBodyArray = await tx.any('select id, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id from settings_tax_body')
@@ -19340,8 +19464,10 @@ WHERE
               let Val_beforTax = 0
               let taxValue = 0
               let TotalValue = 0
+              let newId_transaction_body = await newId_fn("transaction_body",'id');
               let insertData2 = []
               for (const element of posted_elements.posted_array) {
+                const newId = parseInt(newId_transaction_body);
         
                 //! make sure if account id != item  then location and amount = null
       
@@ -19393,7 +19519,10 @@ WHERE
                       account_id = +account_row.item_expense_account 
                     }
                     
+                
+        
                 insertData2.push([
+                  newId,
                   newId_transaction_header,
                   +Val_beforTax, // debit
                   null,  // credit
@@ -19433,6 +19562,7 @@ WHERE
                   }
                 }
       
+                newId_transaction_body = parseInt(newId_transaction_body) + 1;
               }
       
                 
@@ -19454,6 +19584,7 @@ WHERE
       
       
                 insertData2.push([
+                newId,
                 newId_transaction_header,
                 +object.debit || null,
                 +object.credit || null,
@@ -19469,12 +19600,13 @@ WHERE
                 null,
                 null
                 ]);
-
+      
+                newId_transaction_body = parseInt(newId_transaction_body) + 1;
               }
         
               let query2 = `INSERT INTO transaction_body
-              (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+              (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
       
               // استخدم tx.batch بدلاً من tx.none
               await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -20020,8 +20152,10 @@ WHERE
               let Val_beforTax = 0
               let taxValue = 0
               let TotalValue = 0
+              let newId_transaction_body = await newId_fn("transaction_body",'id');
               let insertData2 = []
               for (const element of posted_elements.posted_array) {
+                const newId = parseInt(newId_transaction_body);
         
                 //! make sure if account id != item  then location and amount = null
       
@@ -20074,6 +20208,7 @@ WHERE
                     
         
                 insertData2.push([
+                  newId,
                   posted_elements.x,
                   +Val_beforTax,
                   null,
@@ -20113,6 +20248,7 @@ WHERE
                   }
                 }
       
+                newId_transaction_body = parseInt(newId_transaction_body) + 1;
               }
       
                 
@@ -20130,8 +20266,11 @@ WHERE
       
               //! insert the other part to transaction
               for (const object of other_posted_array){
+                const newId = parseInt(newId_transaction_body);
+      
       
                 insertData2.push([
+                newId,
                 posted_elements.x,
                 +object.debit || null,
                 +object.credit || null,
@@ -20148,11 +20287,12 @@ WHERE
                 null
                 ]);
       
+                newId_transaction_body = parseInt(newId_transaction_body) + 1;
               }
         
               let query2 = `INSERT INTO transaction_body
-              (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+              (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
       
               // استخدم tx.batch بدلاً من tx.none
               await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -20696,6 +20836,9 @@ app.post("/services_add", async (req, res) => {
         message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
+
+
+    //3: insert data into db
     
     
     let active_value;
@@ -20705,13 +20848,17 @@ app.post("/services_add", async (req, res) => {
       active_value = true
     }
 
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
+
 
     let query1 = `
-  INSERT INTO accounts_header (account_name, account_no, item_unite, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, is_inactive, is_final_account, finance_statement, company_id, account_type_id)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  INSERT INTO accounts_header (id, account_name, account_no, item_unite, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, is_inactive, is_final_account, finance_statement, company_id, account_type_id)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 `;
 
   let params1 =[
+    newId_header,
     posted_elements.account_name,
     posted_elements.accountNo,
     posted_elements.unite_name,
@@ -20725,6 +20872,16 @@ app.post("/services_add", async (req, res) => {
     req.session.company_id,
     8
   ]
+
+
+  // let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+  //               VALUES ($1, $2, $3)`
+
+  // let params2 = [newId_body,
+  //   posted_elements.select_department_value,
+  //   newId_header
+  // ]               
+
 
   await db.tx(async (tx) => {
     await tx.none(query1, params1);
@@ -20886,6 +21043,14 @@ app.post("/services_update", async (req, res) => {
     req.session.company_id
   ]
 
+
+  // let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+  //               VALUES ($1, $2, $3)`
+
+  // let params2 = [newId_body,
+  //   posted_elements.select_department_value,
+  //   newId_header
+  // ]               
 
 
   await db.tx(async (tx) => {
@@ -21478,6 +21643,7 @@ WHERE
 
    
       
+      const newId_transaction_header = await newId_fn("transaction_header", 'id');
       const year = getYear(posted_elements.datex)
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',4, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -21490,10 +21656,11 @@ WHERE
      
 
         let query1 = `INSERT INTO transaction_header
-                      (reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, is_column1, is_column2, is_column3, items_location_id, invoice_id, general_reference, is_including_items)
-                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15) RETURNING id;`;
+                      (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, salesman_id, is_column1, is_column2, is_column3, items_location_id, invoice_id, general_reference, is_including_items)
+                      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15, $16, $17);`;
   
-        const insert =await tx.one(query1, [
+        await tx.none(query1, [
+          newId_transaction_header,
           newReference_transaction_header,
           req.session.company_id,
           transaction_type,
@@ -21510,8 +21677,7 @@ WHERE
           newId_general_reference,
           true
         ]);
-        const newId_transaction_header = insert.id;
-
+  
         let DeafultAccounts = await tx.any('select id, item_revenue_account, item_expense_account from accounts_header where is_final_account = true and company_id = $1 and is_inactive IS NULL',[req.session.company_id])
         let taxBodyArray = await tx.any('select id, tax_rate, is_tax_reverse, tax_account_id, settings_tax_header_id from settings_tax_body')
 
@@ -21519,8 +21685,10 @@ WHERE
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
+        let newId_transaction_body = await newId_fn("transaction_body",'id');
         let insertData2 = []
         for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_transaction_body);
   
           //! make sure if account id != item  then location and amount = null
 
@@ -21577,6 +21745,7 @@ WHERE
           const account_id = +account_row.item_revenue_account
           
           insertData2.push([
+            newId,
             newId_transaction_header,
             +Val_beforTax,
             null,
@@ -21616,6 +21785,7 @@ WHERE
             }
           }
 
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
 
           
@@ -21633,8 +21803,11 @@ WHERE
 
         //! insert the other part to transaction
         for (const object of other_posted_array){
+          const newId = parseInt(newId_transaction_body);
+
 
           insertData2.push([
+          newId,
           newId_transaction_header,
           +object.debit || null,
           +object.credit || null,
@@ -21651,11 +21824,12 @@ WHERE
           null
           ]);
 
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
   
         let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id, is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+        (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id, is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
 
         // استخدم tx.batch بدلاً من tx.none
         await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -21950,8 +22124,10 @@ WHERE
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
+        let newId_transaction_body = await newId_fn("transaction_body",'id');
         let insertData2 = []
         for (const element of posted_elements.posted_array) {
+          const newId = parseInt(newId_transaction_body);
   
           //! make sure if account id != item  then location and amount = null
 
@@ -22009,6 +22185,7 @@ WHERE
           
   
           insertData2.push([
+            newId,
             posted_elements.x,
             +Val_beforTax,
             null,
@@ -22048,6 +22225,7 @@ WHERE
             }
           }
 
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
 
           
@@ -22065,8 +22243,11 @@ WHERE
 
         //! insert the other part to transaction
         for (const object of other_posted_array){
+          const newId = parseInt(newId_transaction_body);
+
 
           insertData2.push([
+          newId,
           posted_elements.x,
           +object.debit || null,
           +object.credit || null,
@@ -22083,11 +22264,12 @@ WHERE
           null
           ]);
 
+          newId_transaction_body = parseInt(newId_transaction_body) + 1;
         }
   
         let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+        (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
 
         // استخدم tx.batch بدلاً من tx.none
         await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -23295,8 +23477,10 @@ group by
       let Val_beforTax = 0
       let taxValue = 0
       let TotalValue = 0
+      let newId_transaction_body = await newId_fn("transaction_body",'id');
       let insertData2 = []
       for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_transaction_body);
 
         //! make sure if account id != item  then location and amount = null
 
@@ -23361,6 +23545,7 @@ group by
         
 
         insertData2.push([
+          newId,
           posted_elements.x,
           null,
           +Val_beforTax,
@@ -23400,6 +23585,7 @@ group by
           }
         }
 
+        newId_transaction_body = parseInt(newId_transaction_body) + 1;
       }
 
         
@@ -23417,9 +23603,11 @@ group by
 
       //! insert the other part to transaction
       for (const object of other_posted_array){
+        const newId = parseInt(newId_transaction_body);
 
 
         insertData2.push([
+        newId,
         posted_elements.x,
         +object.debit || null,
         +object.credit || null,
@@ -23436,11 +23624,12 @@ group by
         null
         ]);
 
+        newId_transaction_body = parseInt(newId_transaction_body) + 1;
       }
 
       let query2 = `INSERT INTO transaction_body
-      (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+      (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
 
       // استخدم tx.batch بدلاً من tx.none
       await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -23699,6 +23888,7 @@ group by
     `
        const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId, posted_elements.datex])
     
+    const newId_transaction_header = await newId_fn("transaction_header", 'id');
     const year = getYear(posted_elements.datex)
     const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
     const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -23709,10 +23899,11 @@ group by
     await db.tx(async (tx) => {
 
       let query1 = `INSERT INTO transaction_header
-                    (reference, company_id, transaction_type, total_value, general_note, datex, account_id, is_column1, is_column2, is_column3, items_location_id, invoice_id, general_reference, is_including_items)
-                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14) RETURNING id;`;
+                    (id, reference, company_id, transaction_type, total_value, general_note, datex, account_id, is_column1, is_column2, is_column3, items_location_id, invoice_id, general_reference, is_including_items)
+                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10 , $11 , $12, $13, $14, $15);`;
 
-      const insert = await tx.one(query1, [
+      await tx.none(query1, [
+        newId_transaction_header,
         newReference_transaction_header,
         req.session.company_id,
         transaction_type,
@@ -23728,7 +23919,6 @@ group by
         newId_general_reference,
         true
       ]);
-      const newId_transaction_header = insert.id;
 
       let global_stock_id = await tx.oneOrNone(`select id from accounts_header ah where ah.company_id = 1 and ah.global_id = 12`, [req.session.company_id])
       let DeafultAccounts = await tx.any('select id, item_revenue_account, item_expense_account from accounts_header where is_final_account = true and company_id = $1 and is_inactive IS NULL',[req.session.company_id])
@@ -23738,8 +23928,10 @@ group by
       let Val_beforTax = 0
       let taxValue = 0
       let TotalValue = 0
+      let newId_transaction_body = await newId_fn("transaction_body",'id');
       let insertData2 = []
       for (const element of posted_elements.posted_array) {
+        const newId = parseInt(newId_transaction_body);
 
         //! make sure if account id != item  then location and amount = null
 
@@ -23803,6 +23995,7 @@ group by
         }
 
         insertData2.push([
+          newId,
           newId_transaction_header,
           null,
           +Val_beforTax,
@@ -23842,6 +24035,7 @@ group by
           }
         }
 
+        newId_transaction_body = parseInt(newId_transaction_body) + 1;
       }
 
         
@@ -23859,9 +24053,11 @@ group by
 
       //! insert the other part to transaction
       for (const object of other_posted_array){
+        const newId = parseInt(newId_transaction_body);
 
 
         insertData2.push([
+        newId,
         newId_transaction_header,
         +object.debit || null,
         +object.credit || null,
@@ -23878,11 +24074,12 @@ group by
         null
         ]);
 
+        newId_transaction_body = parseInt(newId_transaction_body) + 1;
       }
 
       let query2 = `INSERT INTO transaction_body
-      (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id, is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+      (id, transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id, is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`;
 
       // استخدم tx.batch بدلاً من tx.none
       await tx.batch(insertData2.map(data => tx.none(query2, data)));
@@ -24840,15 +25037,17 @@ app.post("/fixed_assests_add", async (req, res) => {
     
     
 
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
 
-    await db.tx(async (tx) => {
 
     let query1 = `
-  INSERT INTO accounts_header (account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, item_expense_account, str10_data_column1, str10_data_column2, numeric_column1, numeric_column2, str50_column1, str_textarea_column1)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id;
+  INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, item_expense_account, str10_data_column1, str10_data_column2, numeric_column1, numeric_column2, str50_column1, str_textarea_column1)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 `;
 
   let params1 =[
+    newId_header,
     posted_elements.fixed_ssests_name_input_value,
     posted_elements.fixed_ssests_input_value,
     true,
@@ -24865,19 +25064,18 @@ app.post("/fixed_assests_add", async (req, res) => {
     posted_elements.asset_info_input_value
   ]
 
-  const insert = await tx.one(query1, params1);
 
-  const newId_header = insert.id;
+  let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                VALUES ($1, $2, $3)`
 
-  let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-                VALUES ($1, $2)`
-
-  let params2 = [
+  let params2 = [newId_body,
     +result.parent_id,
     newId_header
   ]               
 
 
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
     await tx.none(query2, params2);
     await history(14, 1, newId_header, 0, req, tx)
   })
@@ -25693,9 +25891,10 @@ WITH main_query AS (
           message_ar: 'برجاء انشاء اصول ثابتة اولا : Sadd002',
         });
       }
-      await db.tx(async (tx) => {
-
+  
       // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+      const newId_transaction_header = await newId_fn("transaction_header", 'id');
+      let newId_transaction_body = await newId_fn("transaction_body", 'id');
       const year = getYear(posted_elements.datex)
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -25704,27 +25903,6 @@ WITH main_query AS (
       let tb_posted_array = []
       const frontEndDatex = posted_elements.startDate
       let index = 1
-
-
-      let query1 = `INSERT INTO transaction_header
-      (reference, company_id, transaction_type, total_value, general_note, datex, general_reference, str10_date_column1, str10_date_column2)
-      VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9) RETURNING id;`;
-
-let params1 = [
-newReference_transaction_header,
-req.session.company_id,
-transaction_type,
-total.toFixed(2),
-posted_elements.note,
-posted_elements.datex,
-newId_general_reference,
-posted_elements.startDate,
-posted_elements.endDate,
-]                    
-const insert = await tx.one(query1, params1);
-
-const newId_transaction_header = insert.id;
-
       for ( const row of posted_elements.posted_array){
         const dbRow = result.find(item => +item.id === row.account_id);
         
@@ -25770,6 +25948,7 @@ const newId_transaction_header = insert.id;
         
         // سطر المصورف
         tb_posted_array.push([
+          newId_transaction_body++, // id
           newId_transaction_header, // transaction_header_id
           +row.depreciation_value || 0, // debit
           null, //credit          
@@ -25780,6 +25959,7 @@ const newId_transaction_header = insert.id;
 
         // سطر المجمع
         tb_posted_array.push([
+          newId_transaction_body++, // id
           newId_transaction_header, // transaction_header_id
           null, //debit
           +row.depreciation_value || 0, // credit
@@ -25793,11 +25973,32 @@ const newId_transaction_header = insert.id;
       }
 
       let query2 = `INSERT INTO transaction_body
-      (transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
-      VALUES($1, $2, $3, $4, $5);`;
+      (id, transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
+      VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+
+      let query1 = `INSERT INTO transaction_header
+                    (id, reference, company_id, transaction_type, total_value, general_note, datex, general_reference, str10_date_column1, str10_date_column2)
+                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9 , $10);`;
+      
+      let params1 = [
+        newId_transaction_header,
+        newReference_transaction_header,
+        req.session.company_id,
+        transaction_type,
+        total.toFixed(2),
+        posted_elements.note,
+        posted_elements.datex,
+        newId_general_reference,
+        posted_elements.startDate,
+        posted_elements.endDate,
+      ]                    
 
     // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
 
+      await tx.none(query1, params1);
 
       // استخدم tx.batch بدلاً من tx.none
       await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
@@ -25972,6 +26173,7 @@ WITH main_query AS (
       }
   
       // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+      let newId_transaction_body = await newId_fn("transaction_body", 'id');
       const year = getYear(posted_elements.datex)
       
 
@@ -26024,6 +26226,7 @@ WITH main_query AS (
         
         // سطر المصورف
         tb_posted_array.push([
+          newId_transaction_body++, // id
           posted_elements.x, // transaction_header_id
           +row.depreciation_value || 0, // debit
           null, //credit          
@@ -26034,6 +26237,7 @@ WITH main_query AS (
 
         // سطر المجمع
         tb_posted_array.push([
+          newId_transaction_body++, // id
           posted_elements.x, // transaction_header_id
           null, //debit
           +row.depreciation_value || 0, // credit
@@ -26050,8 +26254,8 @@ WITH main_query AS (
       let parms0 = [posted_elements.x]
 
       let query2 = `INSERT INTO transaction_body
-      (transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
-      VALUES($1, $2, $3, $4, $5);`;
+      (id, transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
+      VALUES($1, $2, $3, $4, $5, $6);`;
 
 
 
@@ -26490,15 +26694,17 @@ app.post("/cash_accounts_add", async (req, res) => {
     
     
 
-    await db.tx(async (tx) => {
+    const newId_header = await newId_fn("accounts_header",'id');
+    const newId_body = await newId_fn("accounts_body",'id');
 
 
     let query1 = `
-  INSERT INTO accounts_header (account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, str50_column1, str_textarea_column1)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;
+  INSERT INTO accounts_header (id, account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, str50_column1, str_textarea_column1)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `;
 
   let params1 =[
+    newId_header,
     posted_elements.cash_accounts_name_input_value,
     posted_elements.cash_accounts_input_value,
     true,
@@ -26510,20 +26716,18 @@ app.post("/cash_accounts_add", async (req, res) => {
     posted_elements.cash_info_input_value
   ]
 
-  const insert = await tx.one(query1, params1);
 
-  const newId_header = insert.id;
+  let query2 = `INSERT INTO accounts_body (id, parent_id, account_id)
+                VALUES ($1, $2, $3)`
 
-
-  let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-                VALUES ($1, $2)`
-
-  let params2 = [
+  let params2 = [newId_body,
     +result.parent_id,
     newId_header
   ]               
 
 
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
     await tx.none(query2, params2);
     await history(9, 1, newId_header, 0, req, tx)
   })
@@ -27258,6 +27462,7 @@ for (const rowData of posted_elements.posted_array) {
 
 
 
+const newId_transaction_header = await newId_fn("transaction_header", 'id');
 const year = getYear(posted_elements.datex);
 const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req)
 const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -27265,10 +27470,11 @@ const newId_general_reference = await newId_fn("transaction_header", 'general_re
 // تنفيذ معاملة قاعدة البيانات
 await db.tx(async (tx) => {
   let query1 = `INSERT INTO transaction_header
-                (reference, datex, company_id, transaction_type, total_value, general_note, general_reference, account_id)
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;`;
+                (id, reference, datex, company_id, transaction_type, total_value, general_note, general_reference, account_id)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
 
-  const insert = await tx.one(query1, [
+  await tx.none(query1, [
+    newId_transaction_header,
     newReference_transaction_header,
     posted_elements.datex,
     req.session.company_id,
@@ -27279,19 +27485,18 @@ await db.tx(async (tx) => {
     posted_elements.main_account
   ]);
 
-  const newId_transaction_header = insert.id;
-
-
   let insert_array2 = [];
   let items_array = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
   let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
 
 
  //todo main_account
  insert_array2.push([
+  newId_transaction_body,
   newId_transaction_header,
   posted_elements.main_account,
   posted_elements.total,
@@ -27299,9 +27504,13 @@ await db.tx(async (tx) => {
   null,
 ]);
 
+newId_transaction_body++;
+
   for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
   
     insert_array2.push([
+      newId,
       newId_transaction_header,
       element.account_id,
       null,
@@ -27309,6 +27518,7 @@ await db.tx(async (tx) => {
       element.note_row
     ]);
 
+    newId_transaction_body += 1;
   }
 
   await tx.batch(insert_array2.map(data => tx.none(query2, data)));
@@ -27466,6 +27676,7 @@ for (const rowData of posted_elements.posted_array) {
 
 
 
+const newId_transaction_header = await newId_fn("transaction_header", 'id');
 const year = getYear(posted_elements.datex);
 const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req)
 const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -27473,10 +27684,11 @@ const newId_general_reference = await newId_fn("transaction_header", 'general_re
 // تنفيذ معاملة قاعدة البيانات
 await db.tx(async (tx) => {
   let query1 = `INSERT INTO transaction_header
-                (reference, datex, company_id, transaction_type, total_value, general_note, general_reference, account_id)
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;`;
+                (id, reference, datex, company_id, transaction_type, total_value, general_note, general_reference, account_id)
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
 
-  const insert = await tx.one(query1, [
+  await tx.none(query1, [
+    newId_transaction_header,
     newReference_transaction_header,
     posted_elements.datex,
     req.session.company_id,
@@ -27487,17 +27699,23 @@ await db.tx(async (tx) => {
     posted_elements.main_account
   ]);
 
-  const newId_transaction_header = insert.id;
-
   let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
   let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+
+
+newId_transaction_body++;
 
   for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
   
     insert_array2.push([
+      newId,
       newId_transaction_header,
       element.account_id,
       element.value, // debit
@@ -27505,10 +27723,12 @@ await db.tx(async (tx) => {
       element.note_row
     ]);
 
+    newId_transaction_body += 1;
   }
 
    //todo main_account
  insert_array2.push([
+  newId_transaction_body,
   newId_transaction_header,
   posted_elements.main_account,
   null,
@@ -27971,14 +28191,16 @@ await db.tx(async (tx) => {
   await tx.none(query001,[posted_elements.x])
 
   let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
   let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
 
 
  //todo main_account
  insert_array2.push([
+  newId_transaction_body,
   posted_elements.x,
   posted_elements.main_account,
   posted_elements.total,
@@ -27986,10 +28208,13 @@ await db.tx(async (tx) => {
   null,
 ]);
 
+newId_transaction_body++;
 
   for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
   
     insert_array2.push([
+      newId,
       posted_elements.x,
       element.account_id,
       null,
@@ -27997,6 +28222,7 @@ await db.tx(async (tx) => {
       element.note_row
     ]);
 
+    newId_transaction_body += 1;
   }
 
   await tx.batch(insert_array2.map(data => tx.none(query2, data)));
@@ -28195,14 +28421,22 @@ await db.tx(async (tx) => {
   await tx.none(query001,[posted_elements.x])
 
   let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("transaction_body", 'id'));
 
   let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
+  (id, transaction_header_id, account_id, debit, credit, row_note)
+  VALUES($1, $2, $3, $4, $5, $6);`;
+
+
+
+
+newId_transaction_body++;
 
   for (const element of posted_elements.posted_array) {
+    const newId = newId_transaction_body;
   
     insert_array2.push([
+      newId,
       posted_elements.x,
       element.account_id,
       element.value, // debit
@@ -28210,10 +28444,12 @@ await db.tx(async (tx) => {
       element.note_row
     ]);
 
+    newId_transaction_body += 1;
   }
 
    //todo main_account
  insert_array2.push([
+  newId_transaction_body,
   posted_elements.x,
   posted_elements.main_account,
   null,
@@ -28789,18 +29025,45 @@ app.post("/api/cash_transfer_add", async (req, res) => {
   }
   
   
-  await db.tx(async (tx) => {
+  
       // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+      const newId_transaction_header = await newId_fn("transaction_header", 'id');
+      let newId_transaction_body = await newId_fn("transaction_body", 'id');
       const year = getYear(posted_elements.datex)
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
+      let tb_posted_array = []
 
-            let query1 = `INSERT INTO transaction_header
-                    (reference, company_id, transaction_type, total_value, general_note, datex, general_reference, items_location_id, items_location_id2)
-                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9) RETURNING id;`;
+      tb_posted_array.push([
+        newId_transaction_body++, // id
+        newId_transaction_header, // transaction_header_id
+        posted_elements.account_from, // account_id
+        posted_elements.value, // debit 
+        null //credit
+      ]);
+
+      tb_posted_array.push([
+        newId_transaction_body++, // id
+        newId_transaction_header, // transaction_header_id
+        posted_elements.account_to, // account_id
+        null, // debit 
+        posted_elements.value //credit
+      ]);
+
+
+      let query2 = `INSERT INTO transaction_body
+      (id, transaction_header_id, account_id, debit, credit)
+      VALUES($1, $2, $3, $4, $5);`;
+
+
+
+      let query1 = `INSERT INTO transaction_header
+                    (id, reference, company_id, transaction_type, total_value, general_note, datex, general_reference, items_location_id, items_location_id2)
+                    VALUES($1, $2, $3, $4, $5, $6, $7 , $8 , $9, $10);`;
       
       let params1 = [
+        newId_transaction_header,
         newReference_transaction_header,
         req.session.company_id,
         transaction_type,
@@ -28811,32 +29074,12 @@ app.post("/api/cash_transfer_add", async (req, res) => {
         +posted_elements.account_from,
         +posted_elements.account_to,
       ]                    
-      const insert = await tx.one(query1, params1);
-      const newId_transaction_header = insert.id;
 
-
-      let tb_posted_array = []
-
-      tb_posted_array.push([
-        newId_transaction_header, // transaction_header_id
-        posted_elements.account_from, // account_id
-        posted_elements.value, // debit 
-        null //credit
-      ]);
-
-      tb_posted_array.push([
-        newId_transaction_header, // transaction_header_id
-        posted_elements.account_to, // account_id
-        null, // debit 
-        posted_elements.value //credit
-      ]);
-
-
-      let query2 = `INSERT INTO transaction_body
-      (transaction_header_id, account_id, debit, credit)
-      VALUES($1, $2, $3, $4);`;
     // تنفيذ معاملة قاعدة البيانات
-  
+    await db.tx(async (tx) => {
+
+      await tx.none(query1, params1);
+
       // استخدم tx.batch بدلاً من tx.none
       await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
 
@@ -28980,11 +29223,13 @@ app.post("/api/cash_transfer_update", async (req, res) => {
   }
     
       // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+      let newId_transaction_body = await newId_fn("transaction_body", 'id');
       const year = getYear(posted_elements.datex)
 
       let tb_posted_array = []
 
       tb_posted_array.push([
+        newId_transaction_body++, // id
         posted_elements.x, // transaction_header_id
         posted_elements.account_from, // account_id
         posted_elements.value, // debit 
@@ -28992,6 +29237,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
       ]);
 
       tb_posted_array.push([
+        newId_transaction_body++, // id
         posted_elements.x, // transaction_header_id
         posted_elements.account_to, // account_id
         null, // debit 
@@ -29000,8 +29246,8 @@ app.post("/api/cash_transfer_update", async (req, res) => {
 
 
       let query2 = `INSERT INTO transaction_body
-      (transaction_header_id, account_id, debit, credit)
-      VALUES($1, $2, $3, $4);`;
+      (id, transaction_header_id, account_id, debit, credit)
+      VALUES($1, $2, $3, $4, $5);`;
 
 
       let query0 = `DELETE FROM transaction_body WHERE transaction_header_id = $1`
@@ -29385,6 +29631,7 @@ where
   }
 });
 
+
 app.post("/api/production_forms_add", async (req, res) => {
   try {
 
@@ -29398,16 +29645,17 @@ app.post("/api/production_forms_add", async (req, res) => {
     }
 
     const posted_elements = req.body;
-    const transaction_type = 30;
+    const transaction_type = 30
 
     //! sql injection check
-    let hasBadSymbols = sql_anti_injection([ 
-      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.vale), 
+    let hasBadSymbols = sql_anti_injection([
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.vale), // تحويل كل عنصر في dataArray إلى سلسلة نصية ودمجها معاً
       posted_elements.account_no,
       posted_elements.form_name,
       posted_elements.amount,
       posted_elements.item_account,
       posted_elements.location_account,
+      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
     ]);
     if (hasBadSymbols) {
       return res.json({
@@ -29417,112 +29665,175 @@ app.post("/api/production_forms_add", async (req, res) => {
       });
     }
 
+
+    // const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    // if (InValidDateFormat) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message_ar: InValidDateFormat_message_ar,
+    //   });
+    // }
+
+    // //! settings
+    // const settings = await check_settings_validation({
+    //   check_futureDate: true,
+    //   check_closingDate: true,
+    //   datex: posted_elements.datex,
+    //   type: 'add',
+    //   tableName: false, // if type = 'update' or 'delete' only
+    //   transaction_id: false, // if type = 'update' or 'delete' only
+    // }, req);
+
+    
+    // if (!settings.valid) {
+    //   return res.json({
+    //     success: false,
+    //     message_ar: settings.message_ar,
+    //   });
+    // }
+
     turn_EmptyValues_TO_null(posted_elements);
 
     //* Start Transaction --------------------------------------------------
-    const query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND account_type_id in (1,5,7) AND is_final_account IS TRUE`;
-    let rows02 = await db.any(query02, [req.session.company_id]);
 
-    const dbAccounts = rows02.map(row => ({
-      id: parseInt(row.id),
-      account_type_id: row.account_type_id
-    }));
+    //! check diffrence between debit and credit
 
-    const item_account = dbAccounts.some(item => +item.id === +posted_elements.item_account && +item.account_type_id === 5);
-    const location_account = dbAccounts.some(item => +item.id === +posted_elements.location_account && +item.account_type_id === 7);
+        // //! Security hacking  accounts id
+// جلب الحسابات من قاعدة البيانات
+let query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND account_type_id in (1,5,7) AND is_final_account IS TRUE`;
+let rows02 = await db.any(query02, [req.session.company_id]);
 
-    if (!item_account || !location_account) {
-      await block_user(req, 'Spfa01');
-      return res.json({
-        success: false,
-        xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-      });
-    }
 
-    let rowIndex = 1;
-    for (const rowData of posted_elements.posted_array) {
-      const account_typeId = rowData.account_typeId;
-      const account_id = rowData.account_id;
-      const amount = +rowData.amount;
 
-      if (!amount || isNaN(amount) || amount <= 0){
-        return res.json({
-          success: false,
-          message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
-        });
-      }
 
-      const accountExists = dbAccounts.some(item => +item.id === +account_id && +item.account_type_id === +account_typeId);
-      if (!accountExists) {
-        await block_user(req, 'Spfa02');
-        return res.json({
-          success: false,
-          xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-        });
-      }
+// تحويل النتائج إلى مصفوفة للتسهيل في الفحص
+const dbAccounts = rows02.map(row => ({
+  id: parseInt(row.id),
+  account_type_id: row.account_type_id
+}));
 
-      rowIndex++;
-    }
+//! التأكد من الحساب الاساسى
+const item_account = dbAccounts.some(item => 
+  +item.id === +posted_elements.item_account && +item.account_type_id === 5
+);
 
-    // Start Transaction
-    await db.tx(async (tx) => {
-      // Insert into production_forms_header and get the new id
-      const query1 = `INSERT INTO production_forms_header
-                      (account_no, form_name, production_item_id, location_from, company_id, value)
-                      VALUES($1, $2, $3, $4, $5, $6) RETURNING id;`;
-      const insert = await tx.one(query1, [
-        posted_elements.account_no,
-        posted_elements.form_name.trim(),
-        +posted_elements.item_account,
-        +posted_elements.location_account,
-        req.session.company_id,
-        posted_elements.amount
-      ]);
+console.log(item_account);
 
-      const newId_transaction_header = insert.id; // The new header id
+const location_account = dbAccounts.some(item => 
+  +item.id === +posted_elements.location_account && +item.account_type_id === 7
+);
 
-      // Insert into production_forms_body using the new header id
-      const query2 = `INSERT INTO production_forms_body
-                      (production_forms_header_id, account_id, value)
-                      VALUES($1, $2, $3);`;
 
-      let insert_array2 = [];
-      for (const element of posted_elements.posted_array) {
-        insert_array2.push([
-          newId_transaction_header, // Use the new header id here
-          element.account_id,
-          +element.amount
-        ]);
-      }
+if (!item_account || !location_account){
+  await block_user(req,'Spfa01')
+  return res.json({
+    success: false,
+    xx: true,
+    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+  });
+}
 
-      // Insert data into body table
-      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
 
-      // Add history log
-      await history(transaction_type, 1, newId_transaction_header, 0, req, tx);
+let rowIndex = 1;
+// المرور على كل كائن في posted_elements.posted_array
+for (const rowData of posted_elements.posted_array) {
+  const account_typeId = rowData.account_typeId;
+  const account_id = rowData.account_id;
+  const amount = +rowData.amount;
+
+  if (!amount || isNaN(amount) || amount <= 0){
+    return res.json({
+      success: false,
+      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
     });
+  }
 
+  //! make sure from every account_id
+  const accountExists = dbAccounts.some(item => 
+    +item.id === +account_id && +item.account_type_id === +account_typeId
+  );
+
+  // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
+  if (!accountExists) {
+    await block_user(req,'Spfa02')
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+    });
+  }
+
+  rowIndex++;
+}
+
+
+
+const newId_transaction_header = await newId_fn("production_forms_header", 'id');
+// const year = getYear(posted_elements.datex);
+// const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req)
+// const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+  let query1 = `INSERT INTO production_forms_header
+                (id, account_no, form_name, production_item_id, location_from, company_id, value)
+                VALUES($1, $2, $3, $4, $5, $6, $7);`;
+
+  await tx.none(query1, [
+    newId_transaction_header,
+    posted_elements.account_no,
+    posted_elements.form_name.trim(),
+    +posted_elements.item_account,
+    +posted_elements.location_account,
+    req.session.company_id,
+    posted_elements.amount
+  ]);
+
+  let insert_array2 = [];
+  let newId_transaction_body = parseInt(await newId_fn("production_forms_body", 'id'));
+
+  let query2 = `INSERT INTO production_forms_body
+  (id, production_forms_header_id, account_id, value)
+  VALUES($1, $2, $3, $4);`;
+
+
+
+  for (const element of posted_elements.posted_array) {
+  
+    insert_array2.push([
+      newId_transaction_body++,
+      newId_transaction_header,
+      element.account_id,
+      +element.amount
+    ]);
+
+  }
+
+  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  await history(transaction_type, 1, newId_transaction_header, 0, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+    // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
     await last_activity(req);
-
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء نموذج التصنيع بنجاح`,
+      // message_ar: `تم إنشاء سند دفغ بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `تم إنشاء نموذج التصنيع بنجاح  `,
     });
-
   } catch (error) {
     await last_activity(req);
     console.error("Error production_forms_add:", error);
 
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
       message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
     });
   }
 });
-
-
 
 //#endregion
 
@@ -31433,28 +31744,6 @@ async function test_trial_balance() {
 
 }
 
-/*
-
-DO $$
-DECLARE
-    tbl_name text := 'production_forms_header';  -- هنا نقوم بتحديد اسم الجدول في المتغير
-    max_id BIGINT;
-BEGIN
-    -- تحديد أعلى قيمة في العمود 'id' في الجدول المحدد
-    EXECUTE format('SELECT MAX(id) + 1 FROM %I', tbl_name)
-    INTO max_id;
-
-    -- إنشاء تسلسل جديد باستخدام المتغير `tbl_name`
-    EXECUTE format('CREATE SEQUENCE %I_id_seq START WITH %s', tbl_name, max_id);
-
-    -- تعديل العمود لإضافة تسلسل كقيمة افتراضية باستخدام المتغير `tbl_name`
-    EXECUTE format('ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(''%I_id_seq'')', tbl_name, tbl_name);
-
-    -- ربط التسلسل بالعمود باستخدام المتغير `tbl_name`
-    EXECUTE format('ALTER SEQUENCE %I_id_seq OWNED BY %I.id', tbl_name, tbl_name);
-END $$;
-
-*/
 
 
 

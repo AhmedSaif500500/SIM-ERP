@@ -1,10 +1,10 @@
-setActiveSidebar("salesMain_view_ar");  
-pagePermission("view", "fixed_assests_permission");  // معلق
+setActiveSidebar("itemsMain_view_ar");
+pagePermission("view", "productions_permission");
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
-    sessionStorage.removeItem('fixed_assests_update_data')
-    window.location.href = "/fixed_assests_add_ar";
+    sessionStorage.removeItem('production_forms_ViewArray')
+    window.location.href = "/production_forms_add_ar";
   }
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
@@ -21,97 +21,37 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! تاريخ الشراء
-let f0_div = filter_div.querySelector(`#f0_div`);
-let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
-let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
-let f0_select = filter_div.querySelector(`#f0_select`);
-let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
-let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
-
-//! تاريخ اول اهلاك
-let f100_div = filter_div.querySelector(`#f100_div`);
-let f100_checkbox_div = filter_div.querySelector(`#f100_checkbox_div`);
-let f100_checkbox = filter_div.querySelector(`#f100_checkbox`);
-let f100_select = filter_div.querySelector(`#f100_select`);
-let f100_input_start_date1 = filter_div.querySelector(`#f100_input_start_date1`); f100_input_start_date1.value = firstDayOfYear;
-let f100_input_end_date1 = filter_div.querySelector(`#f100_input_end_date1`); f100_input_end_date1.value = lastDayOfYear;
-
-
-//! account no
+//! account_no
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! account name
+//! form_name
 let f2_div = filter_div.querySelector(`#f2_div`);
 let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
 let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
 let f2_select = filter_div.querySelector(`#f2_select`);
 let f2_input = filter_div.querySelector(`#f2_input`);
 
-//! account group desc
+//! item_name
 let f3_div = filter_div.querySelector(`#f3_div`);
 let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
 let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
 let f3_select = filter_div.querySelector(`#f3_select`);
 let f3_input = filter_div.querySelector(`#f3_input`);
 
-//! account desc
+//! location_name
 let f4_div = filter_div.querySelector(`#f4_div`);
 let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
 let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
 let f4_select = filter_div.querySelector(`#f4_select`);
 let f4_input = filter_div.querySelector(`#f4_input`);
 
-//! und depre value
-let f5_div = filter_div.querySelector(`#f5_div`);
-let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
-let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
-let f5_select = filter_div.querySelector(`#f5_select`);
-let f5_input = filter_div.querySelector(`#f5_input`);
-
-//! depr rate
-let f6_div = filter_div.querySelector(`#f6_div`);
-let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
-let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
-let f6_select = filter_div.querySelector(`#f6_select`);
-let f6_input = filter_div.querySelector(`#f6_input`);
-
-//! purshases value
-let f7_div = filter_div.querySelector(`#f7_div`);
-let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
-let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
-let f7_select = filter_div.querySelector(`#f7_select`);
-let f7_input = filter_div.querySelector(`#f7_input`);
-
-//! ما تم اهلاكه
-let f8_div = filter_div.querySelector(`#f8_div`);
-let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
-let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
-let f8_select = filter_div.querySelector(`#f8_select`);
-let f8_input = filter_div.querySelector(`#f8_input`);
-
-
-//! book_value
-let f9_div = filter_div.querySelector(`#f9_div`);
-let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
-let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
-let f9_select = filter_div.querySelector(`#f9_select`);
-let f9_input = filter_div.querySelector(`#f9_input`);
-
-//! assest_status
-let f10_div = filter_div.querySelector(`#f10_div`);
-let f10_checkbox = filter_div.querySelector(`#f10_checkbox`);
-let f10_selectAndInput_div = filter_div.querySelector(`#f10_selectAndInput_div`);
-let f10_select = filter_div.querySelector(`#f10_select`);
-let f10_input = filter_div.querySelector(`#f10_input`);
-
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 100, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [1, 2, 3, 4]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -151,24 +91,26 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('fixed_assests_ViewArray')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('production_forms_ViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('fixed_assests_ViewArray', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('production_forms_ViewArray', JSON.stringify(conditionsArray));
 }
 
 
 back_href.onclick = async function (event) {
     event.preventDefault();
    
-    const array = JSON.parse(sessionStorage.getItem(`fixed_assests_ViewArray`)) || [];
+
+    const array = JSON.parse(sessionStorage.getItem(`production_forms_ViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
-            window.location.href = `fixedAssestsMain_view_ar`;
+   
+            window.location.href = `productionMain_view_ar_view_ar`;
        
     }else{
 
@@ -182,7 +124,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("fixed_assests_ViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("production_forms_ViewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -192,7 +134,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("fixed_assests_ViewArray", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("production_forms_ViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -307,20 +249,11 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f0',true,true,true) // datex
-    call_default_checkbox('f100',true,false,true) // due date
-    call_default_checkbox('f1',true,false,false) // account_no
-    call_default_checkbox('f2',true,false,false) // account_name
-    call_default_checkbox('f3',true,false,false) // account_group
-    call_default_checkbox('f4',true,false,false) // account_desc
-    call_default_checkbox('f5',true,false,false) // un dep value
-    call_default_checkbox('f6',true,true,false) // rate
-    call_default_checkbox('f7',true,true,false) // purshases value
-    call_default_checkbox('f8',true,true,false) // depeaceated
-    call_default_checkbox('f9',true,true,false) // book value
-
+    call_default_checkbox('f1',true,true,false)
+    call_default_checkbox('f2',true,true,false)
+    call_default_checkbox('f3',true,false,false) 
+    call_default_checkbox('f4',true,false,false) 
 }
-
 
 async function filter_icon_cancel_fn() {
     try {
@@ -337,7 +270,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('fixed_assests_ViewArray');
+            sessionStorage.removeItem('production_forms_ViewArray');
             conditionsArray = []
             
         }
@@ -362,29 +295,22 @@ let filteredData_Array = [];
 
 async function getData_fn() {
     try {
-        let start_date;
-        let end_date;
 
-        start_date = f0_input_start_date1.value;
-        end_date = f0_input_end_date1.value;
-       
-        //  معلق
         data = await new_fetchData_postAndGet(
-            "/fixed_assests_view",
+            "/production_forms_view_ar",
             {},
-            "fixed_assests_permission","view",
+            "productions_permission","view",
             15,
             false,'',
             false,
             true,content_space,
             false,false,'',
             false,'',
-            false,'notes_ar',
+            false,'productionMain_view_ar_view_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
 
         
-
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -392,32 +318,13 @@ async function getData_fn() {
 }
 
 
-function is_datexChanged() {
-    if (
-        f0_input_start_date1.value !== startDate ||
-        f0_input_end_date1.value !== endDate
-    ) {
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
 
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
-        const datechange = is_datexChanged()
-        if (datechange){
-            await getData_fn();
-        }else{
             showFirst50RowAtTheBegening();
-        }
-
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
 
@@ -452,28 +359,9 @@ btn_do.onclick = async () => {
 function showFirst50RowAtTheBegening() {
     try {
         page_content.style.display = "none";
-
+        
         filteredData_Array = data.filter((row) => {
 
-            const f0 = 
-            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
-                f0_checkbox,
-                f0_select,
-                f0_input_start_date1,
-                f0_input_end_date1,
-                "purshases_date",
-                row
-            );
-
-            const f100 = 
-            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
-                f100_checkbox,
-                f100_select,
-                f100_input_start_date1,
-                f100_input_end_date1,
-                "started_depreciation_date",
-                row
-            );
 
             const f1 =
             filterData_string_column_with_showAndHiddenCheckbox(
@@ -490,7 +378,7 @@ function showFirst50RowAtTheBegening() {
                     f2_checkbox,
                     f2_select,
                     f2_input,
-                    "account_name",
+                    "form_name",
                     row
                 );
 
@@ -499,80 +387,26 @@ function showFirst50RowAtTheBegening() {
                     f3_checkbox,
                     f3_select,
                     f3_input,
-                    "fixed_ssests_group_name",
+                    "item_name",
                     row
-                );                
-
-            const f4 =
+                );
+            
+                const f4 =
                 filterData_string_column_with_showAndHiddenCheckbox(
                     f4_checkbox,
                     f4_select,
                     f4_input,
-                    "asset_info",
+                    "location_name",
                     row
                 );
-
-            const f5 =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f5_checkbox,
-                    f5_select,
-                    f5_input,
-                    "un_depericated_value",
-                    row
-                );
-
-            const f6 = 
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f6_checkbox,
-                    f6_select,
-                    f4_input,
-                    'rate_value',
-                    row
-                );
-
-                const f7 =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f7_checkbox,
-                    f7_select,
-                    f7_input,
-                    "asset_cost",
-                    row
-                );
-
-                const f8 =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f8_checkbox,
-                    f8_select,
-                    f8_input,
-                    "depreciation_value",
-                    row
-                );
-
-                const f9 =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    f9_checkbox,
-                    f9_select,
-                    f9_input,
-                    "book_value",
-                    row
-                );
-
-                const f10 = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f10_checkbox, f10_select, 'assest_status', row);
-
+                
+                
             return (
 
-                f0 &&
-                f100 &&
+                f1 &&
+                f2 &&
                 f3 &&
-                f4 &&
-                f5 &&
-                f6 &&
-                f7 &&
-                f8 &&
-                f9 &&
-                f8 &&
-                f9 &&
-                f10
+                f4 
             ); // && otherCondition;
         });
 
@@ -604,26 +438,12 @@ function fillTable() {
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
         let style_account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_account_name = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
-        let style_purshases_date = `display:${f0_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_started_depreciation_date = `display:${f100_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_rate_value = `display:${f6_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_un_depericated_value = `display:${f5_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_asset_info = `display:${f4_checkbox.checked ? "table-cell" : "none"}; width: auto; min-width: 10rem; white-space: wrap; text-align: start`;
-        let style_fixed_ssests_group_name = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; min-width: 10rem; white-space: wrap; text-align: start`;
-        let style_asset_cost = `display:${f7_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_depreciation_value = `display:${f8_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_book_value = `display:${f9_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_status_value = `display:${f10_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-
+        let style_form_name = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: 100%; white-space: wrap; text-align: start;`;
+        let item_name = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: wrap; text-align: start;`;
+        let style_location_name = `display:${f4_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
-        total_column2.value = 0;
-        total_column3.value = 0;
-        let fn1 = `onclick = "console.log('yes')"`;
-        let fn2 = `onclick = "console.log('yes')"`;
-        let fn3 = `onclick = "console.log('yes')"`;
-        // let fn3 = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -632,57 +452,24 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${style_account_no}">المعرف</th>
-                                <th style="${style_account_name}">الاصل</th>
-                                <th style="${style_purshases_date}">تاريخ الشراء</th>
-                                <th style="${style_started_depreciation_date}">بداية الاهلاك</th>
-                                <th style="${style_asset_info}">بيانات اخرى</th>
-                                <th style="${style_fixed_ssests_group_name}">وصف المجموعه</th>
-                                <th style="${style_un_depericated_value}">قيمه غير قابلة للاهلاك</th>
-                                <th style="${style_rate_value}">المعدل</th>
-                                <th style="${style_asset_cost}">التكلفة</th>
-                                <th style="${style_depreciation_value}">الاهلاك</th>
-                                <th style="${style_book_value}">القيمة الدفترية</th>
-                                <th style="${style_status_value}">الحالة</th>
+                                <th style="${style_account_no}">#</th>
+                                <th style="${style_form_name}">الاسم</th>
+                                <th style="${item_name}">الصنف تام الصنع</th>
+                                <th style="${style_location_name}">موقع سحب المخزون</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
         slice_array1.forEach((row) => {
                 
-            const rate = row.rate_value ? `${row.rate_value}%` : '';
-            
-            // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let asset_status_class = 'table_green_condition';
-            
-            // if(row.payment_status.includes('مدفوع بالكامل')){
-            //     payment_status_class = 'table_green_condition'
-            // }else if(row.payment_status.includes('مدفوع مقدماً')){
-            //     payment_status_class = 'table_blue_condition'
-            // }else if(row.payment_status.includes('مستحق اليوم')){
-            //     payment_status_class = 'table_blue_condition'
-            // }else if(row.payment_status.includes('مستحق منذ')){
-            //     payment_status_class = 'table_red_condition'
-            // }else if(row.payment_status.includes('يستحق بعد')){
-            //     payment_status_class = 'table_orange_condition'
-            // }
-
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_view_btn" onclick="table_update_btn_fn(this)">عرض</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${style_account_no}" class="td_account_no">${row.account_no}</td>
-                        <td style="${style_account_name}" class="td_account_name">${row.account_name}</td>
-                        <td style="${style_purshases_date}" class="td_purshases_date">${row.purshases_date}</td>
-                        <td style="${style_started_depreciation_date}" class="td_started_depreciation_date">${row.started_depreciation_date}</td>
-                        <td style="${style_asset_info}" class="td_asset_info">${row.asset_info}</td>
-                        <td style="${style_fixed_ssests_group_name}" class="td_fixed_ssests_group_name">${row.fixed_ssests_group_name}</td>
-                        <td style="${style_un_depericated_value}" class="td_un_depericated_value">${row.un_depericated_value}</td>
-                        <td style="${style_rate_value}" class="td_rate_value">${rate}</td>
-                        ${tdNumber(true,false,true,row.asset_cost,style_asset_cost,total_column1,fn1,'td_asset_cost')}
-                        ${tdNumber(true,false,true,row.depreciation_value,style_depreciation_value,total_column2,fn2,'td_depreciation_value')}
-                        ${tdNumber(true,true,true,row.book_value,style_book_value,total_column3,fn3,'td_book_value')}
-                        <td style="${style_status_value}"><span class="${asset_status_class} td_payment_status">${row.assest_status}</span></td>
+                        <td style="${style_form_name}" class="td_form_name">${row.form_name}</td>
+                        <td style="${item_name}" class="td_item_name">${row.item_name}</td>
+                        <td style="${style_location_name}" class="td_location_name">${row.location_name}</td>
                       </tr>`;
         });
 
@@ -691,17 +478,9 @@ function fillTable() {
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id1" style="${style_id}"></td>
                         <td id="footer_style_account_no" style="${style_account_no}"></td>
-                        <td id="footer_style_account_name" style="${style_account_name}"></td>
-                        <td id="footer_style_purshases_date" style="${style_purshases_date}"></td>
-                        <td id="footer_style_started_depreciation_date" style="${style_started_depreciation_date}"></td>
-                        <td id="footer_style_asset_info" style="${style_asset_info}"></td>
-                        <td id="footer_style_fixed_ssests_group_name" style="${style_fixed_ssests_group_name}"></td>
-                        <td id="footer_style_un_depericated_value" style="${style_un_depericated_value}"></td>
-                        <td id="footer_style_rate_value" style="${style_rate_value}"></td>
-                        <td id="footer_style_asset_cost" style="${style_asset_cost}"></td>
-                        <td id="footer_style_depreciation_value" style="${style_depreciation_value}"></td>
-                        <td id="footer_style_book_value" style="${style_book_value}"></td>
-                        <td id="footer_style_status_value" style="${style_status_value}"></td>
+                        <td id="footer_style_form_name" style="${style_form_name}"></td>
+                        <td id="footer_item_name" style="${item_name}"></td>
+                        <td id="footer_style_location_name" style="${style_location_name}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -728,16 +507,12 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_asset_cost`).textContent = floatToString(true,total_column1.value);
-        tableContainer.querySelector(`#footer_style_depreciation_value`).textContent = floatToString(true,total_column2.value);
-        tableContainer.querySelector(`#footer_style_book_value`).textContent = floatToString(true,total_column3.value);
+        // tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
 
-        startDate = f0_input_start_date1.value;
-        endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
@@ -752,33 +527,17 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const s1 = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
-            const s2 = performSearch_Row(f2_checkbox,"account_name",searchValue,row);
-            const s0 = performSearch_Row(f0_checkbox,"purshases_date",searchValue,row);
-            const s100 = performSearch_Row(f100_checkbox,"started_depreciation_date",searchValue,row);
-            const s6 = performSearch_Row(f6_checkbox,"rate_value",searchValue,row);
-            const s5 = performSearch_Row(f5_checkbox,"un_depericated_value",searchValue,row);
-            const s3 = performSearch_Row(f3_checkbox,"fixed_ssests_group_name",searchValue,row);
-            const s4 = performSearch_Row(f4_checkbox,"asset_info",searchValue,row);
-            const s7 = performSearch_Row(f7_checkbox,"asset_cost",searchValue,row);
-            const s8 = performSearch_Row(f8_checkbox,"depreciation_value",searchValue,row);
-            const s9 = performSearch_Row(f9_checkbox,"book_value",searchValue,row);
-            const s10 = performSearch_Row(f10_checkbox,"assest_status",searchValue,row);
+            const f1 = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
+            const f2 = performSearch_Row(f2_checkbox,"form_name",searchValue,row);
+            const f3 = performSearch_Row(f3_checkbox,"item_name",searchValue,row);
+            const f4 = performSearch_Row(f4_checkbox,"location_name",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                s1 ||
-                s2 ||
-                s3 ||
-                s4 ||
-                s5 ||
-                s6 ||
-                s7 ||
-                s8 ||
-                s9 ||
-                s10 ||
-                s0 ||
-                s100
+                f1 ||
+                f2 ||
+                f3 ||
+                f4
             );
         });
 
@@ -818,10 +577,10 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(viewBtn) {
     try {
-    showLoadingIcon(updateBtn)
-    const permission = await btn_permission("fixed_assests_permission", "view");
+    showLoadingIcon(viewBtn)
+    const permission = await btn_permission("productions_permission", "view"); // معلق
 
     if (!permission) {
         // if false
@@ -830,34 +589,31 @@ async function table_update_btn_fn(updateBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row = updateBtn.closest("tr");
-    const fixed_assests_update_data = {
-        x: row.querySelector(`.td_id`).textContent
+    const row = viewBtn.closest("tr");
+    const production_forms_update_data = {
+        x: row.querySelector(`.td_id`).textContent,
     };
 
-    
-    sessionStorage.setItem('fixed_assests_update_data', JSON.stringify(fixed_assests_update_data));                            
-    window.location.href = `fixed_assests_update_ar`;
-    hideLoadingIcon(updateBtn)
+    sessionStorage.removeItem('production_forms_update_data')
+    sessionStorage.setItem('production_forms_update_data', JSON.stringify(production_forms_update_data));                            
+    window.location.href = `production_forms_update_ar`;
+    hideLoadingIcon(viewBtn)
 } catch (error) {
-    hideLoadingIcon(updateBtn)
+    hideLoadingIcon(viewBtn)
     catch_error(error)
 }
 }
 
-function CheckUrlParams_salesInvoice_update_ar() {
+function CheckUrlParams_transaction_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "fixed_assests_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاصول الثابتة"
+            "production_forms_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
-
-        if (!urlData || urlData.pageName !== "fixed_assests_update_ar") {
+        if (!urlData || urlData.pageName !== "production_forms_update_ar") {
             return true;
         }
-
-    
         if (urlData !== "noParams") {
 
             restore_filter_div_conditions(2)
@@ -877,16 +633,13 @@ function CheckUrlParams_salesInvoice_update_ar() {
 
 document.addEventListener("DOMContentLoaded", async function () {
     showRedirectionReason();
-
-    sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
-    
-    const result2 = CheckUrlParams_salesInvoice_update_ar();
+    const result2 = CheckUrlParams_transaction_update_ar();
     if (!result2) {
         return;
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`fixed_assests_ViewArray`);
+    const conditionsArray = sessionStorage.getItem(`production_forms_ViewArray`);
 
     if (!conditionsArray){
      

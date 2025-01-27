@@ -2848,6 +2848,7 @@ html[dir="rtl"] {
   /* border-radius: 0.3rem; */
   width: 100%;
   margin: 0 auto;
+  margin-block-end: 1rem;
   overflow: auto;
 }
 

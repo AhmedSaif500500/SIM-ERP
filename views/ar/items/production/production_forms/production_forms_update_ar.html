@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عيش</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="production_forms_view_ar" title="نماذج التصنيع">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="production_forms_update_ar" title="اعادة تحميل الصفحة">
+                نماذج التصنيع
+              </a>
+              <span id="sub_h2_header" class="sub_h2_header">عرض</span>
+            </div>
+          </h2>
+          <div id ="fn_container_div" class="fn_container_div"></div>
+
+          <div id="page_content" style="display: none;">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+ 
+            <label for="account_no_input" class="lbl_sm">المعرف</label>
+            <input type="search" id="account_no_input" class="input_text_sm hover" autocomplete="off" oninput="check_parse(this,'string')">
+    
+            <label for="date1" class="lbl_sm">اسم النموذج</label>
+            <input type="search" id="form_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')">
+    
+    
+            <div class="row y_start x_start nowrap gap_10">
+              <div class="column">
+                <label for="dropdown_div1" class="lbl_sm">الصنف منتهى الصنع</label>
+                <div id="dropdown_div1" class="dropdown_container" style="width: 20rem"></div>
+              </div>
+              <div class="column">
+                <label for="amount_input" class="lbl_sm">الكمية</label>
+                <div class="info_div_with_normal_nput m_0">
+                  <input type="search" id="amount_input" class="input_text_sm m_0 hover" style="width: 7rem;" oninput="check_parse(this,'number')" placeholder="مطلوب">
+                  <span id ="unite_spane" class="span_end">الكميه</span>
+                  <!-- <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `معدل الاهلاك : يستخدم لانشاء قيمة استرشادية عند عمل اهلاك للاصل`)"></i> -->
+                </div>
+              </div>
+            </div>
+
+            <!-- table -->
+
+            <table id="myTable" class="input_table">
+              <thead class=""></thead>
+              <tbody class=""></tbody>
+              <tfoot class=""></tfoot>
+            </table>
+
+            <label for="dropdown_div2" class="lbl_sm">موقع المخزون</label>
+            <div id="dropdown_div2" class="dropdown_container" style="width: 20rem"></div>
+
+
+            <div class="btn_container_top_border notView">
+              <button class="btn_update" id="btn_update">تحديث</button>
+              <button class="btn_cancel" id="btn_delete">حذف</button>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/items/production/production_forms/production_forms_multi_pages.js"></script>
+  <script src="/public/scripts/ar/items/production/production_forms/production_forms_update_ar.js"></script>
+  
+
+
+</body>
+
+</html>

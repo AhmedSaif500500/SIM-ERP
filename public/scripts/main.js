@@ -3189,7 +3189,6 @@ async function create_drop_down(str_dropDownDivId, str_ApiUrl, str_permissionNam
   }
 
 
-
   return {
     showDropdown,
     hideDropdown,
@@ -3545,11 +3544,11 @@ try {
   const id_hidden_input = dropdown_div.querySelector(`.idHidden_dropdown_select_input`)
   const dropdown_select_input = dropdown_div.querySelector(`.dropdown_select_input`)
   const clear_icon = dropdown_div.querySelector(`.clear_icon`)
-  const filteredData = dataArray.filter(item => +item.id === +id);
+  const filteredData = dataArray.find(item => +item.id === +id);
 
-  
-  id_hidden_input.value = filteredData[0].id; // ID
-  dropdown_select_input.value = filteredData[0].account_name; // الاسم  
+
+  id_hidden_input.value = filteredData.id; // ID
+  dropdown_select_input.value = filteredData.account_name; // الاسم  
 
   clear_icon.style.display = 'flex'
 } catch (error) {
@@ -4023,6 +4022,12 @@ function tableDropdownList_selectedRow(row) {
         mainRow.querySelector('.class_unite').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
         break;
 
+        case 'production_forms':
+          if(+row.querySelector(`.td_account_type_id`).textContent === 5){
+            mainRow.querySelector('.td_account .class_unite').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
+          }
+          break;
+
       case 'salesInvoiceForm':
         mainRow.querySelector('.tbody_itemUniteName').textContent = row.querySelector(`.td_item_unite`).textContent || 'الكمية';
         mainRow.querySelector('.td-unitePrice').textContent = row.querySelector(`.td_item_sales_price`).textContent || '';
@@ -4354,3 +4359,4 @@ document.addEventListener("paste", function (event) {
     catch_error(error);
   }
 });
+
