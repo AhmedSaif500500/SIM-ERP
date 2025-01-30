@@ -31090,41 +31090,47 @@ from
       async function addSubAccounts(row, trial_balance, currentPadding = 0) {
         const id = row.id;
         const is_final_account = row.is_final_account;
-       
+        const name = row.account_name
+        console.log(row);
         
+       
         
         // التحقق إذا كان الحساب قد أُضيف بالفعل
         if (!addedAccounts.has(id)) {
             addedAccounts.add(id); // تسجيل الحساب كمضاف
-
+          console.log(`تم اضافة حساب ${name}`);
+          
             // تحديث قيم padding
             row.padding = currentPadding;
     
             // إذا كان الحساب الرئيسي
             if (!is_final_account) {
+              console.log(`الحساب رئىيسى ${name}`);
+              
                 const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
-                const allColumnsZero =
-                    +row.debit_first === 0 && +row.credit_first === 0 &&
-                    +row.debit_current === 0 && +row.credit_current === 0 &&
-                    +row.debit_end === 0 && +row.credit_end === 0;
+                const allColumnsZero = +row.debit_end === 0 && +row.credit_end === 0;
+              console.log(`sub_accounts_array : ${sub_accounts_array}`);
               
                     
                 if (hide_zero && sub_accounts_array.length === 0 && allColumnsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
                     // إذا كانت جميع الشروط متحققة لا نضيف الحساب
+                    console.log(`الحساب رئيسى ولا يوجد به حسابات فرعيه  سيتم التراجع `);
+                    
                     return;
                 }
     
                 // التحقق من الحسابات الفرعية
                 if (sub_accounts_array.length > 0) {
+                  console.log(`الحساب رئيسى ويوجد به حسابات فرعيه ${sub_accounts_array}`);
+                  
                     let areAllSubAccountsZero = true;
     
                     for (const subrow of sub_accounts_array) {
                         const allSubColumnsZero =
-                            +subrow.debit_first === 0 && +subrow.credit_first === 0 &&
-                            +subrow.debit_current === 0 && +subrow.credit_current === 0 &&
                             +subrow.debit_end === 0 && +subrow.credit_end === 0;
     
                         if (!allSubColumnsZero || !hide_zero) {
+                          
                             areAllSubAccountsZero = false;
                             break;
                         }
@@ -31149,8 +31155,7 @@ from
             } else {
                 // التحقق من إخفاء الأرصدة الصفرية للحساب النهائي
                 if (hide_zero) {
-                    if (+row.debit_first !== 0 || +row.credit_first !== 0 || +row.debit_current !== 0 ||
-                        +row.credit_current !== 0 || +row.debit_end !== 0 || +row.credit_end !== 0) {
+                    if (+row.debit_end !== 0 || +row.credit_end !== 0) {
                         new_array.push(row);
                     }
                 } else {
