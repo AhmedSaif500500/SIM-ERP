@@ -692,129 +692,232 @@ let closingDate_message_ar = `تم اغلاق جميع العمليات فى ا�
 // }
 
 
+// async function check_settings_validation(options = {}, req) {
+//   try {
+
+//     if (options.type === 'add' || options.type === 'update' || options.type === 'delete'){
+//     // جلب الإعدادات بناءً على الشركة
+//     const query1 = `SELECT * FROM settings WHERE company_id = $1`;
+//     const params1 = [req.session.company_id];
+//     const result = await db.any(query1, params1);
+
+//     if (!result) {
+//       return { valid: false, message_ar: "حدث خطأ غير متوقع AR500، يرجى التواصل مع الدعم الفني" };
+//     }
+
+
+//     // دالة للتحقق من تنسيق التاريخ
+
+//     // التحقق من التاريخ المستقبلي
+//       const isPreventFutureDate = result.find(item => item.setting_type_id === 2)?.boolean1;
+
+//       const closingDate = result.find(item => item.setting_type_id === 1)?.datex1;
+
+  
+//       const InValidDateFormat = isInValidDateFormat([closingDate])
+//       if (InValidDateFormat){
+//         return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
+//       }
+
+
+//           if (options.type === 'add'){
+//             if (options.datex){
+
+//               const datex = options.datex
+//               const InValidDateFormat = isInValidDateFormat([datex])
+//               if (InValidDateFormat){
+//                 return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
+//               }
+
+//               /*
+//               //! check if update date out of orignal year 
+//               const originalYear = getYear(originalDatex)
+//               const datex_year = getYear(datex)
+//               if (options.type === 'update' && originalYear !== datex_year){
+//                 return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
+//               }
+//               */
+
+//               //! check closingDate
+//               if (datex <= closingDate) {
+//                 return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+//               }
+
+//               //! check futureDate prevent
+//               if (options.check_futureDate && isPreventFutureDate) {
+//                 if (datex > today) {
+//                   return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+//                 }
+//               }
+              
+//             }else{
+//               return { valid: false, message_ar: "حدث خطأ غير متوقع AR525، يرجى التواصل مع الدعم الفني." };
+//             }
+//           }
+
+
+
+//           if (options.type === 'update' || options.type === 'delete'){
+//             const query2 = `SELECT datex FROM ${options.tableName} WHERE id = $1 AND company_id = $2`;
+//             const params2 = [options.transaction_id, req.session.company_id];
+//             let result1 = await db.oneOrNone(query2, params2);
+          
+//           const originalDatex = result1.datex
+          
+
+//           const InValidDateFormat = isInValidDateFormat([originalDatex])
+//           if (InValidDateFormat){
+//             return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
+//           }
+
+//           if (options.type === 'update'){
+//             if (options.tableName && options.transaction_id && options.datex){
+
+//               const datex = options.datex
+//               const InValidDateFormat = isInValidDateFormat([datex])
+//               if (InValidDateFormat){
+//                 return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
+//               }
+
+//               //! check if update date out of orignal year 
+//               const originalYear = getYear(originalDatex)
+//               const datex_year = getYear(datex)
+
+              
+//               if (options.type === 'update' && originalYear !== datex_year){
+//                 return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
+//               }
+
+//               //! check closingDate
+//               if (originalDatex <= closingDate || datex <= closingDate) {
+//                 return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+//               }
+
+//               //! check futureDate prevent
+//               if (options.check_futureDate && isPreventFutureDate) {
+//                 if (datex > today) {
+//                   return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+//                 }
+//               }
+              
+//             }else{
+//               return { valid: false, message_ar: "حدث خطأ غير متوقع AR526، يرجى التواصل مع الدعم الفني." };
+//             }
+//           }
+//           if(options.type === 'delete'){
+//             if (originalDatex <= closingDate) {
+//               return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+//             }
+//           }
+//           }
+
+
+//     return { valid: true };
+//   }else{
+//     return { valid: false, message_ar: `An Error Accoured code AR530` };
+//   }
+//   } catch (error) {
+//     throw new Error(`Error while checking settings: ${error.message}`);
+//   }
+// }
+
+
+
 async function check_settings_validation(options = {}, req) {
   try {
+    if (options.type === 'add' || options.type === 'update' || options.type === 'delete') {
+      // جلب الإعدادات بناءً على الشركة
+      const query1 = `SELECT * FROM settings WHERE company_id = $1`;
+      const params1 = [req.session.company_id];
+      const result = await db.any(query1, params1);
 
-    if (options.type === 'add' || options.type === 'update' || options.type === 'delete'){
-    // جلب الإعدادات بناءً على الشركة
-    const query1 = `SELECT * FROM settings WHERE company_id = $1`;
-    const params1 = [req.session.company_id];
-    const result = await db.any(query1, params1);
+      if (!result) {
+        return { valid: false, message_ar: "حدث خطأ غير متوقع AR500، يرجى التواصل مع الدعم الفني" };
+      }
 
-    if (!result) {
-      return { valid: false, message_ar: "حدث خطأ غير متوقع AR500، يرجى التواصل مع الدعم الفني" };
-    }
-
-
-    // دالة للتحقق من تنسيق التاريخ
-
-    // التحقق من التاريخ المستقبلي
+      // التحقق من الإعدادات
       const isPreventFutureDate = result.find(item => item.setting_type_id === 2)?.boolean1;
+      const closingDate = result.find(item => item.setting_type_id === 1)?.datex1 || null; // تأكيد أن `closingDate` إما تاريخ أو `null`
 
-      const closingDate = result.find(item => item.setting_type_id === 1)?.datex1;
-
-      const InValidDateFormat = isInValidDateFormat([closingDate])
-      if (InValidDateFormat){
+      const InValidDateFormat = isInValidDateFormat([closingDate].filter(Boolean)); // التحقق فقط إذا كان `closingDate` موجودًا
+      if (InValidDateFormat) {
         return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
       }
 
+      if (options.type === 'add') {
+        if (options.datex) {
+          const datex = options.datex;
+          const InValidDateFormat = isInValidDateFormat([datex]);
+          if (InValidDateFormat) {
+            return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
+          }
 
-          if (options.type === 'add'){
-            if (options.datex){
+          //! التحقق من تاريخ الإغلاق (فقط إذا كان موجودًا)
+          if (closingDate && datex <= closingDate) {
+            return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+          }
 
-              const datex = options.datex
-              const InValidDateFormat = isInValidDateFormat([datex])
-              if (InValidDateFormat){
-                return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
-              }
+          //! التحقق من منع التواريخ المستقبلية
+          if (options.check_futureDate && isPreventFutureDate && datex > today) {
+            return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+          }
+        } else {
+          return { valid: false, message_ar: "حدث خطأ غير متوقع AR525، يرجى التواصل مع الدعم الفني." };
+        }
+      }
 
-              /*
-              //! check if update date out of orignal year 
-              const originalYear = getYear(originalDatex)
-              const datex_year = getYear(datex)
-              if (options.type === 'update' && originalYear !== datex_year){
-                return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
-              }
-              */
+      if (options.type === 'update' || options.type === 'delete') {
+        const query2 = `SELECT datex FROM ${options.tableName} WHERE id = $1 AND company_id = $2`;
+        const params2 = [options.transaction_id, req.session.company_id];
+        let result1 = await db.oneOrNone(query2, params2);
 
-              //! check closingDate
-              if (datex <= closingDate) {
-                return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
-              }
+        const originalDatex = result1?.datex || null; // تأكيد أن `originalDatex` ليس `null`
 
-              //! check futureDate prevent
-              if (options.check_futureDate && isPreventFutureDate) {
-                if (datex > today) {
-                  return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
-                }
-              }
-              
-            }else{
-              return { valid: false, message_ar: "حدث خطأ غير متوقع AR525، يرجى التواصل مع الدعم الفني." };
+        const InValidDateFormat = isInValidDateFormat([originalDatex].filter(Boolean));
+        if (InValidDateFormat) {
+          return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
+        }
+
+        if (options.type === 'update') {
+          if (options.tableName && options.transaction_id && options.datex) {
+            const datex = options.datex;
+            const InValidDateFormat = isInValidDateFormat([datex]);
+            if (InValidDateFormat) {
+              return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
             }
-          }
 
-
-
-          if (options.type === 'update' || options.type === 'delete'){
-            const query2 = `SELECT datex FROM ${options.tableName} WHERE id = $1 AND company_id = $2`;
-            const params2 = [options.transaction_id, req.session.company_id];
-            let result1 = await db.oneOrNone(query2, params2);
-          
-          const originalDatex = result1.datex
-          
-
-          const InValidDateFormat = isInValidDateFormat([originalDatex])
-          if (InValidDateFormat){
-            return { valid: false, message_ar: "حدث خطأ غير متوقع AR518، يرجى التواصل مع الدعم الفني." };
-          }
-
-          if (options.type === 'update'){
-            if (options.tableName && options.transaction_id && options.datex){
-
-              const datex = options.datex
-              const InValidDateFormat = isInValidDateFormat([datex])
-              if (InValidDateFormat){
-                return { valid: false, message_ar: "حدث خطأ غير متوقع AR519، يرجى التواصل مع الدعم الفني." };
-              }
-
-              //! check if update date out of orignal year 
-              const originalYear = getYear(originalDatex)
-              const datex_year = getYear(datex)
-
-              
-              if (options.type === 'update' && originalYear !== datex_year){
-                return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
-              }
-
-              //! check closingDate
-              if (originalDatex <= closingDate || datex <= closingDate) {
-                return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
-              }
-
-              //! check futureDate prevent
-              if (options.check_futureDate && isPreventFutureDate) {
-                if (datex > today) {
-                  return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
-                }
-              }
-              
-            }else{
-              return { valid: false, message_ar: "حدث خطأ غير متوقع AR526، يرجى التواصل مع الدعم الفني." };
+            //! التحقق من تعديل السنة المالية
+            const originalYear = getYear(originalDatex);
+            const datex_year = getYear(datex);
+            if (originalDatex && originalYear !== datex_year) {
+              return { valid: false, message_ar: "لا يمكن تعديل التاريخ خارج السنه المالية للتاريخ الاصلى" };
             }
-          }
-          if(options.type === 'delete'){
-            if (originalDatex <= closingDate) {
+
+            //! التحقق من تاريخ الإغلاق (فقط إذا كان موجودًا)
+            if (closingDate && (originalDatex <= closingDate || datex <= closingDate)) {
               return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
             }
-          }
-          }
 
+            //! التحقق من منع التواريخ المستقبلية
+            if (options.check_futureDate && isPreventFutureDate && datex > today) {
+              return { valid: false, message_ar: "غير مسموح بإدخال تاريخ يتجاوز تاريخ اليوم. يرجى مراجعة مدير النظام." };
+            }
+          } else {
+            return { valid: false, message_ar: "حدث خطأ غير متوقع AR526، يرجى التواصل مع الدعم الفني." };
+          }
+        }
 
-    return { valid: true };
-  }else{
-    return { valid: false, message_ar: `An Error Accoured code AR530` };
-  }
+        if (options.type === 'delete') {
+          if (closingDate && originalDatex <= closingDate) {
+            return { valid: false, message_ar: "تم إغلاق هذه الفترة." };
+          }
+        }
+      }
+
+      return { valid: true };
+    } else {
+      return { valid: false, message_ar: `An Error Accoured code AR530` };
+    }
   } catch (error) {
     throw new Error(`Error while checking settings: ${error.message}`);
   }
@@ -991,6 +1094,7 @@ async function khorogFawry(req,userId) {
 //#region owners_and_companies
 
 //#region 1:- companies view
+/*
 app.post("/get_companies_data", async (req, res) => {
   try {
 
@@ -1034,7 +1138,52 @@ app.post("/get_companies_data", async (req, res) => {
     res.status(500).send("Error:");
   }
 });
+*/
 
+
+app.post("/get_companies_data", async (req, res) => {
+  try {
+
+    //! Permission
+    // await permissions(req, 'bread_permission', 'view');
+    // if (!permissions) { return; };
+
+    //* Start--------------------------------------------------------------
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    const owner = req.session.is_owner;
+    let query1;
+    let data;
+
+    if (owner) {
+      query1 = `select 
+      id as company_id,
+      company_name as company_name
+      from companies uc 
+      where owner_id = $1
+      order BY company_name asc;
+  `;
+      data = await db.any(query1, [req.session.owner_id]);
+    } else {
+      query1 = `select 
+      uc.company_id,
+      c.company_name
+      from user_company uc 
+      left join companies c on uc.company_id  = c.id
+      where uc.user_id = $1
+      order BY c.company_name asc;
+  `;
+      data = await db.any(query1, [req.session.userId]);
+    }
+
+
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error get_All_bread_Data:", error);
+    res.status(500).send("Error:");
+  }
+});
 
 //#endregion End - companies view
 
@@ -1142,58 +1291,33 @@ return res.json({
       const newCompanyId = insert.id;
       // 2 : add global accounts  in accounts_header
     
-      let account_header_new_id = await newId_fn("accounts_header", "id");
 
-      let last_id = parseInt(account_header_new_id) - 1
 
-      let x1 = last_id + 1
-      let x2 = last_id + 2
-      let x3 = last_id + 3
-      let x4 = last_id + 4
-      let x5 = last_id + 5
-      let x6 = last_id + 6
-      let x7 = last_id + 7
-      let x8 = last_id + 8
-      let x9 = last_id + 9
-      let x10 = last_id + 10
-      let x11 = last_id + 11
-      let x12 = last_id + 12
-      let x13 = last_id + 13
-      let x14 = last_id + 14
-      let x15 = last_id + 15
-      let x16 = last_id + 16
-      let x17 = last_id + 17
-      let x18 = last_id + 18
-      let x19 = last_id + 19
-      let x20 = last_id + 20
-      let x21 = last_id + 21
-      let x22 = last_id + 22
-      let x23 = last_id + 23
 
       const accountEntries = [
-        {id: x1, parent_id: false, account_name: "قائمة المركز المالى", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 0, account_name_en: null, global_id: 1, main_account_id: 0},
-        {id: x2, parent_id: false, account_name: "قائمة الدخل", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: 0, account_name_en: null, global_id: 2, main_account_id: 0},
-        {id: x3, parent_id: x1, account_name: "الاصول", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 3, main_account_id: 1},
-        {id: x4, parent_id: x1, account_name: "الالتزمات", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 4, main_account_id: 2},
-        {id: x5, parent_id: x1, account_name: "حقوق الملكيه", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 5, main_account_id: 3},
-        {id: x6, parent_id: x2, account_name: "الايرادات", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 6, main_account_id: 4},
-        {id: x7, parent_id: x2, account_name: "المصروفات", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 7, main_account_id: 5},
-        {id: x8, parent_id: x3, account_name: "الاصول الثايتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 9, main_account_id: 1},
-        {id: x9, parent_id: x3, account_name: "مجمع اهلاك الاصول الثابتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 10, main_account_id: 2},
-        {id: x10, parent_id: x3, account_name: "النقد وما فى حكمه", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 11, main_account_id: 1},
-        {id: x11, parent_id: x3, account_name: "المخزون الحالى", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 5, account_name_en: null, global_id: 12, main_account_id: 1},
-        {id: x12, parent_id: x3, account_name: "العملاء", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 13, main_account_id: 1},
-        {id: x13, parent_id: x4, account_name: "الموردين", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 14, main_account_id: 2},
-        {id: x14, parent_id: x4, account_name: "الموظفين", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 4, account_name_en: null, global_id: 20, main_account_id: 2},
-        {id: x15, parent_id: x5, account_name: "حسابات رأس المال", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 15, main_account_id: 3},
-        {id: x16, parent_id: x5, account_name: "ارباح وخسائر الفترة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 16, main_account_id: 3},
-        {id: x17, parent_id: x5, account_name: "ارباح وخسائر فترات سابقة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 23, main_account_id: 3},
-        {id: x18, parent_id: x6, account_name: "ايرادات مبيعات - المخزون", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 19, main_account_id: 4},
-        {id: x19, parent_id: x6, account_name: "ايرادات مبيعات - خدمات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 24, main_account_id: 4},
-        {id: x20, parent_id: x7, account_name: "تكلفة المخزون - المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 17, main_account_id: 5},
-        {id: x21, parent_id: x7, account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 18, main_account_id: 5},
-        {id: x22, parent_id: false, account_name: "مراكز التكلفة", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 21, main_account_id: null},
-        {id: x23, parent_id: x22, account_name: "مجموعة مراكز التكلفة 1", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 22, main_account_id: null},
+        {account_name: "قائمة المركز المالى", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 0, account_name_en: null, global_id: 1, main_account_id: 0},
+        {account_name: "قائمة الدخل", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: 0, account_name_en: null, global_id: 2, main_account_id: 0},
+        {account_name: "الاصول", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 3, main_account_id: 1},
+        {account_name: "الالتزمات", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 4, main_account_id: 2},
+        {account_name: "حقوق الملكيه", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 5, main_account_id: 3},
+        {account_name: "الايرادات", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 6, main_account_id: 4},
+        {account_name: "المصروفات", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 7, main_account_id: 5},
+        {account_name: "الاصول الثايتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 9, main_account_id: 1},
+        {account_name: "مجمع اهلاك الاصول الثابتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 10, main_account_id: 2},
+        {account_name: "النقد وما فى حكمه", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 11, main_account_id: 1},
+        {account_name: "المخزون الحالى", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 5, account_name_en: null, global_id: 12, main_account_id: 1},
+        {account_name: "العملاء", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 13, main_account_id: 1},
+        {account_name: "الموردين", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 14, main_account_id: 2},
+        {account_name: "الموظفين", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 4, account_name_en: null, global_id: 20, main_account_id: 2},
+        {account_name: "حسابات رأس المال", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 15, main_account_id: 3},
+        {account_name: "ارباح وخسائر الفترة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 16, main_account_id: 3},
+        {account_name: "ارباح وخسائر فترات سابقة", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 23, main_account_id: 3},
+        {account_name: "ايرادات مبيعات - المخزون", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 19, main_account_id: 4},
+        {account_name: "ايرادات مبيعات - خدمات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 24, main_account_id: 4},
+        {account_name: "تكلفة المخزون - المبيعات", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 17, main_account_id: 5},
+        {account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 18, main_account_id: 5},
+        {account_name: "مراكز التكلفة", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 21, main_account_id: null},
+        {account_name: "مجموعة مراكز التكلفة 1", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 22, main_account_id: null},
         // أضف باقي الحسابات
       ];
 
@@ -1201,44 +1325,79 @@ return res.json({
 
 
       let insertHeaderQuery = `
-      INSERT INTO accounts_header (id, company_id, account_name, is_final_account, finance_statement, cashflow_statement, account_type_id, account_name_en, global_id, main_account_id) 
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`;
+      INSERT INTO accounts_header (company_id, account_name, is_final_account, finance_statement, cashflow_statement, account_type_id, account_name_en, global_id, main_account_id) 
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`;
     
-        const insert_array_accounts_header = accountEntries.map(row => {
-          // معالجة البيانات قبل إضافتها للمصفوفة
-          const processedRow = [
-            row.id,
-            newCompanyId,
-            row.account_name, 
-            row.is_final_account, 
-            row.finance_statement, 
-            row.cashflow_statement,
-            row.account_type_id,
-            row.account_name_en,
-            row.global_id,
-            row.main_account_id,
-          ];
-        
-          return processedRow;
-        });
-        
-        // تنفيذ الاستعلام باستخدام batch
-        await tx.batch(insert_array_accounts_header.map(data => tx.none(insertHeaderQuery, data)));
+        let header_id_Array = []; // تخزين القيم المرجعة لكل حساب
 
+        for (const row of accountEntries) {
+          let insertedId = await tx.one(insertHeaderQuery, [
+              newCompanyId,
+              row.account_name,
+              row.is_final_account,
+              row.finance_statement,
+              row.cashflow_statement,
+              row.account_type_id,
+              row.account_name_en,
+              row.global_id,
+              row.main_account_id
+          ]);
+      
+          header_id_Array.push(insertedId.id); // تخزين المعرف المرتجع داخل كائن idMap
+      }
 
-        let account_body_new_id = parseInt(await newId_fn("accounts_body", "id"));
-       // account_body_new_id -=1 // 3ashan fe loop hayzod 1 fe kol loop
+      let x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, 
+      x11, x12, x13, x14, x15, x16, x17, x18, x19, 
+      x20, x21, x22, x23;
+      // تأكد من أن طول المصفوفة يتطابق مع عدد المتغيرات
+      //! تعيين القيم من المصفوفه  الى الاكسات فوق مباشرة
+      if (header_id_Array.length === 23 && header_id_Array.every(id => id != null)) {
+        // تعيين القيم للمتغيرات x1, x2, ... x23
+        [x1, x2, x3, x4, x5, x6, x7, x8, x9, x10,
+         x11, x12, x13, x14, x15, x16, x17, x18, x19,
+         x20, x21, x22, x23] = header_id_Array;
+      } else {
+        throw new Error('حدث خطأ أثناء معالجة البيانات: Sadnc001');
+      }
+      
+
+      const accountbodies = [
+        {id: x1, parent_id: false},
+        {id: x2, parent_id: false},
+        {id: x3, parent_id: x1},
+        {id: x4, parent_id: x1},
+        {id: x5, parent_id: x1},
+        {id: x6, parent_id: x2},
+        {id: x7, parent_id: x2},
+        {id: x8, parent_id: x3},
+        {id: x9, parent_id: x3},
+        {id: x10, parent_id: x3},
+        {id: x11, parent_id: x3},
+        {id: x12, parent_id: x3},
+        {id: x13, parent_id: x4},
+        {id: x14, parent_id: x4},
+        {id: x15, parent_id: x5},
+        {id: x16, parent_id: x5},
+        {id: x17, parent_id: x5},
+        {id: x18, parent_id: x6},
+        {id: x19, parent_id: x6},
+        {id: x20, parent_id: x7},
+        {id: x21, parent_id: x7},
+        {id: x22, parent_id: false},
+        {id: x23, parent_id: x22},
+        // أضف باقي الحسابات
+      ];
+
         let insertBodyQuery = `
-          INSERT INTO accounts_body (id, parent_id, account_id) 
-          VALUES ($1,$2,$3)
+          INSERT INTO accounts_body (parent_id, account_id) 
+          VALUES ($1,$2)
         `;
         
         const insert_array_accounts_body = [];
                 
-        for (const row of accountEntries) {
+        for (const row of accountbodies) {
           if (row.parent_id) {  // إذا كان parent_id ليس false            
             const processedRow = [
-              account_body_new_id++, // زيادة الحساب لكل صف
               row.parent_id,
               row.id,
             ];
@@ -1253,15 +1412,13 @@ return res.json({
   
 
       //4 : add settings
-      let settings_newId = await newId_fn("settings", "id");
-      await tx.none(
-        `INSERT INTO settings (id,company_id,setting_type_id) values(${settings_newId},${newCompanyId},1)`
-      ); // closingDate = null
-      await tx.none(
-        `INSERT INTO settings (id,company_id,setting_type_id) values(${
-          settings_newId + 1
-        },${newCompanyId},2)`
-      ); // prevent_futureDate = null
+      await tx.none( //! closingDate = null
+        `INSERT INTO settings (company_id,setting_type_id) values(${newCompanyId},1)`
+      ); 
+      await tx.none( //! prevent_futureDate = null
+        `INSERT INTO settings (company_id,setting_type_id) 
+        values(${newCompanyId},2)`
+      ); 
     })
     return res.json({
       success: true,
@@ -3130,7 +3287,6 @@ app.post("/get_All_customers_Data", async (req, res) => {
       }
   
       //3: insert data into db
-      // const newId_body = await newId_fn("accounts_body",'id');
   
       let query1 = `
       INSERT INTO accounts_header (account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
@@ -3833,7 +3989,15 @@ app.post("/employee_add", async (req, res) => {
           "ادخل اسم الموظف اولا",
       });
     }          
-    
+  
+    if (!posted_elements.select_department_value){
+      return res.json({
+        success: false,
+        message_ar:
+          "برجاء ادخال القسم بشكل صحيح",
+      });
+    }    
+
     //* Start--------------------------------------------------------------
 
     //2: validation data befor inserting to db
@@ -3891,7 +4055,6 @@ app.post("/employee_add", async (req, res) => {
     }
 
    
-    // const newId_body = await newId_fn("accounts_body",'id');
 
     await db.tx(async (tx) => {
 
@@ -4437,7 +4600,6 @@ app.post("/get_All_vendors_Data", async (req, res) => {
   
       //3: insert data into db
       
-      // const newId_body = await newId_fn("accounts_body",'id');
   
       let query1 = `
     INSERT INTO accounts_header (account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
@@ -4919,7 +5081,11 @@ ORDER BY
               A.id,
               COALESCE(ah.account_no, '') as account_no,
               COALESCE(A.datex, '') as datex,
-              A.reference,
+              CONCAT(
+              	tt.doc_prefix, '-',
+        		SUBSTRING(A.datex, 1, 4), '-',
+        		LPAD(CAST(A.reference AS TEXT), 5, '0')
+    		  ) AS referenceconcat,
               A.employee_id,
               COALESCE(ah.account_name, '') as account_name,
               COALESCE(A.days, 0) as days, 
@@ -4936,6 +5102,7 @@ ORDER BY
           LEFT JOIN accounts_header ah ON A.employee_id = ah.id
           LEFT JOIN accounts_body ab ON ah.id = ab.account_id -- الانضمام إلى accounts_body للحصول على parent_id
           LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
+          LEFT JOIN transaction_type tt ON tt.id = 16
           WHERE
               A.company_id = $1
               AND ah.account_type_id = 4
@@ -10917,9 +11084,7 @@ ORDER BY
   
           // //! Security hacking  accounts id
 
-      
-      // const newId_tax_header = await newId_fn("settings_tax_header", 'id');
-
+    
   
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
@@ -12305,7 +12470,6 @@ WHERE
     
           const newId_transaction_header = insert.id;
 
-          // let newId_transaction_body = await newId_fn("befor_invoce_body",'id');
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -19450,9 +19614,7 @@ WHERE
       
               //! insert the other part to transaction
               for (const object of other_posted_array){
-                const newId = parseInt(newId_transaction_body);
-      
-      
+            
                 insertData2.push([
                 newId_transaction_header,
                 +object.debit || null,
@@ -20851,8 +21013,6 @@ app.post("/services_update", async (req, res) => {
       active_value = true
     }
 
-    // const newId_header = await newId_fn("accounts_header",'id');
-    // const newId_body = await newId_fn("accounts_body",'id');
 
 
     let query1 = `
@@ -29326,7 +29486,7 @@ where
     let query3 = `select id, account_type_name
     from account_type
     where id IN (1, 5)
-    order by order_asc ASC;`;  // in (1,2 ) ya3ny = 1 or 2 
+    order by id DESC ;`;  // in (1,2 ) ya3ny = 1 or 2 
 
     let query4 = `select
 	pfh.id,
@@ -29522,8 +29682,1162 @@ app.post("/api/production_forms_add", async (req, res) => {
   }
 });
 
+app.post("/api/production_forms_update", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "production_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 30;
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([ 
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.vale), 
+      posted_elements.x,
+      posted_elements.account_no,
+      posted_elements.form_name,
+      posted_elements.amount,
+      posted_elements.item_account,
+      posted_elements.location_account,
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+    const query001 = `select id from production_forms_header where id = $1 and company_id = $2`
+    let result001 = await db.oneOrNone(query001, [posted_elements.x, req.session.company_id])
+
+    
+
+    if (!result001){
+      await block_user(req, 'Spfu01');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    
+
+    const query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND account_type_id in (1,5,7) AND is_final_account IS TRUE`;
+    let rows02 = await db.any(query02, [req.session.company_id]);
+
+    const dbAccounts = rows02.map(row => ({
+      id: parseInt(row.id),
+      account_type_id: row.account_type_id
+    }));
+
+    const item_account = dbAccounts.some(item => +item.id === +posted_elements.item_account && +item.account_type_id === 5);
+    const location_account = dbAccounts.some(item => +item.id === +posted_elements.location_account && +item.account_type_id === 7);
+
+    if (!item_account || !location_account) {
+      await block_user(req, 'Spfu02');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    let rowIndex = 1;
+    for (const rowData of posted_elements.posted_array) {
+      const account_typeId = rowData.account_typeId;
+      const account_id = rowData.account_id;
+      const amount = +rowData.amount;
+
+      if (!amount || isNaN(amount) || amount <= 0){
+        return res.json({
+          success: false,
+          message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+        });
+      }
+
+      const accountExists = dbAccounts.some(item => +item.id === +account_id && +item.account_type_id === +account_typeId);
+      if (!accountExists) {
+        await block_user(req, 'Spfu03');
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+
+      rowIndex++;
+    }
+
+    // Start Transaction
+    await db.tx(async (tx) => {
+      // Insert into production_forms_header and get the new id
+      let query0 = `DELETE FROM production_forms_body where production_forms_header_id = $1`
+      await tx.none(query0, [posted_elements.x])
+
+      const query1 = `update production_forms_header
+                      set account_no = $1, form_name = $2, production_item_id = $3, location_from = $4, value = $5
+                      where id = $6 and company_id = $7;`;
+      await tx.none(query1, [
+        posted_elements.account_no,
+        posted_elements.form_name.trim(),
+        +posted_elements.item_account,
+        +posted_elements.location_account,
+        posted_elements.amount,
+        posted_elements.x,
+        req.session.company_id,
+      ]);
 
 
+      // Insert into production_forms_body using the new header id
+      const query2 = `INSERT INTO production_forms_body
+                      (production_forms_header_id, account_id, value)
+                      VALUES($1, $2, $3);`;
+
+      let insert_array2 = [];
+      for (const element of posted_elements.posted_array) {
+        insert_array2.push([
+          posted_elements.x, // Use the new header id here
+          element.account_id,
+          +element.amount
+        ]);
+      }
+
+      // Insert data into body table
+      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+
+      // Add history log
+      await history(transaction_type, 2, posted_elements.x, 0, req, tx);
+    });
+
+    await last_activity(req);
+
+    return res.json({
+      success: true,
+      message_ar: `تم تحديث نموذج التصنيع بنجاح`,
+    });
+
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error production_forms_update:", error);
+
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+app.post("/api/production_forms_delete", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "production_permission", "delete");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 30;
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+    const query001 = `select id from production_forms_header where id = $1 and company_id = $2`
+    let result001 = await db.oneOrNone(query001, [posted_elements.x, req.session.company_id])
+
+    
+
+    if (!result001){
+      await block_user(req, 'Spfu01');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    
+
+
+    // Start Transaction
+    await db.tx(async (tx) => {
+      // Insert into production_forms_header and get the new id
+      let query0 = `DELETE FROM production_forms_header where id = $1 and company_id = $2`
+      await tx.none(query0, [posted_elements.x, req.session.company_id])
+
+      // Add history log
+      await history(transaction_type, 3, posted_elements.x, 0, req, tx);
+    });
+
+    await last_activity(req);
+
+    return res.json({
+      success: true,
+      message_ar: `تم حذف نموذج التصنيع بنجاح`,
+    });
+
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error production_forms_delete:", error);
+
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+app.post("/api/production_order_view", async (req, res) => {
+  try {
+    
+    //! Permission  
+    await permissions(req, "production_permission", "view");
+    if (!permissions) {
+      return;
+    }
+      
+
+    const posted_elements = req.body;
+    const transaction_type = 31
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    let query1 = `
+select
+	th.id,
+	th.datex,
+	CONCAT(
+    	tt.doc_prefix, '-',
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+    th.total_value,
+    coalesce(th.general_note, '') as general_note,
+    th.account_id,
+    ah.account_name
+from
+	transaction_header th
+left join accounts_header ah on ah.id = th.account_id	
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+where
+	th.company_id = $1
+	and th.transaction_type = 31
+	and th.is_deleted is null
+	and th.datex between $2 and $3
+    ;
+`;
+
+
+
+    let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
+          
+    res.json(data);
+  } catch (error) {
+    console.error("Error production_order_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+app.post("/production_orders_AccountsData1", async (req, res) => {
+  try {
+
+
+    //! Permission
+    await permissions(req, "production_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+      // if (InValidDateFormat){
+      //   return res.json({
+      //     success: false,
+      //     message_ar: InValidDateFormat_message_ar,
+      //   });
+      // }
+    
+
+
+  turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+      let query1 = `
+SELECT
+  A.id,
+  A.account_name,
+  A.account_type_id,
+  A.item_unite
+FROM
+  accounts_header A
+WHERE
+  A.company_id = $1
+  AND is_final_account = true
+  and a.is_inactive is null
+  and a.account_type_id in (1, 5)
+  AND (a.global_id NOT IN (8, 17, 18, 19) OR a.global_id IS NULL)
+;
+`;
+let params1 = [req.session.company_id]
+
+    let query2 = `
+       --  مواقع المخزون
+select 
+	ah.id,
+	ah.account_name
+from
+	accounts_header ah
+where
+	ah.company_id = $1
+	and ah.account_type_id = 7
+  and ah.is_inactive is null
+    ;
+    `;
+    let params2 = [req.session.company_id] ;
+
+
+    let query3 = `select id, account_type_name
+    from account_type
+    where id IN (1, 5)
+    order by id DESC ;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+    let query4 = `select
+	pfh.id,
+	pfh.form_name as account_name
+from
+	production_forms_header pfh
+where 
+	pfh.company_id = $1;`
+
+    let params4 = [req.session.company_id]
+
+
+    let query5 = `select
+	th.id,
+	th.datex,
+	CONCAT(
+    	tt.doc_prefix, '-',
+        SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
+    ) AS referenceconcat,
+	coalesce(th.general_note , '') as general_note,
+  COALESCE(th.total_value , 0) as value,
+	th.account_id as production_item_id,
+  ah.account_name account_name,
+  ah.item_unite,
+	th.items_location_id as location_from,
+  ah2.account_name as location_name
+from
+	transaction_header th
+LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+left join accounts_header ah on ah.id = th.account_id
+left join accounts_header ah2 on ah2.id = th.items_location_id
+where
+	th.id = $1
+	and th.company_id = $2
+  and th.transaction_type = 31
+  ;`
+
+    let params5 = [posted_elements.x, req.session.company_id]
+
+
+let query6 = `select
+	tb.id,
+	case
+		when ah.account_type_id = 1 then 1
+		else 5
+	end as account_type_id,
+	case
+		when ah.account_type_id = 1 then tb.credit
+		else ABS(tb.item_amount)
+	end as value,
+	case
+		when ah.account_type_id = 1 then 'المبلغ'
+		else ah2.item_unite
+	end as item_unite,
+	case
+		when ah.account_type_id = 1 then tb.account_id
+		else tb.item_id 
+	end as account_id,
+	case
+		when ah.account_type_id = 1 then ah.account_name
+		else ah2.account_name
+	end as account_name	
+from
+	transaction_body tb
+inner join transaction_header th on th.id = tb.transaction_header_id
+left join accounts_header ah on ah.id = tb.account_id 
+left join accounts_header ah2 on ah2.id = tb.item_id
+where
+	th.id = $1
+	and th.transaction_type = 31
+	and th.company_id = $2
+	and th.is_deleted is null
+  and tb.is_production_item is null
+  ;
+	`
+  let params6 = [posted_elements.x, req.session.company_id]  
+
+    await db.tx(async (tx) => {
+
+      const accounts_data_array = await tx.any(query1, params1);
+      const location_accounts_array = await tx.any(query2, params2);
+      const account_type_array = await tx.any(query3);
+      const forms_array = await tx.any(query4, params4) || [];
+      const headerData_array = posted_elements.x ?  await tx.oneOrNone(query5, params5) : false;
+      const bodyData_array = posted_elements.x ?  await tx.any(query6, params6) : [];
+    
+      const postedData = {accounts_data_array, location_accounts_array, account_type_array, forms_array, headerData_array, bodyData_array};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash_transaction_AccountsData1", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+  }
+});
+
+app.post("/calculate_production_order_data", async (req, res) => {
+  try {
+
+
+    //! Permission
+    await permissions(req, "production_permission", "add");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+      // if (InValidDateFormat){
+      //   return res.json({
+      //     success: false,
+      //     message_ar: InValidDateFormat_message_ar,
+      //   });
+      // }
+    
+
+
+  turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+
+    //!check
+    let query0 = `select id from production_forms_header where id = $1 and company_id = $2`
+    let result = await db.oneOrNone(query0, [posted_elements.x, req.session.company_id])
+    if (!result){
+      await block_user(req, 'SCpod01');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+      });
+    }
+
+
+      let query1 = `
+with
+header_data as(
+select
+	pfh.id,
+	pfh.form_name,
+	pfh.production_item_id,
+	pfh.value
+from
+	production_forms_header pfh
+where
+	pfh.id = $1
+	and pfh.company_id = $2
+),
+body_data as(
+select 
+	pfb.id,
+	pfb.production_forms_header_id,
+	pfb.account_id,
+	ah.account_type_id,
+	ah.account_name,
+	coalesce(ah.item_unite, 'المبلغ') as item_unite,
+	pfb.value
+from
+	production_forms_body pfb
+left join production_forms_header pfh on pfh.id = pfb.production_forms_header_id
+left join accounts_header ah on ah.id = pfb.account_id
+where 
+	pfh.id = $1
+	and pfh.company_id = $2
+)
+select
+	bd.id,
+	bd.account_id,
+	bd.account_type_id,
+	bd.account_name,
+	bd.item_unite,
+	ROUND((COALESCE($3, 0) * COALESCE(bd.value, 0)) / NULLIF(COALESCE(hd.value, 0), 0), 2) as value
+from
+	body_data bd
+left join header_data hd on hd.id = bd.production_forms_header_id
+;
+`;
+let params1 = [posted_elements.x, req.session.company_id, posted_elements.xamount_input]
+
+
+    let query2 = `
+select
+	pfh.id,
+	pfh.form_name,
+	pfh.production_item_id,
+	ah.account_name,
+	ah.item_unite,
+	pfh.location_from,
+	ah2.account_name as location_name,
+	$3 as value
+from
+	production_forms_header pfh
+left join accounts_header ah on ah.id = pfh.production_item_id
+left join accounts_header ah2 on ah2.id = pfh.location_from
+where
+	pfh.id = $1
+	and pfh.company_id = $2
+    ;
+    `;
+    let params2 = [posted_elements.x, req.session.company_id, posted_elements.xamount_input] ;
+
+    await db.tx(async (tx) => {
+
+      const bodyData_array = await tx.any(query1, params1);
+      const calc_header = await tx.oneOrNone(query2, params2);
+      
+      const postedData = {bodyData_array, calc_header};
+      res.json(postedData);
+    })
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while getCash_transaction_AccountsData1", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+  }
+});
+
+app.post("/api/production_orders_add", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "production_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 31;
+    let items_array = []
+    let total = 0
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([ 
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.vale), 
+      posted_elements.datex,
+      posted_elements.account_no,
+      posted_elements.form_name,
+      posted_elements.amount,
+      posted_elements.item_account,
+      posted_elements.location_account,
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'add',
+      tableName: false, // if type = 'update' or 'delete' only
+      transaction_id: false, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    const query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND account_type_id in (1,5,7) AND is_final_account IS TRUE`;
+    let rows02 = await db.any(query02, [req.session.company_id]);
+
+    const dbAccounts = rows02.map(row => ({
+      id: parseInt(row.id),
+      account_type_id: row.account_type_id
+    }));
+
+    const item_account = dbAccounts.some(item => +item.id === +posted_elements.item_account && +item.account_type_id === 5);
+    const location_account = dbAccounts.some(item => +item.id === +posted_elements.location_account && +item.account_type_id === 7);
+
+    if (!item_account || !location_account) {
+      await block_user(req, 'Spoa01');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    let rowIndex = 1;
+    for (const rowData of posted_elements.posted_array) {
+      const account_typeId = rowData.account_typeId;
+      const account_id = rowData.account_id;
+      const amount = +rowData.amount;
+
+      if (!amount || isNaN(amount) || amount <= 0){
+        return res.json({
+          success: false,
+          message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+        });
+      }
+
+      const accountExists = dbAccounts.some(item => +item.id === +account_id && +item.account_type_id === +account_typeId);
+      if (!accountExists) {
+        await block_user(req, 'Spfo02');
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+        
+      total += amount || 0
+      if (+account_typeId === 5){
+        items_array.push(+rowData.account_id)
+      }
+      rowIndex++;
+    }
+
+    const year = getYear(posted_elements.datex);
+    const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req);
+    const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+    // Start Transaction
+    await db.tx(async (tx) => {
+      // Insert into production_forms_header and get the new id
+      const query1 = `INSERT INTO transaction_header
+                      (datex, reference, general_reference, transaction_type, general_note, account_id, items_location_id, company_id, total_value, is_including_items)
+                      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;`;
+      const insert = await tx.one(query1, [
+        posted_elements.datex,
+        newReference_transaction_header,
+        newId_general_reference,
+        transaction_type,
+        posted_elements.form_name,
+        +posted_elements.item_account,
+        +posted_elements.location_account,
+        req.session.company_id,
+        posted_elements.amount,
+        true
+      ]);
+
+      const newId_transaction_header = insert.id; // The new header id
+
+      // Insert into production_forms_body using the new header id
+      const query2 = `INSERT INTO transaction_body
+                      (transaction_header_id, debit, credit, item_amount, account_id, item_id, item_location_id_tb, is_production_item)
+                      VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
+
+      let insert_array2 = [];
+      for (const element of posted_elements.posted_array) {
+        insert_array2.push([
+          newId_transaction_header, // Use the new header id here
+          null,
+          +element.account_typeId === 1? element.amount : null,
+          +element.account_typeId === 5? element.amount * -1 : null,
+          +element.account_typeId === 1? element.account_id : null,
+          +element.account_typeId === 5? element.account_id : null,
+          +element.account_typeId === 5? posted_elements.location_account : null,
+          null // is_production_item
+        ]);
+      }
+       
+      
+      insert_array2.push([
+        newId_transaction_header,
+        parseFloat(total.toFixed(2)), // Use the new header id here
+        null,
+        posted_elements.amount,
+        null,
+        posted_elements.item_account,
+        posted_elements.location_account,
+        true // is_production_item
+      ]);
+      // Insert data into body table
+      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+
+      const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
+      if (!allow_amounts){
+        throw new Error(
+          'رصيد احد الاصناف لا يسمح'
+        );
+      }
+      await update_items_cogs(items_array,posted_elements.datex, req, tx)
+      // Add history log
+      await history(transaction_type, 1, newId_transaction_header, 0, req, tx);
+    });
+
+    await last_activity(req);
+
+    return res.json({
+      success: true,
+      message_ar: `تم إنشاء امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error production_orders_add:", error);
+
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+app.post("/api/production_orders_update", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "production_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 31;
+    let items_array = []
+    let total = 0
+
+    //! sql injection check
+    let hasBadSymbols = sql_anti_injection([ 
+      ...posted_elements.posted_array.map((obj) => obj.account_typeId + obj.account_id + obj.note_row + obj.vale), 
+      posted_elements.datex,
+      posted_elements.form_name,
+      posted_elements.amount,
+      posted_elements.item_account,
+      posted_elements.location_account,
+    ]);
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+
+    const InValidDateFormat = isInValidDateFormat([posted_elements.datex]);
+    if (InValidDateFormat) {
+      return res.status(400).json({
+        success: false,
+        message_ar: InValidDateFormat_message_ar,
+      });
+    }
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'update',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+    let quer001 = `select id, reference from transaction_header where id = $1 and company_id = $2 and transaction_type = $3`
+    let rows01 = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id, transaction_type])
+    if (!rows01 || !rows01.id) {
+      await block_user(req,'Spou01')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    const reference = rows01.reference
+
+
+    const query02 = `SELECT id, account_type_id FROM accounts_header WHERE company_id = $1 AND account_type_id in (1,5,7) AND is_final_account IS TRUE`;
+    let rows02 = await db.any(query02, [req.session.company_id]);
+
+    const dbAccounts = rows02.map(row => ({
+      id: parseInt(row.id),
+      account_type_id: row.account_type_id
+    }));
+
+    const item_account = dbAccounts.some(item => +item.id === +posted_elements.item_account && +item.account_type_id === 5);
+    const location_account = dbAccounts.some(item => +item.id === +posted_elements.location_account && +item.account_type_id === 7);
+
+    if (!item_account || !location_account) {
+      await block_user(req, 'Spou01');
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    let rowIndex = 1;
+    for (const rowData of posted_elements.posted_array) {
+      const account_typeId = rowData.account_typeId;
+      const account_id = rowData.account_id;
+      const amount = +rowData.amount;
+
+      if (!amount || isNaN(amount) || amount <= 0){
+        return res.json({
+          success: false,
+          message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+        });
+      }
+
+      const accountExists = dbAccounts.some(item => +item.id === +account_id && +item.account_type_id === +account_typeId);
+      if (!accountExists) {
+        await block_user(req, 'Spfo02');
+        return res.json({
+          success: false,
+          xx: true,
+          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        });
+      }
+        
+      total += amount || 0
+      if (+account_typeId === 5){
+        items_array.push(+rowData.account_id)
+      }
+      rowIndex++;
+    }
+
+    const year = getYear(posted_elements.datex);
+    // const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req);
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+    // const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+    // Start Transaction
+    await db.tx(async (tx) => {
+  
+      let query00 = `delete from transaction_body where transaction_header_id = $1`
+      await tx.none(query00, [posted_elements.x])
+
+      const query1 = `UPDATE transaction_header
+                      set datex = $1, general_note = $2, account_id = $3, items_location_id = $4, total_value = $5
+                      where id = $6`;
+      await tx.none(query1, [
+        posted_elements.datex,
+        posted_elements.form_name,
+        +posted_elements.item_account,
+        +posted_elements.location_account,
+        posted_elements.amount,
+        posted_elements.x
+      ]);
+
+     
+
+      // Insert into production_forms_body using the new header id
+      const query2 = `INSERT INTO transaction_body
+                      (transaction_header_id, debit, credit, item_amount, account_id, item_id, item_location_id_tb, is_production_item)
+                      VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
+
+      let insert_array2 = [];
+      for (const element of posted_elements.posted_array) {
+        insert_array2.push([
+          posted_elements.x, // Use the new header id here
+          null,
+          +element.account_typeId === 1? element.amount : null,
+          +element.account_typeId === 5? element.amount * -1 : null,
+          +element.account_typeId === 1? element.account_id : null,
+          +element.account_typeId === 5? element.account_id : null,
+          +element.account_typeId === 5? posted_elements.location_account : null,
+          null // is_production_item
+        ]);
+      }
+       
+      
+      insert_array2.push([
+        posted_elements.x,
+        parseFloat(total.toFixed(2)), // Use the new header id here
+        null,
+        posted_elements.amount,
+        null,
+        posted_elements.item_account,
+        posted_elements.location_account,
+        true // is_production_item
+      ]);
+      // Insert data into body table
+      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+
+      const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
+      if (!allow_amounts){
+        throw new Error(
+          'رصيد احد الاصناف لا يسمح'
+        );
+      }
+      
+      await update_items_cogs(items_array,posted_elements.datex, req, tx)
+      // Add history log
+
+      await history(transaction_type, 2, posted_elements.x, 0, req, tx);
+    });
+
+    await last_activity(req);
+
+    return res.json({
+      success: true,
+      message_ar: `تم تحديث امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error production_orders_update:", error);
+
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
+
+
+app.post("/api/production_orders_delete", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "production_permission", "update");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+    const transaction_type = 31;
+    let items_array = []
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+
+    //! settings
+    const settings = await check_settings_validation({
+      check_futureDate: true,
+      check_closingDate: true,
+      datex: posted_elements.datex,
+      type: 'delete',
+      tableName: 'transaction_header', // if type = 'update' or 'delete' only
+      transaction_id: posted_elements.x, // if type = 'update' or 'delete' only
+    }, req);
+
+    
+    if (!settings.valid) {
+      return res.json({
+        success: false,
+        message_ar: settings.message_ar,
+      });
+    }
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+    let quer001 = `select id, reference, datex from transaction_header where id = $1 and company_id = $2 and transaction_type = $3`
+    let rows01 = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id, transaction_type])
+    if (!rows01 || !rows01.id) {
+      await block_user(req,'Spod01')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+    const reference = rows01.reference
+    const datex = rows01.datex
+
+
+    const query02 = `
+    SELECT
+      tb.item_id
+    FROM
+      transaction_body tb
+    left join transaction_header th on th.id = tb.transaction_header_id  
+  WHERE 
+        th.id = $1
+        and th.company_id = $2
+        and tb.item_id is not null
+        and tb.is_production_item is null
+        ;`;
+        items_array = (await db.any(query02, [posted_elements.x, req.session.company_id]) || [])
+        .map(row => Number(row.item_id)); // تحويل النصوص إلى أرقام
+
+
+    const year = getYear(datex);
+    const new_referenceFormatting = formatFromFiveDigits(reference);
+
+    // Start Transaction
+    await db.tx(async (tx) => {
+  
+      let query00 = `delete from transaction_body where transaction_header_id = $1`
+      await tx.none(query00, [posted_elements.x])
+
+      const query1 = `UPDATE transaction_header
+                      set is_deleted = true
+                      where 
+                        id = $1
+                        and company_id = $2
+                        and transaction_type = $3
+                      `;
+      await tx.none(query1, [
+        posted_elements.x,
+        req.session.company_id,
+        transaction_type
+      ]);
+
+
+      
+      await update_items_cogs(items_array,datex, req, tx)
+      // Add history log
+
+      await history(transaction_type, 3, posted_elements.x, 0, req, tx);
+    });
+
+    await last_activity(req);
+
+    return res.json({
+      success: true,
+      message_ar: `تم حذف امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
+    });
+
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error production_orders_update:", error);
+
+    return res.json({
+      success: false,
+      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+    });
+  }
+});
 //#endregion
 
 
@@ -29571,168 +30885,63 @@ app.post("/api/production_forms_add", async (req, res) => {
         // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     //50000
 
-    /*
-        let query1 = `
-WITH 
-stock_balances as(
-select
-	sum(case when ah.account_type_id = 5 AND th2.datex < $2 then tb2.debit else 0 end) as stock_debit_begining,
-	sum(case when ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then tb2.debit else 0 end) as stock_debit_current,
-	sum(case when (ah.account_type_id = 5 or ah.global_id = 17) AND th2.datex < $2 then tb2.cogs else 0 end) as cost_value_begining,
-	sum(case when (ah.account_type_id = 5 or ah.global_id = 17) AND th2.datex BETWEEN $2 AND $3 then tb2.cogs else 0 end) as cost_value_current
-from transaction_body tb2
-INNER JOIN accounts_header ah ON ah.id = tb2.item_id
-LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-WHERE ah.company_id = $1 AND th2.is_deleted IS NULL
-),
-previous_profit_query as(
-select
-	sum(tb2.credit) - sum(tb2.debit) as previous_profit_value
-from transaction_body tb2
-INNER JOIN accounts_header ah ON ah.id = tb2.account_id
-LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-where
-	ah.company_id = $1 
-	AND th2.is_deleted IS null
-	and (ah.main_account_id in (4,5) or ah.global_id in (23,16))  -- حساب الارباح الحالية و الارباح السابقه
-	AND th2.datex < $2
-),
-main_trial_balance AS (
-    SELECT
-        ah.id,
-        ah.account_name,
-        CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
-            	case
-            		when (sb.stock_debit_begining - sb.cost_value_begining) > 0 then (sb.stock_debit_begining - sb.cost_value_begining)
-            		else 0
-            	end
-            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
-            	case
-             		when ppq.previous_profit_value < 0 then ABS(ppq.previous_profit_value)
-            		else 0
-            	end
-            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
-            ELSE 
-                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex < $2 THEN tb.debit ELSE 0 END)
-        END AS debit_first,
-                CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
-            	case
-            		when (sb.stock_debit_begining - sb.cost_value_begining) < 0 then ABS(sb.stock_debit_begining - sb.cost_value_begining)
-            		else 0
-            	end
-            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
-            	case
-            		when ppq.previous_profit_value > 0 then ppq.previous_profit_value
-            		else 0
-            	end
-            	 WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده   
-            ELSE 
-                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex < $2 THEN tb.credit ELSE 0 END)
-        END AS credit_first,
-        CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
-            	case
-            		when (sb.stock_debit_current - sb.cost_value_current) > 0 then (sb.stock_debit_current - sb.cost_value_current)
-            		else 0
-            	end
-            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
-            	case
-            		when sb.cost_value_current > 0 then sb.cost_value_current
-            		else 0
-            	end
-            ELSE 
-                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.debit ELSE 0 END)
-        END AS debit_current,
-        CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
-            	case
-            		when (sb.stock_debit_current - sb.cost_value_current) < 0 then ABS(sb.stock_debit_current - sb.cost_value_current)
-            		else 0
-            	end
-            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
-            	case
-            		when sb.cost_value_current < 0 then ABS(sb.cost_value_current)
-            		else 0
-            	end
-            ELSE 
-                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.credit ELSE 0 END)
-        END AS credit_current,        
-        ah.is_final_account,
-        ah.account_no,
-        ah.finance_statement,
-        ah.cashflow_statement,
-        ah.account_type_id,
-        ah.account_name_en,
-        ah.global_id,
-        ah.main_account_id,
-        ah.is_inactive,
-        ab.parent_id
-    FROM
-        accounts_header ah
-    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
-    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
-    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
-    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
-    LEFT JOIN previous_profit_query ppq ON true -- ربط الاستعلام فى حاله الصف الواحد
-    WHERE
-        ah.company_id = $1
-        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
-       -- AND NOT (ah.account_type_id = 5 AND ah.global_id != 12)
-        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
-    GROUP BY
-        ah.id, ab.parent_id, sb.stock_debit_begining, sb.cost_value_begining, ppq.previous_profit_value, sb.stock_debit_current, sb.cost_value_current
-)
-select
-    mt.id,
-    mt.account_name,
-          CASE
-        WHEN (mt.debit_first + mt.debit_current) > (mt.credit_first + mt.credit_current)
-        THEN (mt.debit_first + mt.debit_current) - (mt.credit_first + mt.credit_current)
-        ELSE NULL
-    END AS debit_end,
-        CASE
-        WHEN (mt.debit_first + mt.debit_current) < (mt.credit_first + mt.credit_current)
-        THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
-        ELSE NULL
-    END AS credit_end,
-    mt.debit_first,
-    mt.debit_current,
-    mt.credit_first,
-    mt.credit_current,
-    mt.is_final_account,
-    mt.account_no,
-    mt.finance_statement,
-    mt.cashflow_statement,
-    mt.account_type_id,
-    mt.account_name_en,
-    mt.global_id,
-    mt.main_account_id,
-    mt.is_inactive,
-    mt.parent_id,
-    null as padding
-from 
-	main_trial_balance mt
-  order by
-    mt.main_account_id asc, mt.parent_id asc, mt.id asc
-      ;
-    `;
-    */
 
 
     let query1 = `
 WITH 
 stock_balances as(
-select
-	sum(case when ah.account_type_id = 5 AND th2.datex < $2 and tb2.item_amount > 0 then tb2.cogs else 0 end) as stock_debit_begining,
-	sum(case when (ah.account_type_id = 5 or ah.global_id = 17) AND th2.datex < $2 and tb2.item_amount < 0 then tb2.cogs else 0 end) as cost_value_begining,
-	sum(case when ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 and tb2.item_amount > 0 then tb2.cogs else 0 end) as stock_debit_current,
-	sum(case when (ah.account_type_id = 5 or ah.global_id = 17) AND th2.datex BETWEEN $2 AND $3 and tb2.item_amount < 0 then tb2.cogs else 0 end) as cost_value_current
-from transaction_body tb2
+
+SELECT
+    -- حساب المخزون بدون شرط transaction_type
+    SUM(CASE 
+	    	WHEN ah.account_type_id = 5 AND th2.datex < $2 then
+	    		case
+	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        ELSE 0 
+        END) AS stock_debit_begining,
+
+    -- حساب التكلفة مع شرط transaction_type
+    SUM(CASE 
+        	WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th2.datex < $2 AND th2.transaction_type IN (3,4) then
+        		case
+	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_value_begining,
+    -- حساب المخزون بدون شرط transaction_type
+    SUM(CASE 
+        	WHEN ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then
+        		case
+        			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+        		end
+        	ELSE 0
+        END) AS stock_debit_current,
+
+    -- حساب التكلفة مع شرط transaction_type
+        
+            SUM(CASE 
+        	WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th2.datex BETWEEN $2 AND $3 AND th2.transaction_type IN (3,4) then
+        		case
+	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_value_current
+
+FROM transaction_body tb2
 INNER JOIN accounts_header ah ON ah.id = tb2.item_id
 LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-WHERE ah.company_id = $1 AND th2.is_deleted IS NULL
+WHERE ah.company_id = $1 
+AND th2.is_deleted IS null
+and tb2.item_id is not null
 ),
 previous_profit_query as(
 select
@@ -29864,7 +31073,8 @@ select
 from 
 	main_trial_balance mt
   order by
-    mt.main_account_id asc, mt.parent_id asc, mt.id asc
+        mt.main_account_id asc, mt.parent_id asc, mt.id asc
+        ;
         `;
 
     let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
@@ -29880,11 +31090,13 @@ from
       async function addSubAccounts(row, trial_balance, currentPadding = 0) {
         const id = row.id;
         const is_final_account = row.is_final_account;
-    
+       
+        
+        
         // التحقق إذا كان الحساب قد أُضيف بالفعل
         if (!addedAccounts.has(id)) {
             addedAccounts.add(id); // تسجيل الحساب كمضاف
-    
+
             // تحديث قيم padding
             row.padding = currentPadding;
     
@@ -29902,7 +31114,6 @@ from
                     return;
                 }
     
-
                 // التحقق من الحسابات الفرعية
                 if (sub_accounts_array.length > 0) {
                     let areAllSubAccountsZero = true;
@@ -30024,7 +31235,12 @@ select
     ) AS stock_value,
 
     SUM(CASE 
-            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN coalesce(tb.cogs, 0)
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th.transaction_type in (3,4) THEN 
+            	case
+	    			when tb.item_amount >= 0 then coalesce(tb.cogs,0)
+        			when tb.item_amount <0 then coalesce(tb.cogs *-1, 0)
+        			else 0
+	    		end
             ELSE 0 
         END
     ) AS cogs_value
@@ -30032,9 +31248,10 @@ FROM transaction_body tb
 INNER JOIN accounts_header ah ON ah.id = tb.item_id
 LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
 WHERE ah.company_id = $1
-  and ah.is_final_account is true
+  AND ah.is_final_account is true
   AND th.is_deleted IS NULL
   AND th.datex <= $2
+  AND tb.item_id is not null
 ),
 balances as(
     SELECT
@@ -30245,7 +31462,6 @@ from
 left join main_accounts_totals mat on true
   order by
     mt.main_account_id asc, mt.parent_id asc, mt.id asc
-  
       ;
     `;
     let params1 = [req.session.company_id, posted_elements.end_date]
@@ -30258,8 +31474,6 @@ left join main_accounts_totals mat on true
       let addedAccounts = new Set(); // لتتبع الحسابات التي تمت إضافتها
     
       // دالة تكرارية للبحث عن الحسابات الفرعية
-
-
       async function addSubAccounts(row, trial_balance, currentPadding = 0) {
         const id = row.id;
         const is_final_account = row.is_final_account;
@@ -30276,8 +31490,6 @@ left join main_accounts_totals mat on true
             if (!is_final_account) {
                 const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
 
-                
-                
                 if (hide_zero && sub_accounts_array.length === 0 && +row.balance === 0) {
                     // إذا كانت جميع الشروط متحققة لا نضيف الحساب
                     return;
@@ -30392,10 +31604,16 @@ stock_balances as (
 select
 
     SUM(CASE 
-            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND tb.item_amount < 0 THEN tb.cogs
+            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th.transaction_type in (3,4) THEN 
+            	case
+	    			when tb.item_amount >= 0 then coalesce(tb.cogs,0)
+        			when tb.item_amount <0 then coalesce(tb.cogs *-1, 0)
+        			else 0
+	    		end
             ELSE 0 
         END
     ) AS cogs_value
+
 FROM transaction_body tb
 INNER JOIN accounts_header ah ON ah.id = tb.item_id
 LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
@@ -30403,6 +31621,7 @@ WHERE ah.company_id = $1
   and ah.is_final_account is true
   AND th.is_deleted IS NULL
   AND th.datex between $2 and $3
+  AND tb.item_id is not null
 ),
 
 balances as(
@@ -30609,10 +31828,7 @@ order by
           .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
       }
     });
-
-
-
-    
+   
     app.post("/get_accounts_data_for_report_account_statement", async (req, res) => {
       try {
         //! Permission معلق
@@ -30898,53 +32114,70 @@ ORDER BY
 
 //!====================================================================================================================================
 
+async function check_itemAmounts_for_one_location(datex, items_array, location, req, tx) {
+
+  const query = `
+  WITH previous_balance AS (
+    SELECT
+      tb.item_id,
+      COALESCE(SUM(tb.item_amount), 0) AS opening_balance
+    FROM
+      transaction_body tb
+    JOIN
+      transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+      th.company_id = $1
+      AND th.is_deleted IS NULL
+      AND tb.item_id IN (${items_array.join(',')})
+      AND th.datex < $2
+      AND tb.item_location_id_tb = $3
+    GROUP BY
+      tb.item_id
+  )
+  SELECT
+    tb.item_id,
+    th.datex,
+    tb.item_amount,
+    COALESCE(previous_balance.opening_balance, 0) + COALESCE(SUM(tb.item_amount) OVER (PARTITION BY tb.item_id ORDER BY th.datex), 0) AS cumulative_balance
+  FROM
+    transaction_body tb
+  JOIN
+    transaction_header th ON th.id = tb.transaction_header_id
+  LEFT JOIN
+    previous_balance ON previous_balance.item_id = tb.item_id
+  WHERE
+    th.company_id = $1
+    AND th.is_deleted IS NULL
+    AND tb.item_id IN (${items_array.join(',')})
+    AND th.datex >= $2
+    AND tb.item_location_id_tb = $3
+  ORDER BY
+    th.datex;
+  `;
+
+  const params = [req.session.company_id, datex, location];
+
+  const result = await tx.any(query, params) || [];
+  
+  let check = true; // اعتبار أن الرصيد جيد بشكل افتراضي
+
+  if (result.length > 0) {
+    const negativeBalance = result.find(item => +item.cumulative_balance < 0);
+    if (negativeBalance) {
+      check = false; // إذا وجد رصيد سالب، نغير القيمة إلى false
+    }
+  } else {
+    check = false; // إذا كانت النتيجة فارغة، نعتبر أن الرصيد غير جيد
+  }
+
+  return check;
+}
+
+
 
 
 async function update_items_cogs(items_array,datex, req, tx) {
   
-  //   اخر شرط تم اضافته امبارح
-  // باقى اختبار الجرد مع المرتجعات والفواتير
-  
-  /*
-    const query0 = `SELECT
-      tb.item_id,
-      SUM(
-          CASE 
-              when th.datex = $1 and th.transaction_type in (3,4) then 0
-              WHEN tb.debit > 0 THEN tb.item_amount
-              ELSE tb.item_amount * -1 
-          END
-      ) AS Current_amount,
-      SUM(
-          CASE
-            when th.datex = $1 and th.transaction_type in (3,4) then 0
-              WHEN th.transaction_type in (4) THEN tb.cogs*-1 
-              WHEN th.transaction_type in (6) THEN tb.debit
-              WHEN th.transaction_type in (2) AND tb.credit IS NULL THEN tb.debit
-              ELSE 0
-        END) 
-      - SUM(
-        CASE 
-          WHEN th.transaction_type in (7) THEN tb.credit
-          WHEN th.transaction_type in (3) THEN tb.cogs
-          WHEN th.transaction_type in (2) AND tb.debit IS NULL THEN tb.credit
-          ELSE 0
-          END
-      ) AS value
-  FROM
-      transaction_body tb
-  INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
-  WHERE
-      th.datex <= $1
-      AND th.company_id = $2
-      AND tb.item_id IN (${items_array.join(',')})
-      AND th.is_deleted IS NULL
-      AND th.is_including_items IS TRUE
-      AND NOT (th.transaction_type IN (3,4) AND th.datex = $1) -- استثناء العمليات
-  GROUP BY
-      tb.item_id;`
-    */ 
-
       const query0 = `
     SELECT
       tb.item_id,
@@ -30973,7 +32206,7 @@ async function update_items_cogs(items_array,datex, req, tx) {
 
     const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
     
-  
+  /*
     const query1 = `
         SELECT 
             tb.id,
@@ -31005,10 +32238,46 @@ async function update_items_cogs(items_array,datex, req, tx) {
             END ASC
             ;
     `;
-  
+  */
+
+    const query1 = `
+    SELECT 
+        tb.id,
+        th.transaction_type,
+        th.datex,
+        tb.debit,
+        tb.credit,
+        tb.item_amount,
+        tb.item_id,
+        tb.cogs,
+        tb.is_production_item
+    FROM
+        transaction_body tb
+    LEFT JOIN 
+        transaction_header th ON th.id = tb.transaction_header_id
+    WHERE 
+        th.company_id = $1
+        AND th.is_deleted IS NULL
+        AND (tb.item_id IS NOT NULL or th.transaction_type = 31)
+        AND th.datex >= $2
+    ORDER BY 
+        th.datex ASC,
+        CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
+          WHEN 6 THEN 1 -- مشتريات
+          WHEN 7 THEN 2 -- مرتجع مشتريات
+          WHEN 2 THEN 3 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
+          WHEN 31 THEN 4 -- تصنيع
+          WHEN 4 THEN 5 -- مرتجع مبيعات
+          WHEN 3 THEN 6 -- مبيعات
+          ELSE 7 -- القيم الأخرى تكون في النهاية
+        END ASC,
+        tb.id ASC
+        ;
+`;
     // جلب البيانات من قاعدة البيانات
     const items_transactions_array = await tx.any(query1,[req.session.company_id,datex]);
     
+
     let updatedRecords = [];
   
     for (const item_id of items_array){
@@ -31028,43 +32297,7 @@ async function update_items_cogs(items_array,datex, req, tx) {
   
   
     const item_transaction_arry = items_transactions_array.filter(item => +item.item_id === +item_id)  
-/*
-    for (const row of item_transaction_arry) {
-      
-      const type = +row.transaction_type
-      let cogs = 0;
-      
-        if (type === 6 || (type === 2 && row.debit && !row.credit)){ // فاتورة مشتريات او قيد محاسبى مدين
-          started_amount += +row.item_amount;
-          started_value += +row.debit;
-        }else if(type === 7 || (type === 2 && row.credit && !row.debit)){ // مرتجع المشتريات قيد محاسبى دائن
-          started_amount -= +row.item_amount;
-          started_value -= +row.credit;
-        }else if(type === 3){ // فاتورة مبيعات
-          if(+started_value === 0 || +started_amount === 0 || +row.item_amount === 0){
-            cogs = 0  
-          }else{
-            cogs = (started_value / started_amount) * +row.item_amount       
-          }
-          started_amount -= +row.item_amount;
-          started_value -= cogs;
-          updatedRecords.push({ id: row.id, cogs });
-        }else if(type === 4){ // مرتجع مبيعات
-          if(+started_value === 0 || +started_amount === 0 || +row.item_amount === 0){
-            cogs = 0  
-          }else{
-            cogs = ((started_value / started_amount) * +row.item_amount)
-          }
-          started_amount += +row.item_amount;
-          started_value += cogs; // عملنا دى بالسالب لانى ضربت الكوجز فوق بالسالب  وبالتالى هيدينى زائد
-          updatedRecords.push({ id: row.id, cogs: cogs*-1  });
-        }
-        
-        old_cogs += cogs;
-  
-  
-    }
-*/
+
 
 
 for (const row of item_transaction_arry) {
@@ -31084,6 +32317,17 @@ for (const row of item_transaction_arry) {
       started_amount -= +row_amount;
       started_value -= +cogs;
       updatedRecords.push({ id: row.id, cogs});
+    }else if(type === 31){
+        if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
+          cogs = 0  
+        }else{
+          if (!row.is_production_item){ // حالة الصنف المستهلك فى التصنيع
+            cogs = (started_value / started_amount) * row_amount;
+          }
+        }
+        started_amount -= +row_amount;
+        started_value -= cogs;
+        updatedRecords.push({ id: row.id, cogs});
     }else if(type === 3){ // فاتورة مبيعات
       if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
         cogs = 0  
@@ -31110,19 +32354,46 @@ for (const row of item_transaction_arry) {
   
   // console.table(updatedRecords);
   turn_EmptyValues_TO_null(updatedRecords)
-    // إعداد استعلامات التحديث دفعة واحدة
-    const queries = updatedRecords.map(
-        ({ id, cogs }) =>
-            `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id};`
-    );
-  
 
-    // تنفيذ التحديثات باستخدام tx.batch
-      
-            await tx.batch(queries.map((query) => tx.none(query)));
-      
-        
-  }
+  const queries = updatedRecords.map(
+    ({ id, cogs }) =>
+        `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id}`
+);
+
+
+await tx.batch(queries.map((query) => tx.none(query)));
+
+
+//! update production_items after everything is done
+let query2 = `
+    WITH balances AS (
+    SELECT
+        th.id AS transaction_header_id,
+        SUM(
+            COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0) + COALESCE(tb.cogs, 0)
+        ) AS new_total_cost
+    FROM transaction_header th
+    INNER JOIN transaction_body tb ON tb.transaction_header_id = th.id
+    WHERE
+        th.company_id = $1
+        AND th.transaction_type = 31
+        AND th.datex >= $2
+        AND tb.is_production_item IS NULL
+    GROUP BY th.id
+)
+UPDATE transaction_body tb
+SET cogs = balances.new_total_cost
+FROM balances
+WHERE tb.transaction_header_id = balances.transaction_header_id 
+AND tb.is_production_item = TRUE;
+`
+await tx.none(query2, [req.session.company_id, datex])
+
+
+}
+
+
+
 
 
 async function get_last_avg_cost(items_array, datex, req) {
@@ -31183,6 +32454,7 @@ left join transaction_header th on th.id = tb.transaction_header_id
 where
 	th.is_including_items is true
 	and tb.item_amount is not null
+  and th.company_id = $1
 order by
 	th.datex desc,
 	CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
@@ -31435,23 +32707,33 @@ async function test_trial_balance() {
 
 /*
 
-DO $$
-DECLARE
-    tbl_name text := 'production_forms_header';  -- هنا نقوم بتحديد اسم الجدول في المتغير
-    max_id BIGINT;
-BEGIN
-    -- تحديد أعلى قيمة في العمود 'id' في الجدول المحدد
-    EXECUTE format('SELECT MAX(id) + 1 FROM %I', tbl_name)
-    INTO max_id;
+DO $$ 
+DECLARE 
+    tbl_name text := 'accounts_body';  -- تحديد اسم الجدول في المتغير
+    max_id BIGINT; 
+    seq_name text;
+BEGIN 
+    -- تحديد أعلى قيمة في العمود 'id' أو تعيين 1 إذا كان الجدول فارغًا
+    EXECUTE format('SELECT COALESCE(MAX(id), 0) + 1 FROM %I', tbl_name) 
+    INTO max_id; 
 
-    -- إنشاء تسلسل جديد باستخدام المتغير `tbl_name`
-    EXECUTE format('CREATE SEQUENCE %I_id_seq START WITH %s', tbl_name, max_id);
+    -- تحديد اسم التسلسل
+    seq_name := format('%I_id_seq', tbl_name);
+
+    -- التحقق إذا كان التسلسل موجودًا بالفعل
+    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = seq_name) THEN
+        -- إنشاء التسلسل إذا لم يكن موجودًا
+        EXECUTE format('CREATE SEQUENCE %I START WITH %s', seq_name, max_id);
+    ELSE
+        -- إذا كان التسلسل موجودًا، يمكنك إعادة تعيينه إلى القيمة المطلوبة
+        EXECUTE format('ALTER SEQUENCE %I RESTART WITH %s', seq_name, max_id);
+    END IF;
 
     -- تعديل العمود لإضافة تسلسل كقيمة افتراضية باستخدام المتغير `tbl_name`
-    EXECUTE format('ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(''%I_id_seq'')', tbl_name, tbl_name);
+    EXECUTE format('ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(''%I'')', tbl_name, seq_name);
 
     -- ربط التسلسل بالعمود باستخدام المتغير `tbl_name`
-    EXECUTE format('ALTER SEQUENCE %I_id_seq OWNED BY %I.id', tbl_name, tbl_name);
+    EXECUTE format('ALTER SEQUENCE %I OWNED BY %I.id', seq_name, tbl_name);
 END $$;
 
 */

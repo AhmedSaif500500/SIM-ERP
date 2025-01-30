@@ -1074,10 +1074,10 @@ router.get('/production_forms_update_ar', (req, res) => {
 
 //-------------
 
-router.get('/production_order_view_ar', (req, res) => {
+router.get('/production_orders_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 || req.session.production_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_order', 'production_order_view_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'productions_orders', 'production_orders_view_ar.html'));
         }else{
             res.redirect('/productionMain_view_ar?reason=0');
         };
@@ -1086,24 +1086,24 @@ router.get('/production_order_view_ar', (req, res) => {
     }
 });
 
-router.get('/production_order_add_ar', (req, res) => {
+router.get('/production_orders_add_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 2 || req.session.production_permission > 1) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_order', 'production_order_add_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'productions_orders', 'production_orders_add_ar.html'));
         }else{
-            res.redirect('/production_order_view_ar?reason=0');
+            res.redirect('/production_orders_view_ar?reason=0');
         };
     } else {        
         res.redirect('/login?reason=0');
     }
 });
 
-router.get('/production_order_update_ar', (req, res) => {
+router.get('/production_orders_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner || req.session.general_permission > 1 || req.session.production_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'production_order', 'production_order_update_ar.html'));
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'items', 'production', 'productions_orders', 'production_orders_update_ar.html'));
         }else{
-            res.redirect('/production_order_view_ar?reason=0');
+            res.redirect('/production_orders_view_ar?reason=0');
         };
     } else {        
         res.redirect('/login?reason=0');

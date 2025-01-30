@@ -18,8 +18,8 @@ function showData(){
   }
   
   orders_btn.onclick = function(){
-    sessionStorage.removeItem('production_order_ViewArray');
-    window.location.href = "/production_order_view_ar";
+    sessionStorage.removeItem('production_orders_ViewArray');
+    window.location.href = "/production_orders_view_ar";
   }
   
   page_content.style.display = 'flex'

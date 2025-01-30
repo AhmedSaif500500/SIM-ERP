@@ -3,8 +3,8 @@ pagePermission("view", "productions_permission");
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
-    sessionStorage.removeItem('production_forms_ViewArray')
-    window.location.href = "/production_forms_add_ar";
+    sessionStorage.removeItem('production_orders_ViewArray')
+    window.location.href = "/production_orders_add_ar";
   }
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
@@ -21,7 +21,16 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! account_no
+//! datex
+let f0_div = filter_div.querySelector(`#f0_div`);
+let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
+let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
+let f0_select = filter_div.querySelector(`#f0_select`);
+let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
+
+
+//! reference
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
@@ -51,7 +60,7 @@ let f4_input = filter_div.querySelector(`#f4_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [1, 2, 3, 4]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1, 2, 3, 4]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -91,13 +100,13 @@ function backUp_filter_div_conditions() {
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('production_forms_ViewArray')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('production_orders_ViewArray')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('production_forms_ViewArray', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('production_orders_ViewArray', JSON.stringify(conditionsArray));
 }
 
 
@@ -105,7 +114,7 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`production_forms_ViewArray`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`production_orders_ViewArray`)) || [];
 
     if (!array || array.length <= 1) {
     
@@ -124,7 +133,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("production_forms_ViewArray")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("production_orders_ViewArray")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -134,7 +143,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("production_forms_ViewArray", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("production_orders_ViewArray", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -249,10 +258,11 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
+    call_default_checkbox('f0',true,true,true) // datex
     call_default_checkbox('f1',true,true,false)
     call_default_checkbox('f2',true,true,false)
-    call_default_checkbox('f3',true,false,false) 
-    call_default_checkbox('f4',true,false,false) 
+    call_default_checkbox('f3',true,true,false) 
+    call_default_checkbox('f4',true,true,false) 
 }
 
 async function filter_icon_cancel_fn() {
@@ -270,7 +280,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('production_forms_ViewArray');
+            sessionStorage.removeItem('production_orders_ViewArray');
             conditionsArray = []
             
         }
@@ -295,10 +305,15 @@ let filteredData_Array = [];
 
 async function getData_fn() {
     try {
+        
+        let start_date;
+        let end_date;
 
+        start_date = f0_input_start_date1.value;
+        end_date = f0_input_end_date1.value;
         data = await new_fetchData_postAndGet(
-            "/production_forms_view_ar",
-            {},
+            "/api/production_order_view",
+            {start_date, end_date},
             "productions_permission","view",
             15,
             false,'',
@@ -317,6 +332,18 @@ async function getData_fn() {
     }
 }
 
+function is_datexChanged() {
+    if (
+        f0_input_start_date1.value !== startDate ||
+        f0_input_end_date1.value !== endDate
+    ) {
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 
 async function Execution() {
@@ -324,7 +351,14 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
+        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+        const datechange = is_datexChanged()
+        if (datechange){
+            await getData_fn();
+        }else{
             showFirst50RowAtTheBegening();
+        }
+
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
 
@@ -362,13 +396,22 @@ function showFirst50RowAtTheBegening() {
         
         filteredData_Array = data.filter((row) => {
 
+            const f0 = 
+            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
+                f0_checkbox,
+                f0_select,
+                f0_input_start_date1,
+                f0_input_end_date1,
+                "datex",
+                row
+            );
 
             const f1 =
             filterData_string_column_with_showAndHiddenCheckbox(
                 f1_checkbox,
                 f1_select,
                 f1_input,
-                "account_no",
+                "referenceconcat",
                 row
             );
 
@@ -378,7 +421,7 @@ function showFirst50RowAtTheBegening() {
                     f2_checkbox,
                     f2_select,
                     f2_input,
-                    "form_name",
+                    "general_note",
                     row
                 );
 
@@ -387,22 +430,23 @@ function showFirst50RowAtTheBegening() {
                     f3_checkbox,
                     f3_select,
                     f3_input,
-                    "item_name",
+                    "account_name",
                     row
                 );
             
                 const f4 =
-                filterData_string_column_with_showAndHiddenCheckbox(
+                filterData_number_column_with_showAndHiddenCheckbox(
                     f4_checkbox,
                     f4_select,
                     f4_input,
-                    "location_name",
+                    "total_value",
                     row
                 );
                 
                 
             return (
 
+                f0 &&
                 f1 &&
                 f2 &&
                 f3 &&
@@ -437,10 +481,11 @@ function fillTable() {
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_form_name = `display:${f2_checkbox.checked ? "table-cell" : "none"}; width: 100%; white-space: wrap; text-align: start;`;
-        let item_name = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: wrap; text-align: start;`;
-        let style_location_name = `display:${f4_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_referencecon = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_note = `display:${f2_checkbox.checked ? "table-cell" : "none"}; min-width: 20rem; width: 100%; white-space: wrap; text-align: start;`;
+        let style_item_name = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f2_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
+        let style_total = `display:${f4_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
         let fn = `onclick = "table_view_btn_fn(this)"`;
@@ -452,10 +497,11 @@ function fillTable() {
                             <tr>
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
-                                <th style="${style_account_no}">#</th>
-                                <th style="${style_form_name}">الاسم</th>
-                                <th style="${item_name}">الصنف تام الصنع</th>
-                                <th style="${style_location_name}">موقع سحب المخزون</th>
+                                <th style="${style_datex}">التاريخ</th>
+                                <th style="${style_referencecon}">المرجع</th>
+                                <th style="${style_note}">البيان</th>
+                                <th style="${style_item_name}">الصنف تام الصنع</th>
+                                <th style="${style_total}">الكمية المُصنه</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -466,10 +512,11 @@ function fillTable() {
                      `<tr>
                         <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
-                        <td style="${style_account_no}" class="td_account_no">${row.account_no}</td>
-                        <td style="${style_form_name}" class="td_form_name">${row.form_name}</td>
-                        <td style="${item_name}" class="td_item_name">${row.item_name}</td>
-                        <td style="${style_location_name}" class="td_location_name">${row.location_name}</td>
+                        <td style="${style_datex}" class="td_datex">${row.datex}</td>
+                        <td style="${style_referencecon}" class="td_referenceconcat">${row.referenceconcat}</td>
+                        <td style="${style_note}" class="td_general_note">${row.general_note}</td>
+                        <td style="${style_item_name}" class="td_account_name">${row.account_name}</td>
+                        ${tdNumber(false,false,true,row.total_value,style_total,total_column2,fn,'td_total_value')}
                       </tr>`;
         });
 
@@ -477,10 +524,11 @@ function fillTable() {
                     <tr class="table_totals_row">
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id1" style="${style_id}"></td>
-                        <td id="footer_style_account_no" style="${style_account_no}"></td>
-                        <td id="footer_style_form_name" style="${style_form_name}"></td>
-                        <td id="footer_item_name" style="${item_name}"></td>
-                        <td id="footer_style_location_name" style="${style_location_name}"></td>
+                        <td id="footer_style_datex" style="${style_datex}"></td>
+                        <td id="footer_style_referencecon" style="${style_referencecon}"></td>
+                        <td id="footer_style_note" style="${style_note}"></td>
+                        <td id="footer_style_item_name" style="${style_item_name}"></td>
+                        <td id="footer_style_total" style="${style_total}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -513,6 +561,8 @@ function fillTable() {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
 
+        startDate = f0_input_start_date1.value;
+        endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
@@ -527,13 +577,15 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const f1 = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
-            const f2 = performSearch_Row(f2_checkbox,"form_name",searchValue,row);
-            const f3 = performSearch_Row(f3_checkbox,"item_name",searchValue,row);
-            const f4 = performSearch_Row(f4_checkbox,"location_name",searchValue,row);
+            const f0 = performSearch_Row(f0_checkbox,"datex",searchValue,row);
+            const f1 = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
+            const f2 = performSearch_Row(f2_checkbox,"general_note",searchValue,row);
+            const f3 = performSearch_Row(f3_checkbox,"account_name",searchValue,row);
+            const f4 = performSearch_Row(f4_checkbox,"total_value",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
+                f0 ||
                 f1 ||
                 f2 ||
                 f3 ||
@@ -590,13 +642,13 @@ async function table_view_btn_fn(viewBtn) {
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = viewBtn.closest("tr");
-    const production_forms_update_data = {
+    const production_orders_update_data = {
         x: row.querySelector(`.td_id`).textContent,
     };
 
-    sessionStorage.removeItem('production_forms_update_data')
-    sessionStorage.setItem('production_forms_update_data', JSON.stringify(production_forms_update_data));                            
-    window.location.href = `production_forms_update_ar`;
+    sessionStorage.removeItem('production_orders_update_data')
+    sessionStorage.setItem('production_orders_update_data', JSON.stringify(production_orders_update_data));                            
+    window.location.href = `production_orders_update_ar`;
     hideLoadingIcon(viewBtn)
 } catch (error) {
     hideLoadingIcon(viewBtn)
@@ -608,10 +660,10 @@ function CheckUrlParams_transaction_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "production_forms_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
+            "production_orders_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحةاوامر التصنيع اليومية"
         );
-        if (!urlData || urlData.pageName !== "production_forms_update_ar") {
+        if (!urlData || urlData.pageName !== "production_orders_update_ar") {
             return true;
         }
         if (urlData !== "noParams") {
@@ -633,13 +685,15 @@ function CheckUrlParams_transaction_update_ar() {
 
 document.addEventListener("DOMContentLoaded", async function () {
     showRedirectionReason();
+    sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+
     const result2 = CheckUrlParams_transaction_update_ar();
     if (!result2) {
         return;
     }
 
     await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`production_forms_ViewArray`);
+    const conditionsArray = sessionStorage.getItem(`production_orders_ViewArray`);
 
     if (!conditionsArray){
      

@@ -699,7 +699,6 @@ function fillTable() {
                                 <th style="${style_button}"></th>
                                 <th style="${style_id}">ID</th>
                                 <th style="${style_datex}">التاريخ</th>
-                                <th style="${style_reference}">#</th>
                                 <th style="${style_referenceCONCAT}">#</th>
                                 <th style="${style_department_id}">dep_id</th>
                                 <th style="${style_department_name}">القسم</th>
@@ -721,15 +720,12 @@ function fillTable() {
                 
                 
                 
-            let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-
             tableHTML +=
                      `<tr>
                         ${buttonRow}
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_datex}">${row.datex}</td>
-                        <td style="${style_reference}">${row.reference}</td>
-                        <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
+                        <td style="${style_referenceCONCAT}">${row.referenceconcat}</td>
                         <td style="${style_department_id}">${row.department_id}</td>
                         <td style="${style_department_name}">${row.department_name}</td>
                         <td style="${style_account_no}">${row.account_no}</td>
@@ -748,7 +744,6 @@ function fillTable() {
                         <td id="footer_style_button" style="${style_button}"></td>
                         <td id="footer_style_id1" style="${style_id}"></td>
                         <td id="footer_style_datex" style="${style_datex}"></td>
-                        <td id="footer_style_reference" style="${style_reference}"></td>
                         <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
                         <td id="footer_style_department_id" style="${style_department_id}"></td>
                         <td id="footer_style_department_name" style="${style_department_name}"></td>
@@ -820,7 +815,7 @@ function performSearch() {
 
         array1 = filteredData_Array.filter((row) => {
             const datexInfoMatch = performSearch_Row(checkbox_datex,"datex",searchValue,row);
-            const referenceCONCAT_Match = performSearch_Row(checkbox_referenceCONCAT,"reference",searchValue,row);
+            const referenceCONCAT_Match = performSearch_Row(checkbox_referenceCONCAT,"referenceconcat",searchValue,row);
             const departmentMatch = performSearch_Row(checkbox_deparment_name,"department_name",searchValue,row);
             const accNoMatch = performSearch_Row(checkbox_account_no,"account_no",searchValue,row);
             const nameMatch = performSearch_Row(checkbox_account_name,"account_name",searchValue,row);
@@ -896,16 +891,15 @@ async function table_view_btn_fn(updateBtn) {
     const effects_update_data = {
         x: row.cells[1].textContent,
         datex: row.cells[2].textContent,
-        reference: row.cells[3].textContent,
-        referenceCONCAT: row.cells[4].textContent,
-        account_no: row.cells[7].textContent,
-        emp_x: row.cells[8].textContent,
-        acc_name: row.cells[9].textContent,
-        days: row.cells[10].textContent,
-        hours: row.cells[11].textContent,
-        values: row.cells[12].textContent,
-        note: row.cells[13].textContent,
-        active: row.cells[14].textContent,
+        referenceCONCAT: row.cells[3].textContent,
+        account_no: row.cells[6].textContent,
+        emp_x: row.cells[7].textContent,
+        acc_name: row.cells[8].textContent,
+        days: row.cells[9].textContent,
+        hours: row.cells[10].textContent,
+        values: row.cells[11].textContent,
+        note: row.cells[12].textContent,
+        active: row.cells[13].textContent,
         
     };
 

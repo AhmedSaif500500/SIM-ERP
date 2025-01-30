@@ -35,7 +35,7 @@
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="production_forms_view_ar" title="اعادة تحميل الصفحة">نماذج التصنيع</a>
+              <a id="h2_text_div" class="h2_text_div" href="production_orders_view_ar" title="اعادة تحميل الصفحة">اوامر التصنيع</a>
               <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
           </h2>
@@ -64,13 +64,48 @@
           <div id="filter_div" class="filter_div hidden_height">
 
           
+            <!-- datex  -->
+            <div class="filter_div_sub flex_column y_start" id="f0_div">
+              <div id="f0_checkbox_div" class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f0_checkbox"  checked disabled title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_date_column_with_select_and_two_inputs(this)"></span>
+                <div  class="checkbox_label">التاريخ</div>
+              </div>
+              <div class="select_and_input_div flex_column y_start gap_05">
+                <select id="f0_select" class="dark_select hover"
+                  onchange="filter_insideSelect_date_column_with_two_input(this)">
+                  <option value="1" selected>تحديد الفتره</option>
+                </select>
+                <div class="two_date_div">
+                  <!-- date -->
+                  <div class="row wrap gap_05">
+                    <label for="f0_input_start_date1" class="lbl_sm">من</label>
+                    <div class="input_with_icon_div m_0">
+                      <input type="search" id="f0_input_start_date1" class="hover input_date m_0 datepicker"
+                        placeholder="التاريخ..." readonly autocomplete="off">
+                      <i class="fa-regular fa-calendar left_icon"></i>
+                    </div>
+                  </div>
+                  <!-- date -->
+                  <div class="row wrap gap_05">
+                    <label for="f0_input_end_date1" class="lbl_sm">الى</label>
+                    <div class="input_with_icon_div m_0">
+                      <input type="search" id="f0_input_end_date1" class="hover input_date m_0 datepicker"
+                        placeholder="التاريخ..." readonly autocomplete="off">
+                      <i class="fa-regular fa-calendar left_icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-            <!-- account_no  -->
+
+            <!-- reference  -->
             <div class="filter_div_sub" id="f1_div">
               <div class="row">
                 <span class="reference_input_checkbox"><input type="checkbox" id="f1_checkbox" title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked></span>
-                <div class="checkbox_label">المعرف</div>
+                <div class="checkbox_label">المرجع</div>
               </div>
               <div id="f1_selectAndInput_div" class="select_and_input_div">
                 <select id="f1_select" class="dark_select hover"
@@ -111,11 +146,11 @@
             <!-- production_item_name  -->
             <div class="filter_div_sub" id="f3_div">
               <div class="row">
-                <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" title="اظهار العمود"
+                <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" checked title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
                 <div class="checkbox_label">البيان</div>
               </div>
-              <div id="f3_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+              <div id="f3_selectAndInput_div" class="select_and_input_div">
                 <select id="f3_select" class="dark_select hover"
                   onchange="filter_insideSelect_string_column_with_input(this)">
                   <option value="0" selected>اظهار الكل</option>
@@ -129,26 +164,29 @@
               </div>
             </div>
 
-            <!-- location_name  -->
-            <div class="filter_div_sub" id="f4_div">
+            <!-- amount  -->
+            <div id="f4_div" class="filter_div_sub">
               <div class="row">
-                <span class="reference_input_checkbox"><input type="checkbox" id="f4_checkbox" title="اظهار العمود"
+                <span class="reference_input_checkbox"><input type="checkbox" id="f4_checkbox" checked
+                    title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                <div class="checkbox_label">البيان</div>
+                <div class="checkbox_label">القيمة</div>
               </div>
-              <div id="f4_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+              <div id="f4_selectAndInput_div" class="select_and_input_div">
                 <select id="f4_select" class="dark_select hover"
-                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  onchange="filter_insideSelect_number_column_with_input(this)">
                   <option value="0" selected>اظهار الكل</option>
-                  <option value="1">يحتوى على</option>
-                  <option value="2">لا يحتوى على</option>
-                  <option value="3">فارغ</option>
-                  <option value="4">ليس فارغ</option>
+                  <option value="1">اكبر من</option>
+                  <option value="2">اصغر من</option>
+                  <option value="3">تساوى</option>
+                  <option value="4">صفر</option>
+                  <option value="5">ليس صفر</option>
                 </select>
                 <input id="f4_input" name="inside_input_search" type="search" class="input_text_sm hover"
-                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
               </div>
             </div>
+
 
             <div class="btn_container_top_border">
               <button id="btn_do" class="btn_do">تطبيق</button>
@@ -166,7 +204,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/items/production/production_forms/production_forms_view_ar.js"></script>
+  <script src="/public/scripts/ar/items/production/productions_orders/production_orders_view_ar.js"></script>
 
 
 </body>

@@ -2,6 +2,11 @@ const account_no_input = document.querySelector(`#account_no_input`)
 const form_name_input = document.querySelector(`#form_name_input`);
 const amount_input = document.querySelector(`#amount_input`);
 const unite_spane = document.querySelector(`#unite_spane`);
+const date1 = document.querySelector(`#date1`); date1.value = today
+const load_form_btn = document.querySelector(`#load_form_btn`)
+const table = document.querySelector(`#myTable`);
+let tableBody = table.querySelector(`tbody`);
+let tableTfoot = table.querySelector(`tfoot`);
 
 let style_account = `display: table-cell; min-width: 33rem; width: auto; white-space: nowrap; text-align: start`;
 
@@ -248,7 +253,7 @@ let get_accounts_type_array = [];
 async function getAccounsData_fn(x) {
 
   const d = await new_fetchData_postAndGet(
-    "/production_forms_AccountsData1",
+    "/production_orders_AccountsData1",
     {x},
     'cash_transaction_permission', 'view',
     50,
@@ -292,6 +297,7 @@ const types_array = d.account_type_array
   
   create_drop_down_with_External_DataArray(`dropdown_div1`,items_array); if (x) {selectedRow_dropdownDiv(`dropdown_div1`, items_array, +d.headerData_array.production_item_id)};
   create_drop_down_with_External_DataArray(`dropdown_div2`,d.location_accounts_array); if (x) {selectedRow_dropdownDiv(`dropdown_div2`,d.location_accounts_array, +d.headerData_array.location_from)};
+  create_drop_down_with_External_DataArray(`dropdown_div3`,d.forms_array); //if (x) {selectedRow_dropdownDiv(`dropdown_div2`,d.location_accounts_array, +d.headerData_array.location_from)};
 
   return d
 };
@@ -337,8 +343,6 @@ function fillBodyTable() {
 
   // إعداد رأس الجدول
   tableBody.innerHTML = ""; // تأكد من تفريغ محتوى tbody قبل إضافة الصفوف
-
-  
 
   // إضافة صفوف الجدول بناءً على البيانات
   // slice_Array1 = ""; // تفريغ المصفوفه
@@ -427,6 +431,120 @@ function handleCurrentTr(row,tr){
     span.textContent = "صنف مخزون"
   } 
 }
+
+
+
+//#region dialog
+const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
+const report_name_input = document.querySelector(`#report_name_input`);
+const end_date_input = document.querySelector(`#end_date_input`);
+const checked_hide_zero_balabce = document.querySelector(`#checked_hide_zero_balabce`);
+// const checked_show_account_no = document.querySelector(`#checked_show_account_no`);
+const view_report_btn = document.querySelector(`#view_report_btn`);
+const cancel_report_btn = document.querySelector(`#cancel_report_btn`);
+const report_setting_icon = document.querySelector(`#report_setting_icon`);
+
+
+
+view_report_btn.onclick = async function () {
+    try {
+        showLoadingIcon(view_report_btn)
+
+        const x = document.querySelector(`#dropdown_div3_hidden_input`).value
+        const xamount_input = document.querySelector(`#xamount_input`).value
+
+        if(!x){
+            showAlert('warning', 'برجاء اختيار النموذج من القائمة')
+            hideLoadingIcon(view_report_btn);
+            return;
+        }
+        
+
+        if(!xamount_input || isNaN(xamount_input)){
+          showAlert('warning', 'برجاء ادخال كمية الانتاج بشكل صحيح')
+          hideLoadingIcon(view_report_btn);
+          return;
+      }
+      
+        data_accounts = await new_fetchData_postAndGet(
+          "/calculate_production_order_data",
+          {x,xamount_input},
+          'production_permission', 'add',
+          50,
+          false,false,
+          true,
+          false,false,
+          false,false,
+          false,false,false,
+          true,"production_orders_view_ar",
+          "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
+        )
+
+        const h = data_accounts.calc_header
+        const b = data_accounts.bodyData_array
+        if (!h, !b){
+          showAlert(`fail`,'حدث خطأ اثناء معالجة البيانات')
+          hideLoadingIcon(view_report_btn)
+          close_dialogx()
+          return
+        }
+
+
+        form_name_input.value = h.form_name
+        unite_spane.textContent = h.item_unite
+        amount_input.value = h.value || ''
+        document.querySelector(`#dropdown_div1_hidden_input`).value = h.production_item_id
+        document.querySelector(`#dropdown_div1_select_input`).value = h.account_name
+        document.querySelector(`#dropdown_div2_hidden_input`).value = h.location_from
+        document.querySelector(`#dropdown_div2_select_input`).value = h.location_name
+
+        clear_tbody('myTable');
+
+        fillBodyTable()
+        // h2_text_div.textContent = report_name_input.value ? report_name_input.value : `كشف حساب / ${account_name}` 
+        // sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
+            
+        showAlert('info', 'تم استيراد بيانات النموذج بنجاح، مع حساب الكميات المستهلكة بدقة بناءً على الكمية المدخلة لعملية التصنيع.')
+
+
+        hideLoadingIcon(view_report_btn)
+        close_dialogx()
+    } catch (error) {
+        hideLoadingIcon(view_report_btn)
+        catch_error(error)
+    }
+}
+
+function show_dialogx(){
+    // start_date_input.value = firstDayOfYear
+    // end_date_input.value = lastDayOfYear
+    // checked_hide_zero_balabce.checked = true
+    // checked_show_account_no.checked = false
+    dialogOverlay_input.style.display = 'flex' // show dialog
+}
+
+
+load_form_btn.onclick = function(){
+    show_dialogx()
+}
+
+
+cancel_report_btn.onclick = function(){
+    close_dialogx()
+}
+
+function close_dialogx(){
+    try {
+        if (!sub_h2_header.textContent){
+            window.location.href = `report_map_ar`;
+        }
+        cancel_dialogOverlay_input(dialogOverlay_input)
+    } catch (error) {
+        catch_error(error)
+    }
+}
+//#endregion end dialog
+
 
 
 //#endregion

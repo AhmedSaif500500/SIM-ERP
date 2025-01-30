@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عيش</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="production_orders_view_ar" title="أوامر التصنيع">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="production_orders_add_ar" title="اعادة تحميل الصفحة">
+                أوامر التصنيع
+              </a>
+              <span id="sub_h2_header" class="sub_h2_header">عرض</span>
+            </div>
+          </h2>
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
+
+          <div id="page_content" style="display: none;">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+            <div class="reference_and_date_div">
+              <div class="column x_start y_start w_fit">
+                <!-- date -->
+                <label for="date1" class="lbl_sm">التاريخ</label>
+                <div class="input_with_icon_div">
+                  <input type="search" id="date1" class="hover input_date datepicker" placeholder="التاريخ..." readonly
+                    autocomplete="off">
+                  <i class="fa-regular fa-calendar left_icon"></i>
+                </div>
+              </div>
+              
+              <div class="column x_start y_start w_fit">
+                <label for="reference_input" class="lbl_sm">المرجع</label>
+                <div class="input_with_icon_div">
+                  <span class="reference_input_checkbox"><input type="checkbox" id="reference_input_checkbox" checked disabled title="تلقائى"></span>
+                  <input type="search" id="reference_input" class="reference_input reference_input_auto_mode hover"
+                    oninput="check_parse(this,'number')" placeholder="تلقائى" autocomplete="off">
+                </div>
+              </div>
+            </div>
+
+            <div class="info_div_with_normal_nput mt_10">
+              <button id="load_form_btn" class="btn_update">تحميل نموذج تصنيع</button>
+              <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, 'تحميل نموذج التصنيع يتيح لك استيراد بيانات النموذج مع حساب الكميات المستهلكة من الأصناف أثناء عملية التصنيع بناءً على تفاصيل النموذج. يمكنك تخصيص البيانات وفقًا لاحتياجاتك بعد ذلك.')"></i>
+            </div>
+
+ 
+            <label for="date1" class="lbl_sm">البيان</label>
+            <input type="search" id="form_name_input" class="input_text_lg hover" autocomplete="off" oninput="check_parse(this,'string')">
+    
+    
+            <div class="row y_start x_start nowrap gap_10">
+              <div class="column">
+                <label for="dropdown_div1" class="lbl_sm">الصنف منتهى الصنع</label>
+                <div id="dropdown_div1" class="dropdown_container" style="width: 20rem"></div>
+              </div>
+              <div class="column">
+                <label for="amount_input" class="lbl_sm">الكمية</label>
+                <div class="info_div_with_normal_nput m_0">
+                  <input type="search" id="amount_input" class="input_text_sm m_0 hover" style="width: 7rem;" oninput="check_parse(this,'number')" placeholder="مطلوب">
+                  <span id ="unite_spane" class="span_end">الكميه</span>
+                  <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, ` الكمية المحددة هنا هي كمية استرشادية فقط. سيتم تحديث المواد المستهلكة فعلياً أثناء عملية التصنيع بناءً على الكمية المدخلة.`)"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- table -->
+
+            <table id="myTable" class="input_table">
+              <thead class=""></thead>
+              <tbody class=""></tbody>
+              <tfoot class=""></tfoot>
+            </table>
+
+            <label for="dropdown_div2" class="lbl_sm">موقع المخزون</label>
+            <div id="dropdown_div2" class="dropdown_container" style="width: 20rem"></div>
+
+            <div class="btn_container_top_border notView">
+              <button class="btn_update" id="btn_update">تحديث</button>
+              <button class="btn_cancel" id="btn_delete">حذف</button>
+            </div>
+
+                      <!-- -------------- Dialog----------- -->
+          <div id="dialogOverlay_input" class="dialogOverlay" style="display: none;">
+
+            <div id="dialog5" class="dialog dialog_input scroll">
+
+              <div class="dialog_header">
+                <h3 id="dialogTitle"></h3>
+              </div>
+
+              <h2 id="h2_id" class="h2 mb_20">
+                <!-- <i class="fa-solid fa-arrow-right back_icon" onclick="
+        document.querySelector('#users_table_view').style.display = 'none'
+        document.querySelector('#dialog5').style.display = 'block'
+      "></i> -->
+                <!-- <i class="fa-solid fa-arrow-left forward_icon"></i> -->
+                اعدادات تحميل نموذج التصنيع
+              </h2>
+
+
+  
+              <!-- date -->
+              <div class="row y_start x_start nowrap gap_10">
+                <div class="column">
+                  <label for="dropdown_div3" class="lbl_sm">نموذج التصنيع</label>
+                  <div id="dropdown_div3" class="dropdown_container" style="width: 20rem"></div>
+                </div>
+                <div class="column">
+                  <label for="amount_input" class="lbl_sm">الكمية</label>
+                  <div class="info_div_with_normal_nput m_0">
+                    <input type="search" id="xamount_input" class="input_text_sm m_0 hover" style="width: 7rem;" oninput="check_parse(this,'number')" placeholder="مطلوب">
+                    <span id ="unite_spane" class="span_end">الكميه</span>
+                    <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, 'سيتم حساب الكميات المستهلكة من الأصناف بناءً على الكميه المحدده ووفقًا لتفاصيل النموذج. يمكنك تخصيص البيانات وفقًا لاحتياجاتك بعد ذلك.')"></i>
+                  </div>
+                </div>
+              </div>
+  
+
+              <div id="dialog_footer" class="dialog_footer">
+                <button id="view_report_btn" class="btn_save">عرض</button>
+                <!-- <button id="update_btn" class="btn_update">تعديل</button> -->
+                <button id="cancel_report_btn" class="btn_cancel">إنهاء</button>
+              </div>
+            </div>
+          </div>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/items/production/productions_orders/production_oders_multi_pages.js"></script>
+  <script src="/public/scripts/ar/items/production/productions_orders/production_orders_update_ar.js"></script>
+  
+
+</body>
+
+</html>
