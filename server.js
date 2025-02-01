@@ -5248,7 +5248,24 @@ return res.json({
 }  
     //* Start--------------------------------------------------------------
 
+    let query01 = `select id, datex, reference from effects where id = $1 and company_id = $2`
+    let result01 = await db.oneOrNone(query01, [posted_elements.id, req.session.company_id])
+    if (!result01){
+      await block_user(req,'Seu001')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
 
+    const year = getYear(result01.datex)
+    // const reference = formatFromFiveDigits(posted_elements.reference);
+    const reference = result01.reference
+    const new_reference = formatFromFiveDigits(reference)
+    
+
+    
 
     let query1 = `UPDATE effects SET employee_id = $1, datex = $2, days = $3, hours = $4, values = $5, note = $6 where id = $7 AND company_id = $8 `;
     let params1 = [
@@ -5263,18 +5280,17 @@ return res.json({
     ]
 
 
-    const year = getYear(posted_elements.date_val)
-    const reference = formatFromFiveDigits(posted_elements.reference);
+  
 
     await db.tx(async (tx) => {
         await tx.none(query1, params1);
-        await history(16, 2, posted_elements.id, posted_elements.reference, req, tx)
+        await history(16, 2, posted_elements.id, reference, req, tx)
     });
 
     
     return res.json({
       success: true,
-      message_ar: `تم تعديل بيانات المؤثر بمرجع : ${reference}-${year}`,
+      message_ar: `تم تعديل بيانات المؤثر بمرجع : ${new_reference}-${year}`,
     });
     
   } catch (error) {
@@ -5324,25 +5340,41 @@ app.post("/effects_delete", async (req, res) => {
     }
 
     //* Start--------------------------------------------------------------
+
+    let query01 = `select id, datex, reference from effects where id = $1 and company_id = $2`
+    let result01 = await db.oneOrNone(query01, [posted_elements.id, req.session.company_id])
+    if (!result01){
+      await block_user(req,'Sed001')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    const year = getYear(result01.datex)
+    // const reference = formatFromFiveDigits(posted_elements.reference);
+    const reference = result01.reference
+    const new_reference = formatFromFiveDigits(reference)
+    
+
+
     let query1 = `delete from effects WHERE company_id = $1 AND id = $2`;
     let params1 = [req.session.company_id, posted_elements.id];
 
 
-    const reference = formatFromFiveDigits(posted_elements.reference);
 
-
-    const year = getYear(posted_elements.datex)
 
     await db.tx(async (tx) => {
         await tx.none(query1, params1);
-        await history(16, 3, posted_elements.id, posted_elements.reference, req, tx)
+        await history(16, 3, posted_elements.id, reference, req, tx)
     });
 
 
     
     return res.json({
       success: true,
-      message_ar: `تم حذف المؤثر بمرجع : ${reference}-${year}`,
+      message_ar: `تم حذف المؤثر بمرجع : ${new_reference}-${year}`,
     });
   } catch (error) {
     console.error("Error during effects deletion:", error);
@@ -31055,7 +31087,7 @@ select
         THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
         ELSE NULL
     END AS credit_end,
-    mt.debit_first,
+   mt.debit_first,
     mt.debit_current,
     mt.credit_first,
     mt.credit_current,
@@ -31082,62 +31114,63 @@ from
     await db.tx(async (tx) => {
       let trial_balance = await tx.any(query1, params1);
     
+       // فصل البيانات حسب finance_statement
+  const financeStatement = trial_balance.filter(row => +row.finance_statement === 1);
+  const incomeStatement = trial_balance.filter(row => +row.finance_statement === 2);
+ 
+
       const hide_zero = posted_elements.is_hiding_zero_balances;
       let new_array = [];
       let addedAccounts = new Set(); // لتتبع الحسابات التي تمت إضافتها
     
       // دالة تكرارية للبحث عن الحسابات الفرعية
-      async function addSubAccounts(row, trial_balance, currentPadding = 0) {
+      async function addSubAccounts(row, array, currentPadding = 0) {
         const id = row.id;
         const is_final_account = row.is_final_account;
-        const name = row.account_name
-        console.log(row);
-        
-       
+               
         
         // التحقق إذا كان الحساب قد أُضيف بالفعل
         if (!addedAccounts.has(id)) {
             addedAccounts.add(id); // تسجيل الحساب كمضاف
-          console.log(`تم اضافة حساب ${name}`);
           
             // تحديث قيم padding
             row.padding = currentPadding;
     
             // إذا كان الحساب الرئيسي
             if (!is_final_account) {
-              console.log(`الحساب رئىيسى ${name}`);
               
-                const sub_accounts_array = trial_balance.filter(item => +item.parent_id === +id) || [];
+                const sub_accounts_array = array.filter(item => +item.parent_id === +id) || [];
                 const allColumnsZero = +row.debit_end === 0 && +row.credit_end === 0;
-              console.log(`sub_accounts_array : ${sub_accounts_array}`);
-              
+                console.log(`branches`);
+                console.table(sub_accounts_array);
+                
                     
                 if (hide_zero && sub_accounts_array.length === 0 && allColumnsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
                     // إذا كانت جميع الشروط متحققة لا نضيف الحساب
                     console.log(`الحساب رئيسى ولا يوجد به حسابات فرعيه  سيتم التراجع `);
-                    
                     return;
                 }
     
                 // التحقق من الحسابات الفرعية
                 if (sub_accounts_array.length > 0) {
-                  console.log(`الحساب رئيسى ويوجد به حسابات فرعيه ${sub_accounts_array}`);
                   
                     let areAllSubAccountsZero = true;
     
                     for (const subrow of sub_accounts_array) {
-                        const allSubColumnsZero =
-                            +subrow.debit_end === 0 && +subrow.credit_end === 0;
-    
-                        if (!allSubColumnsZero || !hide_zero) {
-                          
+
+                      console.log(`this is subrow : ${subrow.account_name}`);
+                      
+                        if (!(+subrow.debit_end === 0 && +subrow.credit_end === 0) || !hide_zero) {
                             areAllSubAccountsZero = false;
+                            console.log(`this account is not zero-- code will brek here`);
                             break;
                         }
                     }
                     
                     // إذا كانت جميع الحسابات الفرعية صفر، لا تضف الحساب الرئيسي
                     if (hide_zero && areAllSubAccountsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
+                      console.log(`all zero code will return here`);
+                      
                         return;
                     }
                     
@@ -31146,7 +31179,7 @@ from
     
                     // البحث عن الحسابات الفرعية
                     for (const subrow of sub_accounts_array) {
-                        await addSubAccounts(subrow, trial_balance, currentPadding + 1.5); // 1rem
+                        await addSubAccounts(subrow, array, currentPadding + 1.5); // 1rem
                     }
                 } else {
                     // إذا لم تكن هناك حسابات فرعية
@@ -31167,8 +31200,11 @@ from
     
     
       // معالجة الـ trial_balance
-      for (const row of trial_balance) {
-        await addSubAccounts(row, trial_balance, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
+      for (const row of financeStatement) {
+        await addSubAccounts(row, financeStatement, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
+      }
+      for (const row of incomeStatement) {
+        await addSubAccounts(row, incomeStatement, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
       }
       trial_balance = new_array;
           
@@ -32211,39 +32247,6 @@ async function update_items_cogs(items_array,datex, req, tx) {
 
     const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
     
-  /*
-    const query1 = `
-        SELECT 
-            tb.id,
-            th.transaction_type,
-            th.datex,
-            tb.debit,
-            tb.credit,
-            tb.item_amount,
-            tb.item_id,
-            tb.cogs
-        FROM
-            transaction_body tb
-        LEFT JOIN 
-            transaction_header th ON th.id = tb.transaction_header_id
-        WHERE 
-            th.company_id = $1
-            AND th.is_deleted IS NULL
-            AND tb.item_id IS NOT NULL
-            AND th.datex >= $2
-        ORDER BY 
-            th.datex ASC,
-            CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
-              WHEN 6 THEN 1 -- مشتريات
-              WHEN 7 THEN 2 -- مرتجع مشتريات
-              WHEN 2 THEN 3 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
-              WHEN 4 THEN 4 -- مرتجع مبيعات
-              WHEN 3 THEN 5 -- مبيعات
-              ELSE 6 -- القيم الأخرى تكون في النهاية
-            END ASC
-            ;
-    `;
-  */
 
     const query1 = `
     SELECT 
@@ -32263,7 +32266,8 @@ async function update_items_cogs(items_array,datex, req, tx) {
     WHERE 
         th.company_id = $1
         AND th.is_deleted IS NULL
-        AND (tb.item_id IS NOT NULL or th.transaction_type = 31)
+          AND tb.item_id IN (${items_array.join(',')})
+       -- AND (tb.item_id IS NOT NULL or th.transaction_type = 31)
         AND th.datex >= $2
     ORDER BY 
         th.datex ASC,
@@ -32281,6 +32285,8 @@ async function update_items_cogs(items_array,datex, req, tx) {
 `;
     // جلب البيانات من قاعدة البيانات
     const items_transactions_array = await tx.any(query1,[req.session.company_id,datex]);
+    
+    console.table(items_transactions_array);
     
 
     let updatedRecords = [];
@@ -32316,6 +32322,12 @@ for (const row of item_transaction_arry) {
       cogs = +row.debit
       started_amount += +row_amount;
       started_value += +cogs;
+
+      console.log(+row.debit);
+      console.log(+cogs);
+      
+      console.log(`6 : ${started_value}`);
+      
       updatedRecords.push({ id: row.id, cogs});
     }else if(type === 7 || (type === 2 && row.credit && !row.debit)){ // مرتجع المشتريات قيد محاسبى دائن
       cogs = +row.credit
@@ -32332,8 +32344,13 @@ for (const row of item_transaction_arry) {
         }
         started_amount -= +row_amount;
         started_value -= cogs;
+        console.log(`31 : ${started_value}`);
         updatedRecords.push({ id: row.id, cogs});
     }else if(type === 3){ // فاتورة مبيعات
+      console.log(started_value);
+      console.log(started_amount);
+      console.log(row_amount);
+      
       if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
         cogs = 0  
       }else{
@@ -32341,6 +32358,8 @@ for (const row of item_transaction_arry) {
       }
       started_amount -= +row_amount;
       started_value -= cogs;
+      console.log(`3 : ${started_value}`);
+      
       updatedRecords.push({ id: row.id, cogs});
     }else if(type === 4){ // مرتجع مبيعات
       if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
