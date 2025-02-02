@@ -13734,7 +13734,28 @@ where
       }
   
 
+      //! فحص الجرد الكميات حسب الموقع
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(tb.item_amount) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+		and tb.item_id IN (${items_array.join(',')})
+		and tb.item_location_id_tb = $2
+    and th.datex <= $3
+	group by
+		tb.item_id;
+      `
 
+      const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId, posted_elements.datex])
+      
+      
       const year = getYear(posted_elements.datex)
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',3, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
@@ -13745,13 +13766,6 @@ where
       await db.tx(async (tx) => {
 
 
-        const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.itemLocationId,req,tx)
-        if (!allow_amounts){
-          throw new Error(
-            'رصيد احد الاصناف لا يسمح'
-          );
-        }
-        
         if (rows04 && rows04.is_qutation_status === null) {
           await tx.none(
             `UPDATE befor_invoice_header 
@@ -13820,17 +13834,17 @@ where
             );
           }
 
-          // //! check amount
+          //! check amount
           
-          // const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
-          // const db_amount = +(current_location_amount_data?.current_location_amount || 0);
-          // const result_amount = db_amount - +element.row_amount;
+          const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
+          const db_amount = +(current_location_amount_data?.current_location_amount || 0);
+          const result_amount = db_amount - +element.row_amount;
             
-          // if (isNaN(result_amount) || result_amount <= 0) {       
-          //   throw new Error(
-          //     `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
-          //   );
-          // }
+          if (isNaN(result_amount) || result_amount <= 0) {       
+            throw new Error(
+              `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
+            );
+          }
 
           
          const rowDiscountType = +element.row_discountTypeId || 0
@@ -15027,20 +15041,33 @@ WHERE
       }
   
 
+      //! فحص الجرد الكميات حسب الموقع
+      const query_items = `
+       select 
+    	tb.item_id,
+    	sum(tb.item_amount) as current_location_amount
+    from
+    	transaction_body tb
+	inner join transaction_header th on th.id = tb.transaction_header_id
+	where 
+		th.company_id = $1
+		and th.is_deleted is null
+		and th.is_including_items is TRUE
+    and th.id != $2
+		and tb.item_id IN (${items_array.join(',')})
+		and tb.item_location_id_tb = $3
+		and th.datex <= $4
+	group by
+		tb.item_id;
+      `
 
+      const items_amount_location = await db.any(query_items,[req.session.company_id, posted_elements.x, +posted_elements.itemLocationId, posted_elements.datex])
+      
       
       const year = getYear(posted_elements.datex)
 
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
-
-        const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.itemLocationId,req,tx)
-        if (!allow_amounts){
-          throw new Error(
-            'رصيد احد الاصناف لا يسمح'
-          );
-        }
-        
 
         let query01 = `SELECT qutation_id, order_id FROM transaction_header WHERE id = $1 AND company_id = $2 AND is_deleted IS NULL;`;
         let rows01 = await db.oneOrNone(query01, [posted_elements.x, req.session.company_id]);
@@ -15146,6 +15173,18 @@ WHERE
             await block_user(req,'Ssia3')
             throw new Error(
               'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق'
+            );
+          }
+
+          //! check amount
+          
+          const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
+          const db_amount = +(current_location_amount_data?.current_location_amount || 0);
+          const result_amount = db_amount - +element.row_amount;
+            
+          if (isNaN(result_amount) || result_amount <= 0) {       
+            throw new Error(
+              `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
             );
           }
 
@@ -32127,7 +32166,7 @@ ORDER BY
 async function check_itemAmounts_for_one_location(datex, items_array, location, req, tx) {
 
   const query = `
-WITH previous_balance AS (
+  WITH previous_balance AS (
     SELECT
       tb.item_id,
       COALESCE(SUM(tb.item_amount), 0) AS opening_balance
@@ -32139,34 +32178,29 @@ WITH previous_balance AS (
       th.company_id = $1
       AND th.is_deleted IS NULL
       AND tb.item_id IN (${items_array.join(',')})
-      AND th.datex < $2  -- حساب الرصيد السابق (حتى قبل التاريخ المدخل)
+      AND th.datex < $2
       AND tb.item_location_id_tb = $3
     GROUP BY
       tb.item_id
-)
-SELECT
+  )
+  SELECT
     tb.item_id,
     th.datex,
     tb.item_amount,
-    -- إذا كانت الحركات في نفس اليوم أو بعده نضيفها إلى الرصيد التراكمي
-    CASE
-      WHEN th.datex = $2 THEN COALESCE(previous_balance.opening_balance, 0) + COALESCE(SUM(tb.item_amount) OVER (PARTITION BY tb.item_id ORDER BY th.datex), 0)
-      WHEN th.datex > $2 THEN COALESCE(previous_balance.opening_balance, 0) + COALESCE(SUM(tb.item_amount) OVER (PARTITION BY tb.item_id ORDER BY th.datex), 0)
-      ELSE COALESCE(previous_balance.opening_balance, 0)  -- عند عدم وجود حركات، نعرض الرصيد الافتتاحي فقط
-    END AS cumulative_balance
-FROM
+    COALESCE(previous_balance.opening_balance, 0) + COALESCE(SUM(tb.item_amount) OVER (PARTITION BY tb.item_id ORDER BY th.datex), 0) AS cumulative_balance
+  FROM
     transaction_body tb
-JOIN
+  JOIN
     transaction_header th ON th.id = tb.transaction_header_id
-LEFT JOIN
+  LEFT JOIN
     previous_balance ON previous_balance.item_id = tb.item_id
-WHERE
+  WHERE
     th.company_id = $1
     AND th.is_deleted IS NULL
     AND tb.item_id IN (${items_array.join(',')})
-    AND th.datex <= $2  -- جلب الحركات حتى التاريخ المدخل
+    AND th.datex >= $2
     AND tb.item_location_id_tb = $3
-ORDER BY
+  ORDER BY
     th.datex;
   `;
 
@@ -32193,204 +32227,174 @@ ORDER BY
 
 async function update_items_cogs(items_array,datex, req, tx) {
   
-  if (!items_array){
-    return
-  }
-
-  if (!Array.isArray(items_array) || items_array.length === 0) {
-    throw new Error(
-      'حدث خطأ غير متوقع '
-    );
-    return;
-  }
-
-  await update_cogs_part1(items_array,datex, req, tx)
-
-  const last_array =  await update_cogspart2(items_array,datex, req, tx)
-
-  if (last_array.length > 0) {
-    await update_cogs_part1(last_array,datex, req, tx)
-  }
-}
-
-
-async function update_cogs_part1(items_array,datex, req, tx) {
-  
-  const query0 = `
-  SELECT
-    tb.item_id,
-    SUM(tb.item_amount ) AS Current_amount,
-    SUM(
-        CASE
-        WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
-        ELSE tb.cogs -- زيادة في التكلفة		
-        END			
-    ) AS value
-FROM
-    transaction_body tb
-INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
-inner join accounts_header ah on ah.id = tb.item_id
-where
-    ah.account_type_id = 5
-    and th.datex < $1
-    AND th.company_id = $2
-    AND tb.item_id IN (${items_array.join(',')})
-    AND th.is_deleted IS NULL
-    AND th.is_including_items IS TRUE
-    AND NOT (th.transaction_type IN (3,4) AND th.datex = $1) -- استثناء العمليات
-GROUP by
-tb.item_id
-;`
-
-  const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
-  
-
-const query1 = `
-SELECT 
-      tb.id,
-      th.transaction_type,
-      th.datex,
-      tb.debit,
-      tb.credit,
-      tb.item_amount,
+      const query0 = `
+    SELECT
       tb.item_id,
-      tb.cogs,
-      tb.is_production_item
+      SUM(tb.item_amount ) AS Current_amount,
+      SUM(
+          CASE
+        	WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
+        	ELSE tb.cogs -- زيادة في التكلفة		
+          END			
+      ) AS value
   FROM
       transaction_body tb
-  LEFT JOIN 
-      transaction_header th ON th.id = tb.transaction_header_id
-  WHERE 
-      th.company_id = $1
-      AND th.is_deleted IS NULL
-      AND tb.item_id is not null
+  INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+  inner join accounts_header ah on ah.id = tb.item_id
+  where
+  	  ah.account_type_id = 5
+      and th.datex < $1
+      AND th.company_id = $2
       AND tb.item_id IN (${items_array.join(',')})
-      --and tb.is_production_item is null
-      AND th.datex >= $2
-  ORDER BY 
-      th.datex ASC,
-      CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
-        WHEN 6 THEN 1 -- مشتريات
-        WHEN 7 THEN 2 -- مرتجع مشتريات
-        WHEN 2 THEN 3 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
-        WHEN 31 THEN 4 -- تصنيع
-        WHEN 4 THEN 5 -- مرتجع مبيعات
-        WHEN 3 THEN 6 -- مبيعات
-        ELSE 7 -- القيم الأخرى تكون في النهاية
-      END ASC,
-      tb.id ASC
-      ;
+      AND th.is_deleted IS NULL
+      AND th.is_including_items IS TRUE
+      AND NOT (th.transaction_type IN (3,4) AND th.datex = $1) -- استثناء العمليات
+  GROUP by
+  tb.item_id
+  ;`
+
+    const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
+    
+
+const query1 = `
+ SELECT 
+        tb.id,
+        th.transaction_type,
+        th.datex,
+        tb.debit,
+        tb.credit,
+        tb.item_amount,
+        tb.item_id,
+        tb.cogs,
+        tb.is_production_item
+    FROM
+        transaction_body tb
+    LEFT JOIN 
+        transaction_header th ON th.id = tb.transaction_header_id
+    WHERE 
+        th.company_id = $1
+        AND th.is_deleted IS NULL
+        AND tb.item_id is not null
+        AND tb.item_id IN (${items_array.join(',')})
+        AND th.datex >= $2
+    ORDER BY 
+        th.datex ASC,
+        CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
+          WHEN 6 THEN 1 -- مشتريات
+          WHEN 7 THEN 2 -- مرتجع مشتريات
+          WHEN 2 THEN 3 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
+          WHEN 31 THEN 4 -- تصنيع
+          WHEN 4 THEN 5 -- مرتجع مبيعات
+          WHEN 3 THEN 6 -- مبيعات
+          ELSE 7 -- القيم الأخرى تكون في النهاية
+        END ASC,
+        tb.id ASC
+        ;
 `;
 
-  // جلب البيانات من قاعدة البيانات
-  const items_transactions_array = await tx.any(query1,[req.session.company_id,datex]);
-  
-  console.log(`items_transactions_array`);
-  console.table(items_transactions_array);
-  
-
-  let updatedRecords = [];
-
-  for (const item_id of items_array){
-  
-  // تعريف المتغيرات لتتبع القيم
-  let old_cogs = 0;
+    // جلب البيانات من قاعدة البيانات
+    const items_transactions_array = await tx.any(query1,[req.session.company_id,datex]);
     
-  let started_balances = []
-  let started_amount = 0
-  let started_value = 0
-  started_balances = started_balance.find(item => +item.item_id === +item_id);
+    console.log(`items_transactions_array`);
+    console.table(items_transactions_array);
+    
+
+    let updatedRecords = [];
   
-  if (started_balances){
-    started_amount = +started_balances.current_amount || 0;
-    started_value = +started_balances.value || 0;
-  }
-
-
-  const item_transaction_arry = items_transactions_array.filter(item => +item.item_id === +item_id)  
+    for (const item_id of items_array){
+    
+    // تعريف المتغيرات لتتبع القيم
+    let old_cogs = 0;
+      
+    let started_balances = []
+    let started_amount = 0
+    let started_value = 0
+    started_balances = started_balance.find(item => +item.item_id === +item_id);
+    
+    if (started_balances){
+      started_amount = +started_balances.current_amount || 0;
+      started_value = +started_balances.value || 0;
+    }
+  
+  
+    const item_transaction_arry = items_transactions_array.filter(item => +item.item_id === +item_id)  
 
 
 
 for (const row of item_transaction_arry) {
-    
-const type = +row.transaction_type
-let cogs = 0;
+      
+  const type = +row.transaction_type
+  let cogs = 0;
+  
+  
+    const row_amount = Math.abs(row.item_amount)
 
+    if (type === 6 || (type === 2 && row.debit && !row.credit) || (type === 31 && row.is_production_item)){ // فاتورة مشتريات او قيد محاسبى مدين او صنف مصنع ياعمل على انه مشتريات
+      console.log(`type : 6`);
+      cogs = +row.debit
+      started_amount += +row_amount;
+      started_value += +cogs;
 
-  const row_amount = Math.abs(row.item_amount)
+      console.log(`cost : ${cogs}`);
+      console.log(`cost : ${started_amount}`);
+      console.log(`cost : ${started_value}`);
+      
 
-  if (type === 6 || (type === 2 && row.debit && !row.credit) || (type === 31 && row.is_production_item)){ // فاتورة مشتريات او قيد محاسبى مدين او صنف مصنع ياعمل على انه مشتريات
-    console.log(`type : 6`);
-    cogs = +row.debit
-    started_amount += +row_amount;
-    started_value += +cogs;
-
-    console.log(`cost : ${cogs}`);
-    console.log(`cost : ${started_amount}`);
-    console.log(`cost : ${started_value}`);
-    
-    if (!(type === 31 && row.is_production_item)){
       updatedRecords.push({ id: row.id, cogs});
-    }
-
-  }else if(type === 7 || (type === 2 && row.credit && !row.debit)){ // مرتجع المشتريات قيد محاسبى دائن
-    cogs = +row.credit
-    started_amount -= +row_amount;
-    started_value -= +cogs;
-    updatedRecords.push({ id: row.id, cogs});
-  }else if(type === 3 || (type === 31 && !row.is_production_item)){ // فاتورة مبيعات او اصناف مستهلكه فى فاتوره تصنيع
-    console.log(`type === 3`);
-    console.log(+started_value);
-    console.log(+started_amount);
-    console.log(+row_amount);
-    
-    
-    if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
-      cogs = 0  
-    }else{
-      cogs = (started_value / started_amount) * row_amount;
-    }
-    started_amount -= +row_amount;
-    started_value -= cogs;
+    }else if(type === 7 || (type === 2 && row.credit && !row.debit)){ // مرتجع المشتريات قيد محاسبى دائن
+      cogs = +row.credit
+      started_amount -= +row_amount;
+      started_value -= +cogs;
+      updatedRecords.push({ id: row.id, cogs});
+    }else if(type === 3 || (type === 31 && !row.is_production_item)){ // فاتورة مبيعات او اصناف مستهلكه فى فاتوره تصنيع
+      console.log(`type === 3`);
+      console.log(+started_value);
+      console.log(+started_amount);
+      console.log(+row_amount);
+      
+      
+      if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
+        cogs = 0  
+      }else{
+        cogs = (started_value / started_amount) * row_amount;
+      }
+      started_amount -= +row_amount;
+      started_value -= cogs;
 
 console.log(`cogs = : ${cogs}`);
 
 
-    updatedRecords.push({ id: row.id, cogs});
-  }else if(type === 4){ // مرتجع مبيعات
-    if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
-      cogs = 0  
-    }else{
-      cogs = (started_value / started_amount) * Math.abs(row_amount)
+      updatedRecords.push({ id: row.id, cogs});
+    }else if(type === 4){ // مرتجع مبيعات
+      if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
+        cogs = 0  
+      }else{
+        cogs = (started_value / started_amount) * Math.abs(row_amount)
+      }
+      started_amount += +row_amount;
+      started_value += cogs; // عملنا دى بالسالب لانى ضربت الكوجز فوق بالسالب  وبالتالى هيدينى زائد
+      updatedRecords.push({id: row.id, cogs});
     }
-    started_amount += +row_amount;
-    started_value += cogs; // عملنا دى بالسالب لانى ضربت الكوجز فوق بالسالب  وبالتالى هيدينى زائد
-    updatedRecords.push({id: row.id, cogs});
+    
+    old_cogs += cogs;
+}
   }
   
-  old_cogs += cogs;
-}
-}
+  // console.table(updatedRecords);
+  turn_EmptyValues_TO_null(updatedRecords)
 
-// console.table(updatedRecords);
-turn_EmptyValues_TO_null(updatedRecords)
-
-const queries = updatedRecords.map(
-  ({ id, cogs }) =>
-      `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id}`
+  const queries = updatedRecords.map(
+    ({ id, cogs }) =>
+        `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id}`
 );
 
 
 await tx.batch(queries.map((query) => tx.none(query)));
-}
 
 
-
-async function update_cogspart2(items_array,datex, req, tx) {
-  
 //! update production_items after everything is done
 let query2 = `
-WITH balances AS (
+    WITH balances AS (
     SELECT
         th.id AS transaction_header_id,
         SUM(
@@ -32406,7 +32410,7 @@ WITH balances AS (
                 SELECT DISTINCT tb2.transaction_header_id
                 FROM transaction_body tb2
                 WHERE tb2.item_id IN (${items_array.join(',')})
-                    AND tb.is_production_item IS NULL
+                		and tb.is_production_item is null
             )
         )
         AND th.datex >= $2
@@ -32414,25 +32418,15 @@ WITH balances AS (
 )
 UPDATE transaction_body tb
 SET 
-    cogs = balances.new_total_cost,
-    debit = balances.new_total_cost
+  cogs = balances.new_total_cost,
+  debit = balances.new_total_cost
 FROM balances
 WHERE tb.transaction_header_id = balances.transaction_header_id 
-    AND tb.is_production_item = TRUE
-RETURNING tb.item_id;
-`;
-
-let updatedItems = await tx.manyOrNone(query2, [req.session.company_id, datex]);
-
-// استخراج الأصناف في مصفوفة
-let updatedItemsArray = updatedItems.map(row => Number(row.item_id)) || [];
-
-return updatedItemsArray 
+AND tb.is_production_item = TRUE;
+`
+await tx.none(query2, [req.session.company_id, datex])
 
 }
-
-
-
 
 
 async function get_current_avg_cost(items_array, datex, req, tx) {
