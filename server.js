@@ -81,6 +81,7 @@ return result
 //#region app-Started
 const http = require('http');
 const express = require("express");
+const rateLimit = require('express-rate-limit');
 const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
@@ -91,6 +92,7 @@ io.on('connection', (socket) => {
   console.log('New client connected');
   // إضافة منطق معالجة الاتصالات هنا
 });
+
 
 
 const path = require("path"); // استدعاء مكتبة path
@@ -306,15 +308,45 @@ const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
 
 
 
+const globalLimiter = rateLimit({
+  windowMs: 1000 * 60 * 1, // 1 دقيقة
+  max: 10, // الحد الأقصى لمحاولات الوصول
+  message: 'Too many requests, please try again after a minute',
+  skipFailedRequests: true, // تخطي الفشل في المحاولات
+  handler: (req, res, next) => {
+    res.status(429).json({
+      success: false,
+      message_ar: 'Too many requests, please try again after a minute',
+    });
+  }
+});
+
+// تطبيق المعدل على جميع المسارات
+app.use(globalLimiter);
 
 //#region Login
 
+// إعداد limiter فقط لتسجيل الدخول
+const loginLimiter = rateLimit({
+  windowMs: 1000 * 60 * 1, // دقيقة واحدة
+  max: 2, // الحد الأقصى لمحاولات الدخول
+  message: 'Too many login attempts from this IP, please try again after 1 minute',
+  skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
+  handler: (req, res, next) => {
+    // الآن يمكننا إرسال الرسالة الخاصة بنا في حالة تجاوز الحد
+    res.status(429).json({
+      success: false,
+      message_ar: 'Too many login attempts from this IP, please try again after 1 minute',
+    });
+  },
+});
 
-app.post("/Login", async (req, res) => {
+
+
+app.post("/Login", loginLimiter, async (req, res) => {
   try {
 
    
-    
     //1: receive data from frontend html>body
     const posted_elements = req.body;
 
@@ -423,20 +455,22 @@ app.post("/Login", async (req, res) => {
         //4.2.1: send response to front with some data
         res.json({
           success: false, // العمليه فشلت
-          message_ar: "Invalid username or password",
+          message_ar: error.message || "Invalid username or password",
         });
       }
     } else {
       res.json({
         success: false,
-        message_ar: "Invalid username or password",
+        message_ar: error.message || "Invalid username or password",
+
       });
     }
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({
       success: false,
-      message_ar: "Login Error",
+      message_ar: error.message || 'Login Error',
+
     });
   }
 });
