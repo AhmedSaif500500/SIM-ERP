@@ -170,7 +170,7 @@
                 <span class="reference_input_checkbox"><input type="checkbox" id="f4_checkbox" checked
                     title="اظهار العمود"
                     onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                <div class="checkbox_label">القيمة</div>
+                <div class="checkbox_label">الكمية</div>
               </div>
               <div id="f4_selectAndInput_div" class="select_and_input_div">
                 <select id="f4_select" class="dark_select hover"
@@ -186,6 +186,30 @@
                   style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
               </div>
             </div>
+            
+            <!-- cost -->
+            <div id="f5_div" class="filter_div_sub">
+              <div class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f5_checkbox" checked
+                    title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">التكلفة</div>
+              </div>
+              <div id="f5_selectAndInput_div" class="select_and_input_div">
+                <select id="f5_select" class="dark_select hover"
+                  onchange="filter_insideSelect_number_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">اكبر من</option>
+                  <option value="2">اصغر من</option>
+                  <option value="3">تساوى</option>
+                  <option value="4">صفر</option>
+                  <option value="5">ليس صفر</option>
+                </select>
+                <input id="f5_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
+              </div>
+            </div>
+
 
 
             <div class="btn_container_top_border">

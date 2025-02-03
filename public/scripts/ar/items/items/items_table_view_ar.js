@@ -11,7 +11,7 @@ async function getItemsGroupData(){
         15,
         false,"",
         true,
-        true,newBtn_group,
+        true,false,
         false,false,false,
         false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
     )
@@ -29,7 +29,7 @@ async function getIRevenueAccountsData(){
         15,
         false,"",
         true,
-        true,newBtn_group,
+        true,false,
         false,false,false,
         false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
     )
@@ -39,6 +39,7 @@ async function getIRevenueAccountsData(){
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = async function (){
     try {
+        showLoadingIcon(newBtn)
     sessionStorage.removeItem('obj_items_create_group')
     sessionStorage.removeItem('obj_items_create_account')
 
@@ -58,7 +59,9 @@ newBtn.onclick = async function (){
 
     sessionStorage.setItem("obj_items_create_account", JSON.stringify(obj_items_create_account));
     window.location.href = "items_add_ar";
+    hideLoadingIcon(newBtn)
 } catch (error) {
+    hideLoadingIcon(newBtn)
     catch_error(error)
 }
   }
@@ -66,6 +69,7 @@ newBtn.onclick = async function (){
 const newBtn_group = document.querySelector(`#newBtn_group`)
 newBtn_group.onclick = async function () {
     try {
+        showLoadingIcon(newBtn_group)
         sessionStorage.removeItem('obj_items_create_group')
         sessionStorage.removeItem('obj_items_create_account')
 
@@ -81,8 +85,9 @@ newBtn_group.onclick = async function () {
         sessionStorage.setItem("obj_items_create_group", JSON.stringify(postedData));
         
         window.location.href = "items_add_ar";
-
+        hideLoadingIcon(newBtn_group)
     } catch (error) {
+        hideLoadingIcon(newBtn_group)
         catch_error(error)
     }
 }
@@ -515,7 +520,7 @@ function fillTable() {
         
         total_column1.value = 0;
 
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -548,7 +553,7 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_view_btn" onclick="table_update_btn_fn(this)">عرض</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${style_id}" class="td_parent_id">${row.parent_id}</td>
                         <td style="${style_accountgroup}" class="td_parent_account_name">${row.parent_account_name}</td>
@@ -669,9 +674,9 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(viewBtn) {
     try {
-    showLoadingIcon(updateBtn)
+    showLoadingIcon(viewBtn)
     const permission = await btn_permission("items_permission", "view");
 
     if (!permission) {
@@ -681,7 +686,7 @@ async function table_update_btn_fn(updateBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row = updateBtn.closest("tr");
+    const row = viewBtn.closest("tr");
     const items_table_view_data = {
         x: row.querySelector(`.td_id`).textContent,
         // qutation_id: row.querySelector(`.td_qutation_id`).textContent,
@@ -689,11 +694,41 @@ async function table_update_btn_fn(updateBtn) {
     };
 
     
+//============================================================
+
+    const revenue_accounts_options = await get_revenue_accounts_fn()
+                                    
+
+    const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
+    const obj_items_update_account = {
+        h2_header: node.text, // account_name
+        account_no_input: node.data.account_no ?? '',  // account_no
+        account_name_input: node.text, // account_name
+        account_id_hidden: node.id, // account_id
+        item_unite_input: node.data.item_unite, // item_unite
+        sales_price: node.data.item_sales_price, // sales_price
+        purchase_price: node.data.item_purshas_price, // purshases_price
+        reorder_point: node.data.item_amount_reorder_point, // reorder_point
+        revenue_accounts_options: revenue_accounts_options, // !x
+        nodeId: node.id,  // account_id
+        parentNode : node.parent, // parent_id
+        items_options: items_options,  //!x
+        item_revenue_account_id: node.data.item_revenue_account, // revenue accout
+        revenue_accounts_options: revenue_accounts_options,
+    };
+    clear_items_sessionsStorage()
+    sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
+    window.location.href = `items_update_ar`;
+
+
+//=======================================================
+
+
     sessionStorage.setItem('items_table_view_data', JSON.stringify(items_table_view_data));                            
-    // window.location.href = `sales_invoice_update_ar`;
-    hideLoadingIcon(updateBtn)
+    window.location.href = `items_update_ar`;
+    hideLoadingIcon(viewBtn)
 } catch (error) {
-    hideLoadingIcon(updateBtn)
+    hideLoadingIcon(viewBtn)
     catch_error(error)
 }
 }

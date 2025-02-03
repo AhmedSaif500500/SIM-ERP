@@ -8,15 +8,8 @@
   <link rel="stylesheet" href="/public/jstree/dist/themes/default/style.min.css">
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
 
-
-
-  <style>
-    /* .jstree-leaf > .jstree-anchor > .jstree-themeicon { background:red !important; }
-   .jstree-container-ul li a{
-    color: red;
-   } */
-  </style>
 </head>
 
 <body class="body scroll">
@@ -38,10 +31,19 @@
         <!-- content -->
                 <div id="content_space" class="scroll">
 
-          <div id ="fn_container_div" class="fn_container_div"></div>
-          <h2 class="h2" style="gap: 1rem;">
-            الاصناف
-          </h2>
+                  <div id="fn_container_div" class="fn_container_div"></div>
+
+                  <h2 id="h2" class="h2">
+                    <a id="back_href" class="back_href" href="itemsMain_view_ar" title="إدارة الاصناف">
+                      <i class="fa-solid fa-arrow-right back_icon"></i>
+                    </a>
+                    <div class="h2_main_text_div">
+                      <a id="h2_text_div" class="h2_text_div" href="items_view_ar" title="اعادة تحميل الصفحة">الاصناف</a>
+                      <span id="sub_h2_header" class="sub_h2_header"></span>
+                    </div>
+                  </h2>
+
+
           <!-- ________________________________________________CONTENT_____________________________________________________________ -->
           <div id="page_content" style="display: none;">
 

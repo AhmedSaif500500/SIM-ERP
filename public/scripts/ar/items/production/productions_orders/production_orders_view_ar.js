@@ -58,9 +58,16 @@ let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
 let f4_select = filter_div.querySelector(`#f4_select`);
 let f4_input = filter_div.querySelector(`#f4_input`);
 
+//! cost
+let f5_div = filter_div.querySelector(`#f5_div`);
+let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
+let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
+let f5_select = filter_div.querySelector(`#f5_select`);
+let f5_input = filter_div.querySelector(`#f5_input`);
+
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1, 2, 3, 4]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1, 2, 3, 4, 5]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -262,7 +269,8 @@ function deafult_checkbox() {
     call_default_checkbox('f1',true,true,false)
     call_default_checkbox('f2',true,true,false)
     call_default_checkbox('f3',true,true,false) 
-    call_default_checkbox('f4',true,true,false) 
+    call_default_checkbox('f4',true,true,false)
+    call_default_checkbox('f5',true,true,false)
 }
 
 async function filter_icon_cancel_fn() {
@@ -439,10 +447,18 @@ function showFirst50RowAtTheBegening() {
                     f4_checkbox,
                     f4_select,
                     f4_input,
-                    "total_value",
+                    "amount",
                     row
                 );
-                
+           
+                const f5 =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
+                    "value",
+                    row
+                );                
                 
             return (
 
@@ -450,7 +466,8 @@ function showFirst50RowAtTheBegening() {
                 f1 &&
                 f2 &&
                 f3 &&
-                f4 
+                f4 &&
+                f5 
             ); // && otherCondition;
         });
 
@@ -486,8 +503,10 @@ function fillTable() {
         let style_note = `display:${f2_checkbox.checked ? "table-cell" : "none"}; min-width: 20rem; width: 100%; white-space: wrap; text-align: start;`;
         let style_item_name = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: ${f2_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start;`;
         let style_total = `display:${f4_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_val = `display:${f5_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
+        total_column2.value = 0;
         let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
@@ -501,7 +520,8 @@ function fillTable() {
                                 <th style="${style_referencecon}">المرجع</th>
                                 <th style="${style_note}">البيان</th>
                                 <th style="${style_item_name}">الصنف تام الصنع</th>
-                                <th style="${style_total}">الكمية المُصنه</th>
+                                <th style="${style_total}">الكمية</th>
+                                <th style="${style_val}">التكلفة</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -516,7 +536,8 @@ function fillTable() {
                         <td style="${style_referencecon}" class="td_referenceconcat">${row.referenceconcat}</td>
                         <td style="${style_note}" class="td_general_note">${row.general_note}</td>
                         <td style="${style_item_name}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(false,false,true,row.total_value,style_total,total_column2,fn,'td_total_value')}
+                        ${tdNumber(false,false,true,row.amount,style_total,total_column1,fn,'td_amount')}
+                        ${tdNumber(true,true,true,row.value,style_val,total_column2,fn,'td_val')}
                       </tr>`;
         });
 
@@ -529,6 +550,7 @@ function fillTable() {
                         <td id="footer_style_note" style="${style_note}"></td>
                         <td id="footer_style_item_name" style="${style_item_name}"></td>
                         <td id="footer_style_total" style="${style_total}"></td>
+                        <td id="footer_style_val" style="${style_val}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -555,7 +577,7 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        // tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
+        // tableContainer.querySelector(`#footer_style_amount`).textContent = floatToString(true,total_column1.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
@@ -581,7 +603,8 @@ function performSearch() {
             const f1 = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
             const f2 = performSearch_Row(f2_checkbox,"general_note",searchValue,row);
             const f3 = performSearch_Row(f3_checkbox,"account_name",searchValue,row);
-            const f4 = performSearch_Row(f4_checkbox,"total_value",searchValue,row);
+            const f4 = performSearch_Row(f4_checkbox,"amount",searchValue,row);
+            const f5 = performSearch_Row(f5_checkbox,"value",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
@@ -589,7 +612,8 @@ function performSearch() {
                 f1 ||
                 f2 ||
                 f3 ||
-                f4
+                f4 ||
+                f5
             );
         });
 
@@ -644,6 +668,7 @@ async function table_view_btn_fn(viewBtn) {
     const row = viewBtn.closest("tr");
     const production_orders_update_data = {
         x: row.querySelector(`.td_id`).textContent,
+        val: row.querySelector(`.td_val`).textContent,
     };
 
     sessionStorage.removeItem('production_orders_update_data')

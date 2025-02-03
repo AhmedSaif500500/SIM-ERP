@@ -1,4 +1,4 @@
-setActiveSidebar('accounts_view_ar');
+setActiveSidebar('general_settings_ar');
 pagePermission("update", "accounts_permission");
 
 

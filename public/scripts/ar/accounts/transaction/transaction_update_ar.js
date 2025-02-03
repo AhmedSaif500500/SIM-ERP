@@ -268,8 +268,8 @@ async function getTransactionData_fn() {
   
   
     const balance = data.bodyData.reduce((sum, item) => sum + (+item.debit ?? 0), 0);
-    tableTfoot.querySelector(`#totalDebit`).textContent = balance
-    tableTfoot.querySelector(`#totalCredit`).textContent = balance
+    tableTfoot.querySelector(`#totalDebit`).textContent = parseFloat(balance.toFixed(2))
+    tableTfoot.querySelector(`#totalCredit`).textContent = parseFloat(balance.toFixed(2))
     tableTfoot.querySelector(`#difference_debit_cerdit`).textContent = 0
     reset_rowcount_in_table(`myTable`)          
   } catch (error) {

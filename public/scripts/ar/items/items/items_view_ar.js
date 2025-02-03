@@ -209,7 +209,7 @@ async function fetchTreeData() {
                                         parentNode : node.parent,
                                         items_options: items_options,
                                         item_revenue_account_id: node.data.item_revenue_account,
-                                        revenue_accounts_options: revenue_accounts_options,
+                                        // revenue_accounts_options: revenue_accounts_options,
                                     };
                                     clear_items_sessionsStorage()
                                     sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            

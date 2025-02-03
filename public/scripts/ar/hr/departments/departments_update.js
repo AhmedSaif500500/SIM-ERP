@@ -33,10 +33,6 @@ function CheckUrlParams (){
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    const result = CheckUrlParams(); if (!result) {return};
-    receive_data();
-});
 
 
 
@@ -120,7 +116,8 @@ btn_delete_department.onclick = async () => {
 document.addEventListener('DOMContentLoaded', function() {
     try {
         showLoadingIcon(content_space)
-            showData()
+        const result = CheckUrlParams(); if (!result) {return};
+        receive_data();
             viewMode(true,'departments_permission','view')
             handle_fn_options()
         hideLoadingIcon(content_space)

@@ -107,10 +107,22 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         showLoadingIcon(content_space)
             showData()
+            viewMode(true,'itemsLocations_permission','view')
+            handle_fn_options()
         hideLoadingIcon(content_space)
     } catch (error) {
         hideLoadingIcon(content_space)
         catch_error(error)
     }
 });
+  
+
+function handle_fn_options(){  
+    const newDivs = `
+      <div id="fn_option_update_btn" onclick="viewMode(false,'itemsLocations_permission','update')">وضع التعديل</div>
+      <div id="fn_option_view_btn" onclick="viewMode(true,'itemsLocations_permission','view')" style="display: none;">وضع العرض</div>
+    `;
+    fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+  }
+  
   

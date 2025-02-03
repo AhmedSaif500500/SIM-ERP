@@ -60,7 +60,7 @@ try {
 
     const posted_Obj = {datex, location_from, location_to, note, posted_array}
 
-    const redierction_page = A_OR_B == 'A' ? 'items_transfer_add_ar' : 'items_transfer_view_ar'
+    const redierction_page = A_OR_B == 'A' ? 'items_transfer_view_ar' : 'items_transfer_add_ar'
 
       const post = await new_fetchData_postAndGet(
         "/api/items_transfer_add",

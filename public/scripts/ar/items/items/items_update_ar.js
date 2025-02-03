@@ -18,7 +18,7 @@ const reorder_pointx = tree_add_account.querySelector(`#reorder_point`)
 const btn_update_account = tree_add_account.querySelector(`#btn_update_account`)
 const btn_delete_account = tree_add_account.querySelector(`#btn_delete_account`)
 
-const is_forbidden_deletion = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23];
+const is_forbidden_deletion = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 8, 19, 20, 21, 22, 23, 24];
 const is_forbidden_adding_branches = [];
 const is_main_account = [12];
 const is_accumulated_account = [];

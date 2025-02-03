@@ -45,7 +45,7 @@ open Terminal vscode
 
 
 let today = new Date().toISOString().split("T")[0];
-
+let deafultErrorMessage = 'حدث خطأ اثناء معالجة البيانات'
 
 function getYear(dateString) {
   
@@ -957,7 +957,7 @@ function turn_EmptyValues_TO_null(object_Var) {
   }
 }
 */
-
+/*
 function turn_EmptyValues_TO_null(object_Var) {
   for (let key in object_Var) {
     // إذا كانت القيمة عبارة عن مصفوفة
@@ -978,6 +978,32 @@ function turn_EmptyValues_TO_null(object_Var) {
     } else if (typeof object_Var[key] === "number") {
       // إذا كانت القيمة رقمية، نقوم بتقريبها لأقرب رقمين عشريين
       object_Var[key] = parseFloat(object_Var[key].toFixed(2));
+    }
+  }
+}
+*/
+
+
+function turn_EmptyValues_TO_null(object_Var) {
+  for (let key in object_Var) {
+    // إذا كانت القيمة عبارة عن مصفوفة
+    if (Array.isArray(object_Var[key])) {
+      object_Var[key].forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+          turn_EmptyValues_TO_null(item); // استدعاء الدالة نفسها على الكائن
+        }
+      });
+    } else if (typeof object_Var[key] === 'object' && object_Var[key] !== null) {
+      turn_EmptyValues_TO_null(object_Var[key]);
+    } else if (object_Var[key] === "" || object_Var[key] === 0 || parseFloat(object_Var[key]) === 0) {
+      object_Var[key] = null;
+    } else if (typeof object_Var[key] === "number") {
+      object_Var[key] = parseFloat(object_Var[key].toFixed(2));
+
+      // **إذا كان الرقم سالبًا، يتم إلقاء خطأ**
+      if (object_Var[key] < 0) {
+        throw new Error(`القيمة ${key} تحتوي على رقم سالب (${object_Var[key]})`);
+      }
     }
   }
 }
@@ -1303,7 +1329,7 @@ return res.json({
         {account_name: "الايرادات", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 6, main_account_id: 4},
         {account_name: "المصروفات", is_final_account: null, finance_statement: 2, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 7, main_account_id: 5},
         {account_name: "الاصول الثايتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 9, main_account_id: 1},
-        {account_name: "مجمع اهلاك الاصول الثابتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 10, main_account_id: 2},
+        {account_name: "مجمع اهلاك الاصول الثابتة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 10, main_account_id: 1},
         {account_name: "النقد وما فى حكمه", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 11, main_account_id: 1},
         {account_name: "المخزون الحالى", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 5, account_name_en: null, global_id: 12, main_account_id: 1},
         {account_name: "العملاء", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: null, account_name_en: null, global_id: 13, main_account_id: 1},
@@ -1318,6 +1344,10 @@ return res.json({
         {account_name: "مصاريف اهلاك اصول ثابته", is_final_account: true, finance_statement: 2, cashflow_statement: null, account_type_id: 1, account_name_en: null, global_id: 18, main_account_id: 5},
         {account_name: "مراكز التكلفة", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 21, main_account_id: null},
         {account_name: "مجموعة مراكز التكلفة 1", is_final_account: null, finance_statement: 4, cashflow_statement: null, account_type_id: 11, account_name_en: null, global_id: 22, main_account_id: null},
+        {account_name: "المخزن الرئيسي", is_final_account: true, finance_statement: null, cashflow_statement: null, account_type_id: 7, account_name_en: null, global_id: 25, main_account_id: null},
+        {account_name: "قسم الإدارة", is_final_account: null, finance_statement: 1, cashflow_statement: null, account_type_id: 4, account_name_en: null, global_id: 26, main_account_id: 2},
+        {account_name: "موظف - بائع", is_final_account: true, finance_statement: 1, cashflow_statement: null, account_type_id: 4, account_name_en: null, global_id: 27, main_account_id: 2},
+        
         // أضف باقي الحسابات
       ];
 
@@ -1348,43 +1378,46 @@ return res.json({
 
       let x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, 
       x11, x12, x13, x14, x15, x16, x17, x18, x19, 
-      x20, x21, x22, x23;
+      x20, x21, x22, x23 , x24, x25, x26;
       // تأكد من أن طول المصفوفة يتطابق مع عدد المتغيرات
       //! تعيين القيم من المصفوفه  الى الاكسات فوق مباشرة
-      if (header_id_Array.length === 23 && header_id_Array.every(id => id != null)) {
+      if (header_id_Array.length === 26 && header_id_Array.every(id => id != null)) {
         // تعيين القيم للمتغيرات x1, x2, ... x23
         [x1, x2, x3, x4, x5, x6, x7, x8, x9, x10,
          x11, x12, x13, x14, x15, x16, x17, x18, x19,
-         x20, x21, x22, x23] = header_id_Array;
+         x20, x21, x22, x23, x24, x25, x26] = header_id_Array;
       } else {
         throw new Error('حدث خطأ أثناء معالجة البيانات: Sadnc001');
       }
       
 
       const accountbodies = [
-        {id: x1, parent_id: false},
-        {id: x2, parent_id: false},
-        {id: x3, parent_id: x1},
-        {id: x4, parent_id: x1},
-        {id: x5, parent_id: x1},
-        {id: x6, parent_id: x2},
-        {id: x7, parent_id: x2},
-        {id: x8, parent_id: x3},
-        {id: x9, parent_id: x3},
-        {id: x10, parent_id: x3},
-        {id: x11, parent_id: x3},
-        {id: x12, parent_id: x3},
-        {id: x13, parent_id: x4},
-        {id: x14, parent_id: x4},
-        {id: x15, parent_id: x5},
-        {id: x16, parent_id: x5},
-        {id: x17, parent_id: x5},
-        {id: x18, parent_id: x6},
-        {id: x19, parent_id: x6},
-        {id: x20, parent_id: x7},
-        {id: x21, parent_id: x7},
-        {id: x22, parent_id: false},
-        {id: x23, parent_id: x22},
+        {id: x1, parent_id: false}, //  "قائمة المركز المالى"
+        {id: x2, parent_id: false}, // "قائمة الدخل"
+        {id: x3, parent_id: x1}, // "الاصول"
+        {id: x4, parent_id: x1}, //  "الالتزمات"
+        {id: x5, parent_id: x1}, // "حقوق الملكيه"
+        {id: x6, parent_id: x2}, // "الايرادات"
+        {id: x7, parent_id: x2}, //  "المصروفات"
+        {id: x8, parent_id: x3}, // "الاصول الثايتة"
+        {id: x9, parent_id: x3}, // "مجمع اهلاك الاصول الثابتة"
+        {id: x10, parent_id: x3}, // "النقد وما فى حكمه"
+        {id: x11, parent_id: x3}, //  "المخزون الحالى"
+        {id: x12, parent_id: x3}, // "العملاء"
+        {id: x13, parent_id: x4}, // "الموردين"
+        {id: x14, parent_id: x4}, // "الموظفين"
+        {id: x15, parent_id: x5}, // "حسابات رأس المال"
+        {id: x16, parent_id: x5}, // "ارباح وخسائر الفترة"
+        {id: x17, parent_id: x5}, // "ارباح وخسائر فترات سابقة"
+        {id: x18, parent_id: x6}, // "ايرادات مبيعات - المخزون"
+        {id: x19, parent_id: x6}, // "ايرادات مبيعات - خدمات"
+        {id: x20, parent_id: x7}, //  "تكلفة المخزون - المبيعات"
+        {id: x21, parent_id: x7}, // "مصاريف اهلاك اصول ثابته"
+        {id: x22, parent_id: false}, // "مراكز التكلفة"
+        {id: x23, parent_id: x22}, // "مجموعة مراكز التكلفة 1"
+        {id: x24, parent_id: false}, // "المخزن الرئيسي"
+        {id: x25, parent_id: x14}, //"قسم الإدارة"
+        {id: x26, parent_id: x25}, //"موظف-بائع"
         // أضف باقي الحسابات
       ];
 
@@ -1432,7 +1465,7 @@ return res.json({
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الشركه الجديده وتم الغاء العمليه",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -1674,7 +1707,7 @@ app.post("/get_main_users_Data", async (req, res) => {
     console.error("Error get_All_users_Data ", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -1846,7 +1879,7 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء معالجة البيانات وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -2030,7 +2063,7 @@ app.post("/api/update_user", async (req, res) => {
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء معالجة البيانات وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
 });
@@ -2067,7 +2100,7 @@ app.get("/get_All_users_Data_companies", async (req, res) => {
     console.error("Error get_All_users_Data ", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -2258,7 +2291,7 @@ app.post("/delete_user", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء حذف بيانات الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -2294,7 +2327,7 @@ app.post("/get_users_permissions_Data", async (req, res) => {
     console.error("Error get_All_users_Data ", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تحضير بيانات المستخدمين ",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -2353,7 +2386,10 @@ app.post("/get_users_permissions_Data", async (req, res) => {
       console.error("Error getEffectsData1:", error);
       res
         .status(500)
-        .json({ success: false, message_ar: "حدث خطأ أثناء عرض البيانات" });
+        .json({
+           success: false,
+           message_ar: error.message || deafultErrorMessage,
+          });
     }
   });
 
@@ -2465,7 +2501,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       console.error("Error Update general settings:", error);
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء تعديل البيانات",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -2591,7 +2627,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء معالجة البيانات",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -2665,7 +2701,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء معالجة البيانات",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -2735,7 +2771,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء معالجة البيانات",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -2802,7 +2838,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء معالجة البيانات",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -2975,7 +3011,7 @@ app.post("/updateUser", async (req, res) => {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة  الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -3108,7 +3144,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
     console.error("Error updating user data:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تعديل بيانات المستخدم ",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -3208,7 +3244,10 @@ app.post("/get_All_customers_Data", async (req, res) => {
     A.company_id = $1
     AND A.account_type_id = 2
   GROUP BY
-    A.id;
+    A.id
+  order by
+    balance desc
+    ;  
 `;
     let data = await db.any(query1, [req.session.company_id]);
     last_activity(req)
@@ -3337,7 +3376,7 @@ app.post("/get_All_customers_Data", async (req, res) => {
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء اضافة العميل",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -3438,7 +3477,7 @@ app.post("/get_All_customers_Data", async (req, res) => {
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء تحديث بيانات العميل",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -3737,7 +3776,7 @@ ORDER BY
         // send a response to frontend about fail transaction
         res.status(500).json({
           success: false,
-          message_ar: "حدث خطأ أثناء اضافة القسم",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -3823,7 +3862,7 @@ ORDER BY
         // send a response to frontend about fail transaction
         res.status(500).json({
           success: false,
-          message_ar: "حدث خطأ أثناء اضافة القسم",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -3926,7 +3965,7 @@ ORDER BY
         // send a response to frontend about fail transaction
         res.status(500).json({
           success: false,
-          message_ar: "حدث خطأ أثناء اضافة القسم",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -4108,7 +4147,7 @@ app.post("/employee_add", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -4283,7 +4322,7 @@ app.post("/update_employee", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تعديل بيانات الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -4385,7 +4424,7 @@ app.post("/delete_employee", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء حذف بيانات الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -4520,7 +4559,10 @@ app.post("/get_All_vendors_Data", async (req, res) => {
     A.company_id = $1
     AND A.account_type_id = 3
   GROUP BY
-    A.id;
+    A.id
+      order by
+    balance desc
+    ;  
 `;
     let data = await db.any(query1, [req.session.company_id]);
     last_activity(req)
@@ -4646,7 +4688,7 @@ app.post("/get_All_vendors_Data", async (req, res) => {
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء اضافة العميل",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -4756,7 +4798,7 @@ app.post("/get_All_vendors_Data", async (req, res) => {
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء تحديث بيانات المورد",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -4950,7 +4992,7 @@ app.post("/effects_add", async (req, res) => {
     // إرسال استجابة للواجهة الأمامية حول فشل المعاملة
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء الإضافة",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -4984,7 +5026,7 @@ WHERE company_id = $1
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 //#endregion
@@ -5184,7 +5226,7 @@ app.post("/updateeffects", async (req, res) => {
     console.error("Error updateeffects:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تحميل البيانات",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -5297,7 +5339,7 @@ return res.json({
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تعديل البيانات",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -5380,7 +5422,7 @@ app.post("/effects_delete", async (req, res) => {
     console.error("Error during effects deletion:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء حذف البيانات أو تسجيل التاريخ.",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -5445,7 +5487,7 @@ const insert = await db.one(query, [
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة البيانات",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -5581,7 +5623,7 @@ app.post("/production_update_ar", async (req, res) => {
     console.error("Error production_update_ar", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء تعديل البيانات",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -5625,7 +5667,7 @@ app.post("/delete_production", async (req, res) => {
     console.error("Error get employee data:", error);
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ اثناء حذف البيانات",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -6154,7 +6196,7 @@ app.post("/api/addGroup-account", async (req, res) => {
     // إرسال استجابة خطأ إلى العميل
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة المجموعه",
+      message_ar: error.message || deafultErrorMessage,
       message_en: "An error occurred while deleting the account",
     });
   }
@@ -6280,7 +6322,7 @@ app.post("/api/add-account", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false, // العملية فشلت
-      message_ar: "حدث خطأ أثناء عملية الإضافة وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -6457,7 +6499,7 @@ app.post("/api/update-account", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false, // العملية فشلت
-      message_ar: "حدث خطأ أثناء عملية التعديل وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -6557,7 +6599,7 @@ app.post("/api/rename-account", async (req, res) => {
     // إرسال استجابة خطأ إلى العميل
     return res.json({
       success: false,
-      message_ar: "حدث خطأ اثناء معالجة البيانات : تم الغاء العمليه",
+      message_ar: error.message || deafultErrorMessage,
       message_en: "Can't delete this account with sub-accounts in it",
     });
   }
@@ -6656,7 +6698,7 @@ app.post("/api/delete-account", async (req, res) => {
     // إرسال استجابة خطأ إلى العميل
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء حذف الحساب",
+      message_ar: error.message || deafultErrorMessage,
       message_en: "An error occurred while deleting the account",
     });
   }
@@ -6847,7 +6889,7 @@ WHERE
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get accounts Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -6961,7 +7003,7 @@ WHERE
       // إرسال استجابة للواجهة الأمامية حول فشل المعاملة
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء الإضافة",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -7052,7 +7094,7 @@ WHERE
       // send a response to frontend about fail transaction
       res.status(500).json({
         success: false,
-        message_ar: "حدث خطأ أثناء تحديث بيانات المورد",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -7221,7 +7263,7 @@ let params2 = [req.session.company_id]
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get Employees Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -7428,7 +7470,7 @@ const newId_transaction_header = insert.id;
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -7584,7 +7626,7 @@ let params2 = [req.session.company_id]
 select
 	th.id,
 	th.datex,
-	th.general_note,
+	COALESCE(th.general_note, '') as general_note,
 	th.items_location_id as location_from,
 	th.items_location_id2 as location_to,
 	CONCAT(
@@ -7645,7 +7687,7 @@ where
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get Employees Data" });
+        .json({ success: false, message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -7868,7 +7910,7 @@ where
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -7978,7 +8020,7 @@ where
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -8170,7 +8212,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       // إرسال استجابة خطأ إلى العميل
       return res.json({
         success: false,
-        message_ar: "حدث خطأ أثناء اضافة المجموعه",
+        message_ar: error.message || deafultErrorMessage,
         message_en: "An error occurred while deleting the account",
       });
     }
@@ -8308,7 +8350,7 @@ app.post("/api/add_item", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false, // العملية فشلت
-      message_ar: "حدث خطأ أثناء عملية الإضافة وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -8431,7 +8473,7 @@ app.post("/api/update-group_items", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false, // العملية فشلت
-      message_ar: "حدث خطأ أثناء عملية التعديل وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -8650,7 +8692,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get accounts Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -8689,7 +8731,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get accounts Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -8828,7 +8870,7 @@ app.post("/api/update-item", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false, // العملية فشلت
-      message_ar: "حدث خطأ أثناء عملية التعديل وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -8917,7 +8959,7 @@ app.post("/api/delete-item", async (req, res) => {
     // إرسال استجابة خطأ إلى العميل
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء حذف الصنف",
+      message_ar: error.message || deafultErrorMessage,
       message_en: "An error occurred while deleting the account",
     });
   }
@@ -9278,7 +9320,7 @@ await db.tx(async (tx) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -9508,11 +9550,9 @@ for (const rowData of posted_elements.posted_array) {
     ]);
   }
 
-
+  console.table(insert_array2)
   await tx.batch(insert_array2.map(data => tx.none(query2, data)));
   let end_time = performance.now()
-
-  console.log(end_time - start_time);
   
 
   // تحديث is_including_items بناءً على محتوى items_array
@@ -9550,7 +9590,7 @@ for (const rowData of posted_elements.posted_array) {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -9641,7 +9681,8 @@ app.post("/api/transaction_delete", async (req, res) => {
             ;
             `
             let items_array = await tx.any(query2, [posted_elements.x, req.session.company_id]);
-          
+            items_array = items_array.map(row => Number(row.item_id));  // تحويل item_id إلى رقم
+
                   //? Clear transaction_body
       let query0 = `Delete FROM transaction_body WHERE transaction_header_id = $1`
       await tx.none(query0,[posted_elements.x])
@@ -9655,6 +9696,7 @@ app.post("/api/transaction_delete", async (req, res) => {
       await tx.none(query1, [
         posted_elements.x
       ]);
+
 
       if (items_array && items_array.length > 0) {
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
@@ -9681,7 +9723,7 @@ app.post("/api/transaction_delete", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -9942,7 +9984,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false,message_ar: error.message || deafultErrorMessage,});
   }
 });
 //#endregion end get itemslocations and salesman
@@ -10076,7 +10118,7 @@ let query7 = `
 select 
 	bih.id,
   bih.reference,
-	bih.general_note,
+	COALESCE(bih.general_note, '') as general_note,
 	bih.datex,
 	bih.account_id,
 	bih.salesman_id,
@@ -10156,7 +10198,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 //#endregion
@@ -10319,7 +10361,7 @@ where
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get Employees Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage,});
     }
   });
   //#endregion get data for sales order add
@@ -10462,7 +10504,7 @@ let query7 = `
 select 
 	bih.id,
   bih.reference,
-	bih.general_note,
+	COALESCE(bih.general_note, '') as general_note,
 	bih.datex,
 	bih.account_id,
 	bih.salesman_id,
@@ -10563,7 +10605,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 //#endregion getting data fro sales order update
@@ -10670,7 +10712,7 @@ ORDER BY
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get Accounts data for taxes add page Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -10840,7 +10882,7 @@ ORDER BY
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -11006,7 +11048,7 @@ ORDER BY
       console.error("Error update tax:", error);
       return res.json({
         success: false,
-        message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -11156,7 +11198,7 @@ ORDER BY
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: "حدث خطأ أثناء عملية حذف البيانات وتم إلغاء العملية",
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -11298,7 +11340,7 @@ WHERE
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get accounts Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -11572,7 +11614,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -11856,7 +11898,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -12000,7 +12042,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية رفض عرض السعر وتم الغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -12141,7 +12183,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -12552,7 +12594,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -12877,7 +12919,7 @@ WHERE
             // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
             return res.json({
               success: false,
-              message_ar: "حدث خطأ أثناء عملية التحديث وتم إلغاء العملية",
+              message_ar: error.message || deafultErrorMessage,
             });
           }
         });
@@ -13039,7 +13081,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -13235,7 +13277,7 @@ distributed AS (
         oi.id,
         oi.reference,
         oi.total_value,
-        oi.general_note,
+        COALESCE(oi.general_note, '') as general_note,
         oi.datex,
         oi.customer_id,
         oi.customer_name,
@@ -13275,7 +13317,7 @@ SELECT
     id,
     reference,
     total_value,
-    general_note,
+    COALESCE(general_note, '') as general_note,
     datex,
     customer_id,
     customer_name,
@@ -13503,7 +13545,7 @@ where
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get Employees Data" });
+        .json({ success: false, message_ar: error.message || deafultErrorMessage, });
     }
   });
   //#endregion get data for sales order add
@@ -14101,7 +14143,7 @@ WHERE
   select 
     th.id,
     th.reference,
-    th.general_note,
+    COALESCE(th.general_note, '') as general_note,
     th.datex,
     th.due_date,
     th.account_id,
@@ -14240,7 +14282,7 @@ WHERE
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get_data_for_sales_invoice_update Data" });
+        .json({ success: false, message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -14379,7 +14421,7 @@ WHERE
   select 
     bih.id,
     bih.reference,
-    bih.general_note,
+    COALESCE(bih.general_note, '') as general_note,
     bih.datex,
     NULL as due_date,
     bih.account_id,
@@ -14511,7 +14553,7 @@ WHERE
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get_data_for_sales_invoice_update Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -14651,7 +14693,7 @@ WHERE
   select 
     bih.id,
     bih.reference,
-    bih.general_note,
+    COALESCE(bih.general_note, '') as general_note,
     bih.datex,
     NULL as due_date,
     bih.account_id,
@@ -14784,7 +14826,7 @@ WHERE
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get_data_for_sales_invoice_update Data" });
+        .json({ success: false, message_ar: error.message || deafultErrorMessage, });
     }
   });
   //#endregion end - get data for invoice_update_page
@@ -15278,7 +15320,7 @@ WHERE
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -15474,7 +15516,7 @@ WHERE
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -15708,7 +15750,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get_Data_for_purshases_qutation_add_page" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 /*
@@ -16027,7 +16069,7 @@ app.post("/getItemssData1", async (req, res) => {
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -16163,7 +16205,7 @@ WHERE
     select 
       bih.id,
       bih.reference,
-      bih.general_note,
+      COALESCE(bih.general_note, '') as general_note,
       bih.datex,
       bih.account_id,
       bih.is_qutation_status,
@@ -16242,7 +16284,7 @@ WHERE
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while get Employees Data" });
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
       }
     });
     //#endregion end
@@ -16523,7 +16565,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -16667,7 +16709,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية رفض عرض السعر وتم الغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -16808,7 +16850,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -17214,7 +17256,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -17375,7 +17417,7 @@ WHERE
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while get Employees Data" });
+          .json({ success: false, message_ar: error.message || deafultErrorMessage, });
       }
     });
     //#endregion end get data for purshases order update
@@ -17697,7 +17739,7 @@ WHERE
             // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
             return res.json({
               success: false,
-              message_ar: "حدث خطأ أثناء عملية التحديث وتم إلغاء العملية",
+              message_ar: error.message || deafultErrorMessage,
             });
           }
         });
@@ -17841,7 +17883,7 @@ WHERE
     select 
       bih.id,
       bih.reference,
-      bih.general_note,
+      COALESCE(bih.general_note, '') as general_note,
       bih.datex,
       bih.account_id,
       bih.is_qutation_status,
@@ -17941,7 +17983,7 @@ WHERE
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while get_data_for_purshases_order_update" });
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
       }
     });
     //#endregion end- Get_data_for_purshases_order_update
@@ -18101,7 +18143,7 @@ WHERE
         // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
         return res.json({
           success: false,
-          message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+          message_ar: error.message || deafultErrorMessage,
         });
       }
     });
@@ -18299,7 +18341,7 @@ distributed AS (
         oi.id,
         oi.reference,
         oi.total_value,
-        oi.general_note,
+        COALESCE(oi.general_note, '') as general_note,
         oi.datex,
         oi.vendor_id,
         oi.vendor_name,
@@ -18339,7 +18381,7 @@ SELECT
     id,
     reference,
     total_value,
-    general_note,
+    COALESCE(general_note, '') as general_note,
     datex,
     vendor_id,
     vendor_name,
@@ -18527,7 +18569,7 @@ WHERE
         select 
           bih.id,
           bih.reference,
-          bih.general_note,
+          COALESCE(bih.general_note, '') as general_note,
           bih.datex,
           NULL as due_date,
           bih.account_id,
@@ -18658,7 +18700,7 @@ WHERE
             res.join;
             res
               .status(500)
-              .json({ success: false, message_ar: "Error while get_data_for_purshasesQutationToInvoice Data" });
+              .json({ success: false, message_ar: error.message || deafultErrorMessage,});
           }
         });
 
@@ -18797,7 +18839,7 @@ WHERE
         select 
           bih.id,
           bih.reference,
-          bih.general_note,
+          COALESCE(bih.general_note, '') as general_note,
           bih.datex,
           NULL as due_date,
           bih.account_id,
@@ -18928,7 +18970,7 @@ WHERE
             res.join;
             res
               .status(500)
-              .json({ success: false, message_ar: "Error while get_data_for_purshasesOrderToInvoice" });
+              .json({ success: false, message_ar: error.message || deafultErrorMessage, });
           }
         });
 
@@ -19067,7 +19109,7 @@ WHERE
         select 
           th.id,
           th.reference,
-          th.general_note,
+          COALESCE(th.general_note, '') as general_note,
           th.datex,
           th.due_date,
           th.account_id,
@@ -19205,7 +19247,7 @@ WHERE
             res.join;
             res
               .status(500)
-              .json({ success: false, message_ar: "Error while get_data_for_sales_purshasesInvoice_update" });
+              .json({ success: false,message_ar: error.message || deafultErrorMessage,});
           }
         });
       
@@ -19655,7 +19697,7 @@ WHERE
             // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
             return res.json({
               success: false,
-              message_ar: error.message,
+              message_ar: error.message || deafultErrorMessage,
             });
           }
         });
@@ -19834,7 +19876,7 @@ WHERE
             res.join;
             res
               .status(500)
-              .json({ success: false, message_ar: "Error while get_data_for_purshases_invoice_add" });
+              .json({ success: false, message_ar: error.message || deafultErrorMessage, });
           }
         });
 
@@ -20333,7 +20375,7 @@ WHERE
             // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
             return res.json({
               success: false,
-              message_ar: error.message,
+              message_ar: error.message || deafultErrorMessage,
             });
           }
         });
@@ -20520,7 +20562,7 @@ WHERE
             // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
             return res.json({
               success: false,
-              message_ar: error.message,
+              message_ar: error.message || deafultErrorMessage,
             });
           }
         });
@@ -20568,7 +20610,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get accounts Data" });
+      .json({ success: false,message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -20647,7 +20689,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -20761,7 +20803,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -20900,7 +20942,7 @@ app.post("/services_add", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -21060,7 +21102,7 @@ app.post("/services_update", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -21167,7 +21209,7 @@ app.post("/services_delete", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -21389,7 +21431,7 @@ WHERE
        ) AS account_name
    from
      transaction_header th
-    LEFT JOIN transaction_type tt ON tt.id = bih.transaction_type 
+    LEFT JOIN transaction_type tt ON tt.id = th.transaction_type 
    where
      th.transaction_type = 3
      and th.company_id = $1
@@ -21420,7 +21462,7 @@ WHERE
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get Employees Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -21833,7 +21875,7 @@ WHERE
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -22266,7 +22308,7 @@ WHERE
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -22422,7 +22464,7 @@ WHERE
       // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
       return res.json({
         success: false,
-        message_ar: error.message,
+        message_ar: error.message || deafultErrorMessage,
       });
     }
   });
@@ -22562,7 +22604,7 @@ WHERE
   select 
     th.id,
     th.reference,
-    th.general_note,
+    COALESCE(th.general_note, '') as general_note,
     th.datex,
     th.due_date,
     th.account_id,
@@ -22669,7 +22711,7 @@ WHERE
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get_data_for_sales_returns_update Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage, });
     }
   });
 
@@ -22808,7 +22850,7 @@ WHERE
   select 
     th.id,
     th.reference,
-    th.general_note,
+    COALESCE(th.general_note, '') as general_note,
     th.datex,
     th.account_id,
     th.salesman_id,
@@ -22905,7 +22947,7 @@ WHERE
       res.join;
       res
         .status(500)
-        .json({ success: false, message_ar: "Error while get_data_for_sales_invoice_update Data" });
+        .json({ success: false,message_ar: error.message || deafultErrorMessage,});
     }
   });
 
@@ -23159,7 +23201,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get_data_for_purshases_returns_add" });
+      .json({ success: false,message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -23619,7 +23661,7 @@ group by
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -24060,7 +24102,7 @@ group by
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -24202,7 +24244,7 @@ let query7 = `
 select 
   th.id,
   th.reference,
-  th.general_note,
+  COALESCE(th.general_note, '' ) as general_note,
   th.datex,
   th.due_date,
   th.account_id,
@@ -24308,7 +24350,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get_data_for_purshases_returns_update"});
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -24448,7 +24490,7 @@ let query7 = `
 select 
   th.id,
   th.reference,
-  th.general_note,
+  COALESCE(th.general_note, '') as general_note,
   th.datex,
   th.account_id,
   th.items_location_id,
@@ -24544,7 +24586,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get_data_for_purshasesInvoiceToreturns" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -24692,7 +24734,7 @@ app.post("/api/purshases_returns_delete", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -24776,7 +24818,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -25047,7 +25089,7 @@ app.post("/fixed_assests_add", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -25150,7 +25192,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -25308,7 +25350,7 @@ app.post("/fixed_assests_update", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -25417,7 +25459,7 @@ app.post("/fixed_assests_delete", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -25468,7 +25510,7 @@ select
   		SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
     	LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
 	) AS referenceconcat,
-	th.general_note,
+	COALESCE(th.general_note, '') as general_note,
 	th.total_value
 from 
 	transaction_header th
@@ -25552,7 +25594,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -25710,7 +25752,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -25974,7 +26016,7 @@ const newId_transaction_header = insert.id;
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -26248,7 +26290,7 @@ WITH main_query AS (
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -26299,7 +26341,7 @@ select
   		SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
     	LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
 	) AS referenceconcat,
-	th.general_note,
+	COALESCE(th.general_note, '') as general_note,
 	th.total_value,
 	th.str10_date_column1 as started_date,
 	th.str10_date_column2 as end_date
@@ -26374,7 +26416,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -26483,7 +26525,7 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -26693,7 +26735,7 @@ app.post("/cash_accounts_add", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -26759,7 +26801,7 @@ await db.tx(async (tx) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get Employees Data" });
+      .json({ success: false,message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -26881,7 +26923,7 @@ app.post("/cash_accounts_update", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -26990,7 +27032,7 @@ app.post("/cash_accounts_delete", async (req, res) => {
     // send a response to frontend about fail transaction
     res.status(500).json({
       success: false,
-      message_ar: "حدث خطأ أثناء اضافة الموظف",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -27215,7 +27257,7 @@ let params1 = [req.session.company_id]
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -27277,7 +27319,7 @@ let params1 = [req.session.company_id]
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+      .json({ success: false,message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -27484,7 +27526,7 @@ await db.tx(async (tx) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -27689,7 +27731,7 @@ await db.tx(async (tx) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -27765,7 +27807,7 @@ let params1 = [req.session.company_id]
       ) AS referenceconcat,
       th.account_id,
       ah.account_name,
-      th.general_note
+      COALESCE(th.general_note, '') as general_note,
     FROM
       transaction_header th
     inner join accounts_header ah on ah.id = th.account_id
@@ -27821,7 +27863,7 @@ let params1 = [req.session.company_id]
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -27893,7 +27935,7 @@ let params1 = [req.session.company_id]
       ) AS referenceconcat,
       th.account_id,
       ah.account_name,
-      th.general_note
+      COALESCE(th.general_note, '') as general_note,
     FROM
       transaction_header th
     inner join accounts_header ah on ah.id = th.account_id
@@ -27949,7 +27991,7 @@ let params1 = [req.session.company_id]
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_pv_AccountsData2" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -28172,7 +28214,7 @@ await db.tx(async (tx) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -28394,7 +28436,7 @@ await db.tx(async (tx) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -28506,7 +28548,7 @@ app.post("/api/cash_rc_delete", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -28617,7 +28659,7 @@ app.post("/api/cash_pv_delete", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحذف وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -28753,7 +28795,7 @@ app.post("/getCash", async (req, res) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_pv_AccountsData2" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -28808,7 +28850,7 @@ app.post("/get_cash_transfer_data_for_update", async (req, res) => {
         LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
     th.total_value,
-    th.general_note,
+    COALESCE(th.general_note, '') as general_note,
     th.items_location_id as account_from_id,
     th.items_location_id2 as account_to_id
 from
@@ -28837,7 +28879,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_pv_AccountsData2" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -29012,7 +29054,7 @@ app.post("/api/cash_transfer_add", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -29204,7 +29246,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -29331,7 +29373,7 @@ app.post("/api/cash_transfer_delete", async (req, res) => {
     // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
     return res.json({
       success: false,
-      message_ar: error.message,
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -29380,7 +29422,7 @@ app.post("/production_forms_view_ar", async (req, res) => {
     let query1 = `
 SELECT
     pfh.id,
-    pfh.account_no,
+    COALESCE(pfh.account_no, '') as account_no, 
     pfh.form_name,
     ah.account_name as item_name,
     pfh.production_item_id,
@@ -29534,7 +29576,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
   }
 });
 
@@ -29670,7 +29712,7 @@ app.post("/api/production_forms_add", async (req, res) => {
 
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -29826,7 +29868,7 @@ app.post("/api/production_forms_update", async (req, res) => {
 
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -29899,7 +29941,7 @@ app.post("/api/production_forms_delete", async (req, res) => {
 
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -29943,33 +29985,38 @@ app.post("/api/production_order_view", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     let query1 = `
-select
-	th.id,
-	th.datex,
-	CONCAT(
-    	tt.doc_prefix, '-',
+SELECT
+    th.id,
+    th.datex,
+    CONCAT(
+        tt.doc_prefix, '-',
         SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
         LPAD(CAST(th.reference AS TEXT), 5, '0') -- تحويل reference إلى نص وإضافة الأصفار
     ) AS referenceconcat,
-    th.total_value,
-    coalesce(th.general_note, '') as general_note,
+    th.total_value as amount,
+    COALESCE(th.general_note, '') AS general_note,
     th.account_id,
-    ah.account_name
-from
-	transaction_header th
-left join accounts_header ah on ah.id = th.account_id	
+    ah.account_name,
+    COALESCE(tb.cogs, 0) AS value -- جلب cogs إذا كانت is_production_item NULL
+FROM
+    transaction_header th
+LEFT JOIN accounts_header ah ON ah.id = th.account_id	
 LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
-where
-	th.company_id = $1
-	and th.transaction_type = 31
-	and th.is_deleted is null
-	and th.datex between $2 and $3
+LEFT JOIN transaction_body tb 
+    ON tb.transaction_header_id = th.id 
+    AND tb.is_production_item IS TRUE  -- شرط is_production_item يكون NULL
+WHERE
+    th.company_id = $1
+    AND th.transaction_type = 31
+    AND th.is_deleted IS NULL
+    AND th.datex BETWEEN $2 AND $3;
     ;
 `;
 
 
 
     let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
+          console.log(data);
           
     res.json(data);
   } catch (error) {
@@ -30149,7 +30196,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+      .json({ success: false, message_ar: error.message || deafultErrorMessage, });
   }
 });
 
@@ -30491,7 +30538,7 @@ app.post("/api/production_orders_add", async (req, res) => {
 
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -30708,7 +30755,7 @@ app.post("/api/production_orders_update", async (req, res) => {
 
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -30835,7 +30882,7 @@ app.post("/api/production_orders_delete", async (req, res) => {
 
     return res.json({
       success: false,
-      message_ar: "حدث خطأ أثناء عملية الحفظ وتم إلغاء العملية",
+      message_ar: error.message || deafultErrorMessage,
     });
   }
 });
@@ -30887,7 +30934,7 @@ app.post("/api/production_orders_delete", async (req, res) => {
     //50000
 
 
-
+/*
     let query1 = `
 WITH 
 stock_balances as(
@@ -31077,6 +31124,233 @@ from
         mt.main_account_id asc, mt.parent_id asc, mt.id asc
         ;
         `;
+*/
+
+let query1 = `
+WITH 
+stock_balances as(
+
+SELECT
+    -- حساب المخزون بدون شرط transaction_type
+    SUM(CASE 
+	    	WHEN ah.account_type_id = 5 AND th2.datex < $2 then
+	    		case
+	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        ELSE 0 
+        END) AS stock_debit_begining,
+
+    -- حساب التكلفة مع شرط transaction_type
+
+    -- حساب المخزون بدون شرط transaction_type
+    SUM(CASE 
+        	WHEN ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then
+        		case
+        			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+        		end
+        	ELSE 0
+        END) AS stock_debit_current,
+
+    -- حساب التكلفة مع شرط transaction_type
+        
+    SUM(CASE 
+        	WHEN th2.transaction_type = 2 AND ah2.global_id = 17 AND th2.datex < $2 then
+        		case
+	        		when coalesce(tb2.debit, 0) > 0 then coalesce(tb2.debit, 0)
+	        		when coalesce(tb2.credit, 0) > 0 then coalesce(tb2.credit, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_account_value_begining,
+        
+            SUM(CASE 
+        	WHEN th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_id is not null AND th2.datex < $2 then
+        		case
+	    			when  tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when  tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_items_value_begining,
+        
+        
+                    SUM(CASE 
+        	WHEN th2.transaction_type = 2 and  ah2.global_id = 17 AND th2.datex BETWEEN $2 AND $3 then
+        		case
+	        		when coalesce(tb2.debit, 0) > 0 then coalesce(tb2.debit, 0)
+	        		when coalesce(tb2.credit, 0) > 0 then coalesce(tb2.credit, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_account_value_current,
+        
+        
+            SUM(CASE 
+        	WHEN th2.transaction_type IN (3,4) AND ah.account_type_id = 5 and tb2.item_id is not null AND th2.datex BETWEEN $2 AND $3 then
+        		case
+	    			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_items_value_current
+
+FROM transaction_body tb2
+left JOIN accounts_header ah ON ah.id = tb2.item_id
+left join accounts_header ah2 on ah2.id = tb2.account_id
+LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
+WHERE th2.company_id = $1 
+AND th2.is_deleted IS null
+AND (tb2.item_id is not null or ah2.global_id = 17)
+),
+previous_profit_query as(
+select
+	sum(tb2.credit) - sum(tb2.debit) as previous_profit_value
+from transaction_body tb2
+INNER JOIN accounts_header ah ON ah.id = tb2.account_id
+LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
+where
+	ah.company_id = $1 
+	AND th2.is_deleted IS null
+	and (ah.main_account_id in (4,5) or ah.global_id in (23,16))  -- حساب الارباح الحالية و الارباح السابقه
+	AND th2.datex < $2
+),
+main_trial_balance AS (
+    SELECT
+        ah.id,
+        ah.account_name,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
+            	case
+            		when (sb.stock_debit_begining - sb.cost_items_value_begining) > 0 then (sb.stock_debit_begining - sb.cost_items_value_begining)
+            		else 0
+            	end
+            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
+            	case
+             		when ppq.previous_profit_value < 0 then ABS(ppq.previous_profit_value)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when coalesce(sb.cost_account_value_begining, 0) > 0 then coalesce(sb.cost_account_value_begining, 0)
+            		else 0
+            	end	
+            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
+            ELSE 
+                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex < $2 THEN tb.debit ELSE 0 END)
+        END AS debit_first,
+                CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
+            	case
+            		when (sb.stock_debit_begining - sb.cost_items_value_begining) < 0 then ABS(sb.stock_debit_begining - sb.cost_items_value_begining)
+            		else 0
+            	end
+            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
+            	case
+            		when ppq.previous_profit_value > 0 then ppq.previous_profit_value
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when coalesce(sb.cost_account_value_begining, 0) < 0 then ABS(coalesce(sb.cost_account_value_begining, 0))
+            		else 0
+            	end	
+            	 WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده   
+            ELSE 
+                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex < $2 THEN tb.credit ELSE 0 END)
+        END AS credit_first,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
+            	case
+            		when (sb.stock_debit_current - sb.cost_items_value_current) > 0 then (sb.stock_debit_current - sb.cost_items_value_current)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when (coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)) > 0 then coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)
+            		else 0
+            	end
+            ELSE 
+                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.debit ELSE 0 END)
+        END AS debit_current,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
+            	case
+            		when (sb.stock_debit_current - sb.cost_items_value_current) < 0 then ABS(sb.stock_debit_current - sb.cost_items_value_current)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when  (coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)) < 0 then ABS((coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)))
+            		else 0
+            	end
+            ELSE 
+                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.credit ELSE 0 END)
+        END AS credit_current,        
+        ah.is_final_account,
+        ah.account_no,
+        ah.finance_statement,
+        ah.cashflow_statement,
+        ah.account_type_id,
+        ah.account_name_en,
+        ah.global_id,
+        ah.main_account_id,
+        ah.is_inactive,
+        ab.parent_id
+    FROM
+        accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+    LEFT JOIN previous_profit_query ppq ON true -- ربط الاستعلام فى حاله الصف الواحد
+    WHERE
+        ah.company_id = $1
+        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
+       -- AND NOT (ah.account_type_id = 5 AND ah.global_id != 12)
+        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
+    GROUP BY
+        ah.id, ab.parent_id, sb.stock_debit_begining, sb.cost_items_value_begining, ppq.previous_profit_value, sb.stock_debit_current, sb.cost_items_value_current, sb.cost_account_value_begining, sb.cost_account_value_current
+)
+select
+    mt.id,
+    mt.account_name,
+          CASE
+        WHEN (mt.debit_first + mt.debit_current) > (mt.credit_first + mt.credit_current)
+        THEN (mt.debit_first + mt.debit_current) - (mt.credit_first + mt.credit_current)
+        ELSE NULL
+    END AS debit_end,
+        CASE
+        WHEN (mt.debit_first + mt.debit_current) < (mt.credit_first + mt.credit_current)
+        THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
+        ELSE NULL
+    END AS credit_end,
+   mt.debit_first,
+    mt.debit_current,
+    mt.credit_first,
+    mt.credit_current,
+    mt.is_final_account,
+    mt.account_no,
+    mt.finance_statement,
+    mt.cashflow_statement,
+    mt.account_type_id,
+    mt.account_name_en,
+    mt.global_id,
+    mt.main_account_id,
+    mt.is_inactive,
+    mt.parent_id,
+    null as padding
+from 
+	main_trial_balance mt
+  order by
+        mt.main_account_id asc, mt.parent_id asc, mt.id asc
+        ;
+        `;
+
 
     let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
     
@@ -31565,7 +31839,7 @@ left join main_accounts_totals mat on true
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
+          .json({ success: false, message_ar: error.message || deafultErrorMessage, });
       }
     });
 
@@ -31608,7 +31882,8 @@ left join main_accounts_totals mat on true
         //* Start--------------------------------------------------------------
         // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     //50000
-        let query1 = `
+/*
+  let query1 = `
 WITH 
 stock_balances as (
 select
@@ -31738,8 +32013,154 @@ LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف
 LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
 order by
     mt.main_account_id asc, mt.parent_id asc, mt.id asc
-      ;
     `;
+    */
+
+
+
+    let query1 = `
+WITH 
+stock_balances as (
+select
+
+    SUM(CASE 
+            WHEN ah.account_type_id = 5 AND tb.item_id is not null AND th.transaction_type in (3,4) THEN 
+            	case
+	    			when tb.item_amount >= 0 then coalesce(tb.cogs,0)
+        			when tb.item_amount <0 then coalesce(tb.cogs *-1, 0)
+        			else 0
+	    		end
+            ELSE 0 
+        END
+    ) AS cogs_items_value,
+    
+    SUM(CASE 
+    	WHEN th.transaction_type = 2 and ah2.global_id = 17 then
+        	case
+	        	when coalesce(tb.debit, 0) > 0 then coalesce(tb.debit, 0)
+	        	when coalesce(tb.credit, 0) > 0 then coalesce(tb.credit, 0)
+        		else 0
+	    	end
+        ELSE 0
+    END) AS cost_account_value
+
+FROM transaction_body tb
+left JOIN accounts_header ah ON ah.id = tb.item_id
+left join accounts_header ah2 on ah2.id = tb.account_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE th.company_id = $1
+  and (ah.is_final_account is true OR ah2.is_final_account is true)
+  AND th.is_deleted IS NULL
+  AND th.datex between $2 and $3
+  AND (tb.item_id is not null OR ah2.global_id = 17)
+),
+
+balances as(
+    SELECT
+
+    SUM(CASE 
+            WHEN ah.account_type_id = 1 AND ah.main_account_id = 4 THEN COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS revenue_value,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 1 AND ah.main_account_id = 5 THEN COALESCE(tb.debit, 0)  - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS expenses_value
+    
+FROM transaction_body tb
+INNER JOIN accounts_header ah ON ah.id = tb.account_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE ah.company_id = $1
+  and ah.is_final_account is true
+  AND th.is_deleted IS NULL
+  AND th.datex between $2 and $3
+),
+main_incom_statemnt AS (
+    SELECT
+        ah.id,
+        ah.account_name,
+        CASE
+            WHEN ah.global_id = 17 then  -- تكلفة البضاعه المباعه
+            	case
+            		when ah.main_account_id = 5 then coalesce(sb.cogs_items_value, 0) + COALESCE(sb.cost_account_value)
+            		when ah.main_account_id != 5 then (coalesce(sb.cogs_items_value, 0) + COALESCE(sb.cost_account_value)) * -1
+            		else 0
+            	end           	
+            WHEN ah.global_id = 16 then  -- ارباح وخسائر الفتره
+					b.revenue_value - b.expenses_value - sb.cogs_items_value
+            WHEN ah.main_account_id in (1,2,3) then 0  -- لا يجمع بنود قائمة المركز المالى              	
+            ELSE 
+                SUM(
+                case
+                	when ah.account_type_id not in (2,3,4,5,6,7,8,9,10) then
+                		case
+                	    	when ah.main_account_id in (1,5) THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+                		 	when ah.main_account_id in (2,3,4) THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+                		 	else 0
+                		end
+                end
+                 )
+        END AS balance,
+        ah.is_final_account,
+        ah.account_no,
+        ah.finance_statement,
+        ah.cashflow_statement,
+        ah.account_type_id,
+        ah.account_name_en,
+        ah.global_id,
+        ah.main_account_id,
+        ah.is_inactive,
+        ab.parent_id
+    FROM
+        accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
+    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+    WHERE
+        ah.company_id = $1
+        and (ah.global_id != 2 or ah.global_id is null)
+        and ah.finance_statement = 2
+        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
+        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
+		AND (
+    		(ah.account_type_id IS NULL OR ah.account_type_id NOT IN (2, 3, 6, 4, 9, 10)) 
+    		OR ah.global_id IN (13, 14, 9, 20, 11, 15)
+		)
+    GROUP BY
+        ah.id, ab.parent_id, b.expenses_value, b.revenue_value, sb.cogs_items_value, sb.cost_account_value
+)
+select
+    mt.id,
+    mt.account_name,
+    case
+	    when mt.global_id = 6 then b.revenue_value
+	    when mt.global_id = 7 then b.expenses_value + sb.cogs_items_value
+	    else balance
+    end as balance,
+    mt.is_final_account,
+    mt.account_no,
+    mt.finance_statement,
+    mt.cashflow_statement,
+    mt.account_type_id,
+    mt.account_name_en,
+    mt.global_id,
+    mt.main_account_id,
+    mt.is_inactive,
+    mt.parent_id,
+    null as padding
+from 
+	main_incom_statemnt mt
+LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
+LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+order by
+    mt.main_account_id asc, mt.parent_id asc, mt.id asc
+        `;
+
     let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
     
     await db.tx(async (tx) => {
@@ -31835,7 +32256,7 @@ order by
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
+          .json({ success: false, message_ar: error.message || deafultErrorMessage, });
       }
     });
    
@@ -32109,7 +32530,7 @@ ORDER BY
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while get_data_for_purshasesInvoiceToreturns" });
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
       }
     });
 
@@ -32196,6 +32617,9 @@ async function update_items_cogs(items_array,datex, req, tx) {
   if (!items_array){
     return
   }
+
+  console.log(items_array);
+  
 
   if (!Array.isArray(items_array) || items_array.length === 0) {
     throw new Error(

@@ -28,19 +28,24 @@
         <!-- content -->
                 <div id="content_space" class="scroll">
 
-          <div id ="fn_container_div" class="fn_container_div"></div>
-            <h2 class="h2">
-                <a href="departments_view_ar" title="الاقسام">
+
+              <h2 id="h2" class="h2">
+                <a id="back_href" class="back_href" href="departments_view_ar" title="الأقسام">
                   <i class="fa-solid fa-arrow-right back_icon"></i>
                 </a>
-                الموارد البشرية
+                <div class="h2_main_text_div">
+                  <a id="h2_text_div" class="h2_text_div" href="departments_update_ar" title="اعادة تحميل الصفحة">
+                     الأقسام الإدارية
+                  </a>
+                  <span id="sub_h2_header" class="sub_h2_header">عرض</span>
+                </div>
               </h2>
-          <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
           <div id ="fn_container_div" class="fn_container_div"></div>
           <div id="page_content" style="display: none;">
             
-          
+                   <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+ 
               <label for="department_name_input" class="lbl_sm">اسم القسم</label>
               <input type="search" id="department_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')" placeholder="مطلوب">
               

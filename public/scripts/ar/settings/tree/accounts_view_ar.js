@@ -1,5 +1,5 @@
 
-setActiveSidebar('accounts_view_ar');
+setActiveSidebar('general_settings_ar');
 // alertify.alert('هذه رسالة تنبيه.');
 //#region variables
 const tree_add_account = document.querySelector(`#tree_add_account`);

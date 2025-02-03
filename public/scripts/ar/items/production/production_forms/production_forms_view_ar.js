@@ -249,7 +249,7 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f1',true,true,false)
+    call_default_checkbox('f1',true,false,false)
     call_default_checkbox('f2',true,true,false)
     call_default_checkbox('f3',true,false,false) 
     call_default_checkbox('f4',true,false,false) 

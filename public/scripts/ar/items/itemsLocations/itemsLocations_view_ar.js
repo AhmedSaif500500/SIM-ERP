@@ -309,7 +309,7 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">تحرير</button></td>
                         <td style="${style_id}">${row.id}</td>
                         <td style="${location_name}">${row.account_name}</td>                       
                       </tr>`;
@@ -438,7 +438,7 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     try {
     const permission = await btn_permission('itemsLocations_permission','update');
 
