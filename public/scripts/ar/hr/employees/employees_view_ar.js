@@ -20,7 +20,7 @@ let checkbox_another_info = filter_div.querySelector(`#checkbox_another_info`) ;
 let checkbox_start_date = filter_div.querySelector(`#checkbox_start_date`) ; let select_start_date = filter_div.querySelector(`#select_start_date`); let input_start_date1 = filter_div.querySelector(`#input_start_date1`); input_start_date1.value = today; let input_end_date1 = filter_div.querySelector(`#input_end_date1`); input_end_date1.value = today; 
 let checkbox_end_date = filter_div.querySelector(`#checkbox_end_date`) ; let select_end_date = filter_div.querySelector(`#select_end_date`); let input_start_date2 = filter_div.querySelector(`#input_start_date2`); input_start_date2.value = today; let input_end_date2 = filter_div.querySelector(`#input_end_date2`); input_end_date2.value = today;
 let check_balance = filter_div.querySelector(`#check_balance`) ; let select_balance = filter_div.querySelector(`#select_balance`); let input_balance = filter_div.querySelector(`#input_balance`);
-let checkbox_active = filter_div.querySelector(`#checkbox_active`) ; let select_active = filter_div.querySelector(`#select_active`); select_active.value = 1
+let checkbox_active = filter_div.querySelector(`#checkbox_active`) ; let select_active = filter_div.querySelector(`#select_active`); //select_active.value = 1
 
 const btn_do = filter_div.querySelector(`#btn_do`);
 

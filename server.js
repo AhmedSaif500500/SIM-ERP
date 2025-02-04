@@ -3257,30 +3257,39 @@ app.post("/get_All_customers_Data", async (req, res) => {
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
     let query1 = `
-  SELECT 
-    A.id, 
-    A.account_name,  
-    COALESCE(A.account_no, '') as account_no,  
-    COALESCE(A.numeric_column1, 0) as credit_limit,  
-    COALESCE(A.str_textarea_column5, '') as email,
-    COALESCE(A.str20_column1, '') as tasgel_darepy,
-    COALESCE(A.str_textarea_column1, '') as legal_info,   
-    COALESCE(A.str_textarea_column2, '') as contact_info,  
-    COALESCE(A.str_textarea_column3, '') as delivery_adress,  
-    COALESCE(A.str_textarea_column4, '') as banking_info,
-    COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance,
-    A.is_allow_to_buy_and_sell
-  FROM
-    accounts_header A
-  LEFT JOIN 
-    transaction_body T ON A.id = T.account_id
-  WHERE
-    A.company_id = $1
-    AND A.account_type_id = 2
-  GROUP BY
-    A.id
-  order by
-    balance desc
+WITH main_query AS (
+    SELECT 
+        A.id, 
+        A.account_name,  
+        COALESCE(A.account_no, '') as account_no,  
+        COALESCE(A.numeric_column1, 0) as credit_limit,  
+        COALESCE(A.str_textarea_column5, '') as email,
+        COALESCE(A.str20_column1, '') as tasgel_darepy,
+        COALESCE(A.str_textarea_column1, '') as legal_info,   
+        COALESCE(A.str_textarea_column2, '') as contact_info,  
+        COALESCE(A.str_textarea_column3, '') as delivery_adress,  
+        COALESCE(A.str_textarea_column4, '') as banking_info,
+        COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance,
+        A.is_allow_to_buy_and_sell
+    FROM
+        accounts_header A
+    LEFT JOIN 
+        transaction_body T ON A.id = T.account_id
+    WHERE
+        A.company_id = $1
+        AND A.account_type_id = 2
+    GROUP BY
+        A.id
+)
+SELECT *
+FROM 
+    main_query mq
+ORDER BY 
+    CASE 
+        WHEN mq.balance = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                      -- الأرصدة غير الصفرية تبقى بالأعلى
+    END, 
+    mq.balance DESC  -- ترتيب الأرصدة غير الصفرية تنازليًا
     ;  
 `;
     let data = await db.any(query1, [req.session.company_id]);
@@ -4493,23 +4502,36 @@ app.post("/get_All_Employees_Data", async (req, res) => {
     let is_salesman = posted_elements.salesman
     is_salesman = is_salesman? true : false
    
+    //500500
     let query1 = `
+WITH main_account AS (
+    SELECT main_account_id 
+    FROM accounts_header ah 
+    WHERE ah.company_id = $1 
+      AND ah.global_id = 20
+),
+base_query AS (
     SELECT 
         A.id, 
-        COALESCE(A.account_name, '') as account_name, 
-        COALESCE(A.account_no, '') as account_no, 
-        COALESCE(A.str_textarea_column1, '') as job,
-        COALESCE(A.str_textarea_column5, '') as email,
-        COALESCE(A.str_textarea_column2, '') as another_info,
-        COALESCE(A.str_textarea_column3, '') as start_date,
-        COALESCE(A.str_textarea_column4, '') as end_date,
-        COALESCE(A.is_salesman, false) as is_salesman,
+        COALESCE(A.account_name, '') AS account_name, 
+        COALESCE(A.account_no, '') AS account_no, 
+        COALESCE(A.str_textarea_column1, '') AS job,
+        COALESCE(A.str_textarea_column5, '') AS email,
+        COALESCE(A.str_textarea_column2, '') AS another_info,
+        COALESCE(A.str_textarea_column3, '') AS start_date,
+        COALESCE(A.str_textarea_column4, '') AS end_date,
+        COALESCE(A.is_salesman, false) AS is_salesman,
         CASE 
             WHEN A.is_inactive = true THEN 'غير نشط'
             ELSE 'نشط'
-        END as is_inactive,
-        COALESCE(SUM(T.credit) - SUM(T.debit), 0) AS balance,
-        B.parent_id as department_id,
+        END AS is_inactive,
+        CASE
+            WHEN ma.main_account_id = 1 THEN
+                SUM(COALESCE(T.debit, 0) - COALESCE(T.credit, 0))
+            ELSE
+                SUM(COALESCE(T.credit, 0) - COALESCE(T.debit, 0))  
+        END AS balance,
+        B.parent_id AS department_id,
         COALESCE(ParentAccount.account_name, '') AS department_name,
         A.is_allow_to_buy_and_sell
     FROM 
@@ -4520,12 +4542,14 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         accounts_body B ON A.id = B.account_id
     LEFT JOIN 
         accounts_header ParentAccount ON B.parent_id = ParentAccount.id
+    LEFT JOIN 
+        main_account ma ON true    
     WHERE
         A.company_id = $1
         AND A.account_type_id = 4
         AND A.is_final_account = true
-        AND (B.parent_id = $2 OR $2 IS NULL)  -- هذا الشرط الجديد للتحقق من department_id
-        AND (A.is_salesman = true OR $3 = false)  -- if is_salesman variable  = true it will returm only data when is is_salesman field = true  if the variable = false it wi;; return  all data
+        AND (B.parent_id = $2 OR $2 IS NULL)  
+        AND (A.is_salesman = true OR $3 = false)  
     GROUP BY
         A.id, 
         A.account_name, 
@@ -4537,7 +4561,18 @@ app.post("/get_All_Employees_Data", async (req, res) => {
         A.str_textarea_column4,
         A.is_inactive,
         B.parent_id,
-        ParentAccount.account_name;
+        ParentAccount.account_name,
+        ma.main_account_id
+)
+SELECT * 
+FROM base_query
+ORDER BY 
+    CASE 
+        WHEN balance = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                   -- الأرصدة غير الصفرية تبقى بالأعلى
+    END,
+    balance DESC;  -- ترتيب الأرصدة غير الصفرية تنازليًا
+
     `;
     
     let data = await db.any(query1, [req.session.company_id,posted_elements.QKey,is_salesman]);
@@ -4571,31 +4606,41 @@ app.post("/get_All_vendors_Data", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
+    //500500
     let query1 = `
-      SELECT 
-    A.id, 
-    COALESCE(A.account_name, '') as account_name,  
-    COALESCE(A.account_no, '') as account_no,  
-    COALESCE(A.numeric_column1, 0) as credit_limit,  
-    COALESCE(A.str_textarea_column5, '') as email,
-    COALESCE(A.str20_column1, '') as tasgel_darepy,
-    COALESCE(A.str_textarea_column1, '') as legal_info,   
-    COALESCE(A.str_textarea_column2, '') as contact_info,  
-    COALESCE(A.str_textarea_column3, '') as delivery_adress,  
-    COALESCE(A.str_textarea_column4, '') as banking_info,
-    COALESCE(SUM(T.credit), 0) - COALESCE(SUM(T.debit), 0) AS balance,
-    A.is_allow_to_buy_and_sell
-  FROM 
-    accounts_header A
-  LEFT JOIN 
-    transaction_body T ON A.id = T.account_id
-  WHERE
-    A.company_id = $1
-    AND A.account_type_id = 3
-  GROUP BY
-    A.id
-      order by
-    balance desc
+WITH main_query AS (
+    SELECT 
+        A.id, 
+        COALESCE(A.account_name, '') as account_name,  
+        COALESCE(A.account_no, '') as account_no,  
+        COALESCE(A.numeric_column1, 0) as credit_limit,  
+        COALESCE(A.str_textarea_column5, '') as email,
+        COALESCE(A.str20_column1, '') as tasgel_darepy,
+        COALESCE(A.str_textarea_column1, '') as legal_info,   
+        COALESCE(A.str_textarea_column2, '') as contact_info,  
+        COALESCE(A.str_textarea_column3, '') as delivery_adress,  
+        COALESCE(A.str_textarea_column4, '') as banking_info,
+        COALESCE(SUM(T.credit), 0) - COALESCE(SUM(T.debit), 0) AS balance,
+        A.is_allow_to_buy_and_sell
+    FROM 
+        accounts_header A
+    LEFT JOIN 
+        transaction_body T ON A.id = T.account_id
+    WHERE
+        A.company_id = $1
+        AND A.account_type_id = 3
+    GROUP BY
+        A.id
+)
+SELECT *
+FROM 
+    main_query mq
+ORDER BY 
+    CASE 
+        WHEN mq.balance = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                      -- الأرصدة غير الصفرية تبقى بالأعلى
+    END, 
+    mq.balance DESC;  -- ترتيب الأرصدة غير الصفرية تنازليًا
     ;  
 `;
     let data = await db.any(query1, [req.session.company_id]);

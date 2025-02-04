@@ -1376,8 +1376,9 @@ function copyTableToClipboard(copyBtn,tableNameID) {
 }
 
 
-
+//500500
 // دالة لتطبيق الترتيب على جدول
+/*
 function applySorting(tableId, columnIndex, sortOrder = 'asc') {
   try {
     const table = document.getElementById(tableId);
@@ -1396,6 +1397,52 @@ function applySorting(tableId, columnIndex, sortOrder = 'asc') {
         return aText.localeCompare(bText, undefined, { numeric: true });
       } else {
         return bText.localeCompare(aText, undefined, { numeric: true });
+      }
+    });
+
+    // إعادة إضافة الصفوف إلى الجدول
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+
+    // إضافة صف الإجمالي مرة أخرى
+    tbody.appendChild(totalRow);
+
+    // تحديث أيقونات الترتيب
+    updateSortIcons(tableId, columnIndex, sortOrder);
+  } catch (error) {
+    catch_error(error);
+  }
+}
+*/
+
+function applySorting(tableId, columnIndex, sortOrder = 'asc') {
+  try {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // افترض أن صف الإجمالي هو آخر صف في tbody
+    const totalRow = rows.pop();
+
+    // دالة لتنظيف وتحويل القيم إلى أرقام إذا أمكن
+    const parseValue = (value) => {
+      // إزالة الفواصل وتحويل إلى رقم
+      const num = parseFloat(value.replace(/,/g, ''));
+      return isNaN(num) ? value : num; // إذا لم يكن رقمًا، أعد النص الأصلي
+    };
+
+    // فرز الصفوف المتبقية
+    rows.sort((a, b) => {
+      const aText = a.children[columnIndex].textContent.trim();
+      const bText = b.children[columnIndex].textContent.trim();
+
+      const aValue = parseValue(aText);
+      const bValue = parseValue(bText);
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
       }
     });
 

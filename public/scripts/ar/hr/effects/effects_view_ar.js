@@ -671,7 +671,7 @@ function fillTable() {
         let style_balance2 = `display:${checkbox_balance2.checked ? "table-cell" : "none"
             }; width: auto; white-space: nowrap; text-align: start`;
         let style_balance3 = `display:${checkbox_balance3.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
-        let style_active = `display:${checkbox_active.checked ? "table-cell" : "none"};  width: auto; white-space: nowrap; text-align: center;`;
+        let style_active = `display:${checkbox_active.checked ? "table-cell" : "none"};  width: auto; white-space: nowrap; text-align: start;`;
 
         total_column1.value = 0;
         total_column2.value = 0;
