@@ -303,13 +303,14 @@ async function getData_fn() {
 
         start_date = f0_input_start_date1.value;
         end_date = f0_input_end_date1.value;
+
        
         //  معلق
         data = await new_fetchData_postAndGet(
             "/get_All_transaction_Data",
             {start_date, end_date},
             "transaction_permission","view",
-            15,
+            50,
             false,'',
             false,
             true,content_space,

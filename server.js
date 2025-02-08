@@ -308,21 +308,21 @@ const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
 
 
 
-const globalLimiter = rateLimit({
-  windowMs: 1000 * 60 * 1, // 1 دقيقة
-  max: 10, // الحد الأقصى لمحاولات الوصول
-  message: 'Too many requests, please try again after a minute',
-  skipFailedRequests: true, // تخطي الفشل في المحاولات
-  handler: (req, res, next) => {
-    res.status(429).json({
-      success: false,
-      message_ar: 'Too many requests, please try again after a minute',
-    });
-  }
-});
+// const globalLimiter = rateLimit({
+//   windowMs: 1000 * 60 * 1, // 1 دقيقة
+//   max: 10, // الحد الأقصى لمحاولات الوصول
+//   message: 'Too many requests, please try again after a minute',
+//   skipFailedRequests: true, // تخطي الفشل في المحاولات
+//   handler: (req, res, next) => {
+//     res.status(429).json({
+//       success: false,
+//       message_ar: 'Too many requests, please try again after a minute',
+//     });
+//   }
+// });
 
-// تطبيق المعدل على جميع المسارات
-app.use(globalLimiter);
+// // تطبيق المعدل على جميع المسارات
+// app.use(globalLimiter);
 
 //#region Login
 
@@ -9324,9 +9324,6 @@ await db.tx(async (tx) => {
   let insert_array2 = [];
   let items_array = [];
 
-  let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
-  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
 
 
 
@@ -9362,7 +9359,12 @@ await db.tx(async (tx) => {
     ]);
   }
 
-  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  let query2 = `INSERT INTO transaction_body
+  (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
+    VALUES ${insert_array2.map((_, i) => `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, $${i * 9 + 4}, $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9})`).join(', ')}
+  ON CONFLICT DO NOTHING;`;
+
+  await tx.none(query2, insert_array2.flat());
 
   // تحديث is_including_items بناءً على محتوى items_array
   let is_including_items = items_array.length > 0 ? true : null;
@@ -9405,7 +9407,7 @@ await db.tx(async (tx) => {
 //#region 2: update transaction
 app.post("/api/transaction_update", async (req, res) => {
   try {
-
+    let start_time = performance.now()
     //! Permission
     await permissions(req, "transaction_permission", "update");
     if (!permissions) {
@@ -9471,18 +9473,7 @@ app.post("/api/transaction_update", async (req, res) => {
       let totaldebit = 0;
       let totalCredit = 0;
       // المرور على جميع الكائنات في المصفوفة
-      posted_elements.posted_array.forEach(item => {
-          totaldebit += parseFloat(item.debit || 0); // التأكد من تحويل القيم إلى أرقام
-          totalCredit += parseFloat(item.credit || 0);
-      });
 
-      
-      if (+totaldebit.toFixed(2) !== +totalCredit.toFixed(2)){
-        return res.json({
-          success: false,
-          message_ar: "القيد غير متوازن",
-        });
-      }
 
       //! Security hacking check id for company_name and transactio type
       let query01 = `SELECT id, reference FROM transaction_header WHERE id = $1 AND company_id = $2 AND transaction_type = $3  AND (is_deleted IS NULL OR is_deleted != true);`;
@@ -9517,13 +9508,13 @@ for (const rowData of posted_elements.posted_array) {
   const items_location_id = rowData.items_location_id;
   const item_amount = rowData.item_amount;
 
-
+  totaldebit += parseFloat(rowData.debit || 0);
+  totalCredit += parseFloat(rowData.credit || 0);
   //! make sure from every account_id
   const accountExists = dbAccounts.some(item => 
     +item.id === +account_id && +item.account_type_id === +account_typeId
   );
 
-  
   // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
   if (!accountExists) {
     await block_user(req,'Stu1')
@@ -9560,6 +9551,16 @@ for (const rowData of posted_elements.posted_array) {
 
 }
 
+if (+totaldebit.toFixed(2) !== +totalCredit.toFixed(2)){
+  return res.json({
+    success: false,
+    message_ar: "القيد غير متوازن",
+  });
+}
+let end_time = performance.now()
+
+
+console.log(end_time - start_time);
 
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
@@ -9569,12 +9570,14 @@ for (const rowData of posted_elements.posted_array) {
       await tx.none(query0,[posted_elements.x])
 
       //? update INTO transaction_header
-      let query1 = `update transaction_header set 
-                      datex = $1,
-                      total_value = $2,
-                      general_note = $3
-                    WHERE
-                      id = $4;`;
+      let query1 = `UPDATE transaction_header 
+SET 
+  datex = $1,
+  total_value = $2,
+  general_note = $3
+WHERE id = $4
+AND (datex IS DISTINCT FROM $1 OR total_value IS DISTINCT FROM $2 OR general_note IS DISTINCT FROM $3)
+;`;
 
       await tx.none(query1, [
         posted_elements.datex,
@@ -9586,10 +9589,10 @@ for (const rowData of posted_elements.posted_array) {
       let insert_array2 = [];
   let items_array = [];
 
-  let start_time = performance.now()
-  let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
-  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+ 
+  // let query2 = `INSERT INTO transaction_body
+  // (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
+  // VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
 
   for (const element of posted_elements.posted_array) {
     const itemTypeId = 5;
@@ -9625,9 +9628,13 @@ for (const rowData of posted_elements.posted_array) {
     ]);
   }
 
-  console.table(insert_array2)
-  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
-  let end_time = performance.now()
+  let query2 = `INSERT INTO transaction_body
+  (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
+  VALUES ${insert_array2.map((_, i) => `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, $${i * 9 + 4}, $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9})`).join(', ')}
+  ON CONFLICT DO NOTHING;`;
+
+await tx.none(query2, insert_array2.flat());
+
   
 
   // تحديث is_including_items بناءً على محتوى items_array
@@ -32896,8 +32903,6 @@ ORDER BY
 
   const result = await tx.any(query, params) || [];
   
-  console.table(result);
-  
 
   let check = true; // اعتبار أن الرصيد جيد بشكل افتراضي
 
@@ -32922,8 +32927,6 @@ async function update_items_cogs(items_array,datex, req, tx) {
     return
   }
 
-  console.log(items_array);
-  
 
   if (!Array.isArray(items_array) || items_array.length === 0) {
     throw new Error(
@@ -33013,9 +33016,6 @@ SELECT
   // جلب البيانات من قاعدة البيانات
   const items_transactions_array = await tx.any(query1,[req.session.company_id,datex]);
   
-  console.log(`items_transactions_array`);
-  console.table(items_transactions_array);
-  
 
   let updatedRecords = [];
 
@@ -33048,14 +33048,10 @@ let cogs = 0;
   const row_amount = Math.abs(row.item_amount)
 
   if (type === 6 || (type === 2 && row.debit && !row.credit) || (type === 31 && row.is_production_item)){ // فاتورة مشتريات او قيد محاسبى مدين او صنف مصنع ياعمل على انه مشتريات
-    console.log(`type : 6`);
     cogs = +row.debit
     started_amount += +row_amount;
     started_value += +cogs;
 
-    console.log(`cost : ${cogs}`);
-    console.log(`cost : ${started_amount}`);
-    console.log(`cost : ${started_value}`);
     
     if (!(type === 31 && row.is_production_item)){
       updatedRecords.push({ id: row.id, cogs});
@@ -33067,12 +33063,7 @@ let cogs = 0;
     started_value -= +cogs;
     updatedRecords.push({ id: row.id, cogs});
   }else if(type === 3 || (type === 31 && !row.is_production_item)){ // فاتورة مبيعات او اصناف مستهلكه فى فاتوره تصنيع
-    console.log(`type === 3`);
-    console.log(+started_value);
-    console.log(+started_amount);
-    console.log(+row_amount);
-    
-    
+ 
     if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
       cogs = 0  
     }else{
@@ -33080,8 +33071,6 @@ let cogs = 0;
     }
     started_amount -= +row_amount;
     started_value -= cogs;
-
-console.log(`cogs = : ${cogs}`);
 
 
     updatedRecords.push({ id: row.id, cogs});
