@@ -1,104 +1,21 @@
-setActiveSidebar("itemsMain_view_ar");  
-pagePermission("view", "items_permission");  // معلق
+//setActiveSidebar("salesMain_view_ar");  
+//pagePermission("view", "sales_invoice_permission");  // معلق
 
-
-async function getItemsGroupData(){
-    
-    const data = await new_fetchData_postAndGet(
-        "getItemsGroupDataForItemsTableView",
-        {},
-        "items_permission","view",
-        15,
-        false,"",
-        true,
-        true,false,
-        false,false,false,
-        false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
-    )
-    return data
-}
-
-
-
-async function getIRevenueAccountsData(){
-    
-    const data = await new_fetchData_postAndGet(
-        "getRevenueAccountsDataForItemsTableView",
-        {},
-        "items_permission","view",
-        15,
-        false,"",
-        true,
-        true,false,
-        false,false,false,
-        false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
-    )
-    return data
-}
-
+/*
 const newBtn = document.querySelector('#newBtn');
-newBtn.onclick = async function (){
-    try {
-        showLoadingIcon(newBtn)
-    sessionStorage.removeItem('obj_items_create_group')
-    sessionStorage.removeItem('obj_items_create_account')
-
-    const itemsGroup = await getItemsGroupData();
-    const revenueAccouns = await getIRevenueAccountsData();
-
-    const obj_items_create_account = {
-        items_options: itemsGroup,
-        revenue_accounts_options: revenueAccouns,
-        nodeId: null,
-    };
-
-
-    if (!itemsGroup || !revenueAccouns){
-        await redirection("items_table_view_ar","fail","حدث خطأ اثناء معالجة البيانات : سيتم اعاده تحميل الصفحه")
-    }
-
-    sessionStorage.setItem("obj_items_create_account", JSON.stringify(obj_items_create_account));
-    window.location.href = "items_add_ar";
-    hideLoadingIcon(newBtn)
-} catch (error) {
-    hideLoadingIcon(newBtn)
-    catch_error(error)
-}
+newBtn.onclick = function (){
+    sessionStorage.removeItem('sales_invoice_update_data')
+    window.location.href = "/sales_invoice_add_ar";
   }
-
-const newBtn_group = document.querySelector(`#newBtn_group`)
-newBtn_group.onclick = async function () {
-    try {
-        showLoadingIcon(newBtn_group)
-        sessionStorage.removeItem('obj_items_create_group')
-        sessionStorage.removeItem('obj_items_create_account')
-
-        const itemsGroup = await getItemsGroupData();
-
-        if (!itemsGroup){
-            await redirection("items_table_view_ar","fail","حدث خطأ اثناء معالجة البيانات : سيتم اعاده تحميل الصفحه")
-        }
-
-        const postedData = {
-            itemsArray: itemsGroup
-        }
-        sessionStorage.setItem("obj_items_create_group", JSON.stringify(postedData));
-        
-        window.location.href = "items_add_ar";
-        hideLoadingIcon(newBtn_group)
-    } catch (error) {
-        hideLoadingIcon(newBtn_group)
-        catch_error(error)
-    }
-}
+*/
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
-// const sub_h2_header = document.querySelector(`#sub_h2_header`);
+const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
-// let startDate = firstDayOfYear;
-// let endDate = lastDayOfYear;
+let startDate = firstDayOfYear;
+let endDate = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
@@ -106,30 +23,17 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-//! reference
+
+//! accountName
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
-//! accountName
-let f2_div = filter_div.querySelector(`#f2_div`);
-let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
-let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
-let f2_select = filter_div.querySelector(`#f2_select`);
-let f2_input = filter_div.querySelector(`#f2_input`);
-
-//! accountGroup
-let f3_div = filter_div.querySelector(`#f3_div`);
-let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
-let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
-let f3_select = filter_div.querySelector(`#f3_select`);
-let f3_input = filter_div.querySelector(`#f3_input`);
-
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [1, 2, 3]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
     const conditions = {};
@@ -163,19 +67,19 @@ function backUp_filter_div_conditions() {
     Object.assign(conditions, {
         is_filter: is_filter,
         is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
-        // sub_h2_header: sub_h2_header.textContent,
+        sub_h2_header: sub_h2_header.textContent,
         back_href: back_href.href,
         back_title: back_href.title
     });
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('items_table_view_Array')) || [];
+    const conditionsArray = JSON.parse(sessionStorage.getItem('financeStatement_view_Array')) || [];
 
     // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('items_table_view_Array', JSON.stringify(conditionsArray));
+    sessionStorage.setItem('financeStatement_view_Array', JSON.stringify(conditionsArray));
 }
 
 
@@ -183,12 +87,12 @@ back_href.onclick = async function (event) {
     event.preventDefault();
    
 
-    const array = JSON.parse(sessionStorage.getItem(`items_table_view_Array`)) || [];
+    const array = JSON.parse(sessionStorage.getItem(`financeStatement_view_Array`)) || [];
 
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `itemsMain_view_ar`;
+            window.location.href = `report_map_ar`;
        
     }else{
 
@@ -202,7 +106,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
     let conditions;
 
     // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("items_table_view_Array")) || [];
+    let conditionsArray = JSON.parse(sessionStorage.getItem("financeStatement_view_Array")) || [];
     
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
@@ -212,7 +116,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         // حذف العناصر من المصفوفة بناءً على الرقم المحدد
         if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
             conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("items_table_view_Array", JSON.stringify(conditionsArray));
+            sessionStorage.setItem("financeStatement_view_Array", JSON.stringify(conditionsArray));
         }
     } else {
         return;
@@ -249,7 +153,7 @@ function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3
         });
 
         // استرجاع الشروط الأخرى
-        // sub_h2_header.textContent = conditions.sub_h2_header;
+        sub_h2_header.textContent = conditions.sub_h2_header;
         is_filter = conditions.is_filter;
         if (conditions.is_filter_div_hidden) {
             hidden_filter_div();
@@ -327,10 +231,7 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 
 
 function deafult_checkbox() {
-    call_default_checkbox('f1',true,false,false)
-    call_default_checkbox('f2',true,true,false)
-    call_default_checkbox('f3',true,false,false)
-
+    call_default_checkbox('f1',true,true,false) // accountName
 }
 
 
@@ -344,12 +245,12 @@ async function filter_icon_cancel_fn() {
                 return;
             }
     
-            // deafult_checkbox();
-            // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+            deafult_checkbox();
+            sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value)}}`;
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('items_table_view_Array');
+            sessionStorage.removeItem('financeStatement_view_Array');
             conditionsArray = []
             
         }
@@ -372,26 +273,30 @@ let array1 = [];
 let slice_array1 = [];
 let filteredData_Array = [];
 
-async function getData_fn() {
-    try {
 
-        // start_date = f0_input_start_date1.value;
-        // end_date = f0_input_end_date1.value;
-       
+let end_date;
+let is_hiding_zero_balances;
+let is_show_account_no = false;
+
+async function getData_fn() {
+    try {       
         //  معلق
         data = await new_fetchData_postAndGet(
-            "/get_All_items_Data_for_table",
-            {},
-            "items_permission","view",
+            "/reports_finance_statement_view",
+            {end_date, is_hiding_zero_balances, is_show_account_no},
+            "pass","pass",
             15,
             false,'',
             false,
             true,content_space,
             false,false,'',
             false,'',
-            false,'itemsMain_view_ar',
+            false,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
+
+        data = data.trial_balance
+        
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -400,13 +305,21 @@ async function getData_fn() {
 
 
 
+
+
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
-        showFirst50RowAtTheBegening();
+        sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value.value)}`;
+        const datechange = is_datexChanged()
+        if (datechange){
+            await getData_fn();
+        }else{
+            showFirst50RowAtTheBegening();
+        }
+
         backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
 
@@ -444,42 +357,17 @@ function showFirst50RowAtTheBegening() {
 
         filteredData_Array = data.filter((row) => {
 
-            const isAccountNoMatch =
-            filterData_number_column_with_showAndHiddenCheckbox(
+            const isAccountNameMatch =
+            filterData_string_column_with_showAndHiddenCheckbox(
                 f1_checkbox,
                 f1_select,
                 f1_input,
-                "account_no",
+                "account_name",
                 row
             );
-
-
-            const isSAccountNameMatch =
-                filterData_string_column_with_showAndHiddenCheckbox(
-                    f2_checkbox,
-                    f2_select,
-                    f2_input,
-                    "account_name",
-                    row
-                );
-
-                const isSAccountGroupNameMatch =
-                filterData_string_column_with_showAndHiddenCheckbox(
-                    f3_checkbox,
-                    f3_select,
-                    f3_input,
-                    "parent_account_name",
-                    row
-                );                
-
-
-
+               
             return (
-
-                isAccountNoMatch &&
-                isSAccountNameMatch &&
-                isSAccountGroupNameMatch
-   
+                isAccountNameMatch
             ); // && otherCondition;
         });
 
@@ -487,14 +375,15 @@ function showFirst50RowAtTheBegening() {
 
         array1 = filteredData_Array.slice();
 
-        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+       // slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+       slice_array1 = array1
         fillTable();
 
     } catch (error) {
         catch_error(error);
     }
 }
-
+/*
 function fillTable() {
     try {
         //  @@ هاااااام جدا
@@ -508,76 +397,84 @@ function fillTable() {
         page_content.style.display = "none";
         showLoadingIcon(content_space);
 
-        let style_button = `width: auto; white-space: nowrap; text-align: center;`;
         let style_id = `display: none;`;
-        let style_accountgroup = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start;`;
-        let style_account_no = `display:${f1_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
-        let style_accountName = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
-        let style_amount = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
-        let style_item_unit = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
-        let style_avg = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
-        let style_value = `display:table-cell; width: 100%; white-space: nowrap; text-align: start;`;
-        
-        total_column1.value = 0;
+        let style_account_name = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
+        let deafult_style_balance = `display: table-cell; width: auto; white-space: nowrap; text-align: start;`; 
+        let style_total_value = deafult_style_total_value;
 
-        let fn = `onclick = "table_view_btn_fn(this)"`;
+        let diffrence = 0
+        total_column1.value = 0;
+        let fn = `onclick = "table_update_btn_fn(this)"`;
+
+
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
         let tableHTML = `<table id="review_table" class="review_table">
                         <thead>
                             <tr>
-                                <th style="${style_button}"></th>
-                                <th style="${style_id}">ID</th>
-                                <th style="${style_id}">IDGroup</th>
-                                <th style="${style_accountgroup}">المجموعه</th>
-                                <th style="${style_account_no}">المعرف</th>
-                                <th style="${style_accountName}">الصنف</th>
-                                <th style="${style_amount}">الرصيد</th>
-                                <th style="${style_item_unit}">الوحده</th>
-                                <th style="${style_avg}">متوسط التكلفه</th>
-                                <th style="${style_value}">إجمالى التكلفه</th>
+                                <th style="${style_account_name}">الحساب</th>
+                                <th style="${style_total_value}">${end_date_input.value}</th>
+
                             </tr>
                         </thead>
                         <tbody>`;
 
+                        
         slice_array1.forEach((row) => {
                 
 
-            // let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
-            let avg = (+row.value / +row.current_amount).toFixed(2);
-            if (!avg || isNaN(avg)){
-                avg = 0
-            }
+ 
+            // let payment_status_class;
             
+            // if(row.payment_status.includes('مدفوع بالكامل')){
+            //     payment_status_class = 'table_green_condition'
+            // }else if(row.payment_status.includes('مدفوع مقدماً')){
+            //     payment_status_class = 'table_blue_condition'
+            // }else if(row.payment_status.includes('مستحق اليوم')){
+            //     payment_status_class = 'table_blue_condition'
+            // }else if(row.payment_status.includes('مستحق منذ')){
+            //     payment_status_class = 'table_red_condition'
+            // }else if(row.payment_status.includes('يستحق بعد')){
+            //     payment_status_class = 'table_orange_condition'
+            // }
 
+
+const current_padding = row.padding + 0.5;
+const font_size = (+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5) ? `1.7rem` : 'var(--Font_normal)';
+const text_decoration = (+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5) ? 'underline' : 'none';
+const font_weight = !row.is_final_account ? 'bold;': 'normal';
+let font_color = !row.is_final_account ? 'darkorange': `var(--Font_Color)`;
+
+const handle_account_name_style = `padding-inline-start:${current_padding}rem; font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration}; color:${font_color};`;
+const handle_balance_style = `font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration};`;
+
+if ((+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5)){
+    style_total_value =`padding-inline-start:${current_padding}rem;` + handle_balance_style + deafult_style_total_value
+}else{
+    style_total_value = `padding-inline-start:${current_padding}rem;` + deafult_style_total_value
+}
+
+
+    if (+row.global_id === 3){
+        diffrence = parseFloat(diffrence.toFixed(2)) + +row.balance || 0
+    }else if(+row.global_id ===4 || +row.global_id === 5){
+        diffrence = parseFloat(diffrence.toFixed(2)) - +row.balance || 0
+    }
+
+    
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
-                        <td style="${style_id}" class="td_id">${row.id}</td>
-                        <td style="${style_id}" class="td_parent_id">${row.parent_id}</td>
-                        <td style="${style_accountgroup}" class="td_parent_account_name">${row.parent_account_name}</td>
-                        <td style="${style_account_no}" class="td_account_no">${row.account_no}</td>
-                        <td style="${style_accountName}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(true,false,true,row.current_amount,style_amount,false,false,'td_amount')}
-                        <td style="${style_item_unit}" class="td_item_unite">${row.item_unite}</td>
-                        ${tdNumber(false,false,true,avg,style_avg,false,false,'td_avg')}
-                        ${tdNumber(true,false,true,row.value,style_value,total_column1,false,'td_value')}            
+                        <td style="${style_account_name};${handle_account_name_style}" class="td_account_name">${row.account_name}</td>
+                        ${tdNumber(true,false,false,row.balance,style_total_value,false,fn,'balance')}
                       </tr>`;
         });
 
+        style_total_value = deafult_style_total_value
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td id="footer_style_button" style="${style_button}"></td>
-                        <td id="footer_style_id1" style="${style_id}"></td>
-                        <td id="footer_td_parent_id" style="${style_id}"></td>
-                        <td id="footer_style_accountgroup" style="${style_accountgroup}"></td>
-                        <td id="footer_style_style_account_no" style="${style_account_no}"></td>
-                        <td id="footer_style_accountName" style="${style_accountName}"></td>
-                        <td id="footer_style_style_amount" style="${style_amount}"></td>
-                        <td id="footer_style_item_unit" style="${style_item_unit}"></td>
-                        <td id="footer_style_avg" style="${style_avg}"></td>
-                        <td id="footer_style_value" style="${style_value}"></td>
+                        <td id="footer_style_account_name" style="${style_account_name}"></td>
+                        <td id="footer_debit_first" style="${style_total_value}; opacity: 0.2;">${diffrence}</td>
                     </tr>
                 </tbody>
             </table>`;
@@ -585,38 +482,130 @@ function fillTable() {
         // هنا إضافة صف الأزرار بعد إغلاق الجدول
         tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row_div">
                     <div id="table_footer_showRows_div" class='flex_H'>
-                        <button class="table_footer_show_data" id="" onclick="ShowAllDataInTable()">الكل</button>
-                        <button class="table_footer_show_data" id="" onclick="showFirst50RowInTable()">50</button>
-                    </div>    
-                    <div id="table_footer_showRows_div" class='flex_H'>
                         <button class="table_footer_show_data" id="copy" onclick="copyTableToClipboard(this,'review_table')">نسخ الى الحافظة</button>
                     </div>
                  </div>`;
 
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
-        setupColumnSorting("review_table");
+        // setupColumnSorting("review_table");
         hideLoadingIcon(content_space);
         page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
-        tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
+      //  tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_value`).textContent = floatToString(true,total_column1.value);
+        // tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
+        // tableContainer.querySelector(`#footer_debit_first`).textContent = floatToString(true,total_column1.value);
 
-        if (array1.length > 0 && array1.length <= 50) {
-            document.querySelector("#table_footer_showRows_div").style.display ="none";
-        }
+        // if (array1.length > 0 && array1.length <= 50) {
+        //     document.querySelector("#table_footer_showRows_div").style.display ="none";
+        // }
 
-        // startDate = f0_input_start_date1.value;
-        // endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
     }
 }
+*/
+
+
+function fillTable() {
+    try {
+        page_content.style.display = "none";
+        showLoadingIcon(content_space);
+
+        // تعريف أنماط الأعمدة
+        let style_id = `display: none;`;
+        let style_account_name = `display: table-cell; width: 100%; padding-inline-start: 0.7rem; white-space: nowrap; text-align: start;`;
+        let deafult_style_balance = `display: table-cell; width: auto; white-space: nowrap; text-align: start;`;
+
+        let diffrence = 0;
+        total_column1.value = 0;
+        let fn = `onclick="table_update_btn_fn(this)"`;
+
+        // استخراج أسماء الأعمدة بشكل ديناميكي من أول صف
+        let columns = slice_array1.length > 0 ? Object.keys(slice_array1[0]) : [];
+
+        // إعداد رأس الجدول
+        let tableHTML = `<table id="review_table" class="review_table">
+                            <thead>
+                                <tr>`;
+
+        columns.forEach(col => {
+            if (col === "item_id") {
+                tableHTML += `<th style="${style_id}">#</th>`;
+            } else if (col === "account_name") {
+                tableHTML += `<th style="${style_account_name}">الصنف</th>`;
+            }else if (col === "total_balance"){
+                tableHTML += `<th style="${deafult_style_balance}">الرصيد</th>`;
+            } else {
+                tableHTML += `<th style="${deafult_style_balance}">${col}</th>`;
+            }
+        });
+
+        tableHTML += `</tr></thead><tbody>`;
+
+        // إنشاء الصفوف بناءً على البيانات
+        slice_array1.forEach((row) => {
+            tableHTML += `<tr>`;
+
+            columns.forEach(col => {
+                if (col === "item_id"){
+                    tableHTML += `<td style="${style_id}">${row[col]}</td>`;
+                }else if (col === "account_name"){
+                    tableHTML += `<td style="${style_account_name}">${row[col]}</td>`; 
+                }else if (col === "total_balance"){
+                    tableHTML += tdNumber(true,true,true,row[col],deafult_style_balance,false,false)                
+                }else{
+                    tableHTML += tdNumber(true,false,true,row[col],deafult_style_balance,false,false)                
+                }
+            });
+
+            tableHTML += `</tr>`;
+        });
+
+        // إضافة صف الإجمالي في التذييل
+        tableHTML += `</tbody><tfoot>
+                        <tr class="table_totals_row">`;
+
+        columns.forEach(col => {
+            if (col === "item_id"){
+                tableHTML += `<td style="${style_id}"></td>`;
+            }else if (col === "account_name"){
+                tableHTML += `<td style="${style_account_name}">${slice_array1.length}</td>`; 
+            }else if (col === "total_balance"){
+                tableHTML += `<td style="${deafult_style_balance}"></td>`;
+            }else{
+                tableHTML += `<td style="${deafult_style_balance}"></td>`;
+            }
+
+ 
+
+            // let value = (col === "account_name") ? "" : (col === "balance") ? diffrence : "";
+            // tableHTML += `<td style="${cellStyle}">${value}</td>`;
+        });
+
+        tableHTML += `</tr></tfoot></table>`;
+        tableHTML += `<div id="table_fotter_buttons_row" class="table_fotter_buttons_row_div">
+        <div id="table_footer_showRows_div" class='flex_H'>
+            <button class="table_footer_show_data" id="copy" onclick="copyTableToClipboard(this,'review_table')">نسخ الى الحافظة</button>
+        </div>
+     </div>`;
+
+        // تحديث الصفحة وعرض الجدول
+        tableContainer.innerHTML = tableHTML;
+        hideLoadingIcon(content_space);
+        page_content.style.display = "flex";
+
+    } catch (error) {
+        hideLoadingIcon(content_space);
+        catch_error(error);
+    }
+}
+
 
 function performSearch() {
     try {
@@ -626,19 +615,17 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const accountNo_Match = performSearch_Row(f1_checkbox,"account_no",searchValue,row);
-            const accountparent_Match = performSearch_Row(f3_checkbox,"parent_account_name",searchValue,row);
-            const AccountName_Match = performSearch_Row(f3_checkbox,"account_name",searchValue,row);
+            const accountName_Match = performSearch_Row(f1_checkbox,"account_name",searchValue,row);
+
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                accountNo_Match ||
-                accountparent_Match ||
-                AccountName_Match
+                accountName_Match
             );
         });
 
-        slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+     //   slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+        slice_array1 = array1; // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
         fillTable();
     } catch (error) {
         catch_error;
@@ -674,10 +661,12 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_view_btn_fn(viewBtn) {
+
+/*
+async function table_update_btn_fn(updateBtn) {
     try {
-    showLoadingIcon(viewBtn)
-    const permission = await btn_permission("items_permission", "view");
+    showLoadingIcon(updateBtn)
+    const permission = await btn_permission("sales_invoice_permission", "view");
 
     if (!permission) {
         // if false
@@ -686,64 +675,34 @@ async function table_view_btn_fn(viewBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row = viewBtn.closest("tr");
-    const items_table_view_data = {
+    const row = updateBtn.closest("tr");
+    const sales_invoice_update_data = {
         x: row.querySelector(`.td_id`).textContent,
-        // qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        // order_id: row.querySelector(`.td_order_id`).textContent,
+        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
+        order_id: row.querySelector(`.td_order_id`).textContent,
     };
 
     
-//============================================================
-
-
-
-
-    const revenue_accounts_options = await get_revenue_accounts_fn()
-                                    
-
-    const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
-    const obj_items_update_account = {
-        h2_header: node.text, // account_name
-        account_no_input: node.data.account_no ?? '',  // account_no
-        account_name_input: node.text, // account_name
-        account_id_hidden: node.id, // account_id
-        item_unite_input: node.data.item_unite, // item_unite
-        sales_price: node.data.item_sales_price, // sales_price
-        purchase_price: node.data.item_purshas_price, // purshases_price
-        reorder_point: node.data.item_amount_reorder_point, // reorder_point
-        revenue_accounts_options: revenue_accounts_options, // !x
-        nodeId: node.id,  // account_id
-        parentNode : node.parent, // parent_id
-        items_options: items_options,  //!x
-        item_revenue_account_id: node.data.item_revenue_account, // revenue accout
-    };
-    clear_items_sessionsStorage()
-    sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
-    window.location.href = `items_update_ar`;
-
-
-//=======================================================
-
-
-    sessionStorage.setItem('items_table_view_data', JSON.stringify(items_table_view_data));                            
-    window.location.href = `items_update_ar`;
-    hideLoadingIcon(viewBtn)
+    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_invoice_update_data));                            
+    window.location.href = `sales_invoice_update_ar`;
+    hideLoadingIcon(updateBtn)
 } catch (error) {
-    hideLoadingIcon(viewBtn)
+    hideLoadingIcon(updateBtn)
     catch_error(error)
 }
 }
+*/
 
+/*
 function CheckUrlParams_salesInvoice_update_ar() {
     try {
         const urlData = getURLData(
             "data",
-            "itemsMain_view_ar",
+            "sales_invoice_view_ar",
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
 
-        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") { // معلق
+        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
             return true;
         }
 
@@ -763,26 +722,24 @@ function CheckUrlParams_salesInvoice_update_ar() {
         return false;
     }
 }
+*/
+
 
 
 document.addEventListener("DOMContentLoaded", async function () {
-    showRedirectionReason();
 
-    // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+    // show_dialogx()
     
-    // const result2 = CheckUrlParams_salesInvoice_update_ar();
-    // if (!result2) {
-    //     return;
-    // }
-
-    await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`items_table_view_Array`);
-
-    if (!conditionsArray){
-     
-        backUp_filter_div_conditions();
+    showRedirectionReason();
+/*    
+  
+    const result2 = CheckUrlParams_salesInvoice_update_ar();
+    if (!result2) {
+        return;
     }
 
+
+*/
 });
 
 window.addEventListener("beforeprint", function () {

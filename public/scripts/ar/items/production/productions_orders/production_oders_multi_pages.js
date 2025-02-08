@@ -8,7 +8,9 @@ const table = document.querySelector(`#myTable`);
 let tableBody = table.querySelector(`tbody`);
 let tableTfoot = table.querySelector(`tfoot`);
 
+
 let style_account = `display: table-cell; min-width: 33rem; width: auto; white-space: nowrap; text-align: start`;
+let style_roduction_value = `display: none; width: auto; white-space: nowrap; text-align: start`;
 
 
 function build_table(){
@@ -19,6 +21,7 @@ function build_table(){
                     <th style="width: auto;">#</th>
                     <th style="width: auto;">النوع</th>
                     <th style="${style_account};">الحساب</th>
+                    <th style="${style_roduction_value}" class="style_roduction_value">التكلفة</th>
                     <th style="width: auto;" class="notViewTd"></th>
                     <th style="width: 100%;"></th>
                   </tr>
@@ -32,6 +35,7 @@ function build_table(){
       <td id="sumColumn1"></td>
       <td id="footer_total_recount"></td>
       <td id="sumColumn2" style="${style_account};"></td>
+      <td id="footer_style_roduction_value" style="${style_roduction_value}; font-weight: bold;" class="style_roduction_value span_Total_In_Table"></td>
       <td id="sumColumn6" class="notViewTd"></td>
       <td style="width: 100%;"></td>
   </tr>
@@ -50,6 +54,7 @@ function build_table(){
       </div>
     </td>
   
+    <td class="style_roduction_value"></td>
     <td class="notViewTd"></td>
     <td style="width: 100%;"></td>
   
@@ -113,7 +118,7 @@ function build_table(){
                       </div>
                     </div>
                   </td>
-  
+                  <td style="${style_roduction_value}" class="style_roduction_value span_Total_In_Table td_production_value"></td>
                   <td style="width: auto;" class="td_lastTd notViewTd">
                     <div class="table_buttons_div">
                       <button onclick="deleteRow(this)" title="حذف الصف"><i class="fa-solid fa-xmark"></i></button>
@@ -393,6 +398,7 @@ function fillBodyTable() {
                     </div>
                   </div>
                 </td>
+                  <td style="${style_roduction_value}" class="style_roduction_value span_Total_In_Table td_production_value">${row.production_value}</td>
 
                 <td style="width: auto;" class="td_lastTd notViewTd">
                   <div class="table_buttons_div">
@@ -420,6 +426,7 @@ function handleCurrentTr(row,tr){
       tr.querySelector(`.td_account .dropdown_select_input`).textContent = row.account_name;
       tr.querySelector(`.td_account .Xitem_amount`).textContent = row.value ? row.value : "";
       tr.querySelector(`.td_account .class_unite`).textContent = row.item_unite;
+      
       
 
   const span = tr.querySelector(`.td_account .account_type_name`);

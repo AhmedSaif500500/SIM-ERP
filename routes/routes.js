@@ -1707,6 +1707,19 @@ router.get('/cash_transfer_update_ar', (req, res) => {
                 res.redirect('/login?reason=0');
             }
         });
+
+
+        router.get('/stock_location_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'stock' , 'stock_location', 'stock_location_view_ar.html'));
+                }else{
+                    res.redirect('/report_map_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
         //#endregion end trial balance
     //#endregion end statements reports
 

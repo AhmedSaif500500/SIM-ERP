@@ -131,8 +131,7 @@ function build_table(){
                          <option value="8">خدمة</option>
                       </select>
                   </td>
-                    
-                  
+                     
                   <td style="width: 100%; height: var(--input_height);" class="td-itemId">
                   <!-- dropdown -->
                     <div class="dropdown_container_input_table" id="">

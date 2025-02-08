@@ -30,21 +30,23 @@ const accounts_view_table_btn = document.querySelector(`#accounts_view_table_btn
 
 
 
-
-accounts_view_tree_btn.onclick =  async function () {
-    try {
-        showLoadingIcon(content_space)
-        await fetchTreeData();
-        table_div.style.display = 'none'
-        tree_2div_container.style.display = 'flex'
-        hideLoadingIcon(content_space)
-    } catch (error) {
-        hideLoadingIcon(content_space)
-        catch_error(error)
-        table_div.style.display = 'none'
-        tree_2div_container.style.display = 'none'
+if (accounts_view_tree_btn){
+    accounts_view_tree_btn.onclick =  async function () {
+        try {
+            showLoadingIcon(content_space)
+            await fetchTreeData();
+            table_div.style.display = 'none'
+            tree_2div_container.style.display = 'flex'
+            hideLoadingIcon(content_space)
+        } catch (error) {
+            hideLoadingIcon(content_space)
+            catch_error(error)
+            table_div.style.display = 'none'
+            tree_2div_container.style.display = 'none'
+        }
     }
 }
+
 
 
 const tree_add_account = document.querySelector(`#tree_add_account`);
@@ -88,7 +90,7 @@ const is_accumulated_account = [];
 
 
 
-let filterd_revenue_options_array = [];
+//let filterd_revenue_options_array = [];
 async function get_revenue_accounts_fn() {
     try {
         const data = await fetchData_postAndGet(
@@ -105,16 +107,16 @@ async function get_revenue_accounts_fn() {
         )
         
 
-        for (const row of data) {
-            const optionObject = {
-                id: row.id,
-                account_name: row.account_name,
-                global_id : row.global_id 
-            };
-            filterd_revenue_options_array.push(optionObject);
-        }
+        // for (const row of data) {
+        //     const optionObject = {
+        //         id: row.id,
+        //         account_name: row.account_name,
+        //         global_id : row.global_id 
+        //     };
+        //     filterd_revenue_options_array.push(optionObject);
+        // }
         
-        return filterd_revenue_options_array;
+        return data;
     } catch (error) {
         catch_error(error)
     }
@@ -209,7 +211,6 @@ async function fetchTreeData() {
                                         parentNode : node.parent,
                                         items_options: items_options,
                                         item_revenue_account_id: node.data.item_revenue_account,
-                                        // revenue_accounts_options: revenue_accounts_options,
                                     };
                                     clear_items_sessionsStorage()
                                     sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
@@ -489,115 +490,123 @@ async function getParentNodesForDragAndDrop(currentNodeId) {
 }
 
 // تغيير قاعده البيانات بعد السحب والافلات
-$(tree).on('move_node.jstree', async function (e, data) {
+ const tree = document.querySelector(`#tree`)
 
-    try {
-        if (!data || !data.node || !data.node.id || !data.parent) {
-            $(tree).jstree(true).refresh();
-            return; // التأكد من وجود بيانات صالحة
-        }
-        // بيانات العقدة التي تم نقلها (العقدة الأصلية)
+ if (tree){
+    $(tree).on('move_node.jstree', async function (e, data) {
 
-        const nodeData = data.node.data;
-        const currentAccountId = data.node.id
-
-
-        // بيانات العقدة الجديدة التي تمت إضافتها (العقدة الوجهة)
-        const newParentNodeId = data.parent;
-        const newParentNodeData = $(tree).jstree().get_node(newParentNodeId);
-        const newParentId = newParentNodeData.id
-
-
-
-
-
-        const array1 = await getParentNodesForDragAndDrop(currentAccountId);
-
-        const allChildIds = getSubChildIds_By_JsTree(tree, currentAccountId);
-
-        if (allChildIds.includes(newParentId)) {
-            showAlert('warning', 'لا يمكن نقل الصنف الى المجموعه المحدده')
-            $(tree).jstree(true).refresh();
-            return
-        }
-
-
-
-
-        const isNewParentInArray = array1.some(item => item.account_id === newParentId); // ta2ked en el newparentId mawgod damn el array
-
-
-        if (isNewParentInArray) {
-            const permission = await btn_permission('items_permission', 'update');
-            if (!permission) {
-                showAlert('warning', 'ليس لديك الصلاحية لاتمام هذه العملة')
+        try {
+            if (!data || !data.node || !data.node.id || !data.parent) {
                 $(tree).jstree(true).refresh();
-                return;
-            };
-
-            const controller = new AbortController();
-            const signal = controller.signal;
-
-            await showDialog('', 'هل تريد حفظ التعديل على دليل الصنفات ؟', '');
-            if (!dialogAnswer) {
+                return; // التأكد من وجود بيانات صالحة
+            }
+            // بيانات العقدة التي تم نقلها (العقدة الأصلية)
+    
+            const nodeData = data.node.data;
+            const currentAccountId = data.node.id
+    
+    
+            // بيانات العقدة الجديدة التي تمت إضافتها (العقدة الوجهة)
+            const newParentNodeId = data.parent;
+            const newParentNodeData = $(tree).jstree().get_node(newParentNodeId);
+            const newParentId = newParentNodeData.id
+    
+    
+    
+    
+    
+            const array1 = await getParentNodesForDragAndDrop(currentAccountId);
+    
+            const allChildIds = getSubChildIds_By_JsTree(tree, currentAccountId);
+    
+            if (allChildIds.includes(newParentId)) {
+                showAlert('warning', 'لا يمكن نقل الصنف الى المجموعه المحدده')
                 $(tree).jstree(true).refresh();
-                return;
+                return
             }
-
-            const timeout = setTimeout(() => {
-                controller.abort();
-            }, 15000);
-
-
-
-            const posted_elements = {
-                currentAccountId,
-                newParentId,
-            }
-            const response = await fetch('/api/items_tree_drag_and_drop', {
-                method: 'post',
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(posted_elements),
-                signal,
-            });
-
-            clearTimeout(timeout);
-            if (response.ok) {
-                const data = await response.json();
-                closeDialog();
-                if (data.success) {
-                    body_content.style.pointerEvents = 'none';
-                    redirection('items_view_ar', 'success', data.message_ar);
+    
+    
+    
+    
+            const isNewParentInArray = array1.some(item => item.account_id === newParentId); // ta2ked en el newparentId mawgod damn el array
+    
+    
+            if (isNewParentInArray) {
+                const permission = await btn_permission('items_permission', 'update');
+                if (!permission) {
+                    showAlert('warning', 'ليس لديك الصلاحية لاتمام هذه العملة')
+                    $(tree).jstree(true).refresh();
+                    return;
+                };
+    
+                const controller = new AbortController();
+                const signal = controller.signal;
+    
+                await showDialog('', 'هل تريد حفظ التعديل على دليل الصنفات ؟', '');
+                if (!dialogAnswer) {
+                    $(tree).jstree(true).refresh();
+                    return;
+                }
+    
+                const timeout = setTimeout(() => {
+                    controller.abort();
+                }, 15000);
+    
+    
+    
+                const posted_elements = {
+                    currentAccountId,
+                    newParentId,
+                }
+                console.log(currentAccountId);
+                console.log(newParentId);
+                
+                const response = await fetch('/api/items_tree_drag_and_drop', {
+                    method: 'post',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(posted_elements),
+                    signal,
+                });
+    
+                clearTimeout(timeout);
+                if (response.ok) {
+                    const data = await response.json();
+                    closeDialog();
+                    if (data.success) {
+                        body_content.style.pointerEvents = 'none';
+                        redirection('items_view_ar', 'success', data.message_ar);
+                    } else {
+                        $(tree).jstree(true).refresh();
+                        body_content.style.pointerEvents = 'auto';
+                        showAlert('fail', data.message_ar);
+    
+                    }
                 } else {
                     $(tree).jstree(true).refresh();
-                    body_content.style.pointerEvents = 'auto';
-                    showAlert('fail', data.message_ar);
-
+                    closeDialog();
+                    showAlert('fail', `Request failed with status code: ${response.status}`);
                 }
+    
+    
+    
             } else {
+                showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الصنف المحدد`)
                 $(tree).jstree(true).refresh();
-                closeDialog();
-                showAlert('fail', `Request failed with status code: ${response.status}`);
+    
             }
-
-
-
-        } else {
-            showAlert(`warning`, `لا يمكن اضافة مجموعه فرعيه ضمن الصنف المحدد`)
+    
+    
+        } catch (error) {
             $(tree).jstree(true).refresh();
-
+            closeDialog();
+            showAlert('fail', 'حدث خطأ اثناء معالجة البيانات');
+            catch_error(error);
         }
+    });
+ }
 
-
-    } catch (error) {
-        $(tree).jstree(true).refresh();
-        closeDialog();
-        showAlert('fail', 'حدث خطأ اثناء معالجة البيانات');
-        catch_error(error);
-    }
-});
 
 
 noButtons.forEach(noButton => {
@@ -620,23 +629,30 @@ noButtons.forEach(noButton => {
 });
 
 
-collapse_tree.addEventListener('click', async function () {
-    $(tree).jstree('close_all')
-})
+if (collapse_tree){
+    collapse_tree.addEventListener('click', async function () {
+        $(tree).jstree('close_all')
+    })
+    
+}
+
 
 
 
 //#endregion end tree
 
+if (accounts_view_table_btn){
+    accounts_view_table_btn.addEventListener('click', function () {
+        try {
+            sessionStorage.removeItem('items_table_view_Array')
+            window.location.href = "/items_table_view_ar";
+        } catch (error) {
+            catch_error(error)
+        }
+    })
+    
+}
 
-accounts_view_table_btn.addEventListener('click', function () {
-    try {
-        sessionStorage.removeItem('items_table_view_Array')
-        window.location.href = "/items_table_view_ar";
-    } catch (error) {
-        catch_error(error)
-    }
-})
 
 
 

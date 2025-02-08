@@ -525,7 +525,6 @@ app.get("/Logout", async (req, res) => {
 //#region Templets
 //! Permission function
 async function permissions(req, secendary_permission, perm_type) {
-  try {
     const owner = req.session.is_owner;
     if (owner) {
       return true;
@@ -579,10 +578,7 @@ async function permissions(req, secendary_permission, perm_type) {
           }
       }
     }
-  } catch (error) {
-    console.error("Error permission Templet:", error);
-    res.status(500).send("Error:");
-  }
+
 }
 
 // get new id ( table foreign Key)
@@ -8560,10 +8556,12 @@ app.post("/api/update-group_items", async (req, res) => {
 //#endregion
 
 //#region drag and drop
+
 app.post("/api/items_tree_drag_and_drop", async (req, res) => {
   try {
  
-    const { currentAccountId, newParentId } = req.body; // جلب معلومات العقدة المراد تعديلها
+    // const { currentAccountId, newParentId } = req.body;
+    const posted_elements = req.body;
 
     const hasPermission = await permissions(req, "items_permission", "update");
     if (!hasPermission) {
@@ -8575,18 +8573,16 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
     }
 
     // التحقق من حقن SQL
-    const hasBadSymbols = sql_anti_injection([
-      currentAccountId,
-      newParentId
-      // يمكنك إضافة المزيد من القيم هنا إذا لزم الأمر
-    ]);
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
     if (hasBadSymbols) {
       return res.json({
         success: false,
-        message_ar: sql_injection_message_ar,
-        message_en: sql_injection_message_en,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
+
 
   
     turn_EmptyValues_TO_null(posted_elements);
@@ -8602,8 +8598,8 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
 
   const result = await db.oneOrNone(query, [
     req.session.company_id,
-    currentAccountId,
-    newParentId
+    posted_elements.currentAccountId,
+    posted_elements.newParentId
   ]);
 
 
@@ -8668,7 +8664,7 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
           SET parent_id = $1
           WHERE account_id = $2;
       `;
-    await db.query(updateQuery, [newParentId, currentAccountId]);
+    await db.query(updateQuery, [posted_elements.newParentId, posted_elements.currentAccountId]);
 
     // إرسال استجابة نجاح إلى العميل
     return res.json({
@@ -30240,7 +30236,11 @@ let query6 = `select
 	case
 		when ah.account_type_id = 1 then ah.account_name
 		else ah2.account_name
-	end as account_name	
+	end as account_name,	
+	case
+		when ah.account_type_id = 1 then (coalesce(tb.credit,0) - coalesce(tb.debit,0))
+		else coalesce(tb.cogs,0)
+	end as production_value
 from
 	transaction_body tb
 inner join transaction_header th on th.id = tb.transaction_header_id
@@ -32618,7 +32618,229 @@ ORDER BY
     //#endregion end trial balace
   //#endregion end statements
 
+
+  //#region stock
+
+    app.post("/get_location_data", async (req, res) => {
+      try {
+        //! Permission معلق
+        await permissions(req, "purshases_returns_permission", "add"); // معلق
+        if (!permissions) {
+          return;
+        }
+    
+        
+        const posted_elements = req.body;
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    
+        const transaction_type = 7
+    
+    
+        let query1 = `
+         -- مواقع المخزون
+    select
+      id as id,
+      account_name as account_name
+    from
+      accounts_header 
+    WHERE company_id = $1 
+      AND account_type_id = 7
+      AND is_inactive IS NULL
+    order by
+        id ASC
+      ;
+    `;
+    let params1 = [req.session.company_id]
+
+
+    
+    await db.tx(async (tx) => {
+    
+      const itemslocationsArray = await tx.any(query1, params1);
+      // const salesmanArray = await tx.any(query2, params2);
+    
+      const postedData = { itemslocationsArray};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_location_data", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: error.message || deafultErrorMessage, });
+      }
+    });
+
+
+    app.post("/get_stock_report", async (req, res) => {
+      try {
+        //! Permission معلق
+        await permissions(req, "purshases_returns_permission", "add"); // معلق
+        if (!permissions) {
+          return;
+        }
+    
+        
+        const posted_elements = req.body;
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+        const InValidDateFormat = isInValidDateFormat([posted_elements.end_date]);
+        if (InValidDateFormat) {
+          return res.status(400).json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+       
+
+        const locations_array = posted_elements.locations_array || [];
+    
+        if (locations_array.length === 0 ){
+          return res.json({
+            success: false,
+            message_ar: 'رجاء تحديد موقع مخزون او اكثر بشكل صحيح'
+          });
+        }
+        
+        // 🔹 جلب مواقع المخزون
+        let query1 = `
+        SELECT id, account_name
+        FROM accounts_header 
+        WHERE company_id = $1 
+          AND account_type_id = 7
+          AND is_inactive IS NULL;
+        `;
+        
+        const rows = await db.any(query1, [req.session.company_id]) || [];
+        
+        if (rows.length === 0) {
+          return res.json({
+            success: false,
+            message_ar: 'لا يوجد مواقع مخزون مُعرفه'
+          });
+        }
+        
+        let checkedAll = posted_elements.checkedAll
+        if (!checkedAll){
+          if (rows.length === posted_elements.locations_array.length){
+            checkedAll = true
+          }else{
+            checkedAll = false
+          }
+        }
+        // 🔹 التحقق من المواقع المرسلة
+        const validIds = new Set(rows.map(row => +row.id));
+        const allExist = locations_array.every(loc => validIds.has(loc));
+        
+        if (!allExist) {
+          return res.json({
+            success: false,
+            message_ar: "بعض المواقع المحددة غير موجودة ضمن مواقع المخزون المعرفة."
+          });
+        }
+        
+// 🔹 تحسين البحث باستخدام Map
+const rowsMap = new Map(rows.map(r => [+r.id, r.account_name]));
+
+let columns_st = locations_array.map(loc => {
+  const loc_name = rowsMap.get(+loc);
+  return `,COALESCE(SUM(CASE WHEN tb.item_location_id_tb = ${loc} THEN tb.item_amount END), 0) AS "${loc_name}"`;
+}).join('');
+
+let report_query = `
+SELECT 
+    tb.item_id, 
+    ah.account_name
+    ${columns_st}
+    ,COALESCE(SUM(tb.item_amount), 0) AS total_balance
+FROM transaction_body tb
+LEFT JOIN accounts_header ah ON ah.id = tb.item_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE 
+    tb.item_location_id_tb IN (${locations_array.join(',')}) 
+    AND ah.company_id = $1
+    AND th.is_deleted IS NULL
+    AND th.datex <= $2
+GROUP BY tb.item_id, ah.account_name
+${posted_elements.is_hiding_zero_balances ? `HAVING (${locations_array.map(loc => `COALESCE(SUM(CASE WHEN tb.item_location_id_tb = ${loc} THEN tb.item_amount END), 0)`).join(' + ')}) <> 0` : ''}
+ORDER BY tb.item_id;
+`;
+
+await db.tx(async (tx) => {
+  let report = await db.any(report_query, [req.session.company_id, posted_elements.end_date]);
+
+  // 🔹 إزالة total_balance من النتيجة إذا كان checkedAll === false
+  if (!checkedAll) {
+    report = report.map(row => {
+      const { total_balance, ...rest } = row; // إزالة `total_balance`
+      return rest;
+    });
+  }
+
+  const postedData = { report };
+  res.json(postedData);
+});
+
+await last_activity(req);
+
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_location_data", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: error.message || deafultErrorMessage, });
+      }
+    });
+
+    /*
+SELECT 
+    tb.item_id, 
+    ah.account_name, 
+    COALESCE(SUM(CASE WHEN tb.item_location_id_tb = 23 THEN tb.item_amount END), 0) AS location_23, 
+    COALESCE(SUM(CASE WHEN tb.item_location_id_tb = 24 THEN tb.item_amount END), 0) AS location_24, 
+    COALESCE(SUM(tb.item_amount), 0) AS total_balance
+FROM transaction_body tb
+LEFT JOIN accounts_header ah ON ah.id = tb.item_id
+LEFT JOIN transaction_header th ON th.id = tb.id
+WHERE 
+    tb.item_location_id_tb IN (23, 24)  -- فقط المواقع المطلوبة
+    AND ah.company_id = 1  -- التأكد من فلترة الشركة
+    AND th.is_deleted IS NULL
+GROUP BY tb.item_id, ah.account_name
+ORDER BY tb.item_id;
+
+    */
+  //#endregion stock
 //#endregion end reports
+
 
 
 
@@ -32674,6 +32896,9 @@ ORDER BY
 
   const result = await tx.any(query, params) || [];
   
+  console.table(result);
+  
+
   let check = true; // اعتبار أن الرصيد جيد بشكل افتراضي
 
   if (result.length > 0) {

@@ -168,9 +168,14 @@ try {
   showHeaderData(data_accounts.headerData_array)
   build_table()
   fillBodyTable()
+  document.querySelector(`#footer_style_roduction_value`).textContent = production_orders_update_data ? production_orders_update_data.val : ''
 
   viewMode(true,'production_orders_permission','view')
   handle_fn_options()
+  const cost_columns = document.querySelectorAll(`.style_roduction_value`)  
+  for (const column of cost_columns){
+    column.style.display = 'table-cell'
+  }
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
   hideLoadingIcon(content_space)         
 } catch (error) {
@@ -179,10 +184,18 @@ try {
 }
 })
 
+function fn_option_update_btn(){
+  viewMode(false,'production_orders_permission','update')
+  const cost_columns = document.querySelectorAll(`.style_roduction_value`)  
+  for (const column of cost_columns){
+    column.style.display = 'none'
+  }
+}
+
 
 function handle_fn_options(){  
   const newDivs = `
-    <div id="fn_option_update_btn" onclick="viewMode(false,'production_orders_permission','update')">وضع التعديل</div>
+    <div id="fn_option_update_btn" onclick="fn_option_update_btn()">وضع التعديل</div>
     <div id="fn_option_view_btn" onclick="viewMode(true,'production_orders_permission','view')" style="display: none;">وضع العرض</div>
   `;
   fn_options_div.insertAdjacentHTML('afterbegin', newDivs);

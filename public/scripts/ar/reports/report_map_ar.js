@@ -9,6 +9,11 @@ const trial_balance = document.querySelector(`#trial_balance`)
 const finance_statement = document.querySelector(`#finance_statement`)
 const income_statement_view_ar = document.querySelector(`#income_statement_view_ar`)
 
+//! stock
+const stock_div = document.querySelector(`#stock_div`)
+const stock_location_report_btn = document.querySelector(`#stock_location_report_btn`)
+
+
 //! sales_div
 
 
@@ -18,6 +23,7 @@ function showData(){
   finance_statement.style.display = style= module_display("sales_order_permission") // معلق
   income_statement_view_ar.style.display = style= module_display("sales_order_permission") // معلق
   account_statment.style.display = style= module_display("sales_order_permission") // معلق
+  stock_location_report_btn.style.display = style= module_display("stock_location_report_btn") // معلق
 
    
   account_statment.onclick = function(){
@@ -40,6 +46,12 @@ function showData(){
     window.location.href = "/income_statement_view_ar";
   }
   
+  stock_location_report_btn.onclick = function(){
+    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    window.location.href = "/stock_location_view_ar";
+  }
+  
+
   page_content.style.display = 'flex'
 }
 
