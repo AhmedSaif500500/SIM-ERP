@@ -2066,9 +2066,12 @@ function check_parse(inputid, type) {
 //#endregion end - check input type
 
 //#region  loading
-function showLoadingIcon(element) {
+function showLoadingIcon(element,is_table_btn, str_text_btn) {
   try {
 
+    if (is_table_btn === true){
+      element.textContent  = ''
+    }
     if (element === content_space){      
       if (page_content) {
 
@@ -2102,7 +2105,7 @@ nfs el amr fe el hideen loading
 */
 
 
-function hideLoadingIcon(element) {
+function hideLoadingIcon(element,is_table_btn, str_text_btn) {
   try {
     if (!element) {
       return;
@@ -2115,6 +2118,10 @@ function hideLoadingIcon(element) {
       content_space.classList.remove('loading_icon_content_space');
     }else{
       element.classList.remove('loading_icon_btns');
+    }
+
+    if (is_table_btn === true){
+      element.textContent  = str_text_btn
     }
 
     // element.style.pointerEvents = 'auto'; // تعطيل التفاعل مع العنصر

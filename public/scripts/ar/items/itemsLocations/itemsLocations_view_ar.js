@@ -65,7 +65,7 @@ back_href.onclick = async function (event) {
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `notes_ar`;
+            window.location.href = `itemsMain_view_ar`;
        
     }else{
 

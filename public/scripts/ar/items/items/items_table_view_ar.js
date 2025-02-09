@@ -676,7 +676,8 @@ searchInput.addEventListener("keydown", (event) => {
 
 async function table_view_btn_fn(viewBtn) {
     try {
-    showLoadingIcon(viewBtn)
+    showLoadingIcon(viewBtn,true)
+
     const permission = await btn_permission("items_permission", "view");
 
     if (!permission) {
@@ -687,8 +688,9 @@ async function table_view_btn_fn(viewBtn) {
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = viewBtn.closest("tr");
+    const x = row.querySelector(`.td_id`).textContent 
     const items_table_view_data = {
-        x: row.querySelector(`.td_id`).textContent,
+        x: x,
         // qutation_id: row.querySelector(`.td_qutation_id`).textContent,
         // order_id: row.querySelector(`.td_order_id`).textContent,
     };
@@ -696,29 +698,40 @@ async function table_view_btn_fn(viewBtn) {
     
 //============================================================
 
+const d = await new_fetchData_postAndGet(
+    "/get_data_for_items_table_view_btn",
+    {x},
+    "items_permission","view",
+    50,
+    false,"",
+    true,
+    false,false,
+    false,false,false,
+    false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
+)
 
-
-
-    const revenue_accounts_options = await get_revenue_accounts_fn()
+    if (!d || !d.revenueArray || !d.groupsArray){
+        showAlert('fail',)
+        redirection('items_table_view_ar','fail','حدث خطأ اثناء معالجة البيانات : Ftvbf01')
+        return;
+    }
                                     
-
-    const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
     const obj_items_update_account = {
-        h2_header: node.text, // account_name
-        account_no_input: node.data.account_no ?? '',  // account_no
-        account_name_input: node.text, // account_name
-        account_id_hidden: node.id, // account_id
-        item_unite_input: node.data.item_unite, // item_unite
-        sales_price: node.data.item_sales_price, // sales_price
-        purchase_price: node.data.item_purshas_price, // purshases_price
-        reorder_point: node.data.item_amount_reorder_point, // reorder_point
-        revenue_accounts_options: revenue_accounts_options, // !x
-        nodeId: node.id,  // account_id
-        parentNode : node.parent, // parent_id
-        items_options: items_options,  //!x
-        item_revenue_account_id: node.data.item_revenue_account, // revenue accout
+        h2_header: d.item_data.account_name, // account_name
+        account_no_input: d.item_data.account_no ?? '',  // account_no
+        account_name_input: d.item_data.account_name, // account_name
+        account_id_hidden: d.item_data.id, // account_id
+        item_unite_input: d.item_data.item_unite, // item_unite
+        sales_price: d.item_data.item_sales_price, // sales_price
+        purchase_price: d.item_data.item_purshas_price, // purshases_price
+        reorder_point: d.item_data.item_amount_reorder_point, // reorder_point
+        revenue_accounts_options: d.revenueArray, // !x
+        nodeId: d.item_data.id,  // account_id
+        parentNode : d.item_data.parent_id, // parent_id
+        items_options: d.groupsArray,  //!x
+        item_revenue_account_id: d.item_data.item_revenue_account, // revenue accout
     };
-    clear_items_sessionsStorage()
+
     sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
     window.location.href = `items_update_ar`;
 
@@ -726,11 +739,9 @@ async function table_view_btn_fn(viewBtn) {
 //=======================================================
 
 
-    sessionStorage.setItem('items_table_view_data', JSON.stringify(items_table_view_data));                            
-    window.location.href = `items_update_ar`;
-    hideLoadingIcon(viewBtn)
+    hideLoadingIcon(viewBtn,true,'عرض')
 } catch (error) {
-    hideLoadingIcon(viewBtn)
+    hideLoadingIcon(viewBtn,true,'عرض')
     catch_error(error)
 }
 }

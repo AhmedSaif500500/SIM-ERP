@@ -329,6 +329,20 @@ const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
 // إعداد limiter فقط لتسجيل الدخول
 const loginLimiter = rateLimit({
   windowMs: 1000 * 60 * 1, // دقيقة واحدة
+  max: 3, // الحد الأقصى لمحاولات الدخول
+  message: 'Too many login attempts from this IP, please try again after 1 minute',
+  skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
+  handler: (req, res, next) => {
+    // الآن يمكننا إرسال الرسالة الخاصة بنا في حالة تجاوز الحد
+    res.status(429).json({
+      success: false,
+      message_ar: 'Too many login attempts from this IP, please try again after 1 minute',
+    });
+  },
+});
+
+const deleteLimiter = rateLimit({
+  windowMs: 1000 * 60 * 1, // دقيقة واحدة
   max: 2, // الحد الأقصى لمحاولات الدخول
   message: 'Too many login attempts from this IP, please try again after 1 minute',
   skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
@@ -520,6 +534,146 @@ app.get("/Logout", async (req, res) => {
   }
 });
 
+
+//500500
+app.post("/delete_company", deleteLimiter, async (req, res) => {
+  try {
+
+   
+    //1: receive data from frontend html>body
+    const posted_elements = req.body;
+
+    //! sql injection check
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* start --------------------------------------------------
+
+    //!check
+    const company_name = posted_elements.x1Val
+    const user_pass = posted_elements.x2Val
+    const owner_pass = posted_elements.x3Val
+    
+
+    if (!company_name || !user_pass || !owner_pass){
+      return res.json({
+        success: false,
+        message_ar: `برجاء ادخال البيانات بشكل صحيح`,
+      });
+    }
+
+
+
+
+ //! فحص باسوردات المالك
+    let q1 = `
+    select
+	us.user_password
+from
+	users us
+inner join owners o on o.id = us.owner_id	
+inner join companies c on c.owner_id = o.id
+where
+	c.id = $1
+	and us.is_owner is true
+	and us.is_stop is null
+	and us.is_try_hack is null
+    `
+    let db_owner_pass_Array = await db.any(q1, [req.session.company_id]) || []
+
+    if (db_owner_pass_Array.length === 0){
+      return res.json({
+        success: false,
+        message_ar: `حدث خطأ أثناء معالجة البيانات : Sdc01`,
+      });
+    }
+
+     
+  let is_owner_pass = false
+  for (const row of db_owner_pass_Array){    
+    const isMatch = await bcrypt.compare(owner_pass, row.user_password);
+    if (isMatch){
+      is_owner_pass = true
+      break;
+    }
+  }
+  
+  if (!is_owner_pass) {
+    return res.json({
+      success: false,
+      message_ar: `البيانات غير صحيحة`,
+    });
+  }
+
+  
+  //! فحص باسورد المستخدم واسم الشركة
+
+    let query0 = `
+    SELECT 
+      (SELECT c.company_name from companies c WHERE c.id = $1 and c.owner_id = $2) AS company_name,
+      (select user_password from users where id = $3 and users.owner_id = $2) AS user_pass
+  `;
+  
+
+
+  let result0 = await db.oneOrNone(query0, [req.session.company_id, req.session.owner_id, req.session.userId]);
+  
+  if (!result0 || !result0.company_name || !result0.user_pass) {
+    return res.json({
+      success: false,
+      message_ar: `حدث خطأ أثناء معالجة البيانات : Sdc02`,
+    });
+  }
+
+  let isMatch2 = await bcrypt.compare(user_pass, result0.user_pass);
+  let isMatch3 = result0.company_name === company_name;
+
+
+
+
+  if (!isMatch2 || !isMatch3){
+    return res.json({
+      success: false,
+      message_ar: `البيانات غير صحيحة`,
+    });
+  }
+
+  
+    //---------------------------
+
+    let query = `DELETE FROM companies where id = $1`;
+    let rows = await db.any(query, [req.session.company_id]);
+
+    await khorogFawry(req,req.session.userId)
+    // req.session.destroy();
+    
+
+    res.json({
+      success: true, // العمليه فشلت
+      message_ar: "تم حذف بيانات العمل التجارى بنجاح",
+    });
+   
+  
+        last_activity(req);
+  } catch (error) {
+    last_activity(req);
+    console.error("delete_company Error:", error);
+    res.status(500).json({
+      success: false,
+      message_ar: error.message || 'حدث خطأ اثناء معالجة البيانات',
+
+    });
+  }
+});
 //#endregion End-Login
 
 //#region Templets
@@ -4498,7 +4652,6 @@ app.post("/get_All_Employees_Data", async (req, res) => {
     let is_salesman = posted_elements.salesman
     is_salesman = is_salesman? true : false
    
-    //500500
     let query1 = `
 WITH main_account AS (
     SELECT main_account_id 
@@ -4602,7 +4755,6 @@ app.post("/get_All_vendors_Data", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    //500500
     let query1 = `
 WITH main_query AS (
     SELECT 
@@ -8259,7 +8411,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
      
       const query1 = `INSERT INTO accounts_header (account_name, is_final_account, account_type_id,company_id)
                             values ($1,$2,$3,$4) RETURNING id;`;
-      const query1_parameters = [posted_elements.accountname,false,5,req.session.company_id]
+      const query1_parameters = [posted_elements.accountname,null,5,req.session.company_id]
   
       const insert = await tx.one(query1,query1_parameters);
       let new_account_header_id = insert.id;
@@ -8810,6 +8962,147 @@ where
   }
 });
 
+
+app.post("/get_data_for_items_table_view_btn", async (req, res) => {
+  try {
+    //! Permission معلق
+    await permissions(req, "items_permission", "view");
+    if (!permissions) {
+      return;
+    }
+
+    const posted_elements = req.body;
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+    let q0 = `
+    SELECT COUNT(id) AS count_id 
+    FROM accounts_header 
+    WHERE id = $1 
+      AND company_id = $2 
+      AND is_final_account IS TRUE 
+      AND account_type_id = 5  
+  `;
+  
+  let result = await db.oneOrNone(q0, [posted_elements.x, req.session.company_id]);
+  
+  if (!result || parseInt(result.count_id) === 0) {  // تحويل count_id إلى رقم قبل المقارنة
+    await block_user(req, 'Sgdftvb01');
+    return res.json({
+      success: false,
+      xx: true,
+      message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالأكواد البرمجية الخاصة بالتطبيق',
+    });
+  }
+  
+
+
+
+    let query1 = `
+     -- بيانات الحساب
+SELECT
+    ah.id,
+    ah.account_name,
+    COALESCE(ah.account_no, '') AS account_no,
+    ah.item_unite,
+    ah.item_sales_price,
+    ah.item_purshas_price,
+    ah.item_amount_reorder_point,
+    ah.item_expense_account,
+    ah.item_revenue_account,
+    ab.parent_id,
+    ah2.account_name AS parent_name
+FROM
+    accounts_header ah
+LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+LEFT JOIN accounts_header ah2 ON ab.parent_id = ah2.id -- ربط الحساب الأب
+WHERE
+    ah.id = $1
+    AND ah.company_id = $2
+	and ah.account_type_id = $3
+	and ah.is_final_account is true
+  ;
+`;
+let params1 = [posted_elements.x, req.session.company_id, 5]
+
+
+
+
+
+let query2 = `
+SELECT
+    ah.id,
+    ah.account_name
+FROM
+    accounts_header ah
+WHERE
+     ah.company_id = $1
+	and ah.account_type_id = 1
+	and ah.main_account_id = 4
+	and ah.is_final_account is true
+  and ah.is_inactive is null
+ORDER BY
+  ah.id ASC  
+  ;
+`
+let params2 = [req.session.company_id]
+
+
+
+let query3 = `
+select
+  ah.id,
+  ah.account_name
+FROM
+    accounts_header ah
+WHERE
+     ah.company_id = $1
+	and ah.account_type_id = 5
+	and ah.is_final_account is null
+	and ah.is_inactive is null
+ORDER BY  
+  ah.id ASC  
+ ;
+`
+let params3 = [req.session.company_id]
+
+
+
+
+
+await db.tx(async (tx) => {
+
+  const item_data = await tx.oneOrNone(query1, params1);
+  const revenueArray = await tx.any(query2, params2);
+  const groupsArray = await tx.any(query3, params3);
+
+  
+  const postedData = { item_data, revenueArray, groupsArray};
+  res.json(postedData);
+})
+
+
+    await last_activity(req)
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error while get_data_for_items_table_view_btn", error);
+    res.join;
+    res
+      .status(500)
+      .json({ success: false, message_ar: error.message || deafultErrorMessage,});
+  }
+});
 //#region table 
 
 //#region 1: get data for items table-view
@@ -9359,12 +9652,19 @@ await db.tx(async (tx) => {
     ]);
   }
 
-  let query2 = `INSERT INTO transaction_body
+// حساب عدد الأعمدة ديناميكياً بناءً على طول أول صف في المصفوفة
+let columnsCount = insert_array2[0].length;  
+
+// بناء جملة SQL ديناميكية
+let query2 = `INSERT INTO transaction_body
   (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
-    VALUES ${insert_array2.map((_, i) => `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, $${i * 9 + 4}, $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9})`).join(', ')}
+  VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}
   ON CONFLICT DO NOTHING;`;
 
-  await tx.none(query2, insert_array2.flat());
+await tx.none(query2, insert_array2.flat());
+
 
   // تحديث is_including_items بناءً على محتوى items_array
   let is_including_items = items_array.length > 0 ? true : null;
@@ -9628,12 +9928,20 @@ AND (datex IS DISTINCT FROM $1 OR total_value IS DISTINCT FROM $2 OR general_not
     ]);
   }
 
-  let query2 = `INSERT INTO transaction_body
+  
+// حساب عدد الأعمدة ديناميكياً بناءً على طول أول صف في المصفوفة
+let columnsCount = insert_array2[0].length;  
+
+// بناء جملة SQL ديناميكية
+let query2 = `INSERT INTO transaction_body
   (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
-  VALUES ${insert_array2.map((_, i) => `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, $${i * 9 + 4}, $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9})`).join(', ')}
+  VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}
   ON CONFLICT DO NOTHING;`;
 
 await tx.none(query2, insert_array2.flat());
+
 
   
 
@@ -30098,7 +30406,6 @@ WHERE
 
 
     let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
-          console.log(data);
           
     res.json(data);
   } catch (error) {
@@ -31020,197 +31327,6 @@ app.post("/api/production_orders_delete", async (req, res) => {
     //50000
 
 
-/*
-    let query1 = `
-WITH 
-stock_balances as(
-
-SELECT
-    -- حساب المخزون بدون شرط transaction_type
-    SUM(CASE 
-	    	WHEN ah.account_type_id = 5 AND th2.datex < $2 then
-	    		case
-	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
-        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
-        			else 0
-	    		end
-        ELSE 0 
-        END) AS stock_debit_begining,
-
-    -- حساب التكلفة مع شرط transaction_type
-    SUM(CASE 
-        	WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th2.datex < $2 AND th2.transaction_type IN (3,4) then
-        		case
-	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
-        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
-        			else 0
-	    		end
-        	ELSE 0
-        END) AS cost_value_begining,
-    -- حساب المخزون بدون شرط transaction_type
-    SUM(CASE 
-        	WHEN ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then
-        		case
-        			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
-        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
-        			else 0
-        		end
-        	ELSE 0
-        END) AS stock_debit_current,
-
-    -- حساب التكلفة مع شرط transaction_type
-        
-            SUM(CASE 
-        	WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th2.datex BETWEEN $2 AND $3 AND th2.transaction_type IN (3,4) then
-        		case
-	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
-        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
-        			else 0
-	    		end
-        	ELSE 0
-        END) AS cost_value_current
-
-FROM transaction_body tb2
-INNER JOIN accounts_header ah ON ah.id = tb2.item_id
-LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-WHERE ah.company_id = $1 
-AND th2.is_deleted IS null
-and tb2.item_id is not null
-),
-previous_profit_query as(
-select
-	sum(tb2.credit) - sum(tb2.debit) as previous_profit_value
-from transaction_body tb2
-INNER JOIN accounts_header ah ON ah.id = tb2.account_id
-LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-where
-	ah.company_id = $1 
-	AND th2.is_deleted IS null
-	and (ah.main_account_id in (4,5) or ah.global_id in (23,16))  -- حساب الارباح الحالية و الارباح السابقه
-	AND th2.datex < $2
-),
-main_trial_balance AS (
-    SELECT
-        ah.id,
-        ah.account_name,
-        CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
-            	case
-            		when (sb.stock_debit_begining - sb.cost_value_begining) > 0 then (sb.stock_debit_begining - sb.cost_value_begining)
-            		else 0
-            	end
-            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
-            	case
-             		when ppq.previous_profit_value < 0 then ABS(ppq.previous_profit_value)
-            		else 0
-            	end
-            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
-            ELSE 
-                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex < $2 THEN tb.debit ELSE 0 END)
-        END AS debit_first,
-                CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
-            	case
-            		when (sb.stock_debit_begining - sb.cost_value_begining) < 0 then ABS(sb.stock_debit_begining - sb.cost_value_begining)
-            		else 0
-            	end
-            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
-            	case
-            		when ppq.previous_profit_value > 0 then ppq.previous_profit_value
-            		else 0
-            	end
-            	 WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده   
-            ELSE 
-                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex < $2 THEN tb.credit ELSE 0 END)
-        END AS credit_first,
-        CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
-            	case
-            		when (sb.stock_debit_current - sb.cost_value_current) > 0 then (sb.stock_debit_current - sb.cost_value_current)
-            		else 0
-            	end
-            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
-            	case
-            		when sb.cost_value_current > 0 then sb.cost_value_current
-            		else 0
-            	end
-            ELSE 
-                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.debit ELSE 0 END)
-        END AS debit_current,
-        CASE
-            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
-            	case
-            		when (sb.stock_debit_current - sb.cost_value_current) < 0 then ABS(sb.stock_debit_current - sb.cost_value_current)
-            		else 0
-            	end
-            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
-            	case
-            		when sb.cost_value_current < 0 then ABS(sb.cost_value_current)
-            		else 0
-            	end
-            ELSE 
-                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.credit ELSE 0 END)
-        END AS credit_current,        
-        ah.is_final_account,
-        ah.account_no,
-        ah.finance_statement,
-        ah.cashflow_statement,
-        ah.account_type_id,
-        ah.account_name_en,
-        ah.global_id,
-        ah.main_account_id,
-        ah.is_inactive,
-        ab.parent_id
-    FROM
-        accounts_header ah
-    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
-    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
-    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
-    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
-    LEFT JOIN previous_profit_query ppq ON true -- ربط الاستعلام فى حاله الصف الواحد
-    WHERE
-        ah.company_id = $1
-        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
-       -- AND NOT (ah.account_type_id = 5 AND ah.global_id != 12)
-        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
-    GROUP BY
-        ah.id, ab.parent_id, sb.stock_debit_begining, sb.cost_value_begining, ppq.previous_profit_value, sb.stock_debit_current, sb.cost_value_current
-)
-select
-    mt.id,
-    mt.account_name,
-          CASE
-        WHEN (mt.debit_first + mt.debit_current) > (mt.credit_first + mt.credit_current)
-        THEN (mt.debit_first + mt.debit_current) - (mt.credit_first + mt.credit_current)
-        ELSE NULL
-    END AS debit_end,
-        CASE
-        WHEN (mt.debit_first + mt.debit_current) < (mt.credit_first + mt.credit_current)
-        THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
-        ELSE NULL
-    END AS credit_end,
-   mt.debit_first,
-    mt.debit_current,
-    mt.credit_first,
-    mt.credit_current,
-    mt.is_final_account,
-    mt.account_no,
-    mt.finance_statement,
-    mt.cashflow_statement,
-    mt.account_type_id,
-    mt.account_name_en,
-    mt.global_id,
-    mt.main_account_id,
-    mt.is_inactive,
-    mt.parent_id,
-    null as padding
-from 
-	main_trial_balance mt
-  order by
-        mt.main_account_id asc, mt.parent_id asc, mt.id asc
-        ;
-        `;
-*/
 
 let query1 = `
 WITH 
@@ -31438,109 +31554,92 @@ from
         `;
 
 
-    let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
-    
-    await db.tx(async (tx) => {
-      let trial_balance = await tx.any(query1, params1);
-    
-       // فصل البيانات حسب finance_statement
-  const financeStatement = trial_balance.filter(row => +row.finance_statement === 1);
-  const incomeStatement = trial_balance.filter(row => +row.finance_statement === 2);
- 
+        let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date];
 
-      const hide_zero = posted_elements.is_hiding_zero_balances;
-      let new_array = [];
-      let addedAccounts = new Set(); // لتتبع الحسابات التي تمت إضافتها
-    
-      // دالة تكرارية للبحث عن الحسابات الفرعية
-      async function addSubAccounts(row, array, currentPadding = 0) {
-        const id = row.id;
-        const is_final_account = row.is_final_account;
-               
+        await db.tx(async (tx) => {
+            let trial_balance = await tx.any(query1, params1);
         
-        // التحقق إذا كان الحساب قد أُضيف بالفعل
-        if (!addedAccounts.has(id)) {
-            addedAccounts.add(id); // تسجيل الحساب كمضاف
-          
-            // تحديث قيم padding
-            row.padding = currentPadding;
-    
-            // إذا كان الحساب الرئيسي
-            if (!is_final_account) {
-              
-                const sub_accounts_array = array.filter(item => +item.parent_id === +id) || [];
-                const allColumnsZero = +row.debit_end === 0 && +row.credit_end === 0;
-                console.log(`branches`);
-                console.table(sub_accounts_array);
-                
-                    
-                if (hide_zero && sub_accounts_array.length === 0 && allColumnsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
-                    // إذا كانت جميع الشروط متحققة لا نضيف الحساب
-                    console.log(`الحساب رئيسى ولا يوجد به حسابات فرعيه  سيتم التراجع `);
-                    return;
+            // فصل البيانات حسب finance_statement
+            const financeStatement = trial_balance.filter(row => +row.finance_statement === 1);
+            const incomeStatement = trial_balance.filter(row => +row.finance_statement === 2);
+        
+            const hide_zero = posted_elements.is_hiding_zero_balances;
+            let new_array = [];
+            let addedAccounts = new Set(); // لتتبع الحسابات التي تمت إضافتها
+        
+            // دالة للتحقق مما إذا كانت جميع الحسابات الفرعية تحتوي على أرصدة صفرية
+            function checkAllSubAccountsZero(accountsArray, parentId) {
+                let subAccounts = accountsArray.filter(item => +item.parent_id === +parentId);
+                if (subAccounts.length === 0) return true;
+        
+                for (const acc of subAccounts) {
+                    if (!(+acc.debit_end === 0 && +acc.credit_end === 0)) {
+                        return false;
+                    }
+                    if (!checkAllSubAccountsZero(accountsArray, acc.id)) {
+                        return false;
+                    }
                 }
-    
-                // التحقق من الحسابات الفرعية
-                if (sub_accounts_array.length > 0) {
-                  
-                    let areAllSubAccountsZero = true;
-    
-                    for (const subrow of sub_accounts_array) {
-
-                      console.log(`this is subrow : ${subrow.account_name}`);
-                      
-                        if (!(+subrow.debit_end === 0 && +subrow.credit_end === 0) || !hide_zero) {
-                            areAllSubAccountsZero = false;
-                            console.log(`this account is not zero-- code will brek here`);
-                            break;
+                return true;
+            }
+        
+            // دالة تكرارية للبحث عن الحسابات الفرعية
+            async function addSubAccounts(row, array, currentPadding = 0) {
+                const id = row.id;
+                const is_final_account = row.is_final_account;
+        
+                // التحقق إذا كان الحساب قد أُضيف بالفعل
+                if (!addedAccounts.has(id)) {
+                    addedAccounts.add(id); // تسجيل الحساب كمضاف
+        
+                    // تحديث قيم padding
+                    row.padding = currentPadding;
+        
+                    // إذا كان الحساب رئيسي
+                    if (!is_final_account) {
+                        const sub_accounts_array = array.filter(item => +item.parent_id === +id) || [];
+                        const allColumnsZero = +row.debit_end === 0 && +row.credit_end === 0;
+        
+                        // التحقق من الحسابات الفرعية العميقة قبل إخفاء الحساب الرئيسي
+                        if (hide_zero && checkAllSubAccountsZero(array, id) && (+row.global_id !== 1 && +row.global_id !== 2) && allColumnsZero) {
+                            console.log(`الحساب رئيسى ولا يوجد به حسابات فرعية ذات أرصدة، سيتم التراجع`);
+                            return;
+                        }
+        
+                        // أضف الحساب الرئيسي
+                        new_array.push(row);
+        
+                        // البحث عن الحسابات الفرعية
+                        for (const subrow of sub_accounts_array) {
+                            await addSubAccounts(subrow, array, currentPadding + 1.5); // 1rem
+                        }
+                    } else {
+                        // التحقق من إخفاء الأرصدة الصفرية للحساب النهائي
+                        if (hide_zero) {
+                            if (+row.debit_end !== 0 || +row.credit_end !== 0) {
+                                new_array.push(row);
+                            }
+                        } else {
+                            new_array.push(row);
                         }
                     }
-                    
-                    // إذا كانت جميع الحسابات الفرعية صفر، لا تضف الحساب الرئيسي
-                    if (hide_zero && areAllSubAccountsZero && (+row.global_id !== 1 && +row.global_id !== 2)) {
-                      console.log(`all zero code will return here`);
-                      
-                        return;
-                    }
-                    
-                    // أضف الحساب الرئيسي
-                    new_array.push(row);
-    
-                    // البحث عن الحسابات الفرعية
-                    for (const subrow of sub_accounts_array) {
-                        await addSubAccounts(subrow, array, currentPadding + 1.5); // 1rem
-                    }
-                } else {
-                    // إذا لم تكن هناك حسابات فرعية
-                    new_array.push(row);
-                }
-            } else {
-                // التحقق من إخفاء الأرصدة الصفرية للحساب النهائي
-                if (hide_zero) {
-                    if (+row.debit_end !== 0 || +row.credit_end !== 0) {
-                        new_array.push(row);
-                    }
-                } else {
-                    new_array.push(row);
                 }
             }
-        }
-    }
-    
-    
-      // معالجة الـ trial_balance
-      for (const row of financeStatement) {
-        await addSubAccounts(row, financeStatement, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
-      }
-      for (const row of incomeStatement) {
-        await addSubAccounts(row, incomeStatement, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
-      }
-      trial_balance = new_array;
-          
-      const postedData = { trial_balance/*, customersDataArray */};
-      res.json(postedData);
-    })
-    
+        
+            // معالجة الـ trial_balance
+            for (const row of financeStatement) {
+                await addSubAccounts(row, financeStatement, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
+            }
+            for (const row of incomeStatement) {
+                await addSubAccounts(row, incomeStatement, 0); // استدعاء الدالة لكل حساب رئيسي مع padding ابتدائي 0
+            }
+            trial_balance = new_array;
+        
+            const postedData = { trial_balance };
+            res.json(postedData);
+        });
+        
+        
     
         await last_activity(req)
       } catch (error) {
