@@ -1,4 +1,4 @@
-setActiveSidebar('permissions_view_ar');
+setActiveSidebar('general_settings_ar');
 
 //#region  get user data and show
 

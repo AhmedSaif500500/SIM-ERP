@@ -113,7 +113,7 @@ function showData(){
   user_name_input.value = userinfo.user_name
   inactive_select.value = userinfo.is_stop ? '1' : '0'
   active_color(inactive_select)
-  user_main_permission_select.value = userinfo.is_owner? 0 : 1 
+  user_main_permission_select.value = userinfo.is_owner_permission? 0 : 1 
   check_select_permission_type()
 
 

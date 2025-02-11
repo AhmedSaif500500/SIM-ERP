@@ -3,6 +3,7 @@
   
 
   const loginBtn = document.querySelector('#loginBtn')
+  const register_btn = document.querySelector('#register_btn')
   const login_div = document.querySelector('#login_div');
   login_div.style.pointerEvents = 'auto';
 
@@ -144,7 +145,7 @@
             sessionStorage.setItem("username", data.username); // save username in sessionStorage to use it in index.html
             sessionStorage.setItem("current_id", data.user_id); // save username in sessionStorage to use it in index.html
             sessionStorage.setItem("userFullName", data.user_full_name); // save username in sessionStorage to use it in index.html
-            sessionStorage.setItem("owner", data.is_owner); // save username in sessionStorage to use it in index.html
+            sessionStorage.setItem("owner", data.is_owner_permission); // save username in sessionStorage to use it in index.html
   
             //! فحص اذا كان اللغه انجليزى ولا عربى
             const currentLang = localStorage.getItem('currentLang');
@@ -209,6 +210,9 @@
 
     //#endregion end login function
 
+    register_btn.onclick = function(){
+      window.location.href = `/register_ar`
+    }
 
     function showReason() {
         let message;

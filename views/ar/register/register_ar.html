@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <!-- <div id="sidebar" class="sidebar scroll"></div> -->
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="login" title="تسجيل الدخول">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="register_ar" title="اعادة تحميل الصفحة">
+                طلب تسجيل
+              </a>
+              <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+            </div>
+          </h2>
+
+          <div id="page_content">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+
+  
+
+                <label for="account_name_input" class="lbl_sm" style="margin-block-end: 0;">اسم المالك</label>
+                <div class="info_div_with_normal_nput">
+                  <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
+                  <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `الاسم الذى سيتواصل به الدعم الفنى مع مقدم الطلب`)"></i>
+                </div>
+
+
+                <label for="phone_input" class="lbl_sm" style="margin-block-end: 0;">رقم الهاتف</label>
+                <div class="info_div_with_normal_nput">
+                  <input type="search" id="phone_input" class="input_text_md hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
+                  <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `رقم الهاتف لسهولة التواصل المباشر من الدعم الفنى للرد على الطلب`)"></i>
+                </div>
+
+                  
+                <label for="email_input" class="lbl_sm" style="margin-block-end: 0;">البريد الالكترونى</label>
+                  <div class="info_div_with_normal_nput">
+                    <input type="search" id="email_input" class="input_text_md hover" placeholder="مطلوب" autocomplete="off" oninput="check_parse(this,'string')">
+                    <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `سيتم الرد على الطلب عبر البريد الالكترونى`)"></i>
+                  </div>
+
+                <label for="massage_input" class="lbl_sm" style="margin-block-end: 0;">الرسالة المقدمة مع الطلب</label>
+                  <div class="info_div_with_normal_nput">
+                    <textarea name="" id="massage_input" class="text_area2 hover scroll" oninput="check_parse(this,'string')" placeholder="اختياري" style="margin-block-end: 1rem;"></textarea>
+                    <i class="fa-solid fa-question inf_btn" onclick="showAlert(`info`, `اكتب رسالة للدعم الفنى مع الطلب`)"></i>
+                  </div>
+                  
+
+                  <h2 class="h2">بيانات تسجيل الدخول فى حالة الموافقه على الطلب</h2>
+
+
+                  <label for="user_name_input" class="lbl_sm">اسم المستخدم</label>
+                  <input type="search" id="user_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')"  placeholder="مطلوب">
+                  
+    
+    
+                  <div id="" class="column" style="margin-block-end: 0.5rem;">
+                    <label for="user_pass_input1" class="lbl_sm">كلمة المرور</label>
+    
+                    <div id="" class="row"
+                      style="margin-inline-end: 1rem; display: flex">
+                      <div class="input_with_icon_div">
+                        <input type="password" name="" id="user_pass_input1" placeholder="مطلوب" class="input_text_md hover" style="padding-inline-end: 3rem; margin-block-end: 0;" autocomplete="off">
+                        <i class="fa-solid fa-key left_icon"></i>
+                      </div>
+                      <button id="" class="btn_eye hover"
+                        onmousedown="showPassword('user_pass_input1', 'eye_icon1')"
+                        onmouseup="hidePassword('user_pass_input1', 'eye_icon1')"
+                        ontouchstart="showPassword('user_pass_input1', 'eye_icon1')"
+                        ontouchend="hidePassword('user_pass_input1', 'eye_icon1')"><i id="eye_icon1"
+                          class="fa-regular fa-eye eye_icon"></i>
+                      </button>
+                    </div>
+                  </div>
+    
+                  <div id="" class="column" style="margin-block-end: 0.5rem;">
+                    <label for="user_pass_input2" class="lbl_sm">تأكيد كلمة المرور</label>
+    
+                    <div id="" class="row"
+                      style="margin-inline-end: 1rem; display: flex">
+                      <div class="input_with_icon_div">
+                        <input type="password" name="" id="user_pass_input2" placeholder="مطلوب" class="input_text_md hover" style="padding-inline-end: 3rem; margin-block-end: 0;" autocomplete="off">
+                        <i class="fa-solid fa-key left_icon"></i>
+                      </div>
+                      <button id="" class="btn_eye hover"
+                        onmousedown="showPassword('user_pass_input2', 'eye_icon2')"
+                        onmouseup="hidePassword('user_pass_input2', 'eye_icon2')"
+                        ontouchstart="showPassword('user_pass_input2', 'eye_icon2')"
+                        ontouchend="hidePassword('user_pass_input2', 'eye_icon2')"><i id="eye_icon2"
+                          class="fa-regular fa-eye eye_icon"></i>
+                      </button>
+                    </div>
+                  </div>
+                
+  
+                <div class="btn_container_top_border">
+                    <button class="btn_new" id="btn_send">إرسال</button>
+                </div>
+            <!-- ______________________________________________________________________________________________________ -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script>
+  <script src="/public/scripts/ar/register_ar.js"></script>
+  
+
+
+</body>
+
+</html>

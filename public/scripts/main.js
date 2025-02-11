@@ -160,6 +160,10 @@ loadHeaderContents();
 //#region add sidebar
 function loadSidebarContents() {
   const sidebar = document.querySelector('#sidebar');
+
+  if (!sidebar){
+    return
+  }
   const excludedPages = ['login', 'companies_ar', '/', 'companies_add_ar', 'users_view_ar', 'users_add_ar', 'users_update_ar']
 
   if (excludedPages.includes(currentPage)) {
@@ -292,7 +296,10 @@ function loadSidebarContents() {
 }
 
 // لا تنس تنفيذ الدالة
-loadSidebarContents();
+
+  loadSidebarContents();
+
+
 
 
 
@@ -385,7 +392,7 @@ async function fixed_information() {
     const user_setting_btn = document.querySelector('#user_setting_btn');
   
 
-    const excludedPages1 = ['/', 'login']
+    const excludedPages1 = ['/', 'login', 'register_ar']
     if (excludedPages1.includes(currentPage)) {
       return;
     } else {
@@ -398,7 +405,7 @@ async function fixed_information() {
       }
     }
 
-    const excludedPages = ['companies_ar', '/', 'login', 'companies_add_ar', 'users_view_ar', 'users_add_ar', 'users_update_ar']
+    const excludedPages = ['companies_ar', '/', 'login', 'register_ar', 'companies_add_ar', 'users_view_ar', 'users_add_ar', 'users_update_ar']
 
     if (excludedPages.includes(currentPage)) {
       return;

@@ -239,6 +239,131 @@ cron.schedule("*/5 * * * *", async () => {
 
 //#endregion end-cron
 
+
+const fs = require("fs");
+const crypto = require("crypto");
+
+app.post("/backup_company", async (req, res) => {
+  try {
+    const companyId = req.session.company_id;
+    const ownerId = req.session.owner_id;
+   // const companyName = req.session.company_name;
+
+    if (!companyId || !ownerId) {
+      return res.status(400).json({ message: "بيانات الجلسة غير مكتملة" });
+    }
+
+    console.log(`🔹 بدء النسخ الاحتياطي للشركة: ${companyId}`);
+
+    // 1️⃣ استخراج جميع البيانات الخاصة بالشركة
+    const accounts_header = await db.any(`SELECT * FROM accounts_header WHERE company_id = $1;`, [companyId]);
+    const accounts_body = await db.any(`SELECT ab.* FROM accounts_body ab JOIN accounts_header ah ON ah.id = ab.account_id WHERE ah.company_id = $1;`, [companyId]);
+    const befor_invoice_header = await db.any(`SELECT * FROM befor_invoice_header WHERE company_id = $1;`, [companyId]);
+    const befor_invoce_body = await db.any(`SELECT bib.* FROM befor_invoce_body bib JOIN befor_invoice_header bih ON bih.id = bib.header_id WHERE bih.company_id = $1;`, [companyId]);
+    const companies = await db.any(`SELECT c.* FROM companies c JOIN owners o ON o.id = c.owner_id WHERE o.id = $1;`, [ownerId]);
+    const effects = await db.any(`SELECT * FROM effects WHERE company_id = $1;`, [companyId]);
+    const history = await db.any(`SELECT * FROM history WHERE company_id = $1;`, [companyId]);
+    const production_forms_header = await db.any(`SELECT * FROM production_forms_header WHERE company_id = $1;`, [companyId]);
+    const production_forms_body = await db.any(`SELECT pfb.* FROM production_forms_body pfb JOIN production_forms_header pfh ON pfh.id = pfb.production_forms_header_id WHERE pfh.company_id = $1;`, [companyId]);
+    const settings = await db.any(`SELECT * FROM settings WHERE company_id = $1;`, [companyId]);
+    const settings_tax_header = await db.any(`SELECT * FROM settings_tax_header WHERE company_id = $1;`, [companyId]);
+    const settings_tax_body = await db.any(`SELECT stb.* FROM settings_tax_body stb JOIN settings_tax_header sth ON sth.id = stb.settings_tax_header_id WHERE sth.company_id = $1;`, [companyId]);
+    const todo = await db.any(`SELECT * FROM todo WHERE company_id = $1;`, [companyId]);
+    const transaction_header = await db.any(`SELECT * FROM transaction_header WHERE company_id = $1;`, [companyId]);
+    const transaction_body = await db.any(`SELECT tb.* FROM transaction_body tb JOIN transaction_header th ON th.id = tb.transaction_header_id WHERE th.company_id = $1;`, [companyId]);
+    const user_company = await db.any(`SELECT * FROM user_company WHERE company_id = $1;`, [companyId]);
+
+    // 2️⃣ التحقق من وجود بيانات فعلية
+    const totalRecords = [
+      accounts_header.length,
+      accounts_body.length,
+      befor_invoice_header.length,
+      befor_invoce_body.length,
+      companies.length,
+      effects.length,
+      history.length,
+      production_forms_header.length,
+      production_forms_body.length,
+      settings.length,
+      settings_tax_header.length,
+      settings_tax_body.length,
+      todo.length,
+      transaction_header.length,
+      transaction_body.length,
+      user_company.length
+    ].reduce((acc, val) => acc + val, 0);
+
+    if (totalRecords === 0) {
+      return res.status(404).json({ message: "❌ لا توجد بيانات متاحة لهذه الشركة." });
+    }
+
+    // 3️⃣ تجهيز البيانات كـ JSON
+    const backupData = {
+      accounts_header,
+      accounts_body,
+      befor_invoice_header,
+      befor_invoce_body,
+      companies,
+      effects,
+      history,
+      production_forms_header,
+      production_forms_body,
+      settings,
+      settings_tax_header,
+      settings_tax_body,
+      todo,
+      transaction_header,
+      transaction_body,
+      user_company
+    };
+    const jsonData = JSON.stringify(backupData, null, 2);
+
+    // 4️⃣ التشفير باستخدام AES-256-CBC
+    const secretKey = process.env.SECRET_KEY;
+    const hmacKey = process.env.HMAC_KEY;
+
+    if (!secretKey || secretKey.length !== 32) {
+      throw new Error("❌ خطأ: مفتاح التشفير غير صالح أو مفقود!");
+    }
+
+    if (!hmacKey || hmacKey.length !== 32) {
+      throw new Error("❌ خطأ: مفتاح HMAC غير صالح أو مفقود!");
+    }
+
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(secretKey), iv);
+    let encrypted = cipher.update(jsonData, "utf8", "hex");
+    encrypted += cipher.final("hex");
+
+    // إنشاء HMAC لضمان صحة البيانات
+    const hmac = crypto.createHmac("sha256", Buffer.from(hmacKey));
+    hmac.update(encrypted);
+    const signature = hmac.digest("hex");
+
+    const encryptedBackupData = JSON.stringify({
+      iv: iv.toString("base64"),
+      data: encrypted,
+      hmac: signature
+    });
+
+    console.log("✅ النسخة الاحتياطية جاهزة للإرسال.");
+
+     
+    // 5️⃣ إرسال البيانات كملف تنزيل دون تخزينها
+    res.setHeader("Content-Disposition", `attachment; filename="backup_${today}.enc"`);
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.send(Buffer.from(encryptedBackupData, "utf-8"));
+    
+  } catch (error) {
+    console.error("❌ خطأ أثناء النسخ الاحتياطي:", error);
+    res.status(500).json({ message: "حدث خطأ أثناء إنشاء النسخة الاحتياطية." });
+  }
+});
+
+
+
+
+
 function formatFromFiveDigits(num) {
   try {
 
@@ -306,6 +431,21 @@ const is_accumulated_account = [9, 10, 11, 12, 13, 14, 15, 20];
 
 
 
+function checkPasswordStrength(password) {
+  const length = password.length; // حساب طول النص
+  const hasLetters = /[a-zA-Z]/.test(password); // التحقق من وجود حروف
+  const hasNumbers = /[0-9]/.test(password); // التحقق من وجود أرقام
+  const hasSpecialChars = /[^a-zA-Z0-9]/.test(password); // التحقق من وجود رموز خاصة
+
+  return {
+      length,
+      hasLetters,
+      hasNumbers,
+      hasSpecialChars,
+      isStrong: length >= 8 && hasLetters && hasNumbers // شرط قوة الباسورد
+  };
+}
+
 
 
 // const globalLimiter = rateLimit({
@@ -356,7 +496,233 @@ const deleteLimiter = rateLimit({
 });
 
 
+const registerLimiter = rateLimit({
+  windowMs: 1000 * 60 * 60, // دقيقة واحدة
+  max: 2, // الحد الأقصى لمحاولات الدخول
+  message: 'Too many login attempts from this IP, please try again after 60 minute',
+  skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
+  handler: (req, res, next) => {
+    // الآن يمكننا إرسال الرسالة الخاصة بنا في حالة تجاوز الحد
+    res.status(429).json({
+      success: false,
+      message_ar: 'Too many login attempts from this IP, please try again after 60 minute',
+    });
+  },
+});
 
+
+
+
+app.post("/register_request", registerLimiter, async (req, res) => {
+  try {
+        // // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+
+    // //! Permission
+    // await permissions(req, "customers_permission", "add");
+    // if (!permissions) {
+    //   return;
+    // }
+
+
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+
+    if (!posted_elements.account_name_input){
+      return res.json({ success: false, message_ar:  'برجاء إدخال اسم المالك بشكل صحيح' });
+  }
+
+  if (!posted_elements.phone_input){
+      return res.json({ success: false, message_ar:  'برجاء إدخال رقم الهاتف بشكل صحيح' });
+  }
+
+  if (!posted_elements.email_input){
+      showAlert(`warning`, 'برجاء إدخال البريد الالكترونى بشكل صحيح')
+      return
+  }
+
+  if (!posted_elements.massage_input){
+      return res.json({ success: false, message_ar:  'برجاء إدخال نص الرسالة بشكل صحيح' });
+    }
+  
+  if (!posted_elements.user_name_input){
+    return res.json({ success: false, message_ar: 'برجاء إدخال اسم المستخدم بشكل صحيح' });
+  }
+
+  if (!posted_elements.user_pass_input1 || !posted_elements.user_pass_input2){
+      return res.json({ success: false, message_ar: 'برجاء إدخال كلمة المرور بشكل صحيح' });
+  }
+
+  if (posted_elements.user_pass_input1 !== posted_elements.user_pass_input2){
+      return res.json({ success: false, message_ar: 'كلمة المرور غير متطابقة' });
+  }
+
+
+  const strong_pass = checkPasswordStrength(posted_elements.user_pass_input1);
+  
+  if (!strong_pass.isStrong){
+    return res.json({ success: false, message_ar: 'رجاء اختيار كلمة مرور قوية' });
+  }
+
+    //* Start--------------------------------------------------------------
+
+  let query01 = `select count(id) as user_name_count from users where user_name = $1`
+  let result01 = await db.oneOrNone(query01, [posted_elements.user_name_input])
+  if (result01.user_name_count > 0){
+    return res.json({ success: false, message_ar: 'رجاء اختيار اسم مستخدم اخر' });
+  }
+
+
+
+    //! تشفير كلمة المرور قبل إدخالها في قاعدة البيانات
+    const pass_input1 = await bcrypt.hash(posted_elements.user_pass_input1, 12);
+    let query1 = `
+    INSERT INTO registration_requests (datex, owner_name, owner_phone, owner_email, owner_message, owner_use_name, owner_user_pass)
+    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;
+  `;
+
+    await db.tx(async (tx) => {
+      const insert = await tx.one(query1, [
+        today,
+        posted_elements.account_name_input,
+        posted_elements.phone_input,
+        posted_elements.email_input,
+        posted_elements.massage_input,
+        posted_elements.user_name_input,
+        pass_input1
+      ]);
+
+      const newId_header = insert.id;
+
+
+    })
+
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "تم إرسال طلبك بنجاح، يرجى الانتظار لحين مراجعة الطلب والرد عليك في أقرب وقت ممكن.",
+    });
+  } catch (error) {
+    console.error("Error register_request:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
+
+
+async function accept_request(request_id, companies_limit, users_limit, startr_dat, end_date) {
+  try {
+    
+  
+    console.log(`accept_request started`);
+    
+    let request_data = await db.oneOrNone(`select * from registration_requests where id = $1`, [request_id])
+  
+    if (!request_data){
+      console.log(`request id (${request_id}) is not defined`)
+      return
+    }
+
+    if (request_data.is_accepted){
+      console.log(`this Regetser Request with id (${request_id}) is Already accepted befor`)
+      return
+    }
+  
+    //const pass_input1 = await bcrypt.hash(posted_elements.user_pass_input1, 12);
+  
+    await db.tx(async (tx) => {
+  
+    
+    let query1 = `
+    INSERT INTO owners (owner_name, owner_phone, owner_email, owner_started_date, owner_contract_expire_date, owner_number_of_companies_allowed, owner_number_of_users_allowed)
+    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;
+  `;
+  
+      const insert = await tx.one(query1, [
+        request_data.owner_name,
+        request_data.owner_phone,
+        request_data.owner_email,
+        startr_dat,
+        end_date,
+        companies_limit,
+        users_limit
+      ]);
+  
+      const newId_owner = insert.id;
+  
+      let insert_Query = `INSERT INTO users (user_name, user_password, datex, owner_id, user_full_name, is_owner, is_owner_permission)
+        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;`
+      let params = [request_data.owner_use_name, request_data.owner_user_pass, today, newId_owner, request_data.owner_name, true, true]
+      
+      const insert2 = await tx.one(insert_Query, params)
+      const user_id = insert2.id 
+  
+      let update_Query = `UPDATE registration_requests set is_accepted = true where id = $1`
+      await tx.none(update_Query, [request_id])
+
+      console.log(`request accespted sucssfully , owner_id: ${newId_owner}, user_id: ${user_id} `);
+    })
+  
+   
+    
+  
+  } catch (error) {
+    console.error("Error register_request:", error);
+  }
+  }
+
+  async function change_user_password(user_id, new_pass) {
+    try {
+      
+    
+      console.log(`change_user_password started`);
+      
+    
+      const pass = await bcrypt.hash(new_pass, 12);
+    
+      await db.tx(async (tx) => {
+    
+      
+      let query1 = `
+      UPDATE users set user_password = $1 where id = $2 RETURNING id;
+    `;
+    
+        const insert = await tx.one(query1, [
+          pass,
+          user_id
+        ]);
+    
+        const userId = insert.id;
+    
+        console.log(`request password changed sucssfully , user_id: ${userId} `);
+      })
+    
+     
+      
+    
+    } catch (error) {
+      console.error("Error register_request:", error);
+    }
+    }
+  
+  
 app.post("/Login", loginLimiter, async (req, res) => {
   try {
 
@@ -448,6 +814,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
         req.session.userFullName = rows[0].user_full_name; // على سبيل المثال، يمكنك تخزين اسم المستخدم
         req.session.owner_id = rows[0].owner_id;
         req.session.is_owner = rows[0].is_owner;
+        req.session.is_owner_permission = rows[0].is_owner_permission;
 
         let query = `UPDATE users SET is_active = true WHERE id = $1`;
         await db.any(query, [req.session.userId]);
@@ -462,6 +829,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
           username: rows[0].user_name,
           user_full_name: rows[0].user_full_name,
           is_owner: rows[0].is_owner,
+          is_owner_permission: rows[0].is_owner_permission,
         });
 
         last_activity(req);
@@ -584,7 +952,7 @@ inner join owners o on o.id = us.owner_id
 inner join companies c on c.owner_id = o.id
 where
 	c.id = $1
-	and us.is_owner is true
+	and us.is_owner_permission is true
 	and us.is_stop is null
 	and us.is_try_hack is null
     `
@@ -679,7 +1047,7 @@ where
 //#region Templets
 //! Permission function
 async function permissions(req, secendary_permission, perm_type) {
-    const owner = req.session.is_owner;
+    const owner = req.session.is_owner_permission;
     if (owner) {
       return true;
     } else {
@@ -1361,7 +1729,7 @@ app.post("/get_companies_data", async (req, res) => {
     //* Start--------------------------------------------------------------
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
-    const owner = req.session.is_owner;
+    const owner = req.session.is_owner_permission;
     let query1;
     let data;
 
@@ -1436,7 +1804,7 @@ return res.json({
     const posted_elements = req.body;
 
         //! owner
-        if (req.session.is_owner !== true){
+        if (req.session.is_owner_permission !== true){
           await block_user(req,'auuwc1')
           return res.json({
             success: false,
@@ -1658,6 +2026,8 @@ return res.json({
 //#region 2:- company Login
 app.post("/company_login", async (req, res) => {
   try {
+    
+    
     const posted_elements = req.body;
     //! Permission
     // await permissions(req, 'bread_permission', 'view');
@@ -1680,7 +2050,7 @@ app.post("/company_login", async (req, res) => {
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     let query1;
     let data;
-    const is_owner = req.session.is_owner;
+    const is_owner = req.session.is_owner_permission;
     
     if (is_owner && is_owner === true) {
       query1 = `select company_name from companies c
@@ -1689,6 +2059,7 @@ app.post("/company_login", async (req, res) => {
 
       if (data) {
         req.session.company_id = parseInt(posted_elements.c_id);
+        req.session.company_name = data.company_name;
         
         data = {company_id: parseInt(posted_elements.c_id), company_name: data.company_name}
         
@@ -1753,10 +2124,11 @@ const data = await db.oneOrNone(query_permissions, [req.session.userId, posted_e
 if (data) {
   // Save user & company Permissions in session
   req.session.company_id = data.company_id;
-
+  req.session.company_name = data.company_name;
   // Save all permissions dynamically
 
   //! Global Code permissions500 S-2
+
   req.session.general_permission = data.general_permission
   req.session.employees_permission = data.employees_permission
   req.session.effects_permission = data.effects_permission
@@ -1829,7 +2201,7 @@ app.post("/api/get_companies_users", async (req, res) => {
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
     let query1;
     let rows;
-    const is_owner = req.session.is_owner;
+    const is_owner = req.session.is_owner_permission;
     if (is_owner && is_owner === true) {
       query1 = `select id, company_name from companies c
       where owner_id = $1`;
@@ -1879,7 +2251,11 @@ app.post("/get_main_users_Data", async (req, res) => {
               ELSE ''
           END AS is_stop
     from users
-    where owner_id = $1`;
+    where
+      owner_id = $1
+      AND is_owner is NULL
+    ;`
+    ;
     let data = await db.any(query, [req.session.owner_id]);
 
     // const rows = await db.any("SELECT id, user_name  FROM users");
@@ -1935,7 +2311,7 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
     const posted_elements = req.body;
 
         //! owner
-        if (req.session.is_owner !== true){
+        if (req.session.is_owner_permission !== true){
           await block_user(req,'auuwc1')
           return res.json({
             success: false,
@@ -2026,7 +2402,7 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
         const inactive_select_value = posted_elements.inactive_select_value == '0'? null : true 
         
         
-        let query = `INSERT into users (user_name, user_password, user_full_name, is_active, owner_id, is_owner, datex, is_stop) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`;
+        let query = `INSERT into users (user_name, user_password, user_full_name, is_active, owner_id, is_owner_permission, datex, is_stop) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`;
         const insert = await tx.one(query, [
           posted_elements.user_name_value,
           pass_input1,
@@ -2079,7 +2455,7 @@ app.post("/api/update_user", async (req, res) => {
         const posted_elements = req.body;
     
             //! owner
-            if (req.session.is_owner !== true){
+            if (req.session.is_owner_permission !== true){
               await block_user(req,'uus1')
               return res.json({
                 success: false,
@@ -2171,11 +2547,11 @@ app.post("/api/update_user", async (req, res) => {
                 //? تشفير كلمة المرور
                 const pass_value = await bcrypt.hash(posted_elements.pass_value, 12);
 
-                q1 = `update users set user_name = $1, user_password = $2, user_full_name = $3, is_owner = $4, is_stop = $5 Where id = $6 AND owner_id = $7 `;
+                q1 = `update users set user_name = $1, user_password = $2, user_full_name = $3, is_owner_permission = $4, is_stop = $5 Where id = $6 AND owner_id = $7 `;
                 p1 = [posted_elements.user_name_value,pass_value,posted_elements.user_fullName_value,permission_type,inactive_select_value, posted_elements.id, req.session.owner_id]
             }else {
 
-              q1 = `update users set user_name = $1, user_full_name = $2, is_owner = $3, is_stop = $4 Where id = $5 AND owner_id = $6 `;
+              q1 = `update users set user_name = $1, user_full_name = $2, is_owner_permission = $3, is_stop = $4 Where id = $5 AND owner_id = $6 `;
               p1 = [posted_elements.user_name_value,posted_elements.user_fullName_value,permission_type,inactive_select_value, posted_elements.id, req.session.owner_id]
                       
             }
@@ -2298,7 +2674,7 @@ app.post("/get_user_data_for_update", async (req, res) => {
 
     
         //! owner
-        if (req.session.is_owner !== true){
+        if (req.session.is_owner_permission !== true){
           await block_user(req,'gudfu1')
           return res.json({
             success: false,
@@ -2343,7 +2719,7 @@ app.post("/get_user_data_for_update", async (req, res) => {
 
   const query2 = `
     select
-      id ,user_name ,user_password ,user_full_name ,is_stop, is_owner
+      id ,user_name ,user_password ,user_full_name ,is_stop, is_owner_permission
     from
       users
     where
@@ -2403,7 +2779,7 @@ app.post("/delete_user", async (req, res) => {
         
     const posted_elements = req.body;
             //! owner
-            if (req.session.is_owner !== true){
+            if (req.session.is_owner_permission !== true){
               await block_user(req,'dus1')
               return res.json({
                 success: false,
@@ -2589,7 +2965,7 @@ app.post("/get_users_permissions_Data", async (req, res) => {
 
       
        // افضل صورى  للتحقق من صلاحيات المالك او مدير النظام اذا لم يكن احداهما موجود سيتم تحقق الشرط وانهاء الكود
-      if (req.session.is_owner !== true && +req.session.general_permission !== 6) {
+      if (req.session.is_owner_permission !== true && +req.session.general_permission !== 6) {
         return res.json({
           success: false,
           message_ar: "عذرًا، ليس لديك الصلاحية اللازمة للقيام بهذا الإجراء. إذا كان لديك أي استفسارات أو تحتاج إلى مساعدة إضافية، يرجى التواصل مع الإدارة.",
@@ -3130,7 +3506,7 @@ app.post("/updateUser", async (req, res) => {
     }
 
 
-    if(req.session.is_owner && req.session.is_owner !== true){
+    if(req.session.is_owner_permission && req.session.is_owner_permission !== true){
       let general_permission = parseInt(req.session.general_permission);
       if (!general_permission || general_permission !== 6) {
        
@@ -33700,4 +34076,6 @@ server.listen(port, () => {
   //! اوامر تنفذ مبشره بعد تشغيل السيرفر
   make_all_users_is_active_to_false();
   //test_trial_balance() // معلق
+  //await accept_request(1, 2, 2, '2025-02-10', '2025-02-12')
+  //await change_user_password(user_id, new_pass)
 });
