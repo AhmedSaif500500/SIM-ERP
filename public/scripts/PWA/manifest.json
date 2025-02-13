@@ -1,6 +1,6 @@
 {
-    "name": "karmasha",
-    "short_name": "SIM", 
+    "name": "SIM-ERP",
+    "short_name": "SIM-ERP", 
     "start_url": "/login",
     "display": "standalone",
     "background_color": "#ffffff",
