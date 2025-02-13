@@ -4129,3 +4129,7 @@ cursor: grabbing;
 .report_row:hover {
   scale: 1.1;
 }
+
+.sss{
+  background-color: teal;
+}
