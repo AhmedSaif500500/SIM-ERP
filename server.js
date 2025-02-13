@@ -34880,6 +34880,6 @@ server.listen(port, () => {
   //! اوامر تنفذ مبشره بعد تشغيل السيرفر
   make_all_users_is_active_to_false();
   //test_trial_balance() // معلق
-  //await accept_request(1, 2, 2, '2025-02-10', '2025-02-12')
-  //await change_user_password(user_id, new_pass)
+  //accept_request(6, 5, 5, '2025-02-13', '2025-12-31')
+  //change_user_password(user_id, new_pass)
 });

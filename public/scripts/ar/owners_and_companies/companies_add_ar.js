@@ -15,7 +15,7 @@ async function add_newCompany_fn() {
         {company_name_input_value},
         '','',
         60,
-        true,'هل تريد تكوين الشكره الجديده ؟',
+        true,'هل تريد تكوين الشركة الجديده ؟',
         true,
         false,'',
         false,'','',
