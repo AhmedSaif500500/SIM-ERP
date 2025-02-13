@@ -68,7 +68,7 @@ if (!num){
 
   // Check if the number is a valid integer and not negative
   if (typeof +num !== 'number' || +num < 0 || +num > 99999) {
-      showAlert('fail', 'يوجد خطأ فى بيانات المرجع : برجاء التواصل مع احد المسؤليين')
+      showAlert('fail', '❌ يوجد خطأ فى بيانات المرجع : برجاء التواصل مع احد المسؤليين')
       return
   }
   
@@ -442,7 +442,7 @@ if (history_setting_btn){
 if (user_setting_btn){
   user_setting_btn.addEventListener('click', function () {
     try {
-        showAlert(`info`, `مازال تحت التحديث`)
+        showAlert(`info`, `☑️ مازال تحت التحديث`)
     } catch (error) {
       catch_error('user_setting_btn EROR', error.message)
     }
@@ -720,10 +720,10 @@ function catch_error(error) {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     // في بيئة التطوير المحلية، يعرض معلومات الخطأ في وحدة التحكم
     console.error('Error details:', error);
-    showAlert('fail', 'An error occurred. Please check the cosole');
+    showAlert('fail', '❌ An error occurred. Please check the cosole');
   } else {
     // في بيئة الإنتاج، يعرض رسالة عامة للمستخدمين
-    showAlert('fail', 'An error occurred. Please contact the administrators for assistance.');
+    showAlert('fail', '❌ An error occurred. Please contact the administrators for assistance.');
   }
 }
 
@@ -1369,7 +1369,7 @@ function copyTableToClipboard(copyBtn,tableNameID) {
 
     // Copy the collected data to the clipboard
     navigator.clipboard.writeText(dataToCopy).then(() => {
-      showAlert('info','تم نسخ البيانات بنجاح!')
+      showAlert('info','☑️ تم نسخ البيانات بنجاح!')
        
     }).catch(err => {
         console.error('فشل في نسخ البيانات: ', err);
@@ -1377,7 +1377,7 @@ function copyTableToClipboard(copyBtn,tableNameID) {
     hideLoadingIcon(copyBtn)
   } catch (error) {
     hideLoadingIcon(copyBtn)
-    showAlert('fail','حدث خطأ اثناء نسخ البيانات')
+    showAlert('fail','❌ حدث خطأ اثناء نسخ البيانات')
     catch_error(error);
   }
 }
@@ -2157,7 +2157,7 @@ async function fetchUpdate1(posted_elements_AS_OBJECT, permission_name_string, d
 
   try {
     if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      showAlert('fail', '❌ رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
       return;
     }
 
@@ -2209,12 +2209,12 @@ async function fetchUpdate1(posted_elements_AS_OBJECT, permission_name_string, d
       }
     } else {
       closeDialog();
-      showAlert('fail', `Request failed with status code: ${response.status}`);
+      showAlert('fail', `❌ Request failed with status code: ${response.status}`);
     }
   } catch (error) {
     closeDialog();
     catch_error(error);
-    showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه تحديث البيانات .');
+    showAlert('fail', '❌ حدث خطأ أثناء تنفيذ عمليه تحديث البيانات .');
   }
 
 }
@@ -2227,7 +2227,7 @@ async function fetchDelete1(posted_elements_AS_OBJECT, permission_name, dialogMe
 
   try {
     if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      showAlert('fail', '⚠️ رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
       return;
     }
 
@@ -2279,11 +2279,11 @@ async function fetchDelete1(posted_elements_AS_OBJECT, permission_name, dialogMe
       }
     } else {
       closeDialog();
-      showAlert('fail', `Request failed with status code: ${response.status}`);
+      showAlert('fail', `❌ Request failed with status code: ${response.status}`);
     }
   } catch (error) {
     closeDialog();
-    showAlert('fail', 'حدث خطأ أثناء تنفيذ عمليه حذف البيانات .');
+    showAlert('fail', '❌ حدث خطأ أثناء تنفيذ عمليه حذف البيانات .');
     catch_error(error);
     // console.error("Error deleting employee:", error.message);
 
@@ -2300,7 +2300,7 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
   // console.log(inputErrors);
   try {
     if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      showAlert('fail', '❌ رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
       return;
     }
 
@@ -2356,12 +2356,12 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
       }
     } else {
       closeDialog();
-      showAlert('fail', `Request failed with status code: ${response.status}`);
+      showAlert('fail', `❌ Request failed with status code: ${response.status}`);
     }
   } catch (error) {
     closeDialog();
     if (error.name === 'AbortError') {
-      showAlert('fail', 'Request timed out. Please try again.');
+      showAlert('fail', '❌ Request timed out. Please try again.');
     } else {
       showAlert('fail', error_message);
       catch_error(error);
@@ -2376,7 +2376,7 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
   // console.log(inputErrors);
   try {
     if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      showAlert('fail', '❌ رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
       return;
     }
 
@@ -2432,12 +2432,12 @@ async function fetchData_post1(FetchURL, posted_elements_AS_OBJECT, permission_n
       }
     } else {
       closeDialog();
-      showAlert('fail', `Request failed with status code: ${response.status}`);
+      showAlert('fail', `❌ Request failed with status code: ${response.status}`);
     }
   } catch (error) {
     closeDialog();
     if (error.name === 'AbortError') {
-      showAlert('fail', 'Request timed out. Please try again.');
+      showAlert('fail', '❌ Request timed out. Please try again.');
     } else {
       showAlert('fail', error_message);
       catch_error(error);
@@ -2461,7 +2461,7 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
 
 
     if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      showAlert('fail', '⚠️ رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
       hideLoadingIcon(Element_showLoadingIcon_as_avariable)
       return false;
     }
@@ -2541,13 +2541,13 @@ async function fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, permiss
     } else {
       hideLoadingIcon(Element_showLoadingIcon_as_avariable)
       if (is_close_dialog === true) { closeDialog(); }
-      showAlert('fail', `Request failed with status code: ${response.status}`);
+      showAlert('fail', `❌ Request failed with status code: ${response.status}`);
     }
   } catch (error) {
     hideLoadingIcon(Element_showLoadingIcon_as_avariable)
     closeDialog();
     if (error.name === 'AbortError') {
-      showAlert('fail', 'Request timed out. Please try again.');
+      showAlert('fail', '❌ Request timed out. Please try again.');
       return false;
     } else {
       showAlert('fail', error_message);
@@ -2573,7 +2573,7 @@ async function new_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, per
 
 
     if (inputErrors) {
-      showAlert('fail', 'رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
+      showAlert('fail', '⚠️ رجاء أصلح حقول الإدخال التي تحتوي على أخطاء');
       hideLoadingIcon(Element_showLoadingIcon_as_avariable)
       return false;
     }
@@ -2671,7 +2671,7 @@ async function new_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, per
     hideLoadingIcon(Element_showLoadingIcon_as_avariable)
     closeDialog();
     if (error.name === 'AbortError') {
-      showAlert('fail', 'Request timed out. Please try again.');
+      showAlert('fail', '⚠️ Request timed out. Please try again.');
       return false;
     } else {
       
@@ -4014,7 +4014,7 @@ async function tableDropdownList_fillTable() {
 
 async function tableDropdownList_ShowAllDataInTable(button) {
   const td = button.closest("td");
-  showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
+  showAlert('info', '☑️  ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
   slice_tableDropdownList_Array1 = tableDropdownList_Array1.slice();
   await tableDropdownList_fillTable()
 };

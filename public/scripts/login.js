@@ -107,7 +107,7 @@
   
       //2: validation
       if (!username_Input || !password_Input) {
-        showAlert('fail', 'Username or Password is empty');
+        showAlert('fail', '❌ Username or Password is empty');
         loginInformation.innerText = 'رجاء التأكد من ادخال اسم المستخدم وكلمه المرور';
         login_div.style.pointerEvents = 'auto';
         return;
@@ -163,16 +163,16 @@
         // إذا كان الخطأ هو 429 (محاولات دخول كثيرة جدًا)، أظهر الرسالة الخاصة
         const errorData = await response.json(); // استلام البيانات الخاصة بالخطأ
         hideLoadingIcon(loginBtn);
-        showAlert('fail', errorData.message_ar || 'Too many login attempts. Please try again later.');
+        showAlert('fail', errorData.message_ar || '⚠️ Too many login attempts. Please try again later.');
       } else {
         hideLoadingIcon(loginBtn);
-        showAlert('fail', `Request failed with status code: ${response.status}`);
+        showAlert('fail', `❌ Request failed with status code: ${response.status}`);
       }
     } catch (error) {
       hideLoadingIcon(loginBtn);
       login_div.style.pointerEvents = 'auto';
       if (error.name === 'AbortError') {
-        showAlert('fail', 'Request timed out. Please try again.');
+        showAlert('fail', '⚠️ Request timed out. Please try again.');
       } else {
         catch_error(error);
       }

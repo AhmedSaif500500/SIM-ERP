@@ -45,7 +45,7 @@ open Terminal vscode
 
 
 let today = new Date().toISOString().split("T")[0];
-let deafultErrorMessage = 'حدث خطأ اثناء معالجة البيانات'
+let deafultErrorMessage = '❌ حدث خطأ اثناء معالجة البيانات'
 
 function getYear(dateString) {
   
@@ -247,6 +247,21 @@ cron.schedule("*/5 * * * *", async () => {
 
 app.post("/backup_company", async (req, res) => {
   try {
+
+    posted_elements = req.body
+    let pass =  posted_elements.password
+    if (!pass){
+      return res.status(404).json({ message: "❌ رجاء ادخل كلمة الحمايه بشكل صحيح ." });
+      // return res.json({
+      //   success: false,
+      //   message_ar: 'Too many login attempts from this IP, please try again after 1 minute',
+      // });
+    }
+    
+    pass = await bcrypt.hash(pass, 12);
+
+    
+
     const companyId = req.session.company_id;
     const ownerId = req.session.owner_id;
    // const companyName = req.session.company_name;
@@ -255,9 +270,10 @@ app.post("/backup_company", async (req, res) => {
       return res.status(400).json({ message: "بيانات الجلسة غير مكتملة" });
     }
 
-    console.log(`🔹 بدء النسخ الاحتياطي للشركة: ${companyId}`);
+    console.log(`🔹 Starting backup for company: ${companyId}`);
 
     // 1️⃣ استخراج جميع البيانات الخاصة بالشركة
+    const password = pass;
     const companies = await db.any(`SELECT c.* FROM companies c WHERE c.id = $1 ORDER BY c.id ASC;`, [companyId]);
     const user_company = await db.any(`SELECT * FROM user_company WHERE company_id = $1;`, [companyId]);
     const settings = await db.any(`SELECT * FROM settings WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
@@ -280,6 +296,7 @@ app.post("/backup_company", async (req, res) => {
 
     // 2️⃣ التحقق من وجود بيانات فعلية
     const totalRecords = [
+      password.length,
       accounts_header.length,
       accounts_body.length,
       befor_invoice_header.length,
@@ -305,6 +322,7 @@ app.post("/backup_company", async (req, res) => {
 
     // 3️⃣ تجهيز البيانات كـ JSON
     const backupData = {
+      password,
       accounts_header,
       accounts_body,
       befor_invoice_header,
@@ -353,7 +371,7 @@ app.post("/backup_company", async (req, res) => {
       hmac: signature
     });
 
-    console.log("✅ النسخة الاحتياطية جاهزة للإرسال.");
+    console.log("✅ Backup is ready to be sent.");
 
      
     // 5️⃣ إرسال البيانات كملف تنزيل دون تخزينها
@@ -362,7 +380,7 @@ app.post("/backup_company", async (req, res) => {
     res.send(Buffer.from(encryptedBackupData, "utf-8"));
     
   } catch (error) {
-    console.error("❌ خطأ أثناء النسخ الاحتياطي:", error);
+    console.error("❌ Error during backup:", error);
     res.status(500).json({ message: "حدث خطأ أثناء إنشاء النسخة الاحتياطية." });
   }
 });
@@ -376,6 +394,9 @@ const upload = multer({ storage: multer.memoryStorage() }); // تخزين الم
 
 app.post("/restore_backup", upload.single("backupFile"), async (req, res) => {
   try {
+
+
+    
     if (!req.file) {
       return res.status(400).json({ error: "لم يتم رفع أي ملف." });
     }
@@ -391,7 +412,8 @@ app.post("/restore_backup", upload.single("backupFile"), async (req, res) => {
     }
 
     // 🔵 1️⃣ فك التشفير والتحقق من صحة البيانات
-    console.log("🔄 جاري فك تشفير البيانات...");
+    console.log("🔄 Decrypting data in progress...");
+
     
     const secretKey = process.env.SECRET_KEY;
     const hmacKey = process.env.HMAC_KEY;
@@ -424,25 +446,45 @@ app.post("/restore_backup", upload.single("backupFile"), async (req, res) => {
     // تحويل النص المفكّك إلى كائن JSON
     const backupData = JSON.parse(decrypted);
 
-    console.log("✅ تم فك التشفير بنجاح، البيانات جاهزة للاستعادة.");
-    const pgp = require("pg-promise")({ capSQL: true }); // ضروري لاستخدام bulk insert
+    console.log("✅ Decryption successful, data is ready for restoration.");
+
+    //! التاكد من كلمة المرور
+    const password = req.body.password;
+    const isMatch = await bcrypt.compare(password, backupData.password);    
+    
+    if (!isMatch){
+      console.log(`❌⚠️ wrnog Password : Srb010`);
+      return res.json({ message: "⚠️ كلمة المرور غير صحيحة. يرجى التحقق وإعادة المحاولة." });
+    }
+    console.log(`✅ Password is Ok!`);
+
+
+
 
     //! ⚠️ هاام جدا للتحق من امتلاك الشخص للنسخه الاحتياطيه
     if (backupData.owner[0].id !== req.session.owner_id) {
-      return res.json({ message: "✅ انت لا تمتلك هذه النسخة الاحتياطية" });
+      console.log(`❌⚠️   YOU ARE NOT THE OWNER OF THIS BACKUP : Srb011`);
+      return res.json({ message: "⚠️ انت لا تمتلك هذه النسخة الاحتياطية" });
     }
     
   
+    const pgp = require("pg-promise")({ capSQL: true }); // ضروري لاستخدام bulk insert
 
     // 🔵 2️⃣ بدء معاملة (Transaction) لحذف البيانات القديمة ثم استعادتها
     await db.tx(async (tx) => {
-      console.log(`🔴 حذف بيانات الشركة (ID: ${company_id})...`);
+      console.log(`🔴 Deleting company data (ID: ${company_id})...`);
 
       await tx.none("DELETE FROM companies WHERE id = $1", [company_id]);
-      console.log(`✅ تم حذف جميع بيانات الشركة (ID: ${company_id}) بنجاح.`);
+      console.log(`✅ Successfully deleted all company data (ID: ${company_id}).`);
 
       // 🔵 3️⃣ استعادة البيانات داخل نفس المعاملة
-      console.log("🔄 جاري استعادة البيانات من النسخة الاحتياطية...");
+      console.log("🔄 Restoring data from the backup...");
+
+      //! get current Users in database
+      let users = await tx.any(`SELECT id FROM users WHERE owner_id = $1`, [req.session.owner_id]);
+      // تحويل الـ users إلى Set لسهولة البحث
+      const existingUserIds = new Set(users.map(user => user.id));
+
 
 // 1️⃣ استعادة بيانات `companies` دفعة واحدة
   let companyIdMap = {}; // تخزين العلاقة بين الـ ID القديم والجديد
@@ -489,6 +531,7 @@ let accountIdMap = {};
 if (backupData.accounts_header.length > 0) {
     
   const accounts_headerData = backupData.accounts_header.map(x => ({
+    restore_old_id: x.id,
     company_id: newCompanyId, // استخدام الـ ID الجديد
     account_name: x.account_name,
     is_final_account: x.is_final_account,
@@ -534,7 +577,7 @@ if (backupData.accounts_header.length > 0) {
   const query_accounts_headerData = pgp.helpers.insert(
     accounts_headerData,
     [
-      "company_id", "account_name", "is_final_account", "account_no", "finance_statement",
+      "restore_old_id", "company_id", "account_name", "is_final_account", "account_no", "finance_statement",
       "cashflow_statement", "account_type_id", "account_name_en", "global_id", "main_account_id",
       "item_sales_price", "item_purshas_price",
       "item_amount_reorder_point", "item_unite", "item1", "item2", "item3", "is_salesman",
@@ -545,17 +588,16 @@ if (backupData.accounts_header.length > 0) {
       "str20_column1", "str_textarea_column4", "str_textarea_column5"
     ],
     "accounts_header"
-  ) + " RETURNING id, account_name";
+  ) + " RETURNING id, restore_old_id";
 
   const insertedAccounts = await tx.many(query_accounts_headerData);
 
-  
-  insertedAccounts.forEach(newAccount => {
-    const oldAccount = backupData.accounts_header.find(x => x.account_name === newAccount.account_name);
-    if (oldAccount) {
-      accountIdMap[oldAccount.id] = newAccount.id;
-    }
+  insertedAccounts.forEach(row => {
+    accountIdMap[row.restore_old_id] = row.id;
   });
+  await tx.none(`UPDATE accounts_header SET restore_old_id = NULL WHERE restore_old_id IS NOT NULL;`)
+
+
 
   //! 🟠 تجميع تحديثات الحسابات دفعة واحدة
   const updates = backupData.accounts_header
@@ -618,10 +660,6 @@ if (backupData.accounts_body.length > 0) {
 //! Global Code permissions500 S-0
 // 5️⃣ insert into user_company 
 if (backupData.user_company.length > 0) {
-  let users = await tx.any(`SELECT id FROM users WHERE owner_id = $1`, [req.session.owner_id]);
-  
-  // تحويل الـ users إلى Set لسهولة البحث
-  const existingUserIds = new Set(users.map(user => user.id));
 
   // إنشاء البيانات، مع التحقق من أن user_id موجود في users
   const user_companyData = backupData.user_company
@@ -687,6 +725,7 @@ if (backupData.production_forms_header.length > 0) {
   
   // تجهيز البيانات مع استبدال الـ ID إذا وجد
   const productionFormsData = backupData.production_forms_header.map(x => ({
+    restore_old_id: x.id,
     company_id: newCompanyId,
     account_no: x.account_no,
     form_name: x.form_name,
@@ -698,16 +737,18 @@ if (backupData.production_forms_header.length > 0) {
   // إدخال البيانات واسترجاع الـ ID الجديد مع القديم
   const query_production_forms_header = pgp.helpers.insert(
     productionFormsData,
-    ["company_id", "account_no", "form_name", "production_item_id", "location_from", "value"],
+    ["restore_old_id", "company_id", "account_no", "form_name", "production_item_id", "location_from", "value"],
     "production_forms_header"
-  ) + " RETURNING id";
+  ) + " RETURNING id, restore_old_id";
 
   const insertedForms = await tx.many(query_production_forms_header);
 
   // حفظ العلاقة بين الـ ID القديم والجديد باستخدام الفهرس
-  backupData.production_forms_header.forEach((x, index) => {
-    productionFormsMap[x.id] = insertedForms[index].id;
+  insertedForms.forEach(row => {
+    productionFormsMap[row.restore_old_id] = row.id;
   });
+  await tx.none(`UPDATE production_forms_header SET restore_old_id = NULL WHERE restore_old_id IS NOT NULL;`)
+
 
 }
 
@@ -716,9 +757,7 @@ if (backupData.production_forms_header.length > 0) {
 if (backupData.production_forms_body.length > 0) {
   
   // تجهيز البيانات مع استبدال الـ ID إذا وجد
-  const production_forms_body_Data = backupData.production_forms_body
-    .filter(x => productionFormsMap[x.production_forms_header_id]) // تجاهل أي بيانات لا تملك ID صحيح
-    .map(x => ({
+  const production_forms_body_Data = backupData.production_forms_body.map(x => ({
       production_forms_header_id: productionFormsMap[x.production_forms_header_id], // الحصول على الـ ID الجديد
       account_id: accountIdMap[x.account_id] || x.account_id, // استبدال ID الحساب إذا وجد
       value: x.value,
@@ -735,6 +774,386 @@ if (backupData.production_forms_body.length > 0) {
     await tx.none(query_production_forms_body); // تنفيذ الإدخال بدون استرجاع بيانات
   }
 }
+
+
+// 8️⃣ insert settings_tax_header
+let settings_tax_header_Map = {}; // خريطة لربط الـ ID القديم بالجديد
+if (backupData.settings_tax_header.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const settings_tax_header_Data = backupData.settings_tax_header.map(x => ({
+    restore_old_id: x.id,
+    company_id: newCompanyId,
+    taxe_package_name: x.taxe_package_name,
+    is_inactive: x.is_inactive,
+  }));
+
+  // إدخال البيانات واسترجاع الـ ID الجديد مع القديم
+  const query_settings_tax_header = pgp.helpers.insert(
+    settings_tax_header_Data,
+    ["restore_old_id", "company_id", "taxe_package_name", "is_inactive"],
+    "settings_tax_header"
+  ) + " RETURNING id, restore_old_id";
+
+  const insertedForms = await tx.many(query_settings_tax_header);
+
+  // حفظ العلاقة بين الـ ID القديم والجديد باستخدام الفهرس
+  insertedForms.forEach(row => {
+    settings_tax_header_Map[row.restore_old_id] = row.id;
+  });
+  await tx.none(`UPDATE settings_tax_header SET restore_old_id = NULL WHERE restore_old_id IS NOT NULL;`)
+
+
+}
+
+
+
+
+// 🔟 insert production_forms_body
+let settings_tax_body_Map = {}; // خريطة لربط الـ ID القديم بالجديد
+if (backupData.settings_tax_body.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const settings_tax_body_Data = backupData.settings_tax_body.map(x => ({
+      restore_old_id: x.id,
+      tax_name: x.tax_name,
+      tax_rate: x.tax_rate,
+      is_tax_reverse: x.is_tax_reverse,
+      tax_account_id: accountIdMap[x.tax_account_id] || x.tax_account_id, // استبدال ID الحساب إذا وجد
+      settings_tax_header_id: settings_tax_header_Map[x.settings_tax_header_id], // الحصول على الـ ID الجديد
+    }));
+
+  // التأكد من أن هناك بيانات ليتم إدخالها
+  if (settings_tax_body_Data.length > 0) {
+    const query_settings_tax_body = pgp.helpers.insert(
+      settings_tax_body_Data,
+      ["restore_old_id", "tax_name", "tax_rate", "is_tax_reverse", "tax_account_id", "settings_tax_header_id"],
+      "settings_tax_body"
+    ) + " RETURNING id, restore_old_id";
+
+    const insertedForms = await tx.many(query_settings_tax_body); // تنفيذ الإدخال بدون استرجاع بيانات
+
+        // حفظ العلاقة بين الـ ID القديم والجديد باستخدام الفهرس
+        insertedForms.forEach(row => {
+          settings_tax_body_Map[row.restore_old_id] = row.id;
+        });
+        await tx.none(`UPDATE settings_tax_body SET restore_old_id = NULL WHERE restore_old_id IS NOT NULL;`);
+      
+  }
+}
+
+
+// 1️⃣1️⃣ insert befor_invoice_header
+let befor_invoice_header_Map = {};
+if (backupData.befor_invoice_header.length > 0) {
+  
+  // تجهيز البيانات مع إضافة old_id لضمان صحة العلاقة
+  const befor_invoice_header_Data = backupData.befor_invoice_header.map(x => ({
+    restore_old_id: x.id, // إضافة العمود لضمان صحة المطابقة
+    company_id: newCompanyId,
+    reference: x.reference,
+    transaction_type: x.transaction_type,
+    total_value: x.total_value,
+    general_note: x.general_note,
+    datex: x.datex,
+    is_deleted: x.is_deleted,
+    account_id: accountIdMap[x.account_id] || x.account_id,
+    salesman_id: accountIdMap[x.salesman_id] || x.salesman_id,
+    expire_offer_datex: x.expire_offer_datex,
+    is_delivered: x.is_delivered,
+    items_location_id: accountIdMap[x.items_location_id] || x.items_location_id, // تأكد من صحة هذا التحويل
+    is_column2: x.is_column2,
+    is_column1: x.is_column1,
+    qutation_status: x.qutation_status,
+    is_invoiced: x.is_invoiced,
+    is_qutation_status: x.item3,
+    is_column3: x.is_column3,
+  }));
+
+  // إدخال البيانات وإرجاع id الجديد مع old_id
+  const query_befor_invoice_header = pgp.helpers.insert(
+    befor_invoice_header_Data,
+    [
+      "restore_old_id", "company_id", "reference", "transaction_type", "total_value", 
+      "general_note", "datex", "is_deleted", "account_id", "salesman_id", 
+      "expire_offer_datex", "is_delivered", "items_location_id", 
+      "is_column2", "is_column1", "qutation_status", "is_invoiced", "is_qutation_status", "is_column3"
+    ],
+    "befor_invoice_header"
+  ) + " RETURNING id, restore_old_id";
+
+  const inserted_query = await tx.many(query_befor_invoice_header);
+
+  // حفظ العلاقة بين الـ ID القديم والجديد باستخدام الفهرس
+  inserted_query.forEach(row => {
+    befor_invoice_header_Map[row.restore_old_id] = row.id;
+  });
+  await tx.none(`UPDATE befor_invoice_header SET restore_old_id = NULL WHERE restore_old_id IS NOT NULL;`)
+
+
+
+  //! 🟠 تجميع تحديثات الحسابات دفعة واحدة
+  const updates = backupData.befor_invoice_header
+    .filter(x => x.qutation_id)
+    .map(x => ({
+      id: befor_invoice_header_Map[x.id], // تصحيح الخطأ هنا
+      qutation_id: befor_invoice_header_Map[x.qutation_id] || null, // استبدال qutation_id بالـ ID الجديد
+    }))
+    .filter(update => update.id); // التأكد من وجود id جديد
+
+  if (updates.length > 0) {
+    // 1️ تحويل البيانات إلى صيغة VALUES (id, qutation_id)
+    const valuesList = updates
+      .map(u => `(${u.id}, ${u.qutation_id || 'NULL'})`)
+      .join(", ");
+
+    // 2 إنشاء استعلام التحديث باستخدام UPDATE ... FROM VALUES
+    const updateQuery = `
+      UPDATE befor_invoice_header AS t
+      SET qutation_id = v.qutation_id
+      FROM (VALUES ${valuesList}) AS v(id, qutation_id)
+      WHERE t.id = v.id;
+    `;
+
+    // 3 تنفيذ الاستعلام
+    await tx.none(updateQuery);
+  }
+
+}
+
+
+// 1️⃣2️⃣ insert production_forms_body
+if (backupData.befor_invoce_body.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const befor_invoce_body_Data = backupData.befor_invoce_body.map(x => ({
+        header_id: befor_invoice_header_Map[x.header_id],
+        item_type_id: x.item_type_id,
+        item_id: accountIdMap[x.item_id] || x.item_id,
+        amount: x.amount,
+        unite_price: x.unite_price,
+        row_note: x.row_note,
+        is_discount_percentage: x.is_discount_percentage,
+        dicount_value: x.dicount_value,
+        tax_header_id: settings_tax_header_Map[x.tax_header_id] || x.tax_header_id,
+    }));
+
+  // التأكد من أن هناك بيانات ليتم إدخالها
+  if (befor_invoce_body_Data.length > 0) {
+    const query_befor_invoce_body = pgp.helpers.insert(
+      befor_invoce_body_Data,
+      ["header_id", "item_type_id", "item_id", "amount", "unite_price", "row_note", "is_discount_percentage", "dicount_value", "tax_header_id"],
+      "befor_invoce_body"
+    );
+
+    await tx.none(query_befor_invoce_body); // تنفيذ الإدخال بدون استرجاع بيانات
+  }
+}
+
+
+// 1️⃣3️⃣ insert settings_tax_header
+let transaction_header_Map = {}; // خريطة لربط الـ ID القديم بالجديد
+if (backupData.transaction_header.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const transaction_header_Data = backupData.transaction_header.map(x => ({
+    restore_old_id: x.id,
+    company_id: newCompanyId,
+    reference: x.reference,
+    transaction_type: x.transaction_type,
+    total_value: x.total_value,
+    general_note: x.general_note,
+    datex: x.datex,
+    is_deleted: x.is_deleted,
+    account_id: accountIdMap[x.account_id] || x.account_id,
+    salesman_id: accountIdMap[x.salesman_id] || x.salesman_id,
+    due_date: x.due_date,
+    is_column1: x.is_column1,
+    is_column2: x.is_column2,
+    items_location_id: accountIdMap[x.items_location_id] || x.items_location_id,
+    is_delivered: x.is_delivered,
+    order_id: befor_invoice_header_Map[x.order_id] || x.order_id,
+    qutation_id: befor_invoice_header_Map[x.qutation_id] || x.qutation_id,
+    general_reference: x.general_reference,
+    is_including_items: x.is_including_items,
+    str10_date_column1: x.str10_date_column1,
+    str10_date_column2: x.str10_date_column2,
+    items_location_id2: accountIdMap[x.items_location_id2] || x.items_location_id2,
+    is_column3: x.is_column3,
+  }));
+
+  // إدخال البيانات واسترجاع الـ ID الجديد مع القديم
+  const query_transaction_header = pgp.helpers.insert(
+    transaction_header_Data,
+    [
+      "restore_old_id", "company_id", "reference", "transaction_type", "total_value", "general_note", "datex", "is_deleted",
+      "account_id", "salesman_id", "due_date", "is_column1", "is_column2", "items_location_id", "is_delivered", "order_id",
+      "qutation_id", "general_reference", "is_including_items", "str10_date_column1", "str10_date_column2", "items_location_id2",
+      "is_column3"
+    ],
+    "transaction_header"
+  ) + " RETURNING id, restore_old_id";
+
+  const insertedForms = await tx.many(query_transaction_header);
+
+  // حفظ العلاقة بين الـ ID القديم والجديد باستخدام الفهرس
+  insertedForms.forEach(row => {
+    transaction_header_Map[row.restore_old_id] = row.id;
+  });
+  await tx.none(`UPDATE transaction_header SET restore_old_id = NULL WHERE restore_old_id IS NOT NULL;`)
+
+
+    //! 🟠 تجميع تحديثات الحسابات دفعة واحدة
+    const updates = backupData.transaction_header
+    .filter(x => x.invoice_id)
+    .map(x => ({
+      id: transaction_header_Map[x.id], // تصحيح الخطأ هنا
+      invoice_id: transaction_header_Map[x.invoice_id] || null, // استبدال invoice_id بالـ ID الجديد
+    }))
+    .filter(update => update.id); // التأكد من وجود id جديد
+
+  if (updates.length > 0) {
+    // 1️ تحويل البيانات إلى صيغة VALUES (id, qutation_id)
+    const valuesList = updates
+      .map(u => `(${u.id}, ${u.invoice_id || 'NULL'})`)
+      .join(", ");
+
+    // 2 إنشاء استعلام التحديث باستخدام UPDATE ... FROM VALUES
+    const updateQuery = `
+      UPDATE transaction_header AS t
+      SET invoice_id = v.invoice_id
+      FROM (VALUES ${valuesList}) AS v(id, invoice_id)
+      WHERE t.id = v.id;
+    `;
+
+    // 3 تنفيذ الاستعلام
+    await tx.none(updateQuery);
+  }
+
+}
+
+
+
+
+// 1️⃣4️⃣ insert production_forms_body
+if (backupData.transaction_body.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const transaction_body_Data = backupData.transaction_body.map(x => ({
+    transaction_header_id: transaction_header_Map[x.transaction_header_id],
+    debit: x.debit,
+    credit: x.credit,
+    row_note: x.row_note,
+    item_amount: x.item_amount,
+    item_price: x.item_price,
+    account_id: accountIdMap[x.account_id] || x.account_id,
+    settings_tax_header_id: settings_tax_header_Map[x.settings_tax_header_id] || x.settings_tax_header_id,
+    settings_tax_body_id: settings_tax_body_Map[x.settings_tax_body_id] || x.settings_tax_body_id,
+    is_tax: x.is_tax,
+    dicount_value: x.dicount_value,
+    is_discount_percentage: x.is_discount_percentage,
+    item_id: accountIdMap[x.item_id] || x.item_id,
+    cogs: x.cogs,
+    item_location_id_tb: accountIdMap[x.item_location_id_tb] || x.item_location_id_tb,
+    is_accumulated_depreciation: x.is_accumulated_depreciation,
+    is_production_item: x.is_production_item,
+    }));
+
+  // التأكد من أن هناك بيانات ليتم إدخالها
+  if (transaction_body_Data.length > 0) {
+    const query_transaction_body = pgp.helpers.insert(
+      transaction_body_Data,
+      ["transaction_header_id", "debit", "credit", "row_note", "item_amount", "item_price", "account_id", "settings_tax_header_id", "settings_tax_body_id",
+        "is_tax", "dicount_value", "is_discount_percentage", "item_id", "cogs", "item_location_id_tb", "is_accumulated_depreciation", "is_production_item"
+      ],
+      "transaction_body"
+    );
+
+    await tx.none(query_transaction_body); // تنفيذ الإدخال بدون استرجاع بيانات
+  }
+}
+
+
+// 1️⃣5️⃣ insert settings_tax_header
+if (backupData.effects.length > 0) {
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const effects_Data = backupData.effects.map(x => ({
+    employee_id: accountIdMap[x.employee_id] || x.employee_id,
+    company_id: newCompanyId,
+    datex: x.datex,
+    days: x.days,
+    note: x.note,
+    last_update: x.last_update,
+    user_id: x.user_id,
+    hours: x.hours,
+    values: x.values,
+    reference: x.reference,
+  }));
+
+  // إدخال البيانات واسترجاع الـ ID الجديد مع القديم
+  const query_effects = pgp.helpers.insert(
+    effects_Data,
+    ["employee_id", "company_id", "datex", "days", "note", "last_update", "user_id", "hours", "values", "reference"],
+    "effects"
+  );
+
+  await tx.none(query_effects);
+}
+
+
+// 1️⃣6️⃣ insert settings_tax_header
+if (backupData.todo.length > 0) {
+  const todo_Data = backupData.todo
+    .filter(x => existingUserIds.has(x.user_id))
+    .map(x => ({
+      company_id: newCompanyId,
+      user_id: x.user_id,
+      datex: x.datex,
+      is_done: x.is_done,
+      text: x.text,
+    }));
+
+  if (todo_Data.length > 0) {
+    const query_todo = pgp.helpers.insert(
+      todo_Data,
+      ["company_id", "user_id", "datex", "is_done", "text"],
+      "todo"
+    );
+
+    await tx.none(query_todo);
+  }
+}
+
+
+
+// 1️⃣7️⃣ insert production_forms_body
+if (backupData.history.length > 0) {
+  const history_Data = backupData.history
+    .filter(x => existingUserIds.has(x.user_id))
+    .map(x => ({
+      company_id: newCompanyId,
+      user_id: x.user_id,
+      datex: x.datex,
+      history_type: x.history_type,
+      timex: x.timex,
+      transactiontype_id: x.transactiontype_id,
+      transaction_id: transaction_header_Map[x.transaction_id] || x.transaction_id,
+      year: x.year,
+      reference: x.reference,
+    }));
+
+  if (history_Data.length > 0) {
+    const query_history = pgp.helpers.insert(
+      history_Data,
+      ["company_id", "user_id", "datex", "history_type", "timex", "transactiontype_id", "transaction_id", "year", "reference"],
+      "history"
+    );
+
+    await tx.none(query_history);
+  }
+}
+
+//clear restore_old_id befor the end
 
 
       // 👇 أضف هنا استعادة باقي الجداول بنفس الطريقة...
@@ -922,7 +1341,7 @@ app.post("/register_request", registerLimiter, async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -930,39 +1349,39 @@ app.post("/register_request", registerLimiter, async (req, res) => {
 
 
     if (!posted_elements.account_name_input){
-      return res.json({ success: false, message_ar:  'برجاء إدخال اسم المالك بشكل صحيح' });
+      return res.json({ success: false, message_ar:  '⚠️ برجاء إدخال اسم المالك بشكل صحيح' });
   }
 
   if (!posted_elements.phone_input){
-      return res.json({ success: false, message_ar:  'برجاء إدخال رقم الهاتف بشكل صحيح' });
+      return res.json({ success: false, message_ar:  '⚠️ برجاء إدخال رقم الهاتف بشكل صحيح' });
   }
 
   if (!posted_elements.email_input){
-      showAlert(`warning`, 'برجاء إدخال البريد الالكترونى بشكل صحيح')
+      showAlert(`warning`, '⚠️برجاء إدخال البريد الالكترونى بشكل صحيح')
       return
   }
 
   if (!posted_elements.massage_input){
-      return res.json({ success: false, message_ar:  'برجاء إدخال نص الرسالة بشكل صحيح' });
+      return res.json({ success: false, message_ar:  '⚠️ برجاء إدخال نص الرسالة بشكل صحيح' });
     }
   
   if (!posted_elements.user_name_input){
-    return res.json({ success: false, message_ar: 'برجاء إدخال اسم المستخدم بشكل صحيح' });
+    return res.json({ success: false, message_ar: '⚠️ برجاء إدخال اسم المستخدم بشكل صحيح' });
   }
 
   if (!posted_elements.user_pass_input1 || !posted_elements.user_pass_input2){
-      return res.json({ success: false, message_ar: 'برجاء إدخال كلمة المرور بشكل صحيح' });
+      return res.json({ success: false, message_ar: '⚠️ برجاء إدخال كلمة المرور بشكل صحيح' });
   }
 
   if (posted_elements.user_pass_input1 !== posted_elements.user_pass_input2){
-      return res.json({ success: false, message_ar: 'كلمة المرور غير متطابقة' });
+      return res.json({ success: false, message_ar: '⚠️ كلمة المرور غير متطابقة' });
   }
 
 
   const strong_pass = checkPasswordStrength(posted_elements.user_pass_input1);
   
   if (!strong_pass.isStrong){
-    return res.json({ success: false, message_ar: 'رجاء اختيار كلمة مرور قوية' });
+    return res.json({ success: false, message_ar: '⚠️ رجاء اختيار كلمة مرور قوية' });
   }
 
     //* Start--------------------------------------------------------------
@@ -970,7 +1389,7 @@ app.post("/register_request", registerLimiter, async (req, res) => {
   let query01 = `select count(id) as user_name_count from users where user_name = $1`
   let result01 = await db.oneOrNone(query01, [posted_elements.user_name_input])
   if (result01.user_name_count > 0){
-    return res.json({ success: false, message_ar: 'رجاء اختيار اسم مستخدم اخر' });
+    return res.json({ success: false, message_ar: '⚠️ رجاء اختيار اسم مستخدم اخر' });
   }
 
 
@@ -1001,7 +1420,7 @@ app.post("/register_request", registerLimiter, async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم إرسال طلبك بنجاح، يرجى الانتظار لحين مراجعة الطلب والرد عليك في أقرب وقت ممكن.",
+      message_ar: "✅ تم إرسال طلبك بنجاح، يرجى الانتظار لحين مراجعة الطلب والرد عليك في أقرب وقت ممكن.",
     });
   } catch (error) {
     console.error("Error register_request:", error);
@@ -1127,7 +1546,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -1152,8 +1571,8 @@ app.post("/Login", loginLimiter, async (req, res) => {
         return res.json({
           success: false, // العمليه فشلت
           type : 'khorogFawary',
-          message_ar: ` هذا الحساب نشط بالفعل ..رجاء المحاولة بعد قليل `,
-          message_en: "this user is already active Please try again after minutes",
+          message_ar: `⚠️ هذا الحساب نشط بالفعل ..رجاء المحاولة بعد قليل `,
+          message_en: "⚠️ this user is already active Please try again after minutes",
         });
       }
 
@@ -1164,7 +1583,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
           return res.json({
             success: false, // العمليه فشلت
             xx: true,
-            message_ar: "هذا الحساب تم تجميده من قبل : برجاء التواصل مع الاداره",
+            message_ar: "❌ هذا الحساب تم تجميده من قبل : برجاء التواصل مع الاداره",
           });
         }
 
@@ -1173,7 +1592,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
           return res.json({
             success: false, // العمليه فشلت
             xx: true,
-            message_ar: "هذا الحساب تم ايقافه من قبل مدير النظام : برجاء التواصل مع الاداره",
+            message_ar: "❌ هذا الحساب تم ايقافه من قبل مدير النظام : برجاء التواصل مع الاداره",
           });
         }
         //!4.1.1: Start new session
@@ -1211,7 +1630,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
         res.json({
           // الرد على ال فرونت انت اند
           success: true, // معناه ان العمليه نجحت لو فشلت هتبقا فالس
-          message_ar: `Welcome back, ${req.session.username}!`, // دى الرساله الى هتروح للعميل
+          message_ar: `✅ Welcome back, ${req.session.username}!`, // دى الرساله الى هتروح للعميل
           user_id: parseInt(rows[0].id),
           username: rows[0].user_name,
           user_full_name: rows[0].user_full_name,
@@ -1224,13 +1643,13 @@ app.post("/Login", loginLimiter, async (req, res) => {
         //4.2.1: send response to front with some data
         res.json({
           success: false, // العمليه فشلت
-          message_ar: error.message || "Invalid username or password",
+          message_ar: error.message || "❌ Invalid username or password",
         });
       }
     } else {
       res.json({
         success: false,
-        message_ar: error.message || "Invalid username or password",
+        message_ar: error.message || "❌ Invalid username or password",
 
       });
     }
@@ -1238,7 +1657,7 @@ app.post("/Login", loginLimiter, async (req, res) => {
     console.error("Login Error:", error);
     res.status(500).json({
       success: false,
-      message_ar: error.message || 'Login Error',
+      message_ar: error.message || '❌ Login Error',
 
     });
   }
@@ -1256,7 +1675,7 @@ app.get("/Logout", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -1278,14 +1697,14 @@ app.get("/Logout", async (req, res) => {
     req.session.destroy((error) => {
       if (error) {
         console.error("Logout Error:", error);
-        res.status(500).json({ success: false, message_ar: "Logout Error" });
+        res.status(500).json({ success: false, message_ar: "❌ Logout Error" });
       } else {
-        res.json({ success: true, message_ar: "Logout successful" });
+        res.json({ success: true, message_ar: "✅ Logout successful" });
       }
     });
   } catch (error) {
     console.error("Logout Error:", error);
-    res.status(500).json({ success: false, message_ar: "Logout Error" });
+    res.status(500).json({ success: false, message_ar: "❌ Logout Error" });
   }
 });
 
@@ -1305,7 +1724,7 @@ app.post("/delete_company", deleteLimiter, async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -1322,7 +1741,7 @@ app.post("/delete_company", deleteLimiter, async (req, res) => {
     if (!company_name || !user_pass || !owner_pass){
       return res.json({
         success: false,
-        message_ar: `برجاء ادخال البيانات بشكل صحيح`,
+        message_ar: `❌ برجاء ادخال البيانات بشكل صحيح`,
       });
     }
 
@@ -1348,7 +1767,7 @@ where
     if (db_owner_pass_Array.length === 0){
       return res.json({
         success: false,
-        message_ar: `حدث خطأ أثناء معالجة البيانات : Sdc01`,
+        message_ar: `❌ حدث خطأ أثناء معالجة البيانات : Sdc01`,
       });
     }
 
@@ -1365,7 +1784,7 @@ where
   if (!is_owner_pass) {
     return res.json({
       success: false,
-      message_ar: `البيانات غير صحيحة`,
+      message_ar: `❌ البيانات غير صحيحة`,
     });
   }
 
@@ -1385,7 +1804,7 @@ where
   if (!result0 || !result0.company_name || !result0.user_pass) {
     return res.json({
       success: false,
-      message_ar: `حدث خطأ أثناء معالجة البيانات : Sdc02`,
+      message_ar: `❌ حدث خطأ أثناء معالجة البيانات : Sdc02`,
     });
   }
 
@@ -1398,7 +1817,7 @@ where
   if (!isMatch2 || !isMatch3){
     return res.json({
       success: false,
-      message_ar: `البيانات غير صحيحة`,
+      message_ar: `❌ البيانات غير صحيحة`,
     });
   }
 
@@ -1413,8 +1832,8 @@ where
     
 
     res.json({
-      success: true, // العمليه فشلت
-      message_ar: "تم حذف بيانات العمل التجارى بنجاح",
+      success: true,
+      message_ar: "✅ تم حذف بيانات العمل التجارى بنجاح",
     });
    
   
@@ -1424,7 +1843,7 @@ where
     console.error("delete_company Error:", error);
     res.status(500).json({
       success: false,
-      message_ar: error.message || 'حدث خطأ اثناء معالجة البيانات',
+      message_ar: error.message || '❌ حدث خطأ اثناء معالجة البيانات',
 
     });
   }
@@ -1451,7 +1870,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message_ar: "عفوًا لا تملك صلاحية العرض",
+              message_ar: "❌  عفوًا لا تملك صلاحية العرض",
             });
             return false;
           }
@@ -1461,7 +1880,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message_ar: "عفوًا لا تملك صلاحية الاضافة",
+              message_ar: "❌  عفوًا لا تملك صلاحية الاضافة",
             });
             return false;
           }
@@ -1471,7 +1890,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message_ar: "عفوًا لا تملك صلاحية التعديل",
+              message_ar: "❌  عفوًا لا تملك صلاحية التعديل",
             });
             return false;
           }
@@ -1481,7 +1900,7 @@ async function permissions(req, secendary_permission, perm_type) {
           } else {
             res.json({
               success: false,
-              message_ar: "عفوًا لا تملك صلاحية الحذف",
+              message_ar: "❌  عفوًا لا تملك صلاحية الحذف",
             });
             return false;
           }
@@ -1979,7 +2398,7 @@ function sql_anti_injection(values) {
 }
 
 
-let InValidDateFormat_message_ar = `صيغة التاريخ غير صالحة برجاء التواصل مع احد المسؤلين`
+let InValidDateFormat_message_ar = `❌ صيغة التاريخ غير صالحة برجاء التواصل مع احد المسؤلين`
 function isInValidDateFormat(valuesAsArray) {
   try {
   const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -2196,7 +2615,7 @@ return res.json({
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -2208,7 +2627,7 @@ return res.json({
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
     //* Start--------------------------------------------------------------
@@ -2394,7 +2813,7 @@ return res.json({
     })
     return res.json({
       success: true,
-      message_ar: "تم حفظ البيانات بنجاح",
+      message_ar: "✅ تم حفظ البيانات بنجاح",
     });
 
   
@@ -2429,7 +2848,7 @@ app.post("/company_login", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
     //* Start--------------------------------------------------------------
@@ -2454,7 +2873,7 @@ app.post("/company_login", async (req, res) => {
       } else {
         res.json({
           success: false,
-          message_ar: "حدث خطأ اثناء معالجه البيانات ",
+          message_ar: "❌ حدث خطأ اثناء معالجه البيانات ",
         });
       }
     } else {
@@ -2552,7 +2971,7 @@ if (data) {
       } else {
         res.json({
           success: false,
-          message_ar: "حدث خطأ اثناء معالجه البيانات ",
+          message_ar: "❌ حدث خطأ اثناء معالجه البيانات ",
         });
       }
     }
@@ -2682,14 +3101,14 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
     if(!r1 || isNaN(r1) || r1 < 1){
       return res.json({
         success: false,
-        message_ar: 'يرجى التواصل مع احد المسؤلين لتعيين الحد الاقصى لعدد المستخدمين المسموح بهم',
+        message_ar: '❌ يرجى التواصل مع احد المسؤلين لتعيين الحد الاقصى لعدد المستخدمين المسموح بهم',
       });
     }
 
     if ( r2 >= r1){
       return res.json({
         success: false,
-        message_ar: 'تم الوصول الى الحد الاقصى لعدد المستخدمين المسموح بهم : برجاء التواصل مع احد المسؤلين',
+        message_ar: '❌ تم الوصول الى الحد الاقصى لعدد المستخدمين المسموح بهم : برجاء التواصل مع احد المسؤلين',
       });
     }
     
@@ -2703,7 +3122,7 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -2756,7 +3175,7 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
     }
@@ -2815,7 +3234,7 @@ let r2 = await db.oneOrNone(q2,[req.session.owner_id])
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: " تم حفظ بيانات المستخدم بنجاح",
+        message_ar: "✅  تم حفظ بيانات المستخدم بنجاح",
       });
       last_activity(req);
     }
@@ -2847,7 +3266,7 @@ app.post("/api/update_user", async (req, res) => {
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
     
@@ -2878,7 +3297,7 @@ app.post("/api/update_user", async (req, res) => {
         if (posted_elements.permission_type == "1" && parseInt(posted_elements.selectedCompanies.length) < 1 ) {
           return res.json({
             success: false,
-            message_ar: "من فضلك برجاء تحديد الاعمال التجاره المخصصه للمستخدم",
+            message_ar: "❌ من فضلك برجاء تحديد الاعمال التجاره المخصصه للمستخدم",
           });
         }
     
@@ -2903,7 +3322,7 @@ app.post("/api/update_user", async (req, res) => {
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
         }
@@ -2999,7 +3418,7 @@ app.post("/api/update_user", async (req, res) => {
           //4: send a response to frontend about success transaction
           res.json({
             success: true,
-            message_ar: " تم تعديل بيانات المستخدم بنجاح",
+            message_ar: "✅ تم تعديل بيانات المستخدم بنجاح",
           });
           last_activity(req);
         
@@ -3066,7 +3485,7 @@ app.post("/get_user_data_for_update", async (req, res) => {
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         const posted_elements = req.body;
@@ -3171,7 +3590,7 @@ app.post("/delete_user", async (req, res) => {
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
     
@@ -3184,7 +3603,7 @@ app.post("/delete_user", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -3210,7 +3629,7 @@ app.post("/delete_user", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -3231,7 +3650,7 @@ app.post("/delete_user", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حذف بيانات المستخدم بنجاح",
+      message_ar: "✅ تم حذف بيانات المستخدم بنجاح",
     });
   } catch (error) {
     console.error("Error delete_user:", error);
@@ -3355,7 +3774,7 @@ app.post("/get_users_permissions_Data", async (req, res) => {
       if (req.session.is_owner_permission !== true && +req.session.general_permission !== 6) {
         return res.json({
           success: false,
-          message_ar: "عذرًا، ليس لديك الصلاحية اللازمة للقيام بهذا الإجراء. إذا كان لديك أي استفسارات أو تحتاج إلى مساعدة إضافية، يرجى التواصل مع الإدارة.",
+          message_ar: "❌ عذرًا، ليس لديك الصلاحية اللازمة للقيام بهذا الإجراء. إذا كان لديك أي استفسارات أو تحتاج إلى مساعدة إضافية، يرجى التواصل مع الإدارة.",
           message_end: "Sorry, you do not have the necessary permissions to perform this action. If you have any questions or require further assistance, please contact the administration.",
         });
     }
@@ -3439,8 +3858,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       
       return res.json({
         success: true,
-        // message_ar: `تم تعديل بيانات المؤثر بمرجع : ${reference}-${year}`,
-        message_ar: "تم تحديث الإعدادات العامة للتطبيق بنجاح. سيتم تحديث الصفحة تلقائيًا لتطبيق التغييرات.",
+        message_ar: "✅ تم تحديث الإعدادات العامة للتطبيق بنجاح. سيتم تحديث الصفحة تلقائيًا لتطبيق التغييرات.",
         message_en: "The application settings have been successfully updated. The page will refresh automatically to apply the changes.",
       });
       
@@ -3567,7 +3985,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم حفظ البيانات بنجاح",
+        message_ar: "✅ تم حفظ البيانات بنجاح",
       });
     } catch (error) {
       console.error("Error adding employee:", error);
@@ -3619,7 +4037,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -3641,7 +4059,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم تعديل البيانات بنجاح",
+        message_ar: "✅ تم تعديل البيانات بنجاح",
       });
     } catch (error) {
       console.error("Error adding employee:", error);
@@ -3691,7 +4109,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -3711,7 +4129,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم تعديل البيانات بنجاح",
+        message_ar: "✅ تم تعديل البيانات بنجاح",
       });
     } catch (error) {
       console.error("Error update todo2:", error);
@@ -3760,7 +4178,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -3778,7 +4196,7 @@ WHERE company_id = $1 AND setting_type_id IN (1, 2);
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم حذف البيانات بنجاح",
+        message_ar: "✅ تم حذف البيانات بنجاح",
       });
     } catch (error) {
       console.error("Error update todo2:", error);
@@ -3899,7 +4317,7 @@ app.post("/updateUser", async (req, res) => {
        
         return res.json({
           success: false,
-          message_ar: "Sorry,you  can't use this featue",
+          message_ar: "❌ Sorry,you  can't use this featue",
         });
       }
   
@@ -3928,7 +4346,7 @@ app.post("/updateUser", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -3985,7 +4403,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -4010,7 +4428,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -4083,7 +4501,7 @@ app.post("/update_User_from_user_update_ar", async (req, res) => {
 
         return res.json({
           success: true,
-          message_ar: "تم تعديل بيانات المستخدم بنجاح",
+          message_ar: "✅ تم تعديل بيانات المستخدم بنجاح",
         });
       
     
@@ -4124,7 +4542,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -4141,7 +4559,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
     return res.json({
       success: true,
       message_ar:
-        "تم حذف بيانات المستخدم بنجاح : سيتم توجيهك الى صفحه المستخدمين الرئيسية",
+        "✅ تم حذف بيانات المستخدم بنجاح : سيتم توجيهك الى صفحه المستخدمين الرئيسية",
     });
   } catch (error) {
     console.error("Error Deleting user data:", error);
@@ -4257,7 +4675,7 @@ ORDER BY
 
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
-        return res.json({ success: false, message_ar: "ادخل اسم العميل" });
+        return res.json({ success: false, message_ar: "❌ ادخل اسم العميل" });
       }
       //* Start--------------------------------------------------------------
   
@@ -4278,7 +4696,7 @@ ORDER BY
   
       if (result.account_name_count > 0) {
         // اذا حصل على نتائج
-        return res.json({ success: false, message_ar: "اسم العميل موجود بالفعل" });
+        return res.json({ success: false, message_ar: "❌ اسم العميل موجود بالفعل" });
       }
   
       //3: insert data into db
@@ -4325,7 +4743,7 @@ ORDER BY
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم حفظ بيانات العميل بنجاح",
+        message_ar: "✅ تم حفظ بيانات العميل بنجاح",
       });
     } catch (error) {
       console.error("Error adding customers:", error);
@@ -4367,7 +4785,7 @@ ORDER BY
 
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '' || !posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value) ) {
-        return res.json({ success: false, message_ar: "ادخل اسم العميل" });
+        return res.json({ success: false, message_ar: "❌ ادخل اسم العميل" });
       }
       //* Start--------------------------------------------------------------
   
@@ -4386,14 +4804,14 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
       if (result.count_account_name_exist > 0) {
         return res.json({
           success: false,
-          message_ar: "اسم العميل موجود بالفعل"
+          message_ar: "❌ اسم العميل موجود بالفعل"
         });
       }
   
@@ -4426,7 +4844,7 @@ ORDER BY
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم تحديث بيانات العميل بنجاح",
+        message_ar: "✅ تم تحديث بيانات العميل بنجاح",
       });
     } catch (error) {
       console.error("Error adding customers:", error);
@@ -4468,7 +4886,7 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
   
@@ -4490,7 +4908,7 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -4517,7 +4935,7 @@ ORDER BY
       return res.json({
         success: true,
         message_ar:
-          "تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
+          "✅ تم حذف بيانات الموظف : سيتم تحويلك الان الى صفحه الموظفين الرئيسيه",
       });
     } catch (error) {
       last_activity(req)
@@ -4525,7 +4943,7 @@ ORDER BY
       res.status(500).json({
         success: false,
         message_ar:
-          "لا يمكن حذف العميل : قد تكون هناك عمليات مرتبطه بالعميل يجب حذفها اولا",
+          "❌ لا يمكن حذف العميل : قد تكون هناك عمليات مرتبطه بالعميل يجب حذفها اولا",
       });
     }
   });
@@ -4557,7 +4975,7 @@ ORDER BY
         if (!result) {
           return res.json({
             success: false,
-            message_ar: "حدث خطأ اثناء معالجة البيانات ",
+            message_ar: "❌ حدث خطأ اثناء معالجة البيانات ",
             message_en: "You do not have the necessary permissions to delete this account",
           })
         }
@@ -4644,7 +5062,7 @@ ORDER BY
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
   
@@ -4655,7 +5073,7 @@ ORDER BY
 
   
         if (!posted_elements.name || posted_elements.name === '') {
-          return res.json({ success: false, message_ar: "ادخل اسم القسم" });
+          return res.json({ success: false, message_ar: "❌ ادخل اسم القسم" });
         }
 
 
@@ -4664,7 +5082,7 @@ ORDER BY
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -4688,13 +5106,13 @@ ORDER BY
 
         if (result.account_name_count > 0) {
           // اذا حصل على نتائج
-          return res.json({ success: false, message_ar: "اسم القسم موجود بالفعل" });
+          return res.json({ success: false, message_ar: "❌ اسم القسم موجود بالفعل" });
         }
         
         
         if (!result.parent_id) {
           // اذا حصل على نتائج
-          return res.json({ success: false, message_ar: "حدث خطأ اثناء معالجة البيانات وتم الغاء العمليه" });
+          return res.json({ success: false, message_ar: "❌ حدث خطأ اثناء معالجة البيانات وتم الغاء العمليه" });
         }
         //3: insert data into db
 
@@ -4725,7 +5143,7 @@ ORDER BY
         //4: send a response to frontend about success transaction
         res.json({
           success: true,
-          message_ar: "تم حفظ بيانات القسم بنجاح",
+          message_ar: "✅ تم حفظ بيانات القسم بنجاح",
         });
       } catch (error) {
         console.error("Error adding department:", error);
@@ -4762,7 +5180,7 @@ ORDER BY
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
 
@@ -4790,7 +5208,7 @@ ORDER BY
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -4811,7 +5229,7 @@ ORDER BY
         //4: send a response to frontend about success transaction
         res.json({
           success: true,
-          message_ar: "تم حذف بيانات القسم بنجاح",
+          message_ar: "✅ تم حذف بيانات القسم بنجاح",
         });
       } catch (error) {
         console.error("Error adding department:", error);
@@ -4849,13 +5267,13 @@ ORDER BY
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
   
   
         if (!posted_elements.name || posted_elements.name === '') {
-          return res.json({ success: false, message_ar: "ادخل اسم القسم" });
+          return res.json({ success: false, message_ar: "❌ ادخل اسم القسم" });
         }
 
         // if (posted_elements.activeValue && posted_elements.activeValue !== 1) {
@@ -4890,12 +5308,12 @@ ORDER BY
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });        }
 
         if (result.account_name_count > 0) {
           // اذا حصل على نتائج
-          return res.json({ success: false, message_ar: "اسم القسم موجود بالفعل" });
+          return res.json({ success: false, message_ar: "❌ اسم القسم موجود بالفعل" });
         }
         
         
@@ -4914,7 +5332,7 @@ ORDER BY
         //4: send a response to frontend about success transaction
         res.json({
           success: true,
-          message_ar: "تم تعديل بيانات القسم بنجاح",
+          message_ar: "✅ تم تعديل بيانات القسم بنجاح",
         });
       } catch (error) {
         console.error("Error adding department:", error);
@@ -4962,7 +5380,7 @@ app.post("/employee_add", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -4981,7 +5399,7 @@ app.post("/employee_add", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "ادخل اسم الموظف اولا",
+          "❌ ادخل اسم الموظف اولا",
       });
     }          
   
@@ -4989,7 +5407,7 @@ app.post("/employee_add", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال القسم بشكل صحيح",
+          "❌ برجاء ادخال القسم بشكل صحيح",
       });
     }    
 
@@ -5019,7 +5437,7 @@ app.post("/employee_add", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -5029,14 +5447,14 @@ app.post("/employee_add", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
 
     if (result.count_account_name > 0) {
       // اذا حصل على نتائج
-      return res.json({ success: false, message_ar: "اسم الموظف موجود بالفعل" });
+      return res.json({ success: false, message_ar: "❌ اسم الموظف موجود بالفعل" });
     }
 
     //3: insert data into db
@@ -5095,7 +5513,7 @@ app.post("/employee_add", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حفظ الموظف بنجاح",
+      message_ar: "✅ تم حفظ الموظف بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -5141,7 +5559,7 @@ app.post("/update_employee", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -5159,7 +5577,7 @@ app.post("/update_employee", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "ادخل اسم الموظف اولا",
+          "❌ ادخل اسم الموظف اولا",
       });
     }          
     
@@ -5189,7 +5607,7 @@ app.post("/update_employee", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -5199,7 +5617,7 @@ app.post("/update_employee", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -5209,13 +5627,13 @@ app.post("/update_employee", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
     if (result.count_account_name > 0) {
       // اذا حصل على نتائج
-      return res.json({ success: false, message_ar: "اسم الموظف موجود بالفعل" });
+      return res.json({ success: false, message_ar: "❌ اسم الموظف موجود بالفعل" });
     }
 
     //3: insert data into db
@@ -5270,7 +5688,7 @@ app.post("/update_employee", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم تعديل بيانات الموظف بنجاح : سيتم تحويلك الى صفحة الموظفين الرئيسية",
+      message_ar: "✅ تم تعديل بيانات الموظف بنجاح : سيتم تحويلك الى صفحة الموظفين الرئيسية",
     });
   } catch (error) {
     await last_activity(req)
@@ -5313,7 +5731,7 @@ app.post("/delete_employee", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -5342,7 +5760,7 @@ app.post("/delete_employee", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -5350,7 +5768,7 @@ app.post("/delete_employee", async (req, res) => {
     if (result.count_actions > 0 || result.count_effects > 0){
       return res.json({
         success: false,
-        message_ar: 'يوجد حركات على الحساب : لا يمكن حذف الحساب',
+        message_ar: '❌ يوجد حركات على الحساب : لا يمكن حذف الحساب',
       });
     }
 
@@ -5372,7 +5790,7 @@ app.post("/delete_employee", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حذف بيانات الموظف بنجاح",
+      message_ar: "✅ تم حذف بيانات الموظف بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -5406,7 +5824,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
       
@@ -5607,7 +6025,7 @@ ORDER BY
 
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
-        return res.json({ success: false, message_ar: "ادخل اسم المورد" });
+        return res.json({ success: false, message_ar: "❌ ادخل اسم المورد" });
       }
       //* Start--------------------------------------------------------------
   
@@ -5627,7 +6045,7 @@ ORDER BY
   
       if (result.account_name_count > 0) {
         // اذا حصل على نتائج
-        return res.json({ success: false, message_ar: "اسم المورد موجود بالفعل" });
+        return res.json({ success: false, message_ar: "❌ اسم المورد موجود بالفعل" });
       }
   
       //3: insert data into db
@@ -5670,7 +6088,7 @@ ORDER BY
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم حفظ بيانات المورد بنجاح",
+        message_ar: "✅ تم حفظ بيانات المورد بنجاح",
       });
     } catch (error) {
       last_activity(req)
@@ -5713,7 +6131,7 @@ ORDER BY
 
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '' || !posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value) ) {
-        return res.json({ success: false, message_ar: "ادخل اسم المورد" });
+        return res.json({ success: false, message_ar: "❌ ادخل اسم المورد" });
       }
       //* Start--------------------------------------------------------------
   
@@ -5740,14 +6158,14 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
       if (result.count_account_name_exist > 0) {
         return res.json({
           success: false,
-          message_ar: "اسم المورد موجود بالفعل"
+          message_ar: "❌ اسم المورد موجود بالفعل"
         });
       }
               
@@ -5780,7 +6198,7 @@ ORDER BY
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم تحديث بيانات المورد بنجاح",
+        message_ar: "✅ تم تحديث بيانات المورد بنجاح",
       });
     } catch (error) {
       last_activity(req)
@@ -5823,7 +6241,7 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
   
@@ -5843,7 +6261,7 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -5870,7 +6288,7 @@ ORDER BY
       return res.json({
         success: true,
         message_ar:
-          "تم حذف بيانات المورد بنجاح : سيتم تحويلك الان الى صفحه الموردين الرئيسيه",
+          "✅ تم حذف بيانات المورد بنجاح : سيتم تحويلك الان الى صفحه الموردين الرئيسيه",
       });
     } catch (error) {
       last_activity(req)
@@ -5878,7 +6296,7 @@ ORDER BY
       res.status(500).json({
         success: false,
         message_ar:
-          "لا يمكن حذف بيانات المورد : قد تكون هناك عمليات مرتبطه بالمورد يجب حذفها اولا",
+          "❌ لا يمكن حذف بيانات المورد : قد تكون هناك عمليات مرتبطه بالمورد يجب حذفها اولا",
       });
     }
   });
@@ -5974,7 +6392,7 @@ app.post("/effects_add", async (req, res) => {
     // إرسال استجابة للواجهة الأمامية حول نجاح المعاملة
     res.json({
       success: true,
-      message_ar: `تم إنشاء المؤثر بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء المؤثر بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -6040,7 +6458,7 @@ app.post("/effects_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -6157,7 +6575,7 @@ ORDER BY
     console.error("Error getEffectsData1:", error);
     res
       .status(500)
-      .json({ success: false, message_ar: "حدث خطأ أثناء عرض البيانات" });
+      .json({ success: false, message_ar: "❌ حدث خطأ أثناء عرض البيانات" });
   }
 });
 //#endregion
@@ -6182,7 +6600,7 @@ app.post("/updateeffects", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -6203,7 +6621,7 @@ app.post("/updateeffects", async (req, res) => {
       // اذا حصل على نتائج
       return res.json({
         success: true,
-        message_ar: "data get success",
+        message_ar: "✅ data get success",
         rows: rows,
       });
     } else {
@@ -6239,7 +6657,7 @@ app.post("/effects_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -6287,7 +6705,7 @@ return res.json({
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -6322,7 +6740,7 @@ return res.json({
     
     return res.json({
       success: true,
-      message_ar: `تم تعديل بيانات المؤثر بمرجع : ${new_reference}-${year}`,
+      message_ar: `✅ تم تعديل بيانات المؤثر بمرجع : ${new_reference}-${year}`,
     });
     
   } catch (error) {
@@ -6343,7 +6761,7 @@ app.post("/effects_delete", async (req, res) => {
     //! Permission
     await permissions(req, "effects_permission", "delete");
     if (!permissions) {
-      return res.status(403).json({ success: false, message_ar: "ليس لديك إذن للحذف." });
+      return res.status(403).json({ success: false, message_ar: "❌ ليس لديك إذن للحذف." });
     }
 
     //! sql injection check
@@ -6380,7 +6798,7 @@ app.post("/effects_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -6406,7 +6824,7 @@ app.post("/effects_delete", async (req, res) => {
     
     return res.json({
       success: true,
-      message_ar: `تم حذف المؤثر بمرجع : ${new_reference}-${year}`,
+      message_ar: `✅ تم حذف المؤثر بمرجع : ${new_reference}-${year}`,
     });
   } catch (error) {
     console.error("Error during effects deletion:", error);
@@ -6446,7 +6864,7 @@ app.post("/production_add_ar", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
     //* Start--------------------------------------------------------------
@@ -6470,7 +6888,7 @@ const insert = await db.one(query, [
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حفظ البيانات بنجاح",
+      message_ar: "✅ تم حفظ البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding production:", error);
@@ -6500,7 +6918,7 @@ app.post("/get_All_production_Data", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -6584,7 +7002,7 @@ app.post("/production_update_ar", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -6607,7 +7025,7 @@ app.post("/production_update_ar", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: "تم تعديل البيانات : سيتم تحويلك الان الى صفحه الجرد الرئيسيه",
+      message_ar: "✅ تم تعديل البيانات : سيتم تحويلك الان الى صفحه الجرد الرئيسيه",
     });
   } catch (error) {
     console.error("Error production_update_ar", error);
@@ -6637,7 +7055,7 @@ app.post("/delete_production", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -6651,7 +7069,7 @@ app.post("/delete_production", async (req, res) => {
     return res.json({
       success: true,
       message_ar:
-        "تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه الجرد والانتاج الرئيسيه",
+        "✅ تم حذف البيانات بنجاح : سيتم تحويلك الان الى صفحه الجرد والانتاج الرئيسيه",
     });
   } catch (error) {
     console.error("Error get employee data:", error);
@@ -6752,7 +7170,7 @@ app.post("/api/bread_add", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم الحفظ بنجاح",
+      message_ar: "✅ تم الحفظ بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -6854,7 +7272,7 @@ app.post("/api/bread_update", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم التعديل بنجاح",
+      message_ar: "✅ تم التعديل بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -6899,7 +7317,7 @@ WHERE bread_header_id = $1;`;
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم الحذف بنجاح",
+      message_ar: "✅ تم الحذف بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -6937,7 +7355,7 @@ app.post("/report_effects", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -6977,7 +7395,7 @@ app.post("/report_effects", async (req, res) => {
       } else {
         return res.json({
           success: false,
-          message_ar: "لا نتائج",
+          message_ar: "❌ لا نتائج",
         });
       }
     } else {
@@ -7023,7 +7441,7 @@ app.post("/report_effects", async (req, res) => {
       } else {
         return res.json({
           success: false,
-          message_ar: "لا نتائج",
+          message_ar: "❌ لا نتائج",
         });
       }
     }
@@ -7133,7 +7551,7 @@ app.post("/api/addGroup-account", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -7178,7 +7596,7 @@ app.post("/api/addGroup-account", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم اضافة المجموعه بنجاح",
+      message_ar: "✅ تم اضافة المجموعه بنجاح",
       message_en: "",
     });
   } catch (error) {
@@ -7254,7 +7672,7 @@ app.post("/api/add-account", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
   
@@ -7305,7 +7723,7 @@ app.post("/api/add-account", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم إضافة الحساب بنجاح",
+      message_ar: "✅ تم إضافة الحساب بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -7400,7 +7818,7 @@ app.post("/api/update-account", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -7482,7 +7900,7 @@ app.post("/api/update-account", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم تعديل البيانات بنجاح",
+      message_ar: "✅ تم تعديل البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -7581,7 +7999,7 @@ app.post("/api/rename-account", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم تحديث اسم الحساب بنجاح",
+      message_ar: "✅ تم تحديث اسم الحساب بنجاح",
       message_en: "Account deleted successfully",
     });
   } catch (error) {
@@ -7680,7 +8098,7 @@ app.post("/api/delete-account", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم حذف الحساب بنجاح",
+      message_ar: "✅ تم حذف الحساب بنجاح",
       message_en: "Account deleted successfully",
     });
   } catch (error) {
@@ -7800,7 +8218,7 @@ app.post("/api/update-account-parent", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم حفظ البيانات بنجاح",
+      message_ar: "✅ تم حفظ البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error updating parent:", error);
@@ -7897,7 +8315,7 @@ WHERE
             if (!permissions) {
               return res.status(403).json({
                 success: false,
-                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+                message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
               });
             }
   
@@ -7925,7 +8343,7 @@ WHERE
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
   
@@ -7939,7 +8357,7 @@ WHERE
       if (hasBadSymbols) {
         return res.status(400).json({
           success: false,
-          message_ar: "تم اكتشاف أحرف غير مسموح بها في المدخلات. يرجى مراجعة المدخلات والمحاولة مرة أخرى.",
+          message_ar: "❌ تم اكتشاف أحرف غير مسموح بها في المدخلات. يرجى مراجعة المدخلات والمحاولة مرة أخرى.",
         });
       }
   
@@ -7948,7 +8366,7 @@ WHERE
       turn_EmptyValues_TO_null(posted_elements);
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '') {
-        return res.json({ success: false, message_ar: "ادخل اسم موقع المخزون" });
+        return res.json({ success: false, message_ar: "❌ ادخل اسم موقع المخزون" });
       }
   
       //* Start Transaction --------------------------------------------------
@@ -7985,7 +8403,7 @@ WHERE
       // إرسال استجابة للواجهة الأمامية حول نجاح المعاملة
       res.json({
         success: true,
-        message_ar: `تم إنشاء موقع المخزون بنجاح`,
+        message_ar: `✅ تم إنشاء موقع المخزون بنجاح`,
       });
     } catch (error) {
       await last_activity(req);
@@ -8026,7 +8444,7 @@ WHERE
 
 
       if (!posted_elements.account_name_input_value || posted_elements.account_name_input_value === '' || !posted_elements.account_id_hidden_value || isNaN(posted_elements.account_id_hidden_value) ) {
-        return res.json({ success: false, message_ar: "ادخل اسم موقع المخزون" });
+        return res.json({ success: false, message_ar: "❌ ادخل اسم موقع المخزون" });
       }
       //* Start--------------------------------------------------------------
   
@@ -8046,14 +8464,14 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
       if (result.count_account_name_exist > 0) {
         return res.json({
           success: false,
-          message_ar: "اسم موقع المخزون موجود بالفعل"
+          message_ar: "❌ اسم موقع المخزون موجود بالفعل"
         });
       }
   
@@ -8076,7 +8494,7 @@ WHERE
       //4: send a response to frontend about success transaction
       res.json({
         success: true,
-        message_ar: "تم تحديث بيانات موقع المخزون بنجاح",
+        message_ar: "✅ تم تحديث بيانات موقع المخزون بنجاح",
       });
     } catch (error) {
       last_activity(req)
@@ -8117,7 +8535,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
   
@@ -8138,7 +8556,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -8164,8 +8582,7 @@ WHERE
       last_activity(req)
       return res.json({
         success: true,
-        message_ar:
-          "تم حذف بيانات موقع المخزون بنجاح  : سيتم تحويلك الان الى صفحه مواقع المخزون الرئيسيه",
+        message_ar: "✅ تم حذف بيانات موقع المخزون بنجاح  : سيتم تحويلك الان الى صفحه مواقع المخزون الرئيسيه",
       });
     } catch (error) {
       last_activity(req)
@@ -8173,7 +8590,7 @@ WHERE
       res.status(500).json({
         success: false,
         message_ar:
-          "لا يمكن حذف بيانات المورد : قد تكون هناك عمليات مرتبطه بالمورد يجب حذفها اولا",
+          "❌ لا يمكن حذف بيانات المورد : قد تكون هناك عمليات مرتبطه بالمورد يجب حذفها اولا",
       });
     }
   });
@@ -8265,7 +8682,7 @@ let params2 = [req.session.company_id]
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
   
@@ -8361,7 +8778,7 @@ let params2 = [req.session.company_id]
         if (items_amount_location.length === 0) {
           return res.json({
             success: false,
-            message_ar: "لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
+            message_ar: "❌ لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
           });
         }
     
@@ -8451,7 +8868,7 @@ const newId_transaction_header = insert.id;
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم إنشاء تحويلات المخزون بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم إنشاء تحويلات المخزون بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -8485,7 +8902,7 @@ const newId_transaction_header = insert.id;
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
         
@@ -8689,7 +9106,7 @@ where
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
   
@@ -8757,7 +9174,7 @@ where
         await block_user(req,'Situ01');
         return res.json({
           success: false,
-          message_ar: "تم حظر الحساب",
+          message_ar: "❌ تم حظر الحساب",
           xx: true,
           message_en: "Cannot delete account with sub-accounts",
         });
@@ -8801,7 +9218,7 @@ where
         if (items_amount_location.length === 0) {
           return res.json({
             success: false,
-            message_ar: "لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
+            message_ar: "❌ لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
           });
         }
     
@@ -8891,7 +9308,7 @@ where
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم تحديث تحويلات المخزون بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم تحديث تحويلات المخزون بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -8914,7 +9331,7 @@ where
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
       const posted_elements = req.body;
@@ -9001,7 +9418,7 @@ where
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم حذف تحويل المخزون  بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم حذف تحويل المخزون  بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -9097,7 +9514,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       if (!hasPermission) {
         return res.json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات اللازمة لاضافة هذا المجموعة",
+          message_ar: "❌ ليس لديك الصلاحيات اللازمة لاضافة هذا المجموعة",
           message_en: "You do not have the necessary permissions to delete this account",
         });
       }
@@ -9121,7 +9538,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       if (!posted_elements.accountname || !posted_elements.accountParent || isNaN(+posted_elements.accountParent)) {
         return res.json({
           success: false,
-          message_ar: "برجاء ادخال البيانات بشكل صحيح",
+          message_ar: "❌ برجاء ادخال البيانات بشكل صحيح",
         })
       }
 
@@ -9145,7 +9562,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -9154,7 +9571,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
   
@@ -9164,7 +9581,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       if (result.count_account_name > 0) {
         return res.json({
           success: false,
-          message_ar: "هذا الاسم موجود بالفعل",
+          message_ar: "❌ هذا الاسم موجود بالفعل",
           message_en: "Account with this name already exists",
         });
       }
@@ -9194,7 +9611,7 @@ order by account_name ASC ;`;  // in (1,2 ) ya3ny = 1 or 2
       // إرسال استجابة نجاح إلى العميل
       return res.json({
         success: true,
-        message_ar: "تم اضافة المجموعه بنجاح",
+        message_ar: "✅ تم اضافة المجموعه بنجاح",
         message_en: "",
       });
     } catch (error) {
@@ -9236,7 +9653,7 @@ app.post("/api/add_item", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -9248,7 +9665,7 @@ app.post("/api/add_item", async (req, res) => {
           if(!posted_elements.account_name || !posted_elements.account_parent_name_id || isNaN(+posted_elements.account_parent_name_id)){
             return res.json({
               success: false,
-              message_ar: "رجاء تأكد من ادخال البيانات فى الحقول المطوبه بشكل صحيح",
+              message_ar: "❌  رجاء تأكد من ادخال البيانات فى الحقول المطوبه بشكل صحيح",
             });
           }
 
@@ -9283,7 +9700,7 @@ app.post("/api/add_item", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -9333,7 +9750,7 @@ app.post("/api/add_item", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم إضافة الصنف بنجاح",
+      message_ar: "✅ تم إضافة الصنف بنجاح",
     });
   } catch (error) {
     console.error("Error add_item:", error);
@@ -9407,7 +9824,7 @@ app.post("/api/update-group_items", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -9456,7 +9873,7 @@ app.post("/api/update-group_items", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم تعديل البيانات بنجاح",
+      message_ar: "✅ تم تعديل البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -9494,7 +9911,7 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -9584,7 +10001,7 @@ app.post("/api/items_tree_drag_and_drop", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم حفظ البيانات بنجاح",
+      message_ar: "✅ تم حفظ البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error updating parent:", error);
@@ -9741,7 +10158,7 @@ app.post("/get_data_for_items_table_view_btn", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -9940,7 +10357,7 @@ app.post("/api/update-item", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -9994,7 +10411,7 @@ app.post("/api/update-item", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: "تم تعديل البيانات بنجاح",
+      message_ar: "✅ تم تعديل البيانات بنجاح",
     });
   } catch (error) {
     console.error("Error adding account:", error);
@@ -10082,7 +10499,7 @@ app.post("/api/delete-item", async (req, res) => {
     // إرسال استجابة نجاح إلى العميل
     return res.json({
       success: true,
-      message_ar: "تم حذف البيانات بنجاح",
+      message_ar: "✅ تم حذف البيانات بنجاح",
       message_en: "Account deleted successfully",
     });
   } catch (error) {
@@ -10156,7 +10573,7 @@ app.post("/get_All_transaction_Data", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -10288,7 +10705,7 @@ app.post("/api/transaction_add", async (req, res) => {
       if (totaldebit !== totalCredit){
         return res.json({
           success: false,
-          message_ar: "القيد غير متوزن : برجاء تقريب الارقام الى اقرب رقمين عشريين",
+          message_ar: "❌ القيد غير متوزن : برجاء تقريب الارقام الى اقرب رقمين عشريين",
         });
       }
 
@@ -10344,7 +10761,7 @@ for (const rowData of posted_elements.posted_array) {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
   }
@@ -10451,7 +10868,7 @@ await tx.none(query2, insert_array2.flat());
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -10595,7 +11012,7 @@ for (const rowData of posted_elements.posted_array) {
     if (!items_location_id){
       return res.json({
         success: false,
-        message_ar: `برجاء تحديد موقع المخزون فى السطر رقم ${rowIndex}`,
+        message_ar: `❌ برجاء تحديد موقع المخزون فى السطر رقم ${rowIndex}`,
       });
     }
     const locationExists = dbAccounts.some(item => 
@@ -10606,7 +11023,7 @@ for (const rowData of posted_elements.posted_array) {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
   }
@@ -10734,7 +11151,7 @@ await tx.none(query2, insert_array2.flat());
     
     return res.json({
       success: true,
-      message_ar: `تم تعديل قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تعديل قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -10773,7 +11190,7 @@ app.post("/api/transaction_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -10867,7 +11284,7 @@ app.post("/api/transaction_delete", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم حذف قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف قيد محاسبى بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -10898,7 +11315,7 @@ app.post("/get_transaction_Data", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -10922,7 +11339,7 @@ app.post("/get_transaction_Data", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -11158,7 +11575,7 @@ app.post("/get_data_for_sales_qutation_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -11536,7 +11953,7 @@ app.post("/get_data_for_sales_order_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -11791,7 +12208,7 @@ await db.tx(async (tx) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
         
@@ -11941,7 +12358,7 @@ ORDER BY
           if(!item.Desc || item.Desc === '' || !item.rate || isNaN(item.rate) || !item.reverse_type || !item.account_id || isNaN(item.account_id)){
             return res.json({
               success: false,
-              message_ar: "برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
+              message_ar: "❌  برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
             });
           } 
         });
@@ -11979,7 +12396,7 @@ ORDER BY
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -12026,7 +12443,7 @@ ORDER BY
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم الحفظ بناج`,
+        message_ar: `✅ تم الحفظ بناج`,
       });
     } catch (error) {
       await last_activity(req);
@@ -12079,7 +12496,7 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
   
@@ -12138,7 +12555,7 @@ ORDER BY
         if (!item.rowId || isNaN(item.rowId) || !item.Desc || item.Desc === '' || !item.rate || isNaN(item.rate) || !item.reverse_type || !item.account_id || isNaN(item.account_id)) {
           return res.json({
             success: false,
-            message_ar: "برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
+            message_ar: "❌ برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
           });
         }
       }
@@ -12156,7 +12573,7 @@ ORDER BY
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
       }
@@ -12193,7 +12610,7 @@ ORDER BY
       await last_activity(req);
       return res.json({
         success: true,
-        message_ar: "تم التعديل بنجاح",
+        message_ar: "✅ تم التعديل بنجاح",
       });
     } catch (error) {
       //! عند حدوث خطأ
@@ -12275,7 +12692,7 @@ ORDER BY
           if(!item.rowId || isNaN(item.rowId)){
             return res.json({
               success: false,
-              message_ar: "برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
+              message_ar: "❌  برجاء التأكد من ادخال البيانات بشكل صحيح ثم حاول مجددا",
             });
           } 
         });
@@ -12296,7 +12713,7 @@ ORDER BY
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -12342,7 +12759,7 @@ ORDER BY
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم حذف البيانات`,
+        message_ar: `✅ تم حذف البيانات`,
       });
     } catch (error) {
       await last_activity(req);
@@ -12380,7 +12797,7 @@ app.post("/get_sales_qutation_Data_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -12509,7 +12926,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -12581,7 +12998,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
        }
 
@@ -12611,7 +13028,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -12621,7 +13038,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -12643,7 +13060,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -12676,7 +13093,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -12727,7 +13144,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
 
@@ -12758,7 +13175,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم إنشاء عرض سعر بيع بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم إنشاء عرض سعر بيع بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -12856,7 +13273,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
        }
 
@@ -12872,7 +13289,7 @@ WHERE
           if (!rows01 || !rows01.id) {
             return res.json({
               success: false,
-              message_ar: 'هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
+              message_ar: '❌ هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
             });
           }
           const reference = rows01.reference
@@ -12899,7 +13316,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -12909,7 +13326,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -12931,7 +13348,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -12964,7 +13381,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -13010,7 +13427,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
 
@@ -13042,7 +13459,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم تحديث عرض سعر بيع بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم تحديث عرض سعر بيع بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -13066,7 +13483,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -13084,7 +13501,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -13153,7 +13570,7 @@ WHERE
         if (result1.befor_invoice_count > 0 || result1.transaction_header_count > 0) {
           return res.json({
             success: false,
-            message_ar: 'لا يمكن رفض عرض السعر الحالي، حيث تم قبوله بالفعل فى احد المعاملات.',
+            message_ar: '❌ لا يمكن رفض عرض السعر الحالي، حيث تم قبوله بالفعل فى احد المعاملات.',
           });
         }
         
@@ -13162,7 +13579,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -13174,7 +13591,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
 
@@ -13186,7 +13603,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم تسجيل رفض عرض السعر بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم تسجيل رفض عرض السعر بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -13211,7 +13628,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -13229,7 +13646,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -13276,7 +13693,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         
@@ -13297,7 +13714,7 @@ WHERE
         if (result.count_qutation_id > 0) {
           return res.json({
             success: false,
-            message_ar: 'عفوا : لا يمكن حذف سعر البيع لانه مستخدم بالفعل ',
+            message_ar: '❌ عفوا : لا يمكن حذف سعر البيع لانه مستخدم بالفعل ',
           });
         }
         
@@ -13327,7 +13744,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم حذف عرض سعر بيع بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم حذف عرض سعر بيع بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -13366,7 +13783,7 @@ WHERE
               return res.json({
                 success: false,
                 message_ar:
-                  "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                  "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
               });
             }
           
@@ -13455,7 +13872,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -13529,7 +13946,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
        }
 
@@ -13547,7 +13964,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         }
@@ -13576,7 +13993,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -13586,7 +14003,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -13608,7 +14025,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -13641,7 +14058,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -13706,7 +14123,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
 
@@ -13738,7 +14155,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم إنشاء امر بيع بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم إنشاء امر بيع بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -13762,7 +14179,7 @@ WHERE
             if (!permissions) {
               return res.status(403).json({
                 success: false,
-                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+                message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
               });
             }
     
@@ -13836,7 +14253,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
            }
     
@@ -13853,7 +14270,7 @@ WHERE
                   return res.json({
                     success: false,
                     xx: true,
-                    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                    message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                   });
                 }
               }
@@ -13867,7 +14284,7 @@ WHERE
               if (!rows01 || !rows01.id) {
                 return res.json({
                   success: false,
-                  message_ar: 'هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
+                  message_ar: '❌ هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
                 });
               }
               const reference = rows01.reference
@@ -13895,7 +14312,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
     
@@ -13905,7 +14322,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
     
@@ -13927,7 +14344,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -13960,7 +14377,7 @@ WHERE
                 return res.json({
                   success: false,
                   xx: true,
-                  message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                  message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                 });
               }
             }
@@ -14031,7 +14448,7 @@ WHERE
                   return res.json({
                     success: false,
                     xx: true,
-                    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                    message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                   });
                 }
     
@@ -14063,7 +14480,7 @@ WHERE
             // إذا تم تنفيذ جميع الاستعلامات بنجاح
             return res.json({
               success: true,
-              message_ar: `تم تحديث امر بيع بمرجع : ${new_referenceFormatting}-${year}`,
+              message_ar: `✅ تم تحديث امر بيع بمرجع : ${new_referenceFormatting}-${year}`,
             });
           } catch (error) {
             await last_activity(req);
@@ -14088,7 +14505,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -14106,7 +14523,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -14160,7 +14577,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         
@@ -14183,7 +14600,7 @@ WHERE
         if (result.count_order_id > 0) {
           return res.json({
             success: false,
-            message_ar: 'عفوا : لا يمكن حذف عرض سعر البيع لانه مستخدم بالفعل ',
+            message_ar: '❌ عفوا : لا يمكن حذف عرض سعر البيع لانه مستخدم بالفعل ',
           });
         }
         
@@ -14225,7 +14642,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم حذف امر بيع بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم حذف امر بيع بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -14266,7 +14683,7 @@ WHERE
                   return res.json({
                     success: false,
                     message_ar:
-                      "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                      "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
                   });
                 }
               
@@ -14712,7 +15129,7 @@ where
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
 
@@ -14789,7 +15206,7 @@ where
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
      }
 
@@ -14809,7 +15226,7 @@ where
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
       }
@@ -14827,7 +15244,7 @@ where
          return res.json({
            success: false,
            xx: true,
-           message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+           message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
          });
        }
        }
@@ -14854,7 +15271,7 @@ where
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -14864,7 +15281,7 @@ where
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -14886,7 +15303,7 @@ where
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -14922,7 +15339,7 @@ where
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
       }
@@ -15145,7 +15562,7 @@ where
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم إنشاء فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم إنشاء فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -15993,7 +16410,7 @@ WHERE
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
 
@@ -16071,7 +16488,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
      }
 
@@ -16087,7 +16504,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
      }
 
@@ -16102,7 +16519,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
       }
@@ -16120,7 +16537,7 @@ WHERE
          return res.json({
            success: false,
            xx: true,
-           message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+           message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
          });
        }
        }
@@ -16147,7 +16564,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -16157,7 +16574,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -16179,7 +16596,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -16215,7 +16632,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
       }
@@ -16464,7 +16881,7 @@ WHERE
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم تعديل  فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم تعديل  فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -16488,7 +16905,7 @@ WHERE
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
 
@@ -16506,7 +16923,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
   
@@ -16556,7 +16973,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
       
@@ -16571,7 +16988,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
       
@@ -16660,7 +17077,7 @@ WHERE
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم حذف  فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم حذف  فاتورة مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -16700,7 +17117,7 @@ app.post("/get_purshases_qutation_Data_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -16945,7 +17362,7 @@ app.post("/getItemssData1", async (req, res) => {
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error while get accounts Data" });
+      .json({ success: false, message_ar: "❌ Error while get accounts Data" });
   }
 });
 */
@@ -16961,7 +17378,7 @@ app.post("/getItemssData1", async (req, res) => {
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -17033,7 +17450,7 @@ app.post("/getItemssData1", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
        }
 
@@ -17064,7 +17481,7 @@ app.post("/getItemssData1", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
         */
@@ -17076,7 +17493,7 @@ app.post("/getItemssData1", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -17098,7 +17515,7 @@ app.post("/getItemssData1", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -17131,7 +17548,7 @@ app.post("/getItemssData1", async (req, res) => {
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -17181,7 +17598,7 @@ app.post("/getItemssData1", async (req, res) => {
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
 
@@ -17213,7 +17630,7 @@ app.post("/getItemssData1", async (req, res) => {
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم إنشاء عرض سعر شراء بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم إنشاء عرض سعر شراء بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -17245,7 +17662,7 @@ app.post("/getItemssData1", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -17451,7 +17868,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -17523,7 +17940,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
        }
 
@@ -17539,7 +17956,7 @@ WHERE
           if (!rows01 || !rows01.id) {
             return res.json({
               success: false,
-              message_ar: 'هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
+              message_ar: '❌ هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
             });
           }
           const reference = rows01.reference
@@ -17576,7 +17993,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -17598,7 +18015,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -17631,7 +18048,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -17677,7 +18094,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
 
@@ -17709,7 +18126,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم تحديث عرض سعر الشراء بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم تحديث عرض سعر الشراء بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -17733,7 +18150,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -17751,7 +18168,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -17820,7 +18237,7 @@ WHERE
         if (result1.befor_invoice_count > 0 || result1.transaction_header_count > 0) {
           return res.json({
             success: false,
-            message_ar: 'لا يمكن رفض عرض السعر الحالي، حيث تم قبوله بالفعل فى احد المعاملات.',
+            message_ar: '❌ لا يمكن رفض عرض السعر الحالي، حيث تم قبوله بالفعل فى احد المعاملات.',
           });
         }
         
@@ -17829,7 +18246,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -17841,7 +18258,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
 
@@ -17853,7 +18270,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم تسجيل رفض عرض السعر بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم تسجيل رفض عرض السعر بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -17878,7 +18295,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -17896,7 +18313,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -17943,7 +18360,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         
@@ -17964,7 +18381,7 @@ WHERE
         if (result.count_qutation_id > 0) {
           return res.json({
             success: false,
-            message_ar: 'عفوا : لا يمكن حذف سعر الشراء لانه مستخدم بالفعل ',
+            message_ar: '❌ عفوا : لا يمكن حذف سعر الشراء لانه مستخدم بالفعل ',
           });
         }
         
@@ -17994,7 +18411,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم حذف عرض سعر الشراء بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم حذف عرض سعر الشراء بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -18034,7 +18451,7 @@ WHERE
               return res.json({
                 success: false,
                 message_ar:
-                  "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                  "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
               });
             }
           
@@ -18120,7 +18537,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -18194,7 +18611,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
        }
 
@@ -18212,7 +18629,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         }
@@ -18251,7 +18668,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -18273,7 +18690,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -18306,7 +18723,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -18368,7 +18785,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
 
@@ -18400,7 +18817,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم إنشاء امر شراء  : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم إنشاء امر شراء  : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -18584,7 +19001,7 @@ WHERE
             if (!permissions) {
               return res.status(403).json({
                 success: false,
-                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+                message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
               });
             }
     
@@ -18657,7 +19074,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
            }
     
@@ -18674,7 +19091,7 @@ WHERE
                   return res.json({
                     success: false,
                     xx: true,
-                    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                    message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                   });
                 }
               }
@@ -18688,7 +19105,7 @@ WHERE
               if (!rows01 || !rows01.id) {
                 return res.json({
                   success: false,
-                  message_ar: 'هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
+                  message_ar: '❌ هذا المرجع غير موجود. برجاء اعادة تحميل الصفحه ',
                 });
               }
               const reference = rows01.reference
@@ -18726,7 +19143,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
     
@@ -18748,7 +19165,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
         }
@@ -18781,7 +19198,7 @@ WHERE
                 return res.json({
                   success: false,
                   xx: true,
-                  message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                  message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                 });
               }
             }
@@ -18851,7 +19268,7 @@ WHERE
                   return res.json({
                     success: false,
                     xx: true,
-                    message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                    message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                   });
                 }
     
@@ -18883,7 +19300,7 @@ WHERE
             // إذا تم تنفيذ جميع الاستعلامات بنجاح
             return res.json({
               success: true,
-              message_ar: `تم تحديث امر شراء بمرجع : ${new_referenceFormatting}-${year}`,
+              message_ar: `✅ تم تحديث امر شراء بمرجع : ${new_referenceFormatting}-${year}`,
             });
           } catch (error) {
             await last_activity(req);
@@ -18915,7 +19332,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -19150,7 +19567,7 @@ WHERE
         if (!permissions) {
           return res.status(403).json({
             success: false,
-            message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+            message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
           });
         }
 
@@ -19168,7 +19585,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -19222,7 +19639,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
         
@@ -19245,7 +19662,7 @@ WHERE
         if (result.count_order_id > 0) {
           return res.json({
             success: false,
-            message_ar: 'عفوا : لا يمكن حذف عرض سعر الشراء لانه مستخدم بالفعل ',
+            message_ar: '❌ عفوا : لا يمكن حذف عرض سعر الشراء لانه مستخدم بالفعل ',
           });
         }
         
@@ -19287,7 +19704,7 @@ WHERE
         // إذا تم تنفيذ جميع الاستعلامات بنجاح
         return res.json({
           success: true,
-          message_ar: `تم حذف امر الشراء بمرجع : ${new_referenceFormatting}-${year}`,
+          message_ar: `✅ تم حذف امر الشراء بمرجع : ${new_referenceFormatting}-${year}`,
         });
       } catch (error) {
         await last_activity(req);
@@ -19331,7 +19748,7 @@ WHERE
                   return res.json({
                     success: false,
                     message_ar:
-                      "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                      "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
                   });
                 }
               
@@ -19603,7 +20020,7 @@ ORDER BY
               return res.json({
                 success: false,
                 message_ar:
-                  "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                  "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
               });
             }
         
@@ -19873,7 +20290,7 @@ WHERE
               return res.json({
                 success: false,
                 message_ar:
-                  "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                  "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
               });
             }
         
@@ -20143,7 +20560,7 @@ WHERE
               return res.json({
                 success: false,
                 message_ar:
-                  "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                  "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
               });
             }
         
@@ -20412,7 +20829,7 @@ WHERE
             if (!permissions) {
               return res.status(403).json({
                 success: false,
-                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+                message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
               });
             }
       
@@ -20488,7 +20905,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
            }
       
@@ -20508,7 +20925,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
             }
@@ -20524,7 +20941,7 @@ WHERE
                return res.json({
                  success: false,
                  xx: true,
-                 message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                 message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                });
              }
              }
@@ -20561,7 +20978,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
       
@@ -20583,7 +21000,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
       
@@ -20619,7 +21036,7 @@ WHERE
                 return res.json({
                   success: false,
                   xx: true,
-                  message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                  message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                 });
               }
             }
@@ -20841,7 +21258,7 @@ WHERE
             // إذا تم تنفيذ جميع الاستعلامات بنجاح
             return res.json({
               success: true,
-              message_ar: `تم إنشاء فاتورة مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
+              message_ar: `✅ تم إنشاء فاتورة مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
             });
           } catch (error) {
             await last_activity(req);
@@ -21041,7 +21458,7 @@ WHERE
             if (!permissions) {
               return res.status(403).json({
                 success: false,
-                message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+                message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
               });
             }
         
@@ -21115,7 +21532,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
            }
       
@@ -21131,7 +21548,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
            }
       
@@ -21146,7 +21563,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
             }
@@ -21164,7 +21581,7 @@ WHERE
                return res.json({
                  success: false,
                  xx: true,
-                 message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                 message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                });
              }
              }
@@ -21201,7 +21618,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
       
@@ -21223,7 +21640,7 @@ WHERE
             return res.json({
               success: false,
               xx: true,
-              message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
             });
           }
       
@@ -21259,7 +21676,7 @@ WHERE
                 return res.json({
                   success: false,
                   xx: true,
-                  message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                  message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
                 });
               }
             }
@@ -21519,7 +21936,7 @@ WHERE
             // إذا تم تنفيذ جميع الاستعلامات بنجاح
             return res.json({
               success: true,
-              message_ar: `تم تعديل  فاتورة المشتريات بمرجع : ${new_referenceFormatting}-${year}`,
+              message_ar: `✅ تم تعديل  فاتورة المشتريات بمرجع : ${new_referenceFormatting}-${year}`,
             });
           } catch (error) {
             await last_activity(req);
@@ -21556,7 +21973,7 @@ WHERE
                 return res.json({
                   success: false,
                   message_ar:
-                    "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                    "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
                 });
               }
         
@@ -21606,7 +22023,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
             
@@ -21621,7 +22038,7 @@ WHERE
               return res.json({
                 success: false,
                 xx: true,
-                message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+                message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
               });
             }
             
@@ -21706,7 +22123,7 @@ WHERE
             // إذا تم تنفيذ جميع الاستعلامات بنجاح
             return res.json({
               success: true,
-              message_ar: `تم حذف  فاتورة مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
+              message_ar: `✅ تم حذف  فاتورة مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
             });
           } catch (error) {
             await last_activity(req);
@@ -21983,7 +22400,7 @@ app.post("/services_add", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -22010,7 +22427,7 @@ app.post("/services_add", async (req, res) => {
           return res.json({
         success: false,
         message_ar:
-          'برجاء ادخال البيانات المطلوبه بشكل صحيح',
+          '❌ برجاء ادخال البيانات المطلوبه بشكل صحيح',
       });
     }          
     
@@ -22033,7 +22450,7 @@ app.post("/services_add", async (req, res) => {
     if (result.count_account_name > 0){
       return res.json({
         success: false,
-        message_ar: 'اسم الخدمه موجود من قبل',
+        message_ar: '❌ اسم الخدمه موجود من قبل',
       });
     }
 
@@ -22043,7 +22460,7 @@ app.post("/services_add", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -22087,7 +22504,7 @@ app.post("/services_add", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حفظ صنف الخدمة بنجاح",
+      message_ar: "✅ تم حفظ صنف الخدمة بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -22123,7 +22540,7 @@ app.post("/services_update", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -22150,7 +22567,7 @@ app.post("/services_update", async (req, res) => {
           return res.json({
         success: false,
         message_ar:
-          'برجاء ادخال البيانات المطلوبه بشكل صحيح',
+          '❌ برجاء ادخال البيانات المطلوبه بشكل صحيح',
       });
     }          
     
@@ -22176,7 +22593,7 @@ app.post("/services_update", async (req, res) => {
     if (result.count_account_name > 0){
       return res.json({
         success: false,
-        message_ar: 'اسم الخدمه موجود من قبل',
+        message_ar: '❌ اسم الخدمه موجود من قبل',
       });
     }
 
@@ -22186,7 +22603,7 @@ app.post("/services_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -22247,7 +22664,7 @@ app.post("/services_update", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم تعديل صنف الخدمة بنجاح",
+      message_ar: "✅ تم تعديل صنف الخدمة بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -22283,7 +22700,7 @@ app.post("/services_delete", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -22319,7 +22736,7 @@ app.post("/services_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -22327,7 +22744,7 @@ app.post("/services_delete", async (req, res) => {
     if(+result.as_count_transactions > 0){
       return res.json({
         success: false,
-        message_ar: 'يوجد حركات على هذا الصنف الخدمى ولا يمكن حذفه',
+        message_ar: '❌ يوجد حركات على هذا الصنف الخدمى ولا يمكن حذفه',
       });
     }
 
@@ -22354,7 +22771,7 @@ app.post("/services_delete", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حذف صنف الخدمة بنجاح",
+      message_ar: "✅ تم حذف صنف الخدمة بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -22388,7 +22805,7 @@ app.post("/get_sales_returns_Data_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -22628,7 +23045,7 @@ WHERE
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
 
@@ -22703,7 +23120,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
      }
 
@@ -22722,7 +23139,7 @@ WHERE
          return res.json({
            success: false,
            xx: true,
-           message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+           message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
          });
        }
        }
@@ -22749,7 +23166,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -22759,7 +23176,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -22781,7 +23198,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -22817,7 +23234,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
       }
@@ -23019,7 +23436,7 @@ WHERE
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم إنشاء مرتجع مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم إنشاء مرتجع مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -23041,7 +23458,7 @@ WHERE
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
 
@@ -23117,7 +23534,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
      }
 
@@ -23133,7 +23550,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
      }
 
@@ -23149,7 +23566,7 @@ WHERE
          return res.json({
            success: false,
            xx: true,
-           message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+           message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
          });
        }
        }
@@ -23176,7 +23593,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -23186,7 +23603,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -23208,7 +23625,7 @@ WHERE
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -23244,7 +23661,7 @@ WHERE
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
       }
@@ -23452,7 +23869,7 @@ WHERE
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم تعديل  مرتجع مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم تعديل  مرتجع مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -23474,7 +23891,7 @@ WHERE
       if (!permissions) {
         return res.status(403).json({
           success: false,
-          message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+          message_ar: "❌ ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
         });
       }
 
@@ -23492,7 +23909,7 @@ WHERE
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
   
@@ -23542,7 +23959,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
       
@@ -23557,7 +23974,7 @@ WHERE
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
       
@@ -23608,7 +24025,7 @@ WHERE
       // إذا تم تنفيذ جميع الاستعلامات بنجاح
       return res.json({
         success: true,
-        message_ar: `تم حذف  مرتجع مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
+        message_ar: `✅ تم حذف  مرتجع مبيعات بمرجع : ${new_referenceFormatting}-${year}`,
       });
     } catch (error) {
       await last_activity(req);
@@ -24128,7 +24545,7 @@ app.post("/get_purshases_returns_Data_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -24568,7 +24985,7 @@ for (const rowData of posted_elements.posted_array) {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -24805,7 +25222,7 @@ group by
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم تعديل  مرتجع المشتريات بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تعديل  مرتجع المشتريات بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -25020,7 +25437,7 @@ for (const rowData of posted_elements.posted_array) {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
     }
@@ -25246,7 +25663,7 @@ group by
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء مرتجع مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء مرتجع مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -25276,7 +25693,7 @@ app.post("/get_data_for_purshases_returns_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -25523,7 +25940,7 @@ app.post("/get_data_for_purshasesInvoiceToreturns", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -25816,7 +26233,7 @@ app.post("/api/purshases_returns_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -25831,7 +26248,7 @@ app.post("/api/purshases_returns_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -25878,7 +26295,7 @@ app.post("/api/purshases_returns_delete", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم حذف مرتجع مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف مرتجع مشتريات بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -25912,7 +26329,7 @@ app.post("/get_expenses_accounts", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -25995,7 +26412,7 @@ app.post("/fixed_assests_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -26106,7 +26523,7 @@ app.post("/fixed_assests_add", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -26125,7 +26542,7 @@ app.post("/fixed_assests_add", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال اسم الاصل",
+          "❌ برجاء ادخال اسم الاصل",
       });
     }          
     
@@ -26133,7 +26550,7 @@ app.post("/fixed_assests_add", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال معدل الضريبه بشكل صحيح",
+          "❌ برجاء ادخال معدل الضريبه بشكل صحيح",
       });
     }     
     //* Start--------------------------------------------------------------
@@ -26163,7 +26580,7 @@ app.post("/fixed_assests_add", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -26234,7 +26651,7 @@ app.post("/fixed_assests_add", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حفظ بيانات الاصل الثابت بنجاح",
+      message_ar: "✅ تم حفظ بيانات الاصل الثابت بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -26262,7 +26679,7 @@ app.post("/get_fixed_assests_data_for_update_page", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -26373,7 +26790,7 @@ app.post("/fixed_assests_update", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -26392,7 +26809,7 @@ app.post("/fixed_assests_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال اسم الاصل",
+          "❌ برجاء ادخال اسم الاصل",
       });
     }          
     
@@ -26400,7 +26817,7 @@ app.post("/fixed_assests_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال معدل الضريبه بشكل صحيح",
+          "❌ برجاء ادخال معدل الضريبه بشكل صحيح",
       });
     }     
     //* Start--------------------------------------------------------------
@@ -26430,7 +26847,7 @@ app.post("/fixed_assests_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -26439,7 +26856,7 @@ app.post("/fixed_assests_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -26495,7 +26912,7 @@ app.post("/fixed_assests_update", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم تعديل بيانات الاصل الثابت بنجاح",
+      message_ar: "✅ تم تعديل بيانات الاصل الثابت بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -26533,7 +26950,7 @@ app.post("/fixed_assests_delete", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -26572,14 +26989,14 @@ app.post("/fixed_assests_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
     if (result.count_transaction_body > 0) {
       return res.json({
         success: false,
-        message_ar: 'يوجد حركات على الاصل الثابت فى القيود اليوميه ولا يمكن حذفه',
+        message_ar: '❌ يوجد حركات على الاصل الثابت فى القيود اليوميه ولا يمكن حذفه',
       });
     }
 
@@ -26604,7 +27021,7 @@ app.post("/fixed_assests_delete", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حذف بيانات الاصل الثابت بنجاح",
+      message_ar: "✅ تم حذف بيانات الاصل الثابت بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -26636,7 +27053,7 @@ app.post("/get_accumulated_depreciation_Data_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -26703,7 +27120,7 @@ app.post("/get_accumulated_depeciaton_accounts", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -26768,7 +27185,7 @@ app.post("/get_calculated_depreacation_values", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -26981,7 +27398,7 @@ app.post("/api/accumulated_depreciation_add", async (req, res) => {
     if (posted_elements.startDate > posted_elements.endDate){
       return res.json({
         success: false,
-        message_ar: 'برجاء تحديد فترة الاهلاك بشكل صحيح',
+        message_ar: '❌ برجاء تحديد فترة الاهلاك بشكل صحيح',
       });
     }
 
@@ -27081,7 +27498,7 @@ const newId_transaction_header = insert.id;
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -27160,7 +27577,7 @@ const newId_transaction_header = insert.id;
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء اهلاك اصول ثابتة بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء اهلاك اصول ثابتة بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -27246,7 +27663,7 @@ app.post("/api/accumulated_depreciation_update", async (req, res) => {
     if (posted_elements.startDate > posted_elements.endDate){
       return res.json({
         success: false,
-        message_ar: 'برجاء تحديد فترة الاهلاك بشكل صحيح',
+        message_ar: '❌ برجاء تحديد فترة الاهلاك بشكل صحيح',
       });
     }
 
@@ -27258,7 +27675,7 @@ app.post("/api/accumulated_depreciation_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -27335,7 +27752,7 @@ WITH main_query AS (
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });
         }
 
@@ -27434,7 +27851,7 @@ WITH main_query AS (
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم تعديل اهلاك اصول ثابتة بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تعديل اهلاك اصول ثابتة بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -27465,7 +27882,7 @@ app.post("/get_calculated_depreacation_data_for_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -27595,7 +28012,7 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -27669,7 +28086,7 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم حذف اهلاكات الاصول الثابتة بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف اهلاكات الاصول الثابتة بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -27705,7 +28122,7 @@ app.post("/cash_accounts_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -27779,7 +28196,7 @@ app.post("/cash_accounts_add", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -27798,7 +28215,7 @@ app.post("/cash_accounts_add", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال اسم الحساب",
+          "❌ برجاء ادخال اسم الحساب",
       });
     }          
     
@@ -27880,7 +28297,7 @@ app.post("/cash_accounts_add", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حفظ بيانات الحساب النقدى بنجاح",
+      message_ar: "✅ تم حفظ بيانات الحساب النقدى بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -27909,7 +28326,7 @@ app.post("/get_cash_accounts_data_for_update_page", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -27982,7 +28399,7 @@ app.post("/cash_accounts_update", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -28001,7 +28418,7 @@ app.post("/cash_accounts_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "برجاء ادخال اسم الحساب",
+          "❌ برجاء ادخال اسم الحساب",
       });
     }          
     
@@ -28035,7 +28452,7 @@ app.post("/cash_accounts_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -28068,7 +28485,7 @@ app.post("/cash_accounts_update", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم تعديل بيانات الحساب النقدى بنجاح",
+      message_ar: "✅ تم تعديل بيانات الحساب النقدى بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -28106,7 +28523,7 @@ app.post("/cash_accounts_delete", async (req, res) => {
             return res.json({
               success: false,
               message_ar:
-                "Invalid input detected due to prohibited characters. Please review your input and try again.",
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
             });
           }
 
@@ -28145,14 +28562,14 @@ app.post("/cash_accounts_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
     if (result.count_transaction_body > 0) {
       return res.json({
         success: false,
-        message_ar: 'يوجد حركات على الحساب النقدى ولا يمكن حذفه',
+        message_ar: '❌ يوجد حركات على الحساب النقدى ولا يمكن حذفه',
       });
     }
 
@@ -28177,7 +28594,7 @@ app.post("/cash_accounts_delete", async (req, res) => {
     //4: send a response to frontend about success transaction
     res.json({
       success: true,
-      message_ar: "تم حذف بيانات الحساب النقدى بنجاح",
+      message_ar: "✅ تم حذف بيانات الحساب النقدى بنجاح",
     });
   } catch (error) {
     await last_activity(req)
@@ -28207,7 +28624,7 @@ app.post("/cash_rc_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -28280,7 +28697,7 @@ app.post("/cash_pv_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -28581,7 +28998,7 @@ for (const rowData of posted_elements.posted_array) {
   if (!value || isNaN(value) || value <= 0){
     return res.json({
       success: false,
-      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+      message_ar: `❌ برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
     });
   }
 
@@ -28670,7 +29087,7 @@ await db.tx(async (tx) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -28789,7 +29206,7 @@ for (const rowData of posted_elements.posted_array) {
   if (!value || isNaN(value) || value <= 0){
     return res.json({
       success: false,
-      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+      message_ar: `❌ برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
     });
   }
 
@@ -28875,7 +29292,7 @@ await db.tx(async (tx) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء سند دفغ بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء سند دفغ بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -28906,7 +29323,7 @@ app.post("/getCash_rc_AccountsData2", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -29036,7 +29453,7 @@ app.post("/getCash_pv_AccountsData2", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -29270,7 +29687,7 @@ for (const rowData of posted_elements.posted_array) {
   if (!value || isNaN(value) || value <= 0){
     return res.json({
       success: false,
-      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+      message_ar: `❌ برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
     });
   }
 
@@ -29358,7 +29775,7 @@ await db.tx(async (tx) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم تعديل سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تعديل سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -29494,7 +29911,7 @@ for (const rowData of posted_elements.posted_array) {
   if (!value || isNaN(value) || value <= 0){
     return res.json({
       success: false,
-      message_ar: `برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
+      message_ar: `❌ برجاء ادخال القيمه بشكل صحيح فى السطر رقم ${rowIndex}`,
     });
   }
 
@@ -29580,7 +29997,7 @@ await db.tx(async (tx) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم تعديل سند دفع بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تعديل سند دفع بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -29617,7 +30034,7 @@ app.post("/api/cash_rc_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -29692,7 +30109,7 @@ app.post("/api/cash_rc_delete", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم حذف سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف سند قبض بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -29728,7 +30145,7 @@ app.post("/api/cash_pv_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -29803,7 +30220,7 @@ app.post("/api/cash_pv_delete", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم حذف سند دفع بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف سند دفع بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -29837,7 +30254,7 @@ app.post("/get_cash_transfer_Data_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -29910,7 +30327,7 @@ app.post("/getCash", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -29969,7 +30386,7 @@ app.post("/get_cash_transfer_data_for_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -30064,7 +30481,7 @@ app.post("/api/cash_transfer_add", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -30106,7 +30523,7 @@ app.post("/api/cash_transfer_add", async (req, res) => {
     if (!posted_elements.value || isNaN(+posted_elements.value) || +posted_elements.value <= 0){
       return res.json({
         success: false,
-        message_ar: 'برجاء ادخال المبلغ المحول بشكل صحيح',
+        message_ar: '❌ برجاء ادخال المبلغ المحول بشكل صحيح',
       });
     }
 
@@ -30115,7 +30532,7 @@ app.post("/api/cash_transfer_add", async (req, res) => {
     if (!posted_elements.account_from || !posted_elements.account_to){
       return res.json({
         success: false,
-        message_ar: 'برجاء تحديد مواقع المخزون بشكل صحيح',
+        message_ar: '❌ برجاء تحديد مواقع المخزون بشكل صحيح',
       });
     }
 
@@ -30198,7 +30615,7 @@ app.post("/api/cash_transfer_add", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم إنشاء تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -30239,7 +30656,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -30281,7 +30698,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
     if (!posted_elements.value || isNaN(+posted_elements.value) || +posted_elements.value <= 0){
       return res.json({
         success: false,
-        message_ar: 'برجاء ادخال المبلغ المحول بشكل صحيح',
+        message_ar: '❌ برجاء ادخال المبلغ المحول بشكل صحيح',
       });
     }
 
@@ -30290,7 +30707,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
     if (!posted_elements.account_from || !posted_elements.account_to){
       return res.json({
         success: false,
-        message_ar: 'برجاء تحديد مواقع المخزون بشكل صحيح',
+        message_ar: '❌ برجاء تحديد مواقع المخزون بشكل صحيح',
       });
     }
 
@@ -30303,7 +30720,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
       });
     }
     const reference = result001.reference
@@ -30390,7 +30807,7 @@ app.post("/api/cash_transfer_update", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم تعديل تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تعديل تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -30431,7 +30848,7 @@ app.post("/api/cash_transfer_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -30477,7 +30894,7 @@ app.post("/api/cash_transfer_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
       });
     }
 
@@ -30517,7 +30934,7 @@ app.post("/api/cash_transfer_delete", async (req, res) => {
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
       success: true,
-      message_ar: `تم حذف تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف تحويل بين الحسابات النقدية  بمرجع : ${new_referenceFormatting}-${year}`,
     });
   } catch (error) {
     await last_activity(req);
@@ -30552,7 +30969,7 @@ app.post("/production_forms_view_ar", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -30619,7 +31036,7 @@ app.post("/production_forms_AccountsData1", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -30784,7 +31201,7 @@ app.post("/api/production_forms_add", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -30807,7 +31224,7 @@ app.post("/api/production_forms_add", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -30856,7 +31273,7 @@ app.post("/api/production_forms_add", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: `تم إنشاء نموذج التصنيع بنجاح`,
+      message_ar: `✅ تم إنشاء نموذج التصنيع بنجاح`,
     });
 
   } catch (error) {
@@ -30916,7 +31333,7 @@ app.post("/api/production_forms_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -30937,7 +31354,7 @@ app.post("/api/production_forms_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -30960,7 +31377,7 @@ app.post("/api/production_forms_update", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
 
@@ -31012,7 +31429,7 @@ app.post("/api/production_forms_update", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: `تم تحديث نموذج التصنيع بنجاح`,
+      message_ar: `✅ تم تحديث نموذج التصنيع بنجاح`,
     });
 
   } catch (error) {
@@ -31048,7 +31465,7 @@ app.post("/api/production_forms_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -31065,7 +31482,7 @@ app.post("/api/production_forms_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     
@@ -31085,7 +31502,7 @@ app.post("/api/production_forms_delete", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: `تم حذف نموذج التصنيع بنجاح`,
+      message_ar: `✅ تم حذف نموذج التصنيع بنجاح`,
     });
 
   } catch (error) {
@@ -31118,7 +31535,7 @@ app.post("/api/production_order_view", async (req, res) => {
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
       
@@ -31196,7 +31613,7 @@ app.post("/production_orders_AccountsData1", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -31375,7 +31792,7 @@ app.post("/calculate_production_order_data", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
   
@@ -31401,7 +31818,7 @@ app.post("/calculate_production_order_data", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجية الخاصة بالتطبيق',
       });
     }
 
@@ -31488,7 +31905,7 @@ where
     res.join;
     res
       .status(500)
-      .json({ success: false, message_ar: "Error getCash_transaction_AccountsData1" });
+      .json({ success: false, message_ar: "❌ Error getCash_transaction_AccountsData1" });
   }
 });
 
@@ -31572,7 +31989,7 @@ app.post("/api/production_orders_add", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -31595,7 +32012,7 @@ app.post("/api/production_orders_add", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
         
@@ -31685,7 +32102,7 @@ app.post("/api/production_orders_add", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: `تم إنشاء امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم إنشاء امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
     });
 
   } catch (error) {
@@ -31768,7 +32185,7 @@ app.post("/api/production_orders_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     const reference = rows01.reference
@@ -31790,7 +32207,7 @@ app.post("/api/production_orders_update", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
 
@@ -31813,7 +32230,7 @@ app.post("/api/production_orders_update", async (req, res) => {
         return res.json({
           success: false,
           xx: true,
-          message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
         
@@ -31902,7 +32319,7 @@ app.post("/api/production_orders_update", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: `تم تحديث امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم تحديث امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
     });
 
   } catch (error) {
@@ -31940,7 +32357,7 @@ app.post("/api/production_orders_delete", async (req, res) => {
       return res.json({
         success: false,
         message_ar:
-          "Invalid input detected due to prohibited characters. Please review your input and try again.",
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
 
@@ -31972,7 +32389,7 @@ app.post("/api/production_orders_delete", async (req, res) => {
       return res.json({
         success: false,
         xx: true,
-        message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
       });
     }
     const reference = rows01.reference
@@ -32029,7 +32446,7 @@ app.post("/api/production_orders_delete", async (req, res) => {
 
     return res.json({
       success: true,
-      message_ar: `تم حذف امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
+      message_ar: `✅ تم حذف امر التصنيع بمرجع : ${new_referenceFormatting}-${year}`,
     });
 
   } catch (error) {
@@ -32411,7 +32828,7 @@ from
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while reports_trialBalance_view" });
+          .json({ success: false, message_ar: "❌ Error while reports_trialBalance_view" });
       }
     });
 
@@ -33224,7 +33641,7 @@ order by
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -33296,7 +33713,7 @@ order by
         res.join;
         res
           .status(500)
-          .json({ success: false, message_ar: "Error while get_data_for_purshasesInvoiceToreturns" });
+          .json({ success: false, message_ar: "❌ Error while get_data_for_purshasesInvoiceToreturns" });
       }
     });
 
@@ -33318,7 +33735,7 @@ order by
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -33346,7 +33763,7 @@ order by
           return res.json({
             success: false,
             xx: true,
-            message_ar: 'تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
           });  
         }
     
@@ -33506,7 +33923,7 @@ ORDER BY
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -33573,7 +33990,7 @@ ORDER BY
           return res.json({
             success: false,
             message_ar:
-              "Invalid input detected due to prohibited characters. Please review your input and try again.",
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
           });
         }
     
@@ -33594,7 +34011,7 @@ ORDER BY
         if (locations_array.length === 0 ){
           return res.json({
             success: false,
-            message_ar: 'رجاء تحديد موقع مخزون او اكثر بشكل صحيح'
+            message_ar: '❌ رجاء تحديد موقع مخزون او اكثر بشكل صحيح'
           });
         }
         
@@ -33612,7 +34029,7 @@ ORDER BY
         if (rows.length === 0) {
           return res.json({
             success: false,
-            message_ar: 'لا يوجد مواقع مخزون مُعرفه'
+            message_ar: '❌ لا يوجد مواقع مخزون مُعرفه'
           });
         }
         
@@ -33631,7 +34048,7 @@ ORDER BY
         if (!allExist) {
           return res.json({
             success: false,
-            message_ar: "بعض المواقع المحددة غير موجودة ضمن مواقع المخزون المعرفة."
+            message_ar: "❌ بعض المواقع المحددة غير موجودة ضمن مواقع المخزون المعرفة."
           });
         }
         
