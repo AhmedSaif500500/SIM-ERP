@@ -4421,3 +4421,17 @@ document.addEventListener("paste", function (event) {
   }
 });
 
+function checkPasswordStrength(password) {
+  const length = password.length; // حساب طول النص
+  const hasLetters = /[a-zA-Z]/.test(password); // التحقق من وجود حروف
+  const hasNumbers = /[0-9]/.test(password); // التحقق من وجود أرقام
+  const hasSpecialChars = /[^a-zA-Z0-9]/.test(password); // التحقق من وجود رموز خاصة
+
+  return {
+      length,
+      hasLetters,
+      hasNumbers,
+      hasSpecialChars,
+      isStrong: length >= 8 && hasLetters && hasNumbers // شرط قوة الباسورد
+  };
+}

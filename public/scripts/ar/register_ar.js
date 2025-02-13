@@ -48,6 +48,13 @@ btn_send.onclick = async function () {
     }
 
 
+    const checkpass = checkPasswordStrength(user_pass_input1)
+    if (!checkpass.isStrong){
+        showAlert(`warning`, 'يُرجى استخدام كلمة مرور قوية تحتوي على حروف وأرقام، ولا يقل طولها عن 8 أحرف.');
+        return
+    }
+
+
     const post = await new_fetchData_postAndGet(
         "/register_request",
         {account_name_input,

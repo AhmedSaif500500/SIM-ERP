@@ -100,6 +100,9 @@ const bodyParser = require("body-parser");
 const cron = require("node-cron");
 const port = 3000;
 const bcrypt = require("bcryptjs"); // مكتبه تشفير الباسورد المرسل الى قاعده البيانات
+const fs = require("fs");
+const crypto = require("crypto");
+const multer = require("multer");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/public", express.static("public")); // تحميل جميع الملفات في مجلد 'public' > لملفات الـ CSS والجافا سكريبت
@@ -240,8 +243,7 @@ cron.schedule("*/5 * * * *", async () => {
 //#endregion end-cron
 
 
-const fs = require("fs");
-const crypto = require("crypto");
+
 
 app.post("/backup_company", async (req, res) => {
   try {
@@ -256,22 +258,25 @@ app.post("/backup_company", async (req, res) => {
     console.log(`🔹 بدء النسخ الاحتياطي للشركة: ${companyId}`);
 
     // 1️⃣ استخراج جميع البيانات الخاصة بالشركة
-    const accounts_header = await db.any(`SELECT * FROM accounts_header WHERE company_id = $1;`, [companyId]);
-    const accounts_body = await db.any(`SELECT ab.* FROM accounts_body ab JOIN accounts_header ah ON ah.id = ab.account_id WHERE ah.company_id = $1;`, [companyId]);
-    const befor_invoice_header = await db.any(`SELECT * FROM befor_invoice_header WHERE company_id = $1;`, [companyId]);
-    const befor_invoce_body = await db.any(`SELECT bib.* FROM befor_invoce_body bib JOIN befor_invoice_header bih ON bih.id = bib.header_id WHERE bih.company_id = $1;`, [companyId]);
-    const companies = await db.any(`SELECT c.* FROM companies c JOIN owners o ON o.id = c.owner_id WHERE o.id = $1;`, [ownerId]);
-    const effects = await db.any(`SELECT * FROM effects WHERE company_id = $1;`, [companyId]);
-    const history = await db.any(`SELECT * FROM history WHERE company_id = $1;`, [companyId]);
-    const production_forms_header = await db.any(`SELECT * FROM production_forms_header WHERE company_id = $1;`, [companyId]);
-    const production_forms_body = await db.any(`SELECT pfb.* FROM production_forms_body pfb JOIN production_forms_header pfh ON pfh.id = pfb.production_forms_header_id WHERE pfh.company_id = $1;`, [companyId]);
-    const settings = await db.any(`SELECT * FROM settings WHERE company_id = $1;`, [companyId]);
-    const settings_tax_header = await db.any(`SELECT * FROM settings_tax_header WHERE company_id = $1;`, [companyId]);
-    const settings_tax_body = await db.any(`SELECT stb.* FROM settings_tax_body stb JOIN settings_tax_header sth ON sth.id = stb.settings_tax_header_id WHERE sth.company_id = $1;`, [companyId]);
-    const todo = await db.any(`SELECT * FROM todo WHERE company_id = $1;`, [companyId]);
-    const transaction_header = await db.any(`SELECT * FROM transaction_header WHERE company_id = $1;`, [companyId]);
-    const transaction_body = await db.any(`SELECT tb.* FROM transaction_body tb JOIN transaction_header th ON th.id = tb.transaction_header_id WHERE th.company_id = $1;`, [companyId]);
+    const companies = await db.any(`SELECT c.* FROM companies c WHERE c.id = $1 ORDER BY c.id ASC;`, [companyId]);
     const user_company = await db.any(`SELECT * FROM user_company WHERE company_id = $1;`, [companyId]);
+    const settings = await db.any(`SELECT * FROM settings WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const accounts_header = await db.any(`SELECT * FROM accounts_header WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const accounts_body = await db.any(`SELECT ab.* FROM accounts_body ab JOIN accounts_header ah ON ah.id = ab.account_id WHERE ah.company_id = $1 ORDER BY ab.id ASC;`, [companyId]);
+    const production_forms_header = await db.any(`SELECT * FROM production_forms_header WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const production_forms_body = await db.any(`SELECT pfb.* FROM production_forms_body pfb JOIN production_forms_header pfh ON pfh.id = pfb.production_forms_header_id WHERE pfh.company_id = $1 ORDER BY pfb.id ASC;`, [companyId]);    
+    const settings_tax_header = await db.any(`SELECT * FROM settings_tax_header WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const settings_tax_body = await db.any(`SELECT stb.* FROM settings_tax_body stb JOIN settings_tax_header sth ON sth.id = stb.settings_tax_header_id WHERE sth.company_id = $1 ORDER BY stb.id ASC;`, [companyId]);    
+    const befor_invoice_header = await db.any(`SELECT * FROM befor_invoice_header WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const befor_invoce_body = await db.any(`SELECT bib.* FROM befor_invoce_body bib JOIN befor_invoice_header bih ON bih.id = bib.header_id WHERE bih.company_id = $1 ORDER BY bib.id ASC;`, [companyId]);
+    const transaction_header = await db.any(`SELECT * FROM transaction_header WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const transaction_body = await db.any(`SELECT tb.* FROM transaction_body tb JOIN transaction_header th ON th.id = tb.transaction_header_id WHERE th.company_id = $1 ORDER BY tb.id ASC;`, [companyId]);    
+    const effects = await db.any(`SELECT * FROM effects WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const todo = await db.any(`SELECT * FROM todo WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+    const history = await db.any(`SELECT * FROM history WHERE company_id = $1 ORDER BY id ASC;`, [companyId]);
+
+    //! for check owner data when restore only
+    const owner = await db.any(`select * from owners where id = $1;`, [ownerId]);
 
     // 2️⃣ التحقق من وجود بيانات فعلية
     const totalRecords = [
@@ -290,7 +295,8 @@ app.post("/backup_company", async (req, res) => {
       todo.length,
       transaction_header.length,
       transaction_body.length,
-      user_company.length
+      user_company.length,
+      owner.length
     ].reduce((acc, val) => acc + val, 0);
 
     if (totalRecords === 0) {
@@ -314,7 +320,8 @@ app.post("/backup_company", async (req, res) => {
       todo,
       transaction_header,
       transaction_body,
-      user_company
+      user_company,
+      owner
     };
     const jsonData = JSON.stringify(backupData, null, 2);
 
@@ -350,7 +357,7 @@ app.post("/backup_company", async (req, res) => {
 
      
     // 5️⃣ إرسال البيانات كملف تنزيل دون تخزينها
-    res.setHeader("Content-Disposition", `attachment; filename="backup_${today}.enc"`);
+    res.setHeader("Content-Disposition", `attachment; filename="backup_${today}.SIM"`);
     res.setHeader("Content-Type", "application/octet-stream");
     res.send(Buffer.from(encryptedBackupData, "utf-8"));
     
@@ -361,6 +368,386 @@ app.post("/backup_company", async (req, res) => {
 });
 
 
+
+
+
+const upload = multer({ storage: multer.memoryStorage() }); // تخزين الملف في الذاكرة
+
+
+app.post("/restore_backup", upload.single("backupFile"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "لم يتم رفع أي ملف." });
+    }
+
+    const fileName = req.file.originalname;
+    if (!fileName.endsWith(".SIM")) {
+      return res.status(400).json({ error: "يجب أن يكون الملف بامتداد .SIM" });
+    }
+
+    const company_id = req.session.company_id; // الحصول على معرف الشركة من الجلسة
+    if (!company_id) {
+      return res.status(403).json({ error: "ليس لديك صلاحية لاستعادة البيانات." });
+    }
+
+    // 🔵 1️⃣ فك التشفير والتحقق من صحة البيانات
+    console.log("🔄 جاري فك تشفير البيانات...");
+    
+    const secretKey = process.env.SECRET_KEY;
+    const hmacKey = process.env.HMAC_KEY;
+
+    if (!secretKey || secretKey.length !== 32) {
+      throw new Error("❌ خطأ: مفتاح التشفير غير صالح أو مفقود!");
+    }
+
+    if (!hmacKey || hmacKey.length !== 32) {
+      throw new Error("❌ خطأ: مفتاح HMAC غير صالح أو مفقود!");
+    }
+
+    const encryptedBackupData = req.file.buffer.toString("utf8"); // تحويل البيانات إلى نص
+    const { iv, data, hmac } = JSON.parse(encryptedBackupData);
+
+    // التحقق من صحة البيانات باستخدام HMAC
+    const hmacVerifier = crypto.createHmac("sha256", Buffer.from(hmacKey));
+    hmacVerifier.update(data);
+    const calculatedHmac = hmacVerifier.digest("hex");
+
+    if (calculatedHmac !== hmac) {
+      return res.status(400).json({ error: "❌ خطأ: فشل التحقق من صحة البيانات!" });
+    }
+
+    // فك التشفير
+    const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(secretKey), Buffer.from(iv, "base64"));
+    let decrypted = decipher.update(data, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
+    // تحويل النص المفكّك إلى كائن JSON
+    const backupData = JSON.parse(decrypted);
+
+    console.log("✅ تم فك التشفير بنجاح، البيانات جاهزة للاستعادة.");
+    const pgp = require("pg-promise")({ capSQL: true }); // ضروري لاستخدام bulk insert
+
+    //! ⚠️ هاام جدا للتحق من امتلاك الشخص للنسخه الاحتياطيه
+    if (backupData.owner[0].id !== req.session.owner_id) {
+      return res.json({ message: "✅ انت لا تمتلك هذه النسخة الاحتياطية" });
+    }
+    
+  
+
+    // 🔵 2️⃣ بدء معاملة (Transaction) لحذف البيانات القديمة ثم استعادتها
+    await db.tx(async (tx) => {
+      console.log(`🔴 حذف بيانات الشركة (ID: ${company_id})...`);
+
+      await tx.none("DELETE FROM companies WHERE id = $1", [company_id]);
+      console.log(`✅ تم حذف جميع بيانات الشركة (ID: ${company_id}) بنجاح.`);
+
+      // 🔵 3️⃣ استعادة البيانات داخل نفس المعاملة
+      console.log("🔄 جاري استعادة البيانات من النسخة الاحتياطية...");
+
+// 1️⃣ استعادة بيانات `companies` دفعة واحدة
+  let companyIdMap = {}; // تخزين العلاقة بين الـ ID القديم والجديد
+  if (backupData.companies.length > 0) {
+    const queryCompanies = pgp.helpers.insert(
+      backupData.companies.map(c => ({
+        company_name: c.company_name,
+        owner_id: c.owner_id
+      })),
+      ["company_name", "owner_id"],
+      "companies"
+    ) + " RETURNING id, owner_id";
+  
+    const insertedCompany = await tx.one(queryCompanies); // لأن هناك شركة واحدة فقط
+    
+    // تخزين العلاقة بين ID القديم والجديد مباشرةً
+    companyIdMap[backupData.companies[0].id] = insertedCompany.id;
+  }
+
+  // 🟡 new company_id
+   const newCompanyId = companyIdMap[backupData.companies[0].id]; // ID الجديد مباشرةً
+  
+// 2️⃣ insert settings
+  if (backupData.settings.length > 0) {
+    const settingsData = backupData.settings.map(s => ({
+      company_id: newCompanyId, // استخدام الـ ID الجديد
+      setting_type_id: s.setting_type_id,
+      setting_type_name: s.setting_type_name,
+      datex1: s.datex1,
+      boolean1: s.boolean1
+    }));
+  
+    const querySettings = pgp.helpers.insert(
+      settingsData,
+      ["company_id", "setting_type_id", "setting_type_name", "datex1", "boolean1"],
+      "settings"
+    );
+  
+    await tx.none(querySettings);
+  }
+  
+// 3️⃣ insert accounts_header
+let accountIdMap = {};
+if (backupData.accounts_header.length > 0) {
+    
+  const accounts_headerData = backupData.accounts_header.map(x => ({
+    company_id: newCompanyId, // استخدام الـ ID الجديد
+    account_name: x.account_name,
+    is_final_account: x.is_final_account,
+    account_no: x.account_no,
+    finance_statement: x.finance_statement,
+    cashflow_statement: x.cashflow_statement,
+    account_type_id: x.account_type_id,
+    account_name_en: x.account_name_en,
+    global_id: x.global_id,
+    main_account_id: x.main_account_id,
+    item_sales_price: x.item_sales_price,
+    item_purshas_price: x.item_purshas_price,
+    item_amount_reorder_point: x.item_amount_reorder_point,
+    item_unite: x.item_unite,
+    item1: x.item1,
+    item2: x.item2,
+    item3: x.item3,
+    is_salesman: x.is_salesman,
+    is_allow_to_buy_and_sell: x.is_allow_to_buy_and_sell,
+    is_inactive: x.is_inactive,
+    str50_column1: x.str50_column1,
+    str50_column2: x.str50_column2,
+    str50_column3: x.str50_column3,
+    str10_data_column1: x.str10_data_column1,
+    str10_data_column2: x.str10_data_column2,
+    str10_data_column3: x.str10_data_column3,
+    str_textarea_column1: x.str_textarea_column1,
+    str_textarea_column2: x.str_textarea_column2,
+    str_textarea_column3: x.str_textarea_column3,
+    int2_column1: x.int2_column1,
+    int2_column2: x.int2_column2,
+    int2_column3: x.int2_column3,
+    numeric_column1: x.numeric_column1,
+    numeric_column2: x.numeric_column2,
+    numeric_column3: x.numeric_column3,
+    is_column1: x.is_column1,
+    is_column2: x.is_column2,
+    str20_column1: x.str20_column1,
+    str_textarea_column4: x.str_textarea_column4,
+    str_textarea_column5: x.str_textarea_column5,
+  }));
+
+  const query_accounts_headerData = pgp.helpers.insert(
+    accounts_headerData,
+    [
+      "company_id", "account_name", "is_final_account", "account_no", "finance_statement",
+      "cashflow_statement", "account_type_id", "account_name_en", "global_id", "main_account_id",
+      "item_sales_price", "item_purshas_price",
+      "item_amount_reorder_point", "item_unite", "item1", "item2", "item3", "is_salesman",
+      "is_allow_to_buy_and_sell", "is_inactive", "str50_column1", "str50_column2", "str50_column3",
+      "str10_data_column1", "str10_data_column2", "str10_data_column3", "str_textarea_column1",
+      "str_textarea_column2", "str_textarea_column3", "int2_column1", "int2_column2", "int2_column3",
+      "numeric_column1", "numeric_column2", "numeric_column3", "is_column1", "is_column2",
+      "str20_column1", "str_textarea_column4", "str_textarea_column5"
+    ],
+    "accounts_header"
+  ) + " RETURNING id, account_name";
+
+  const insertedAccounts = await tx.many(query_accounts_headerData);
+
+  
+  insertedAccounts.forEach(newAccount => {
+    const oldAccount = backupData.accounts_header.find(x => x.account_name === newAccount.account_name);
+    if (oldAccount) {
+      accountIdMap[oldAccount.id] = newAccount.id;
+    }
+  });
+
+  //! 🟠 تجميع تحديثات الحسابات دفعة واحدة
+  const updates = backupData.accounts_header
+    .filter(account => account.item_revenue_account || account.item_expense_account)
+    .map(account => ({
+      id: accountIdMap[account.id],
+      item_revenue_account: accountIdMap[account.item_revenue_account] || null,
+      item_expense_account: accountIdMap[account.item_expense_account] || null
+    }))
+    .filter(update => update.id); // التأكد من وجود id جديد للحساب
+
+    if (updates.length > 0) {
+      // 1️ تحويل البيانات إلى صيغة VALUES (id, item_revenue_account, item_expense_account)
+      const valuesList = updates
+        .map(u => `(${u.id}, ${u.item_revenue_account || 'NULL'}, ${u.item_expense_account || 'NULL'})`)
+        .join(", ");
+    
+      // 2 إنشاء استعلام التحديث باستخدام UPDATE ... FROM VALUES
+      const updateQuery = `
+        UPDATE accounts_header AS t
+        SET item_revenue_account = v.item_revenue_account,
+            item_expense_account = v.item_expense_account
+        FROM (VALUES ${valuesList}) AS v(id, item_revenue_account, item_expense_account)
+        WHERE t.id = v.id;
+      `;
+    
+      // 3 تنفيذ الاستعلام
+      await tx.none(updateQuery);
+    }
+    
+}
+
+
+// 4️⃣ insert accounts_body
+if (backupData.accounts_body.length > 0) {
+  // console.table(accountIdMap)
+  const accounts_bodyData = backupData.accounts_body.map(x => {
+    const newParentId = accountIdMap[x.parent_id] ?? null; // استبدال أو تعيين null
+    const newAccountId = accountIdMap[x.account_id]; // يجب أن يكون موجودًا
+
+    if (!newAccountId) {
+      throw new Error(`إلغاء الإدراج: لم يتم العثور على ID جديد لـ account_id: ${x.account_id}`);
+    }
+
+    return {
+      parent_id: newParentId,
+      account_id: newAccountId
+    };
+  });
+
+  const query_accounts_bodyData = pgp.helpers.insert(
+    accounts_bodyData,
+    ["parent_id", "account_id"],
+    "accounts_body"
+  );
+
+  await tx.none(query_accounts_bodyData);
+}
+
+//! Global Code permissions500 S-0
+// 5️⃣ insert into user_company 
+if (backupData.user_company.length > 0) {
+  let users = await tx.any(`SELECT id FROM users WHERE owner_id = $1`, [req.session.owner_id]);
+  
+  // تحويل الـ users إلى Set لسهولة البحث
+  const existingUserIds = new Set(users.map(user => user.id));
+
+  // إنشاء البيانات، مع التحقق من أن user_id موجود في users
+  const user_companyData = backupData.user_company
+    .filter(x => existingUserIds.has(x.user_id)) // تصفية المستخدمين غير الموجودين
+    .map(x => ({
+      company_id: newCompanyId, // استخدام الـ ID الجديد
+      user_id: x.user_id,
+      general_permission: x.general_permission,
+      employees_permission: x.employees_permission,
+      effects_permission: x.effects_permission,
+      users_permission: x.users_permission,
+      production_permission: x.production_permission,
+      bread_permission: x.bread_permission,
+      acounts_permission: x.acounts_permission,
+      transaction_permission: x.transaction_permission,
+      items_permissions: x.items_permissions,
+      customers_permission: x.customers_permission,
+      vendors_permission: x.vendors_permission,
+      departments_permission: x.departments_permission,
+      items_permission: x.items_permission,
+      itemslocations_permission: x.itemslocations_permission,
+      salesman_permission: x.salesman_permission,
+      sales_qutation_permission: x.sales_qutation_permission,
+      sales_order_permission: x.sales_order_permission,
+      sales_invoice_permission: x.sales_invoice_permission,
+      purshases_qutation_permission: x.purshases_qutation_permission,
+      purshases_order_permission: x.purshases_order_permission,
+      purshases_invoice_permission: x.purshases_invoice_permission,
+      services_permission: x.services_permission,
+      sales_returns_permission: x.sales_returns_permission,
+      purshases_returns_permission: x.purshases_returns_permission,
+      fixed_assests_permission: x.fixed_assests_permission,
+      accumulated_depreciation_permission: x.accumulated_depreciation_permission,
+      disposed_fixed_asset_permission: x.disposed_fixed_asset_permission,
+      items_transfer_permission: x.items_transfer_permission,
+      cash_accounts_permission: x.cash_accounts_permission,
+      cash_transaction_permisson: x.cash_transaction_permisson
+    }));
+
+  // التأكد من عدم محاولة إدخال بيانات فارغة
+  if (user_companyData.length > 0) {
+    const query_user_company = pgp.helpers.insert(
+      user_companyData,
+      [
+        "company_id", "user_id", "general_permission", "employees_permission", "effects_permission", "users_permission", "production_permission", "bread_permission", "acounts_permission", "transaction_permission",
+        "items_permissions", "customers_permission", "vendors_permission", "departments_permission", "items_permission", "itemslocations_permission", "salesman_permission", "sales_qutation_permission", "sales_order_permission",
+        "sales_invoice_permission", "purshases_qutation_permission", "purshases_order_permission", "purshases_invoice_permission", "services_permission",  "sales_returns_permission",
+        "purshases_returns_permission", "fixed_assests_permission", "accumulated_depreciation_permission", "disposed_fixed_asset_permission", "items_transfer_permission", "cash_accounts_permission", "cash_transaction_permisson"
+      ],
+      "user_company"
+    );
+
+    await tx.none(query_user_company);
+  } else {
+    console.log("🚨 لا يوجد أي بيانات صالحة للإدراج في user_company.");
+  }
+}
+
+
+// 6️⃣ insert production_forms_header
+let productionFormsMap = {}; // خريطة لربط الـ ID القديم بالجديد
+if (backupData.production_forms_header.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const productionFormsData = backupData.production_forms_header.map(x => ({
+    company_id: newCompanyId,
+    account_no: x.account_no,
+    form_name: x.form_name,
+    production_item_id: accountIdMap[x.production_item_id] || x.production_item_id, // استبدال ID إذا وجد
+    location_from: accountIdMap[x.location_from] || x.location_from, // استبدال ID إذا وجد
+    value: x.value,
+  }));
+
+  // إدخال البيانات واسترجاع الـ ID الجديد مع القديم
+  const query_production_forms_header = pgp.helpers.insert(
+    productionFormsData,
+    ["company_id", "account_no", "form_name", "production_item_id", "location_from", "value"],
+    "production_forms_header"
+  ) + " RETURNING id";
+
+  const insertedForms = await tx.many(query_production_forms_header);
+
+  // حفظ العلاقة بين الـ ID القديم والجديد باستخدام الفهرس
+  backupData.production_forms_header.forEach((x, index) => {
+    productionFormsMap[x.id] = insertedForms[index].id;
+  });
+
+}
+
+
+// 7️⃣ insert production_forms_body
+if (backupData.production_forms_body.length > 0) {
+  
+  // تجهيز البيانات مع استبدال الـ ID إذا وجد
+  const production_forms_body_Data = backupData.production_forms_body
+    .filter(x => productionFormsMap[x.production_forms_header_id]) // تجاهل أي بيانات لا تملك ID صحيح
+    .map(x => ({
+      production_forms_header_id: productionFormsMap[x.production_forms_header_id], // الحصول على الـ ID الجديد
+      account_id: accountIdMap[x.account_id] || x.account_id, // استبدال ID الحساب إذا وجد
+      value: x.value,
+    }));
+
+  // التأكد من أن هناك بيانات ليتم إدخالها
+  if (production_forms_body_Data.length > 0) {
+    const query_production_forms_body = pgp.helpers.insert(
+      production_forms_body_Data,
+      ["production_forms_header_id", "account_id", "value"],
+      "production_forms_body"
+    );
+
+    await tx.none(query_production_forms_body); // تنفيذ الإدخال بدون استرجاع بيانات
+  }
+}
+
+
+      // 👇 أضف هنا استعادة باقي الجداول بنفس الطريقة...
+
+    });
+
+    res.json({ message: "✅ تم استعادة البيانات بنجاح!" });
+
+  } catch (error) {
+    console.error("❌ خطأ أثناء العملية:", error);
+    res.status(500).json({ error: "❌ حدث خطأ أثناء استعادة البيانات، لم يتم حذف أو تعديل أي شيء." });
+  }
+});
 
 
 
@@ -474,7 +861,7 @@ const loginLimiter = rateLimit({
   skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
   handler: (req, res, next) => {
     // الآن يمكننا إرسال الرسالة الخاصة بنا في حالة تجاوز الحد
-    res.status(429).json({
+    return res.json({
       success: false,
       message_ar: 'Too many login attempts from this IP, please try again after 1 minute',
     });
@@ -488,9 +875,9 @@ const deleteLimiter = rateLimit({
   skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
   handler: (req, res, next) => {
     // الآن يمكننا إرسال الرسالة الخاصة بنا في حالة تجاوز الحد
-    res.status(429).json({
+   return res.json({
       success: false,
-      message_ar: 'Too many login attempts from this IP, please try again after 1 minute',
+      message_ar: 'Too many delete attempts from this IP, please try again after 1 minute',
     });
   },
 });
@@ -498,14 +885,14 @@ const deleteLimiter = rateLimit({
 
 const registerLimiter = rateLimit({
   windowMs: 1000 * 60 * 60, // دقيقة واحدة
-  max: 2, // الحد الأقصى لمحاولات الدخول
+  max: 3, // الحد الأقصى لمحاولات الدخول
   message: 'Too many login attempts from this IP, please try again after 60 minute',
   skipFailedRequests: true, // اجعل النظام يتخطى الاستجابة التلقائية في حالة الفشل
   handler: (req, res, next) => {
     // الآن يمكننا إرسال الرسالة الخاصة بنا في حالة تجاوز الحد
-    res.status(429).json({
+    return res.json({
       success: false,
-      message_ar: 'Too many login attempts from this IP, please try again after 60 minute',
+      message_ar: 'Too many register attempts from this IP, please try again after 60 minute',
     });
   },
 });
