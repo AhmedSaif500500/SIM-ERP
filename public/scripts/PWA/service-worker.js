@@ -11,6 +11,7 @@ self.addEventListener('install', function(event) {
 
         //PWA
         '/public/scripts/PWA/k.png',
+        '/public/scripts/PWA/sim.png',
         '/public/scripts/PWA/manifest.json',
         '/public/scripts/PWA/service-worker.js',
 
