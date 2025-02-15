@@ -10372,6 +10372,12 @@ app.post("/api/update-item", async (req, res) => {
       });
     }
 
+
+
+
+    
+
+
     let query1;
     let query1_parameters;
     let query2;
@@ -10402,11 +10408,36 @@ app.post("/api/update-item", async (req, res) => {
       ]
 
 
+
+      const item_data = await db.oneOrNone(
+        `SELECT * FROM accounts_header WHERE id = $1 AND company_id = $2`,
+        [posted_elements.item_id, req.session.company_id]
+      );
+  
+
+//! update all account_id  fe table el transaction_body fe 7alt el sales wa el return eza tm ta8yeer el revenue account
+      const query3 = `
+      UPDATE transaction_body tb
+SET account_id = $1
+FROM transaction_header th
+WHERE th.company_id = $2
+  AND th.transaction_type IN (3, 4)
+  AND tb.item_id = $3
+  AND tb.transaction_header_id = th.id
+  ;
+  `
+  const query3_parameters = [posted_elements.revenue_account_select_value, req.session.company_id, posted_elements.item_id]
+      
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
       await tx.none(query1, query1_parameters);
-      await tx.none(query2, query2_parameters)
+      await tx.none(query2, query2_parameters);
+    
+      if (parseInt(item_data.item_revenue_account) !== parseInt(posted_elements.revenue_account_select_value)) {
+        await tx.none(query3, query3_parameters);
+      }
     });
+    
 
     // إذا تم تنفيذ جميع الاستعلامات بنجاح
     return res.json({
@@ -31579,11 +31610,14 @@ WHERE
     th.company_id = $1
     AND th.transaction_type = 31
     AND th.is_deleted IS NULL
-    AND th.datex BETWEEN $2 AND $3;
+    AND th.datex BETWEEN $2 AND $3
+	ORDER by
+    th.datex desc,
+	  th.id desc    
     ;
 `;
 
-
+//500500
 
     let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
           
@@ -31866,7 +31900,7 @@ from
 left join header_data hd on hd.id = bd.production_forms_header_id
 ;
 `;
-let params1 = [posted_elements.x, req.session.company_id, posted_elements.xamount_input]
+let params1 = [posted_elements.x, req.session.company_id, parseFloat(posted_elements.xamount_input)];
 
 
     let query2 = `
@@ -32552,8 +32586,8 @@ SELECT
             SUM(CASE 
         	WHEN th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_id is not null AND th2.datex < $2 then
         		case
-	    			when  tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
-        			when  tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+	    			when  tb2.item_amount > 0 then coalesce(tb2.cogs *-1, 0)
+        			when  tb2.item_amount <0 then coalesce(tb2.cogs, 0)
         			else 0
 	    		end
         	ELSE 0
@@ -32574,8 +32608,8 @@ SELECT
             SUM(CASE 
         	WHEN th2.transaction_type IN (3,4) AND ah.account_type_id = 5 and tb2.item_id is not null AND th2.datex BETWEEN $2 AND $3 then
         		case
-	    			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
-        			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+	    			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount > 0 then coalesce(tb2.cogs *-1,0)
+        			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount <0 then coalesce(tb2.cogs, 0)
         			else 0
 	    		end
         	ELSE 0
@@ -32608,7 +32642,7 @@ main_trial_balance AS (
         CASE
             WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
             	case
-            		when (sb.stock_debit_begining - sb.cost_items_value_begining) > 0 then (sb.stock_debit_begining - sb.cost_items_value_begining)
+            		when coalesce(sb.stock_debit_begining, 0) > 0 then coalesce(sb.stock_debit_begining, 0)
             		else 0
             	end
             WHEN ah.global_id = 23 then -- ارباح فترات سابقة
@@ -32628,7 +32662,7 @@ main_trial_balance AS (
                 CASE
             WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
             	case
-            		when (sb.stock_debit_begining - sb.cost_items_value_begining) < 0 then ABS(sb.stock_debit_begining - sb.cost_items_value_begining)
+            		when coalesce(sb.stock_debit_begining, 0) < 0 then ABS(sb.stock_debit_begining)
             		else 0
             	end
             WHEN ah.global_id = 23 then -- ارباح فترات سابقة
@@ -32648,7 +32682,7 @@ main_trial_balance AS (
         CASE
             WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
             	case
-            		when (sb.stock_debit_current - sb.cost_items_value_current) > 0 then (sb.stock_debit_current - sb.cost_items_value_current)
+            		when coalesce(sb.stock_debit_current, 0) > 0 then coalesce(sb.stock_debit_current, 0)
             		else 0
             	end
             WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
@@ -32662,7 +32696,7 @@ main_trial_balance AS (
         CASE
             WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
             	case
-            		when (sb.stock_debit_current - sb.cost_items_value_current) < 0 then ABS(sb.stock_debit_current - sb.cost_items_value_current)
+            		when coalesce(sb.stock_debit_current, 0) < 0 then ABS(sb.stock_debit_current)
             		else 0
             	end
             WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
@@ -32782,7 +32816,6 @@ from
         
                         // التحقق من الحسابات الفرعية العميقة قبل إخفاء الحساب الرئيسي
                         if (hide_zero && checkAllSubAccountsZero(array, id) && (+row.global_id !== 1 && +row.global_id !== 2) && allColumnsZero) {
-                            console.log(`الحساب رئيسى ولا يوجد به حسابات فرعية ذات أرصدة، سيتم التراجع`);
                             return;
                         }
         
@@ -32886,8 +32919,8 @@ select
     SUM(CASE 
             WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th.transaction_type in (3,4) THEN 
             	case
-	    			when tb.item_amount >= 0 then coalesce(tb.cogs,0)
-        			when tb.item_amount <0 then coalesce(tb.cogs *-1, 0)
+	    			when tb.item_amount > 0 then coalesce(tb.cogs *-1, 0)
+        			when tb.item_amount < 0 then coalesce(tb.cogs, 0) -- حالة المبيعات العادية
         			else 0
 	    		end
             ELSE 0 
@@ -33245,143 +33278,6 @@ left join main_accounts_totals mat on true
     }
 
         //* Start--------------------------------------------------------------
-        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
-    //50000
-/*
-  let query1 = `
-WITH 
-stock_balances as (
-select
-
-    SUM(CASE 
-            WHEN (ah.account_type_id = 5 OR ah.global_id = 17) AND th.transaction_type in (3,4) THEN 
-            	case
-	    			when tb.item_amount >= 0 then coalesce(tb.cogs,0)
-        			when tb.item_amount <0 then coalesce(tb.cogs *-1, 0)
-        			else 0
-	    		end
-            ELSE 0 
-        END
-    ) AS cogs_value
-
-FROM transaction_body tb
-INNER JOIN accounts_header ah ON ah.id = tb.item_id
-LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
-WHERE ah.company_id = $1
-  and ah.is_final_account is true
-  AND th.is_deleted IS NULL
-  AND th.datex between $2 and $3
-  AND tb.item_id is not null
-),
-
-balances as(
-    SELECT
-
-    SUM(CASE 
-            WHEN ah.account_type_id = 1 AND ah.main_account_id = 4 THEN COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
-            ELSE 0 
-        END
-    ) AS revenue_value,
-    
-    SUM(CASE 
-            WHEN ah.account_type_id = 1 AND ah.main_account_id = 5 THEN COALESCE(tb.debit, 0)  - COALESCE(tb.credit, 0)
-            ELSE 0 
-        END
-    ) AS expenses_value
-    
-FROM transaction_body tb
-INNER JOIN accounts_header ah ON ah.id = tb.account_id
-LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
-WHERE ah.company_id = $1
-  and ah.is_final_account is true
-  AND th.is_deleted IS NULL
-  AND th.datex between $2 and $3
-),
-main_trial_balance AS (
-    SELECT
-        ah.id,
-        ah.account_name,
-        CASE
-            WHEN ah.global_id = 17 then  -- تكلفة البضاعه المباعه
-            	case
-            		when ah.main_account_id = 5 then sb.cogs_value
-            		when ah.main_account_id != 5 then sb.cogs_value * -1
-            		else 0
-            	end           	
-            WHEN ah.global_id = 16 then  -- ارباح وخسائر الفتره
-					b.revenue_value - b.expenses_value - sb.cogs_value
-            WHEN ah.main_account_id in (1,2,3) then 0  -- لا يجمع بنود قائمة المركز المالى              	
-            ELSE 
-                SUM(
-                case
-                	when ah.account_type_id not in (2,3,4,5,6,7,8,9,10) then
-                		case
-                	    	when ah.main_account_id in (1,5) THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
-                		 	when ah.main_account_id in (2,3,4) THEN COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
-                		 	else 0
-                		end
-                end
-                 )
-        END AS balance,
-        ah.is_final_account,
-        ah.account_no,
-        ah.finance_statement,
-        ah.cashflow_statement,
-        ah.account_type_id,
-        ah.account_name_en,
-        ah.global_id,
-        ah.main_account_id,
-        ah.is_inactive,
-        ab.parent_id
-    FROM
-        accounts_header ah
-    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
-    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
-    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
-    LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
-    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
-    WHERE
-        ah.company_id = $1
-        and (ah.global_id != 2 or ah.global_id is null)
-        and ah.finance_statement = 2
-        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
-        AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
-		AND (
-    		(ah.account_type_id IS NULL OR ah.account_type_id NOT IN (2, 3, 6, 4, 9, 10)) 
-    		OR ah.global_id IN (13, 14, 9, 20, 11, 15)
-		)
-    GROUP BY
-        ah.id, ab.parent_id, b.expenses_value, b.revenue_value, sb.cogs_value
-)
-select
-    mt.id,
-    mt.account_name,
-    case
-	    when mt.global_id = 6 then b.revenue_value
-	    when mt.global_id = 7 then b.expenses_value + sb.cogs_value
-	    else balance
-    end as balance,
-    mt.is_final_account,
-    mt.account_no,
-    mt.finance_statement,
-    mt.cashflow_statement,
-    mt.account_type_id,
-    mt.account_name_en,
-    mt.global_id,
-    mt.main_account_id,
-    mt.is_inactive,
-    mt.parent_id,
-    null as padding
-from 
-	main_trial_balance mt
-LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف الوحد
-LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
-order by
-    mt.main_account_id asc, mt.parent_id asc, mt.id asc
-    `;
-    */
-
-
 
     let query1 = `
 WITH 
@@ -33391,8 +33287,8 @@ select
     SUM(CASE 
             WHEN ah.account_type_id = 5 AND tb.item_id is not null AND th.transaction_type in (3,4) THEN 
             	case
-	    			when tb.item_amount >= 0 then coalesce(tb.cogs,0)
-        			when tb.item_amount <0 then coalesce(tb.cogs *-1, 0)
+	    			when tb.item_amount > 0 then coalesce(tb.cogs *-1, 0)
+        			when tb.item_amount < 0 then coalesce(tb.cogs, 0) -- حالة المبيعات الطبيعية
         			else 0
 	    		end
             ELSE 0 
@@ -33524,6 +33420,7 @@ LEFT JOIN balances b ON true -- ربط الاستعلام فى حاله الصف
 LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
 order by
     mt.main_account_id asc, mt.parent_id asc, mt.id asc
+    ;
         `;
 
     let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
@@ -34880,6 +34777,7 @@ server.listen(port, () => {
   //! اوامر تنفذ مبشره بعد تشغيل السيرفر
   make_all_users_is_active_to_false();
   //test_trial_balance() // معلق
-  //accept_request(6, 5, 5, '2025-02-13', '2025-12-31')
-  //change_user_password(user_id, new_pass)
+  //accept_request(request_id, int_company_numbers, int_users_numbers, '2025-02-13', '2025-12-31')
+  //change_user_password(user_id, 'password')
+  //change_user_password(user_id, 'password')
 });

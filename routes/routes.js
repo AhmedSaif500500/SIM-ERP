@@ -1011,6 +1011,18 @@ router.get('/items_add_ar', (req, res) => {
     }
 });
 
+router.get('/import_data_items', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner_permission || req.session.general_permission > 2 ||  req.session.items_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views' , 'ar', 'items', 'items', 'import_data_items.html'));
+        }else{
+            res.redirect('/items_view_ar?reason=1');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
 
 router.get('/items_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {

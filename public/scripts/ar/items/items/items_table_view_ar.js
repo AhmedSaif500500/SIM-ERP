@@ -801,3 +801,10 @@ window.addEventListener("beforeprint", function () {
 });
 
 /*--------------------------------------------------------------------------------*/
+
+
+const import_data_btn = document.querySelector(`#import_data_btn`)
+
+import_data_btn.onclick = function (){
+    window.location.href = "import_data_items";
+}
