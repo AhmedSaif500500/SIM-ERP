@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     try {
       showLoadingIcon(content_space)
 
-      
+      handle_fn_options()
       hideLoadingIcon(content_space)         
     } catch (error) {
         hideLoadingIcon(content_space)
@@ -191,3 +191,32 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     })
     
+
+    async function importData(){
+        const permission = await btn_permission('items_permission', 'update');
+
+        if (!permission) {
+            showAlert(`warning`, `⚠️ عذرا لا تملك الصلاحية لاستيراد البيانات`)
+          return;
+        };
+    
+        window.location.href = 'import_data_items';
+
+    }
+
+    function handle_fn_options(){  
+        const newDivs = `
+          <div id="fn_importData_btn" onclick="importData()">استيراد بيانات</div>
+        `;
+        fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+      }
+      /*
+    function handle_fn_options(){  
+        const newDivs = `
+          <div id="fn_option_update_btn" onclick="fn_option_update_btn()">وضع التعديل</div>
+          <div id="fn_option_view_btn" onclick="viewMode(true,'production_orders_permission','view')" style="display: none;">وضع العرض</div>
+        `;
+        fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+      }
+      */
+      

@@ -4355,6 +4355,23 @@ function processPastedData() {
   // تعبئة النموذج الخاص بك هنا
 }
   */
+
+
+function copyHeadersWithExample(exampleRow, ...headers) {
+  const headersRow = [''].concat(headers).join('\t'); // الصف الأول (رؤوس الأعمدة) مع أول خانة فاضية
+  const exampleRowText = exampleRow.join('\t'); // الصف الثاني (صف المثال)
+
+  const tabSeparatedText = `${headersRow}\n${exampleRowText}`;
+
+  navigator.clipboard.writeText(tabSeparatedText)
+    .then(() => {
+      showAlert(`info`, `✅ تم نسخ البيانات بنجاح إلى الحافظة. يمكنك الآن لصقها في تطبيق جداول البيانات لاستكمال المعالجة.`);
+    })
+    .catch(err => {
+      showAlert(`fail`, `❌ حدث خطأ أثناء النسخ`);
+    });
+}
+
 //#endregion 
 
 

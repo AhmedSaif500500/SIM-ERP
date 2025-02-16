@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>عيش</title>
+  <title>SIM-ERP</title>
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
@@ -28,113 +28,41 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="items_view_ar" title="المؤثرات">
+            <a id="back_href" class="back_href" href="items_add_ar" title="اصنف جديد">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="items_add_ar" title="اعادة تحميل الصفحة">
-                الاصناف
+              <a id="h2_text_div" class="h2_text_div" href="import_data_items" title="اعادة تحميل الصفحة">
+                استيراد بيانات ( اصناف المخزون )
               </a>
-              <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
             </div>
           </h2>
 
-          <div id="page_content" style="display: none;">
+          <div id="page_content">
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+            
+            <label for="" id="" class="lbl_sm">1️⃣ : قم بالضغط على زر نسخ رؤوس الاعمده </label>
+            <button id="btn1" class="custom_button" style="width: fit-content;">نسخ رؤوس الأعمدة</button>
 
-            <div id="tree_group_div" class="column" style="display: none;">
+            <label for="" id="" class="lbl_sm">2️⃣ : قم بلصق البيانات فى برنامج جدول البيانات  </label>
+            <label for="" id="" class="lbl_sm">3️⃣ : ستحصل على رؤوس الاعمده مع مثال توضيحى اسفل منها  </label>
+            <label for="" id="" class="lbl_sm">4️⃣ : احذف سطر المثال التوضيحى واملىء البيانات بعناية  </label>
+            <label for="" id="" class="lbl_sm">5️⃣ : انسخ البيانات كامله برؤوس الاعمده ثم الصقها فى المربع التالى</label>
+            <label for="" id="" class="lbl_sm">🟡 : يرجى التأكد من إضافة مجموعات الأصناف المذكورة في النموذج إلى النظام قبل الاستخدام.</label>
+            <label for="" id="" class="lbl_sm">🟡 : يرجى التأكد من إضافة حساب من حسابات الايردات من قائمة الدخل فى عامود حساب الدخل.</label>
+
       
               <!-- اسم الصنف -->
-              <label for="input_account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم المجموعة</label>
-              <input type="search" id="input_account_name_input_tree_group_div" class="input_text_md hover" autocomplete="off"
-                oninput="check_parse(this,'string')">
-              <input type="hidden" id="account_id_hidden_tree_group_div">
-    
-              <!--   القائمة والمجموعه-->    
-              <label for="dropdown_div1" class="lbl_sm">المجموعه</label>
-              <div class="row x_start y_center mb_10">
-                <!-- <span id="statment_type_span_tree_group_div" class="span_start">مجموعات الاصناف</span> -->
-                <div id="dropdown_div1" class="dropdown_container" style="margin: 0;"></div>
-              </div>
+              <!-- <label for="input_account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم المجموعة</label> -->
 
+
+              <textarea id="text_area1" class="text_area1" placeholder="الصق البيانات هنا" style="margin-block-start: 1rem;"></textarea>
+              
+                    
               <div class="btn_container_top_border">
-                <button class="btn_save" id="btn_save_group" onclick="save_group('A')">حفظ</button>
-                <button class="btn_save" id="btn_save_and_add_another_group" onclick="save_group('B')">حفظ و إضافة أخر</button>
+                <button class="btn_save" id="btn_save_account">معالجة وحفظ البيانات</button>
               </div>
-  
-            </div>
-    
-
-            <div id="tree_add_account" class="column" style="display: none;">
-                <!-- <h2 id="h2_header" class="h2">asfasf</h2> -->
-      
-      
-                <!-- معرف الصنف -->
-                <div id="acc_no_div" class="flex_column">
-                  <label for="account_no_input" class="lbl_sm">معرف الصنف</label>
-                  <input type="search" id="account_no_input" class="input_text_sm hover" placeholder="اختيارى"
-                    autocomplete="off" oninput="check_parse(this,'string')">
-                  <!-- <input type="hidden" id=" is_main_acc_input_hidden"> -->
-                </div>
-                <!-- اسم الصنف -->
-                <label for="account_name_input" id="lbl_acc_name" class="lbl_sm">اسم الصنف</label>
-                <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب"
-                  autocomplete="off" oninput="check_parse(this,'string')">
-                <input type="hidden" id="account_id_hidden">
-      
-                <!-- اسم الصنف -->
-                <label for="item_unite_input" id="lbl_acc_name" class="lbl_sm">وحدة قياس الكميه</label>
-                <input type="search" id="item_unite_input" class="input_text_sm hover" placeholder="مطلوب" autocomplete="off"
-                  oninput="check_parse(this,'string')">
-      
-                <!--   القائمة والمجموعه-->
-              <label for="dropdown_div2" class="lbl_sm">المجموعه</label>
-              <div class="row x_start y_center mb_10">
-                <!-- <span id="statment_type_span_tree_group_div" class="span_start">مجموعات الاصناف</span> -->
-                <div id="dropdown_div2" class="dropdown_container" style="margin: 0;"></div>
-              </div>
-      
-
-              <!-- حساب الدخل -->
-                <label for="dropdown_div3" class="lbl_sm">حساب الدخل</label>
-                <div class="row x_start y_center mb_10">
-                  <!-- <span id="statment_type_span_tree_group_div" class="span_start">مجموعات الاصناف</span> -->
-                  <div id="dropdown_div3" class="dropdown_container" style="margin: 0;"></div>
-                </div>
-      
-      
-                <div id="final_account_information_div" class="flex_column">
-                  <!-- قائمة التدفقات النقدية -->
-                  <label for="expens_account_select" class="lbl_sm">حساب المصروفات</label>
-                  <select name="expens_account_select" id="expens_account_select" class="select mb_10"
-                    style="border-start-start-radius: none;">
-                    <option value="1" selected>تكلفة المخزون</option>
-                  </select>
-                </div>
-      
-      
-                <label for="sales_price" id="lbl_acc_name" class="lbl_sm">سعر البيع الافتراضى</label>
-                <input type="search" id="sales_price" class="input_text_sm hover" placeholder="اختيارى"
-                  oninput="check_parse(this,'number')" autocomplete="off">
-      
-                <label for="purchase_price" id="lbl_acc_name" class="lbl_sm">سعر الشراء الافتراضى</label>
-                <input type="search" id="purchase_price" class="input_text_sm hover" placeholder="اختيارى"
-                  oninput="check_parse(this,'number')" autocomplete="off">
-      
-      
-                <label for="reorder_point" id="lbl_acc_name" class="lbl_sm">نقطة اعادة الطلب</label>
-                <input type="search" id="reorder_point" class="input_text_sm hover" placeholder="اختيارى"
-                  oninput="check_parse(this,'number')" autocomplete="off">
-      
-                  <div class="btn_container_top_border">
-                    <button class="btn_save" id="btn_save_account" onclick="save_account('A')">حفظ</button>
-                    <button class="btn_save" id="btn_save_and_add_another_account" onclick="save_account('B')">حفظ و إضافة أخر</button>
-                  </div>
-      
-      
-              </div>
-      
-      
 
 
             <!-- ______________________________________________________________________________________________________ -->
@@ -154,10 +82,7 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/items/items/items_add_ar.js"></script>
-  <script src="/public/scripts/ar/items/items/items_multi_pages_ar.js"></script>
-
-
+  <script src="/public/scripts/ar/items/items/import_data_items.js"></script>
 </body>
 
 </html>

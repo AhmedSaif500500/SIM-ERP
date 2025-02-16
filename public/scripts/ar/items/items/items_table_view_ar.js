@@ -11,7 +11,7 @@ async function getItemsGroupData(){
         15,
         false,"",
         true,
-        true,false,
+        false,false,
         false,false,false,
         false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
     )
@@ -29,7 +29,7 @@ async function getIRevenueAccountsData(){
         15,
         false,"",
         true,
-        true,false,
+        false,false,
         false,false,false,
         false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
     )

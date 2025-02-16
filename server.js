@@ -145,7 +145,7 @@ db.connect()
   });
 
 // ! Lazem el code da yt7t Befor routes definition
-const session_time = 30
+const session_time = 15
 const session = require("express-session");
 app.use(
   session({
@@ -1564,16 +1564,22 @@ app.post("/Login", loginLimiter, async (req, res) => {
       const isMatch = await bcrypt.compare(password_Input, password_DB);
       const is_active = rows[0].is_active;
       if (is_active) {
-        let currentId = parseInt(rows[0].id)
-        // io.emit('active_user', { username: posted_elements.username_Input });
-        // console.log(`thisi is currentId = ${currentId} typeof ${typeof(currentId)}`);
-        await khorogFawry(req,currentId)
         return res.json({
           success: false, // العمليه فشلت
-          type : 'khorogFawary',
           message_ar: `⚠️ هذا الحساب نشط بالفعل ..رجاء المحاولة بعد قليل `,
-          message_en: "⚠️ this user is already active Please try again after minutes",
         });
+        // let currentId = parseInt(rows[0].id)
+
+
+        // io.emit('active_user', { username: posted_elements.username_Input });
+        // console.log(`thisi is currentId = ${currentId} typeof ${typeof(currentId)}`);
+     //   await khorogFawry(req,currentId)
+      //  return res.json({
+        //  success: false, // العمليه فشلت
+         // type : 'khorogFawary',
+         // message_ar: `⚠️ هذا الحساب نشط بالفعل ..رجاء المحاولة بعد قليل `,
+         // message_en: "⚠️ this user is already active Please try again after minutes",
+        //});
       }
 
       if (isMatch) {
@@ -2344,21 +2350,23 @@ function turn_EmptyValues_TO_null(object_Var) {
 
 function turn_EmptyValues_TO_null(object_Var) {
   for (let key in object_Var) {
-    // إذا كانت القيمة عبارة عن مصفوفة
     if (Array.isArray(object_Var[key])) {
       object_Var[key].forEach(item => {
         if (typeof item === 'object' && item !== null) {
-          turn_EmptyValues_TO_null(item); // استدعاء الدالة نفسها على الكائن
+          turn_EmptyValues_TO_null(item);
         }
       });
     } else if (typeof object_Var[key] === 'object' && object_Var[key] !== null) {
       turn_EmptyValues_TO_null(object_Var[key]);
-    } else if (object_Var[key] === "" || object_Var[key] === 0 || parseFloat(object_Var[key]) === 0) {
+    } else if (typeof object_Var[key] === 'string') {
+      object_Var[key] = object_Var[key].trim();
+      if (object_Var[key] === "" || object_Var[key] === "0") {
+        object_Var[key] = null;
+      }
+    } else if (object_Var[key] === 0 || parseFloat(object_Var[key]) === 0) {
       object_Var[key] = null;
-    } else if (typeof object_Var[key] === "number") {
+    } else if (typeof object_Var[key] === 'number') {
       object_Var[key] = parseFloat(object_Var[key].toFixed(2));
-
-      // **إذا كان الرقم سالبًا، يتم إلقاء خطأ**
       if (object_Var[key] < 0) {
         throw new Error(`القيمة ${key} تحتوي على رقم سالب (${object_Var[key]})`);
       }
@@ -9762,6 +9770,211 @@ app.post("/api/add_item", async (req, res) => {
   }
 });
 
+
+
+app.post("/api/add_imported_items", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "items_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+ 
+    //! sql injection check - فحص كل البيانات داخل posted_array
+    let hasBadSymbols = posted_elements.posted_array.some(row =>
+      row.some(cell => sql_anti_injection([cell]))
+    );
+    
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+    
+
+
+    turn_EmptyValues_TO_null(posted_elements);
+
+
+    
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+    
+    const db_AllAccounts = await db.any(
+      `select id, account_name, is_final_account, account_type_id, main_account_id from accounts_header where company_id = $1`,
+      [req.session.company_id]
+    );
+    const db_items_parent_array = db_AllAccounts.filter(
+      (row) => row.is_final_account === null && +row.account_type_id === 5
+    );
+    
+    const company_id = req.session.company_id;
+    const account_type_id = 5;
+    
+    // مجموعة لتخزين أسماء الأصناف اللي بتتحقق أثناء اللوب
+    const itemNamesSet = new Set();
+    
+    let array1 = [];
+    let validRows = []; // الصفوف اللي دخلت فعليًا
+    let index = 1;
+    
+    for (const row of posted_elements.posted_array) {
+      let is_final_account = row[0];
+      let account_no = row[1] || null;
+      let item_name = row[2] || null;
+      let item_unite = row[3] || null;
+      let item_parent = row[4] || null;
+      let item_revenue_account = row[5] || null;
+      let item_sales_price = row[6] || null;
+      let item_purshase_price = row[7] || null;
+      let item_reorder_point = row[8] || null;
+    
+      if (!item_name || !item_parent) {
+        throw new Error(`❌ برجاء إدخال البيانات بشكل صحيح فى السطر رقم : ${index}`);
+      }
+    
+      if (account_no === 'معرف الصنف ( اختيارى )' || item_name === 'اسم الصنف ( مطلوب )' || item_unite === 'وحدة القياس ( مطلوب )') {
+        console.log(`skip header row`);
+        index++;
+        continue;
+      }
+    
+      if (is_final_account !== "صنف" && is_final_account !== "مجموعة") {
+        throw new Error(`❌ صنف/مجموعة غير صالح فى الصنف ${item_name} فى السطر رقم : ${index}`);
+      }
+    
+      const isNameExists = db_AllAccounts.some((account) => account.account_name.trim() === item_name);
+      if (isNameExists) {
+        throw new Error(`❌ لا يمكن استخدام اسم الصنف '${item_name}' السطر رقم: ${index}`);
+      }
+    
+      if (itemNamesSet.has(item_name)) {
+        throw new Error(`❌ الصنف '${item_name}' مكرر داخل البيانات المدخلة فى السطر رقم: ${index}`);
+      }
+      itemNamesSet.add(item_name);
+    
+      if (item_sales_price !== null && (item_sales_price === "" || isNaN(+item_sales_price))) {
+        throw new Error(`❌ سعر البيع غير صالح فى الصنف ${item_name} فى السطر رقم : ${index}`);
+      }
+    
+      if (item_purshase_price !== null && (item_purshase_price === "" || isNaN(+item_purshase_price))) {
+        throw new Error(`❌ سعر الشراء غير صالح فى الصنف ${item_name} فى السطر رقم : ${index}`);
+      }
+      if (item_reorder_point !== null && (item_reorder_point === "" || isNaN(+item_reorder_point))) {
+        throw new Error(`❌ نقطة إعادة الطلب غير صالح فى الصنف ${item_name} فى السطر رقم : ${index}`);
+      }
+    
+      const parentObject = db_items_parent_array.find((parent) => parent.account_name.trim() === item_parent && !parent.is_final_account && !parent.is_deleted);
+      if (!parentObject) {
+        throw new Error(`❌ اسم المجموعة '${item_parent}' غير صحيح فى السطر رقم: ${index}`);
+      }
+      item_parent = parentObject.id;
+    
+      if (is_final_account === "مجموعة") {
+        is_final_account = null;
+        item_unite = null;
+        item_revenue_account = null;
+        item_sales_price = null;
+        item_purshase_price = null;
+        item_reorder_point = null;
+      } else if (is_final_account === "صنف") {
+        is_final_account = true;
+        if (!item_unite){ throw new Error(`❌ برجاء إدخال وحدة قياس الصنف ${item_name} فى السطر رقم : ${index}`);}
+     
+        const revenueAccount = db_AllAccounts.find((acc) => acc.account_name.trim() === item_revenue_account && +acc.main_account_id === 4 && acc.is_final_account && !acc.is_deleted);
+        
+        if (!item_revenue_account || !revenueAccount) {
+          throw new Error(`❌ حساب الدخل للصنف '${item_name}' غير صحيح فى السطر رقم: ${index}`);
+        }
+        item_revenue_account = revenueAccount.id
+
+      }else{
+        throw new Error(`❌ برجاء إدخال صننف/مجموعة فى السطر رقم : ${index}`)
+      }
+      
+    
+      array1.push([
+        account_no,
+        item_name,
+        item_unite,
+        is_final_account,
+        item_revenue_account,
+        item_sales_price,
+        item_purshase_price,
+        item_reorder_point,
+        account_type_id,
+        company_id,
+      ]);
+    
+      validRows.push(row); // تخزين الصف الصالح فقط
+    
+      index++;
+    }
+    
+    
+
+
+
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+
+// إدخال accounts_header
+let columnsCount = array1[0].length;
+let query1 = `INSERT INTO accounts_header
+  (account_no, account_name, item_unite, is_final_account, item_revenue_account, item_sales_price, item_purshas_price, item_amount_reorder_point, account_type_id, company_id)
+  VALUES ${array1.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}
+  RETURNING id;`;
+
+const insertedIds = await tx.many(query1, array1.flat());
+
+// إعداد بيانات accounts_body
+let array2 = insertedIds.map((inserted, i) => [
+  db_items_parent_array.find(parent => parent.account_name === validRows[i][4]).id,
+  inserted.id
+]);
+
+let query2 = `INSERT INTO accounts_body (parent_id, account_id)
+              VALUES ${array2.map((_, i) =>
+                `($${i * 2 + 1}, $${i * 2 + 2})`
+              ).join(', ')}`;
+
+await tx.none(query2, array2.flat());
+
+
+ // await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+   // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `✅ تم حفظ بيانات النموذج الجدولى بنجاح `,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error add_imported_items:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
 //#endregion
 
 //#region update Group
