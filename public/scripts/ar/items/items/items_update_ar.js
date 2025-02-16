@@ -215,6 +215,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       showLoadingIcon(content_space)
         showData()
       
+        viewMode(true,'items_permission','view')
+        handle_fn_options()
       hideLoadingIcon(content_space)         
     } catch (error) {
         hideLoadingIcon(content_space)
@@ -222,3 +224,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     })
     
+
+    function handle_fn_options(){
+        const newDivs = `
+          <div id="fn_option_update_btn" onclick="viewMode(false,'items_permission','update')">وضع التعديل</div>
+          <div id="fn_option_view_btn" onclick="viewMode(true,'items_permission','view')" style="display: none;">وضع العرض</div>
+        `;
+        fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+      }
+      

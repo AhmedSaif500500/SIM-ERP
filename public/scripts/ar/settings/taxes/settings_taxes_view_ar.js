@@ -328,7 +328,7 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}">${row.id}</td>
                         <td style="${style_taxe_package_name}">${row.taxe_package_name}</td>
                         <td style="${style_is_inactive}"><span class="${activeClass}">${row.is_inactive}</span></td>
@@ -464,7 +464,7 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     try {
     // const permission = await btn_permission('customers_permission','update');
 

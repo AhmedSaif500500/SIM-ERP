@@ -4799,7 +4799,7 @@ ORDER BY
   
 
       let query0 = ` select
-                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 2 AND account_name = $3 AND id != $2) as count_account_name_exist,
+                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3 AND id != $2) as count_account_name_exist,
                       (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 2) as count_id
       `
       let result = await db.oneOrNone(query0, [
@@ -5102,7 +5102,7 @@ ORDER BY
         //   [posted_elements.employee_name_input]
         // );
         let query0 = ` select
-                    (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 4 AND  (is_final_account IS FALSE OR is_final_account IS NULL)) as account_name_count,
+                    (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as account_name_count,
                     (select id from accounts_header where company_id = $1 AND global_id = 20) as parent_id
                   `;
         let result = await db.oneOrNone(query0, [
@@ -5301,7 +5301,7 @@ ORDER BY
         // );
         let query0 = ` select
                     (select count(id) from accounts_header where company_id = $1 AND id = $3 AND account_type_id = 4 AND (is_final_account IS NULL OR is_final_account = FALSE)) as id_count,
-                    (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3 AND account_type_id = 4 AND  (is_final_account = FALSE OR is_final_account IS NULL)) as account_name_count
+                    (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3) as account_name_count
                   `;
         let result = await db.oneOrNone(query0, [
           req.session.company_id,
@@ -5429,7 +5429,7 @@ app.post("/employee_add", async (req, res) => {
 
     let query0 = `SELECT
 
-               (select count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 4) as count_account_name,
+               (select count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
                (select count(account_name) FROM accounts_header WHERE company_id = $1 AND id = $3 AND (is_final_account = false or is_final_account IS NULL) AND account_type_id = 4) as count_department_name
               `;
     let result = await db.oneOrNone(query0, [
@@ -5600,7 +5600,7 @@ app.post("/update_employee", async (req, res) => {
     let query0 = `SELECT
               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $2 AND account_type_id = 4 AND is_final_account = true) as count_id,
               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3 AND account_type_id = 4 AND (is_final_account = false or is_final_account IS NULL)) as count_department_id,
-              (select count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $4 AND id != $2 AND account_type_id = 4) as count_account_name
+              (select count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $4 AND id != $2) as count_account_name
               `;
     let result = await db.oneOrNone(query0, [
       req.session.company_id,
@@ -6152,7 +6152,7 @@ ORDER BY
 
       let query0 = `
       select
-      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3 AND account_name = $3 AND id != $2) as count_account_name_exist,
+      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3 AND id != $2) as count_account_name_exist,
       (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 3) as count_id
   `;
   
@@ -8459,7 +8459,7 @@ WHERE
 
 
       let query0 = ` select
-                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_type_id = 7 AND account_name = $3 AND id != $2) as count_account_name_exist,
+                      (SELECT count(account_name) FROM accounts_header WHERE company_id = $1 AND account_name = $3 AND id != $2) as count_account_name_exist,
                       (select count(id) FROM accounts_header WHERE company_id = $1 AND account_type_id = 7) as count_id
       `
       let result = await db.oneOrNone(query0, [
@@ -11077,18 +11077,17 @@ await db.tx(async (tx) => {
   }
 
 // حساب عدد الأعمدة ديناميكياً بناءً على طول أول صف في المصفوفة
-let columnsCount = insert_array2[0].length;  
-
+if (insert_array2.length > 0){
+let columnsCount = insert_array2[0].length;
 // بناء جملة SQL ديناميكية
 let query2 = `INSERT INTO transaction_body
   (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
   VALUES ${insert_array2.map((_, i) => 
     `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
-  ).join(', ')}
-  ON CONFLICT DO NOTHING;`;
+  ).join(', ')}`;
 
 await tx.none(query2, insert_array2.flat());
-
+}
 
   // تحديث is_including_items بناءً على محتوى items_array
   let is_including_items = items_array.length > 0 ? true : null;
@@ -11361,8 +11360,8 @@ let query2 = `INSERT INTO transaction_body
   (transaction_header_id, account_id, debit, credit, row_note, item_id, item_amount, item_location_id_tb, is_accumulated_depreciation)
   VALUES ${insert_array2.map((_, i) => 
     `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
-  ).join(', ')}
-  ON CONFLICT DO NOTHING;`;
+  ).join(', ')}`;
+
 
 await tx.none(query2, insert_array2.flat());
 
@@ -22679,7 +22678,7 @@ app.post("/services_add", async (req, res) => {
 
 
     let query0 = `SELECT
-               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
                (select count(id) FROM accounts_header WHERE id = $3 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 4 AND is_inactive IS NULL) as count_revenue_account,
                (select count(id) FROM accounts_header WHERE id = $4 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 5 AND is_inactive IS NULL) as count_expenses_account
               `;
@@ -22820,7 +22819,7 @@ app.post("/services_update", async (req, res) => {
 
     let query0 = `SELECT
                (select count(id) FROM accounts_header WHERE id = $5 AND company_id = $1 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_exist_account_name,
-               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $5 AND account_type_id = 8 AND is_final_account = true AND is_inactive is null) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $5) as count_account_name,
                (select count(id) FROM accounts_header WHERE id = $3 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 4 AND is_inactive IS NULL) as count_revenue_account,
                (select count(id) FROM accounts_header WHERE id = $4 AND company_id = $1 AND is_final_account = true  AND account_type_id = 1 AND main_account_id = 5 AND is_inactive IS NULL) as count_expenses_account
               `;
@@ -26806,7 +26805,7 @@ app.post("/fixed_assests_add", async (req, res) => {
     // );
 
     let query0 = `SELECT
-               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 6) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
                (select main_account_id FROM accounts_header WHERE company_id = $1 AND global_id = 9) as parent_main_account_id,
                (select id FROM accounts_header WHERE company_id = $1 AND global_id = 9) as parent_id,
                (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3 AND account_type_id = 1 AND main_account_id = 5 AND global_id != 17) as count_expense_account
@@ -27073,7 +27072,7 @@ app.post("/fixed_assests_update", async (req, res) => {
     // );
 
     let query0 = `SELECT
-               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3 AND account_type_id = 6) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
                (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3 and account_type_id = 6) as count_id,
                 (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $4 AND account_type_id = 1 AND main_account_id = 5 AND global_id != 17) as count_expense_account
               `;
@@ -27710,7 +27709,7 @@ WITH main_query AS (
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
       let total = 0
-      let tb_posted_array = []
+      let insert_array2 = []
       const frontEndDatex = posted_elements.startDate
       let index = 1
 
@@ -27778,7 +27777,7 @@ const newId_transaction_header = insert.id;
         }
         
         // سطر المصورف
-        tb_posted_array.push([
+        insert_array2.push([
           newId_transaction_header, // transaction_header_id
           +row.depreciation_value || 0, // debit
           null, //credit          
@@ -27788,7 +27787,7 @@ const newId_transaction_header = insert.id;
 
 
         // سطر المجمع
-        tb_posted_array.push([
+        insert_array2.push([
           newId_transaction_header, // transaction_header_id
           null, //debit
           +row.depreciation_value || 0, // credit
@@ -27801,15 +27800,15 @@ const newId_transaction_header = insert.id;
         index++;
       }
 
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
       let query2 = `INSERT INTO transaction_body
       (transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
-      VALUES($1, $2, $3, $4, $5);`;
-
-    // تنفيذ معاملة قاعدة البيانات
-
-
-      // استخدم tx.batch بدلاً من tx.none
-      await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
+      VALUES ${insert_array2.map((_, i) => 
+        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+      ).join(', ')}`;
+      await tx.none(query2, insert_array2.flat());
+    }
 
       //! history
       await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
@@ -27985,9 +27984,16 @@ WITH main_query AS (
       
 
       let total = 0
-      let tb_posted_array = []
+      let insert_array2 = []
       const frontEndDatex = posted_elements.startDate
       let index = 1
+      await db.tx(async (tx) => {
+
+        let query0 = `DELETE FROM transaction_body where transaction_header_id = $1`
+        let parms0 = [posted_elements.x]
+        await tx.none(query0, parms0); // delete body
+
+
       for ( const row of posted_elements.posted_array){
         const dbRow = result.find(item => +item.id === row.account_id);
         
@@ -28032,7 +28038,7 @@ WITH main_query AS (
         }
         
         // سطر المصورف
-        tb_posted_array.push([
+        insert_array2.push([
           posted_elements.x, // transaction_header_id
           +row.depreciation_value || 0, // debit
           null, //credit          
@@ -28042,7 +28048,7 @@ WITH main_query AS (
 
 
         // سطر المجمع
-        tb_posted_array.push([
+        insert_array2.push([
           posted_elements.x, // transaction_header_id
           null, //debit
           +row.depreciation_value || 0, // credit
@@ -28055,36 +28061,35 @@ WITH main_query AS (
         index++;
       }
 
-      let query0 = `DELETE FROM transaction_body where transaction_header_id = $1`
-      let parms0 = [posted_elements.x]
-
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
       let query2 = `INSERT INTO transaction_body
       (transaction_header_id, debit, credit, account_id, is_accumulated_depreciation)
-      VALUES($1, $2, $3, $4, $5);`;
+      VALUES ${insert_array2.map((_, i) => 
+        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+      ).join(', ')}`;
+      await tx.none(query2, insert_array2.flat());
+    }
 
 
 
-      let query1 = `UPDATE transaction_header set
-                      total_value = $1, general_note = $2, datex = $3, str10_date_column1 = $4, str10_date_column2 = $5
-                      WHERE id = $6 and company_id = $7 and transaction_type = 15 and is_deleted is null
-                      ;`;
-      
-      let params1 = [
-        total.toFixed(2),
-        posted_elements.note,
-        posted_elements.datex,
-        posted_elements.startDate,
-        posted_elements.endDate,
-        posted_elements.x,
-        req.session.company_id        
-      ]                    
+    let query1 = `UPDATE transaction_header set
+    total_value = $1, general_note = $2, datex = $3, str10_date_column1 = $4, str10_date_column2 = $5
+    WHERE id = $6 and company_id = $7 and transaction_type = 15 and is_deleted is null
+    ;`;
 
-    // تنفيذ معاملة قاعدة البيانات
-    await db.tx(async (tx) => {
-      await tx.none(query0, parms0); // delete body
-      await tx.none(query1, params1); // update header
-      await tx.batch(tb_posted_array.map(data => tx.none(query2, data))); // insert_body
+let params1 = [
+total.toFixed(2),
+posted_elements.note,
+posted_elements.datex,
+posted_elements.startDate,
+posted_elements.endDate,
+posted_elements.x,
+req.session.company_id        
+]                    
 
+
+await tx.none(query1, params1); // update header
       //! history
       await history(transaction_type,2,posted_elements.x,r1.reference,req,tx);
     });
@@ -28467,7 +28472,7 @@ app.post("/cash_accounts_add", async (req, res) => {
     //* Start--------------------------------------------------------------
 
     let query0 = `SELECT
-               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND account_type_id = 9) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
                (select main_account_id FROM accounts_header WHERE company_id = $1 AND global_id = 11) as parent_main_account_id,
                (select id FROM accounts_header WHERE company_id = $1 AND global_id = 11) as parent_id
               `;
@@ -28671,7 +28676,7 @@ app.post("/cash_accounts_update", async (req, res) => {
 
     let query0 = `SELECT
                 
-               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3 AND account_type_id = 9) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3) as count_account_name,
                (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3) as count_id
               `;
     let result = await db.oneOrNone(query0, [
@@ -29294,9 +29299,6 @@ await db.tx(async (tx) => {
   let insert_array2 = [];
   let items_array = [];
 
-  let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
 
 
  //todo main_account
@@ -29317,10 +29319,21 @@ await db.tx(async (tx) => {
       element.value, //! da msh debit da el value ely hayt7t fe ele credit
       element.note_row
     ]);
-
   }
 
-  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  if (insert_array2.length > 0){
+    let columnsCount = insert_array2[0].length;  
+
+    let query2 = `INSERT INTO transaction_body
+    (transaction_header_id, account_id, debit, credit, row_note)
+    VALUES ${insert_array2.map((_, i) => 
+      `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+    ).join(', ')}`;
+    await tx.none(query2, insert_array2.flat());
+  
+  }
+
+
   await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
 });
 
@@ -29500,10 +29513,6 @@ await db.tx(async (tx) => {
 
   let insert_array2 = [];
 
-  let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
-
   for (const element of posted_elements.posted_array) {
   
     insert_array2.push([
@@ -29513,19 +29522,30 @@ await db.tx(async (tx) => {
       null,
       element.note_row
     ]);
-
   }
-
    //todo main_account
- insert_array2.push([
-  newId_transaction_header,
-  posted_elements.main_account,
-  null,
-  posted_elements.total, // credit
-  null,
-]);
+   insert_array2.push([
+    newId_transaction_header,
+    posted_elements.main_account,
+    null,
+    posted_elements.total, // credit
+    null,
+  ]);
 
-  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+
+  if (insert_array2.length > 0) {
+    let columnsCount = insert_array2[0].length;
+  
+    let query2 = `INSERT INTO transaction_body
+    (transaction_header_id, account_id, debit, credit, row_note)
+    VALUES ${insert_array2.map((_, i) => 
+      `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+    ).join(', ')}`;
+  
+    await tx.none(query2, insert_array2.flat());
+  }
+  
+
   await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
 });
 
@@ -29981,11 +30001,6 @@ await db.tx(async (tx) => {
 
   let insert_array2 = [];
 
-  let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
-
-
  //todo main_account
  insert_array2.push([
   posted_elements.x,
@@ -29994,7 +30009,6 @@ await db.tx(async (tx) => {
   null,
   null,
 ]);
-
 
   for (const element of posted_elements.posted_array) {
   
@@ -30005,10 +30019,19 @@ await db.tx(async (tx) => {
       element.value, //! da msh debit da el value ely hayt7t fe ele credit
       element.note_row
     ]);
-
   }
 
-  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+  if (insert_array2.length > 0){
+    let columnsCount = insert_array2[0].length;  
+
+    let query2 = `INSERT INTO transaction_body
+    (transaction_header_id, account_id, debit, credit, row_note)
+    VALUES ${insert_array2.map((_, i) => 
+      `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+    ).join(', ')}`;
+    await tx.none(query2, insert_array2.flat());
+  }
+
   await history(transaction_type, 1, posted_elements.x, reference, req, tx);
 });
 
@@ -30205,10 +30228,6 @@ await db.tx(async (tx) => {
 
   let insert_array2 = [];
 
-  let query2 = `INSERT INTO transaction_body
-  (transaction_header_id, account_id, debit, credit, row_note)
-  VALUES($1, $2, $3, $4, $5);`;
-
   for (const element of posted_elements.posted_array) {
   
     insert_array2.push([
@@ -30230,7 +30249,20 @@ await db.tx(async (tx) => {
   null,
 ]);
 
-  await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+if (insert_array2.length > 0) {
+  let columnsCount = insert_array2[0].length;
+
+  let query2 = `INSERT INTO transaction_body
+  (transaction_header_id, account_id, debit, credit, row_note)
+  VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
+
+  await tx.none(query2, insert_array2.flat());
+}
+
+
+
   await history(transaction_type, 1, posted_elements.x, reference, req, tx);
 });
 
@@ -30824,30 +30856,35 @@ app.post("/api/cash_transfer_add", async (req, res) => {
       const newId_transaction_header = insert.id;
 
 
-      let tb_posted_array = []
+      let insert_array2 = []
 
-      tb_posted_array.push([
+      insert_array2.push([
         newId_transaction_header, // transaction_header_id
         posted_elements.account_from, // account_id
         posted_elements.value, // debit 
         null //credit
       ]);
 
-      tb_posted_array.push([
+      insert_array2.push([
         newId_transaction_header, // transaction_header_id
         posted_elements.account_to, // account_id
         null, // debit 
         posted_elements.value //credit
       ]);
 
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
 
       let query2 = `INSERT INTO transaction_body
       (transaction_header_id, account_id, debit, credit)
-      VALUES($1, $2, $3, $4);`;
+      VALUES ${insert_array2.map((_, i) => 
+        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+      ).join(', ')}`;
+      await tx.none(query2, insert_array2.flat());
+    }
     // تنفيذ معاملة قاعدة البيانات
   
       // استخدم tx.batch بدلاً من tx.none
-      await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
 
       //! history
       await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
@@ -30991,55 +31028,58 @@ app.post("/api/cash_transfer_update", async (req, res) => {
       // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
       const year = getYear(posted_elements.datex)
 
-      let tb_posted_array = []
+    // تنفيذ معاملة قاعدة البيانات
+    await db.tx(async (tx) => {
 
-      tb_posted_array.push([
+      let query1 = `UPDATE transaction_header
+      set total_value = $1, general_note = $2, datex = $3, items_location_id = $4, items_location_id2 = $5
+      WHERE id = $6 AND company_id = $7 and transaction_type = $8 and is_deleted IS NULL;`;
+
+let params1 = [
+posted_elements.value,
+posted_elements.note,
+posted_elements.datex,
++posted_elements.account_from,
++posted_elements.account_to,
+posted_elements.x,
+req.session.company_id,
+transaction_type
+]                    
+
+await tx.none(query1, params1); // update
+
+let query0 = `DELETE FROM transaction_body WHERE transaction_header_id = $1`
+let params0 = [posted_elements.x]
+
+
+await tx.none(query0, params0); // delete
+
+      let insert_array2 = []
+
+      insert_array2.push([
         posted_elements.x, // transaction_header_id
         posted_elements.account_from, // account_id
         posted_elements.value, // debit 
         null //credit
       ]);
 
-      tb_posted_array.push([
+      insert_array2.push([
         posted_elements.x, // transaction_header_id
         posted_elements.account_to, // account_id
         null, // debit 
         posted_elements.value //credit
       ]);
 
-
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
       let query2 = `INSERT INTO transaction_body
       (transaction_header_id, account_id, debit, credit)
-      VALUES($1, $2, $3, $4);`;
+      VALUES ${insert_array2.map((_, i) => 
+        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+      ).join(', ')}`;
+      await tx.none(query2, insert_array2.flat());
+    }
 
-
-      let query0 = `DELETE FROM transaction_body WHERE transaction_header_id = $1`
-      let params0 = [posted_elements.x]
-
-
-      let query1 = `UPDATE transaction_header
-                    set total_value = $1, general_note = $2, datex = $3, items_location_id = $4, items_location_id2 = $5
-                    WHERE id = $6 AND company_id = $7 and transaction_type = $8 and is_deleted IS NULL;`;
-      
-      let params1 = [
-        posted_elements.value,
-        posted_elements.note,
-        posted_elements.datex,
-        +posted_elements.account_from,
-        +posted_elements.account_to,
-        posted_elements.x,
-        req.session.company_id,
-        transaction_type
-      ]                    
-
-    // تنفيذ معاملة قاعدة البيانات
-    await db.tx(async (tx) => {
-
-      await tx.none(query1, params1); // update
-      await tx.none(query0, params0); // delete
-
-      // استخدم tx.batch بدلاً من tx.none
-      await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
 
       //! history
       await history(transaction_type,2,posted_elements.x,reference,req,tx);

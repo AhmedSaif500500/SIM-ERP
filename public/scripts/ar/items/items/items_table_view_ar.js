@@ -785,7 +785,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // if (!result2) {
     //     return;
     // }
-
+    handle_fn_options()
     await getData_fn();
     const conditionsArray = sessionStorage.getItem(`items_table_view_Array`);
 
@@ -808,3 +808,22 @@ const import_data_btn = document.querySelector(`#import_data_btn`)
 import_data_btn.onclick = function (){
     window.location.href = "import_data_items";
 }
+
+async function importData(){
+    const permission = await btn_permission('items_permission', 'update');
+
+    if (!permission) {
+        showAlert(`warning`, `⚠️ عذرا لا تملك الصلاحية لاستيراد البيانات`)
+      return;
+    };
+
+    window.location.href = 'import_data_items';
+
+}
+
+function handle_fn_options(){  
+    const newDivs = `
+      <div id="fn_importData_btn" onclick="importData()">استيراد بيانات</div>
+    `;
+    fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+  }

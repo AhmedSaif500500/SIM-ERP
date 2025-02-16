@@ -1,5 +1,5 @@
 setActiveSidebar('general_settings_ar');
-// pagePermission("add","transaction_permission");
+ pagePermission("view","transaction_permission");
 
 const obj_settings_tax_view = JSON.parse(sessionStorage.getItem('obj_settings_tax_view'));
 sessionStorage.removeItem(`obj_settings_tax_view`)
@@ -332,9 +332,20 @@ document.addEventListener('DOMContentLoaded', async function () {
   await showData()
 
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded
+  viewMode(true,'transaction_permission','view')
+  handle_fn_options()
   hideLoadingIcon(content_space)
 } catch (error) {
   hideLoadingIcon(content_space)
   catch_error(error)
 }
 })
+
+// معلق صلاحيات
+function handle_fn_options(){
+  const newDivs = `
+    <div id="fn_option_update_btn" onclick="viewMode(false,'transaction_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'transaction_permission','view')" style="display: none;">وضع العرض</div>
+  `;
+  fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+}
