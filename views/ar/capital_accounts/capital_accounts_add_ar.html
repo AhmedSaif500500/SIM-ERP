@@ -30,52 +30,34 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="settings_taxes_view_ar" title="الرموز الضريبية">
+            <a id="back_href" class="back_href" href="capital_accounts_view_ar" title="حسابات رأس المال">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="settings_taxes_add_ar" title="اعادة تحميل الصفحة">الرموز
-                الضريبية</a>
+              <a id="h2_text_div" class="h2_text_div" href="capital_accounts_add_ar" title="اعادة تحميل الصفحة">
+                   حسابات رأس المال
+              </a>
               <span id="sub_h2_header" class="sub_h2_header">جديد</span>
             </div>
           </h2>
 
+          <div id ="fn_container_div" class="fn_container_div"></div>
           <div id="page_content" style="display: none;">
+
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
 
 
-            <!-- اسم الضريبة  -->
-            <label id="lbl_tax_name_input" for="tax_name_input" class="lbl_sm">الاسم</label>
-            <input type="search" id="tax_name_input" class="input_text_md hover" placeholder="مثال : VAT 14%"
-              autocomplete="off" oninput="check_parse(this,'string')">
-
-            <label for="taxe_multi_type_select" class="lbl_sm">النوع</label>
-            <select name="" id="taxe_multi_type_select" class="select">
-              <option value="1">ضريبة واحده</option>
-              <option value="2">ضرائب متعدده</option>
-            </select>
-            <!-- table -->
-
-            <table id="myTable" class="input_table" style="margin: 0; width: fit-content;">
-              <thead class=""></thead>
-              <tbody class=""></tbody>
-              <tfoot class="tfoot_hiddenCell" style="display: none;"></tfoot>
-            </table>
-
-            <label for="inactive_select" class="lbl_sm">الحالة</label>
-            <select name="" id="inactive_select" class="select hover">
-              <option value="0" selected>نشط</option>
-              <option value="1" >غير نشط</option>
-            </select>
+            <label for="cash_accounts_input" class="lbl_sm">المعرف</label>
+            <input type="search" id="cash_accounts_input" class="input_text_sm hover" placeholder="اختياري" autocomplete="off" oninput="check_parse(this,'string')">
+         
+            <label for="cash_accounts_name_input" class="lbl_sm">اسم الحساب</label>
+            <input type="search" id="cash_accounts_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')" placeholder="مطلوب">
             
-          
-
             <div class="btn_container_top_border">
               <button class="btn_save" id="btn_save" onclick="save('A')">حفظ</button>
               <button class="btn_save" id="btn_save_and_add_another" onclick="save('B')">حفظ و إضافة أخر</button>
             </div>
-
 
           </div>
         </div>
@@ -93,8 +75,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/settings/taxes/settings_taxes_add_ar.js"></script>
-  <script src="/public/scripts/ar/settings/taxes/settings_taxes_multi_pages.js"></script>
+  <!-- <script src="/public/scripts/ar/sales_management/sales/sales_invoice/sales_invoice_multi_pages.js"></script> -->
+  <script src="/public/scripts/ar/capital_accounts/capital_accounts_add_ar.js"></script>
 
 
 </body>

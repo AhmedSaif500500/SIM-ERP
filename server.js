@@ -8795,7 +8795,7 @@ let params2 = [req.session.company_id]
         const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
         const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
   
-        let tb_posted_array = []
+        let insert_array2 = []
         let index = 1
         await db.tx(async (tx) => {
 
@@ -8822,24 +8822,17 @@ const newId_transaction_header = insert.id;
         for ( const row of posted_elements.posted_array){
           const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
           
-          if (!dbRow){
-            return res.json({
-              success: false,
-              message_ar: `لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`,
-            });
+          if (!dbRow) {
+            throw new Error(`لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`);
+          }
+          
+          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)) {
+            throw new Error(`لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`);
           }
           
 
-  
-          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)){
-            return res.json({
-              success: false,
-              message_ar: ` لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`,
-            });
-          }
-
           // الموقع المحول منه
-          tb_posted_array.push([
+          insert_array2.push([
             newId_transaction_header, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_from, //الموق
@@ -8848,7 +8841,7 @@ const newId_transaction_header = insert.id;
   
   
           // الموقع المحول اليه
-          tb_posted_array.push([
+          insert_array2.push([
             newId_transaction_header, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_to, //الموق
@@ -8858,13 +8851,15 @@ const newId_transaction_header = insert.id;
           index++;
         }
   
-        let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, item_id, item_location_id_tb, item_amount)
-        VALUES($1, $2, $3, $4);`;
-  
-
-        // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(tb_posted_array.map(data => tx.none(query2, data)));
+        if (insert_array2.length > 0){
+          let columnsCount = insert_array2[0].length;
+          let query2 = `INSERT INTO transaction_body
+          (transaction_header_id, item_id, item_location_id_tb, item_amount)
+          VALUES ${insert_array2.map((_, i) => 
+          `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+          ).join(', ')}`;
+        await tx.none(query2, insert_array2.flat());
+        }
   
         //! history
         await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
@@ -9233,29 +9228,23 @@ where
         // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
         const year = getYear(posted_elements.datex)
 
-        let tb_posted_array = []
+        let insert_array2 = []
         let index = 1
+
+        
         for ( const row of posted_elements.posted_array){
           const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
           
-          if (!dbRow){
-            return res.json({
-              success: false,
-              message_ar: `لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`,
-            });
+          if (!dbRow) {
+            throw new Error(`لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`);
           }
           
-
-  
-          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)){
-            return res.json({
-              success: false,
-              message_ar: ` لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`,
-            });
+          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)) {
+            throw new Error(`لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`);
           }
-
+          
           // الموقع المحول منه
-          tb_posted_array.push([
+          insert_array2.push([
             posted_elements.x, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_from, //الموق
@@ -9264,7 +9253,7 @@ where
   
   
           // الموقع المحول اليه
-          tb_posted_array.push([
+          insert_array2.push([
             posted_elements.x, // transaction_header_id
             +row.rowAccountId, // item_id
             +posted_elements.location_to, //الموق
@@ -9274,37 +9263,41 @@ where
           index++;
         }
   
-        let query2 = `INSERT INTO transaction_body
-        (transaction_header_id, item_id, item_location_id_tb, item_amount)
-        VALUES($1, $2, $3, $4);`;
-  
-  
-        let query02 = 'DELETE FROM transaction_body where transaction_header_id = $1'
-        let params02 = [posted_elements.x]
+        await db.tx(async (tx) => {
 
+          let query1 = `UPDATE transaction_header
+          set general_note = $1, datex = $2, items_location_id = $3, items_location_id2 = $4 
+            WHERE id = $5 AND company_id = $6 AND transaction_type = 12
+          ;`;
+
+let params1 = [
+posted_elements.note,
+posted_elements.datex,
++posted_elements.location_from,
++posted_elements.location_to,
+posted_elements.x,
+req.session.company_id
+]                    
+
+await tx.none(query1, params1); // update
+
+let query02 = 'DELETE FROM transaction_body where transaction_header_id = $1'
+let params02 = [posted_elements.x]
+
+await tx.none(query02, params02); // delete
+
+
+
+if (insert_array2.length > 0){
+  let columnsCount = insert_array2[0].length;
+  let query2 = `INSERT INTO transaction_body
+  (transaction_header_id, item_id, item_location_id_tb, item_amount)
+  VALUES ${insert_array2.map((_, i) => 
+  `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
+await tx.none(query2, insert_array2.flat());
+}
   
-        let query1 = `UPDATE transaction_header
-                      set general_note = $1, datex = $2, items_location_id = $3, items_location_id2 = $4 
-                        WHERE id = $5 AND company_id = $6 AND transaction_type = 12
-                      ;`;
-        
-        let params1 = [
-          posted_elements.note,
-          posted_elements.datex,
-          +posted_elements.location_from,
-          +posted_elements.location_to,
-          posted_elements.x,
-          req.session.company_id
-        ]                    
-  
-      // تنفيذ معاملة قاعدة البيانات
-      await db.tx(async (tx) => {
-  
-        await tx.none(query02, params02); // delete
-        await tx.none(query1, params1); // update
-  
-        // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(tb_posted_array.map(data => tx.none(query2, data))); 
   
         //! history
         await history(transaction_type,2,posted_elements.x,result0.reference,req,tx);
@@ -13377,7 +13370,7 @@ WHERE
           ]);
     
           const newId_transaction_header = insert.id;
-
+          let insert_array2 = []
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -13391,12 +13384,7 @@ WHERE
               });
             }
 
-    
-            let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-    
-            await tx.none(query2, [
+            insert_array2.push([
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -13408,7 +13396,18 @@ WHERE
               element.row_taxHeaderId
             ]);            
           }
-    
+
+          if (insert_array2.length > 0){
+            let columnsCount = insert_array2[0].length;
+          let query2 = `INSERT INTO befor_invoce_body
+          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+          VALUES ${insert_array2.map((_, i) => 
+            `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+          ).join(', ')}`;
+        
+        await tx.none(query2, insert_array2.flat());
+        }
+
           //! history
           await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
         });
@@ -13661,6 +13660,7 @@ WHERE
           let query0 = `DELETE from befor_invoce_body where header_id = $1`
           await tx.none(query0,[posted_elements.x])
 
+          let insert_array2 = []
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -13674,12 +13674,7 @@ WHERE
               });
             }
 
-    
-            let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-    
-            await tx.none(query2, [
+            insert_array2.push([
               posted_elements.x,
               +element.item_typeId,
               element.item_id,
@@ -13693,6 +13688,17 @@ WHERE
             
           }
     
+          if (insert_array2.length > 0){
+            let columnsCount = insert_array2[0].length;
+          let query2 = `INSERT INTO befor_invoce_body
+          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+          VALUES ${insert_array2.map((_, i) => 
+            `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+          ).join(', ')}`;
+        
+        await tx.none(query2, insert_array2.flat());
+        }
+
           //! history
           await history(transaction_type,2,posted_elements.x,reference,req,tx);
         });
@@ -14356,7 +14362,7 @@ WHERE
           ]);
     
           const newId_transaction_header = insert.id;
-
+          let insert_array2 = []
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -14371,11 +14377,8 @@ WHERE
             }
 
     
-            let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-    
-            await tx.none(query2, [
+
+            insert_array2.push([
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -14388,7 +14391,18 @@ WHERE
             ]);
     
           }
-    
+
+          if (insert_array2.length > 0){
+            let columnsCount = insert_array2[0].length;
+          let query2 = `INSERT INTO befor_invoce_body
+          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+          VALUES ${insert_array2.map((_, i) => 
+            `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+          ).join(', ')}`;
+        
+        await tx.none(query2, insert_array2.flat());
+        }
+        
           //! history
           await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
         });
@@ -14682,6 +14696,7 @@ WHERE
               let query0 = `DELETE from befor_invoce_body where header_id = $1`
               await tx.none(query0,[posted_elements.x])
     
+              let insert_array2 = []
               for (const element of posted_elements.posted_array) {
         
                 //! make sure if account id != item  then location and amount = null
@@ -14696,11 +14711,8 @@ WHERE
                 }
     
         
-                let query2 = `INSERT INTO befor_invoce_body
-                              (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-        
-                const insert = await tx.none(query2, [
+
+                insert_array2.push([
                   posted_elements.x,
                   +element.item_typeId,
                   element.item_id,
@@ -14713,7 +14725,18 @@ WHERE
                 ]);
 
               }
-        
+
+              if (insert_array2.length > 0){
+                let columnsCount = insert_array2[0].length;
+              let query2 = `INSERT INTO befor_invoce_body
+              (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+              VALUES ${insert_array2.map((_, i) => 
+                `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+              ).join(', ')}`;
+            
+            await tx.none(query2, insert_array2.flat());
+            }
+
               //! history
               await history(transaction_type,2,posted_elements.x,reference,req,tx);
             });
@@ -15377,8 +15400,6 @@ where
       }
 
 
-
-  
       const posted_elements = req.body;
       const transaction_type = 3
       let items_array = []
@@ -15663,7 +15684,7 @@ where
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
-        let insertData2 = []
+        let insert_array2 = []
         for (const element of posted_elements.posted_array) {
   
           //! make sure if account id != item  then location and amount = null
@@ -15677,16 +15698,6 @@ where
 
           // //! check amount
           
-          // const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
-          // const db_amount = +(current_location_amount_data?.current_location_amount || 0);
-          // const result_amount = db_amount - +element.row_amount;
-            
-          // if (isNaN(result_amount) || result_amount <= 0) {       
-          //   throw new Error(
-          //     `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
-          //   );
-          // }
-
           
          const rowDiscountType = +element.row_discountTypeId || 0
          const rowDiscountValue= +element.row_discountValue || 0
@@ -15711,7 +15722,7 @@ where
           }
           const account_id = +account_row[0].item_revenue_account
             
-          insertData2.push([
+          insert_array2.push([
             newId_transaction_header,
             null,
             +Val_beforTax,
@@ -15769,7 +15780,7 @@ where
         for (const object of other_posted_array){
 
 
-          insertData2.push([
+        insert_array2.push([
           newId_transaction_header,
           +object.debit || null,
           +object.credit || null,
@@ -15786,14 +15797,17 @@ where
           null
           ]);
         }
-  
+        if (insert_array2.length > 0){
+          let columnsCount = insert_array2[0].length;
         let query2 = `INSERT INTO transaction_body
         (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
-
-        // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(insertData2.map(data => tx.none(query2, data)));
-
+        VALUES ${insert_array2.map((_, i) => 
+          `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+        ).join(', ')}`;
+      
+      await tx.none(query2, insert_array2.flat());
+      }
+      
         //! history
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
         await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
@@ -16880,10 +16894,7 @@ WHERE
         }
       }
       }
-  
-
-
-      
+   
       const year = getYear(posted_elements.datex)
 
       // تنفيذ معاملة قاعدة البيانات
@@ -16992,7 +17003,7 @@ WHERE
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
-        let insertData2 = []
+        let insert_array2 = []
         for (const element of posted_elements.posted_array) {
   
           //! make sure if account id != item  then location and amount = null
@@ -17030,7 +17041,7 @@ WHERE
           
           
   
-          insertData2.push([
+          insert_array2.push([
             posted_elements.x,
             null,
             +Val_beforTax,
@@ -17087,7 +17098,7 @@ WHERE
         //! insert the other part to transaction
         for (const object of other_posted_array){
 
-          insertData2.push([
+          insert_array2.push([
           posted_elements.x,
           +object.debit || null,
           +object.credit || null,
@@ -17105,13 +17116,16 @@ WHERE
           ]);
         }
   
+        if (insert_array2.length > 0){
+          let columnsCount = insert_array2[0].length;
         let query2 = `INSERT INTO transaction_body
         (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
-
-        // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(insertData2.map(data => tx.none(query2, data)));
-
+        VALUES ${insert_array2.map((_, i) => 
+          `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+        ).join(', ')}`;
+      
+      await tx.none(query2, insert_array2.flat());
+      }
 
         //! history
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
@@ -17831,7 +17845,7 @@ app.post("/getItemssData1", async (req, res) => {
           ]);
     
           const newId_transaction_header = insert.id;
-
+            let insert_array2 = []
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -17846,11 +17860,7 @@ app.post("/getItemssData1", async (req, res) => {
             }
 
     
-            let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-    
-            await tx.none(query2, [
+            insert_array2.push([
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -17864,6 +17874,17 @@ app.post("/getItemssData1", async (req, res) => {
     
           }
     
+          if (insert_array2.length > 0){
+            let columnsCount = insert_array2[0].length;
+          let query2 = `INSERT INTO befor_invoce_body
+          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+          VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
+
+  await tx.none(query2, insert_array2.flat());
+}
+
           //! history
           await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
         });
@@ -18328,6 +18349,7 @@ WHERE
           let query0 = `DELETE from befor_invoce_body where header_id = $1`
           await tx.none(query0,[posted_elements.x])
 
+          let insert_array2 = []
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -18341,12 +18363,8 @@ WHERE
               });
             }
 
-    
-            let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-    
-            await tx.none(query2, [
+
+            insert_array2.push([
               posted_elements.x,
               +element.item_typeId,
               element.item_id,
@@ -18360,6 +18378,16 @@ WHERE
     
           }
     
+          if (insert_array2.length > 0){
+            let columnsCount = insert_array2[0].length;              
+          let query2 = `INSERT INTO befor_invoce_body
+          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+          VALUES ${insert_array2.map((_, i) => 
+            `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+          ).join(', ')}`;
+          await tx.none(query2, insert_array2.flat());
+          }
+
           //! history
           await history(transaction_type,2,posted_elements.x,reference,req,tx);
         });
@@ -19019,6 +19047,7 @@ WHERE
     
           const newId_transaction_header = insert.id;
           
+          let insert_array2 = []
           for (const element of posted_elements.posted_array) {
     
             //! make sure if account id != item  then location and amount = null
@@ -19032,12 +19061,8 @@ WHERE
               });
             }
 
-    
-            let query2 = `INSERT INTO befor_invoce_body
-                          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                          VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-    
-            await tx.none(query2, [
+
+            insert_array2.push([
               newId_transaction_header,
               +element.item_typeId,
               element.item_id,
@@ -19048,9 +19073,19 @@ WHERE
               +element.row_discountValue,
               element.row_taxHeaderId
             ]);
-    
           }
     
+          if (insert_array2.length > 0){
+            let columnsCount = insert_array2[0].length;  
+          let query2 = `INSERT INTO befor_invoce_body
+          (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+          VALUES ${insert_array2.map((_, i) => 
+            `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+          ).join(', ')}`;
+        
+        await tx.none(query2, insert_array2.flat());
+        }
+
           //! history
           await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
         });
@@ -19476,7 +19511,6 @@ WHERE
               }
               
 
-
               let query1 = `update befor_invoice_header
                             set total_value = $1, general_note = $2, datex = $3, account_id = $4, items_location_id = $5, is_column2 = $6, is_column1 = $7, is_column3 = $8, qutation_id = $9
                             where id = $10 and company_id = $11;`;
@@ -19502,6 +19536,7 @@ WHERE
               let query0 = `DELETE from befor_invoce_body where header_id = $1`
               await tx.none(query0,[posted_elements.x])
     
+              let insert_array2 = []
               for (const element of posted_elements.posted_array) {
         
                 //! make sure if account id != item  then location and amount = null
@@ -19515,12 +19550,8 @@ WHERE
                   });
                 }
     
-        
-                let query2 = `INSERT INTO befor_invoce_body
-                              (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
-                              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);`;
-        
-                await tx.none(query2, [
+      
+                insert_array2.push([
                   posted_elements.x,
                   +element.item_typeId,
                   element.item_id,
@@ -19533,6 +19564,17 @@ WHERE
                 ]);
         
               }
+
+              if (insert_array2.length > 0){
+                let columnsCount = insert_array2[0].length;
+              let query2 = `INSERT INTO befor_invoce_body
+              (header_id, item_type_id, item_id, amount, unite_price, row_note, is_discount_percentage, dicount_value, tax_header_id)
+              VALUES ${insert_array2.map((_, i) => 
+                `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+              ).join(', ')}`;
+            
+            await tx.none(query2, insert_array2.flat());
+            }
         
               //! history
               await history(transaction_type,2,posted_elements.x,reference,req,tx);
@@ -21352,7 +21394,7 @@ WHERE
               let Val_beforTax = 0
               let taxValue = 0
               let TotalValue = 0
-              let insertData2 = []
+              let insert_array2 = []
               for (const element of posted_elements.posted_array) {
         
                 //! make sure if account id != item  then location and amount = null
@@ -21405,7 +21447,7 @@ WHERE
                       account_id = +account_row.item_expense_account 
                     }
                     
-                insertData2.push([
+                insert_array2.push([
                   newId_transaction_header,
                   +Val_beforTax, // debit
                   null,  // credit
@@ -21463,7 +21505,7 @@ WHERE
               //! insert the other part to transaction
               for (const object of other_posted_array){
             
-                insertData2.push([
+                insert_array2.push([
                 newId_transaction_header,
                 +object.debit || null,
                 +object.credit || null,
@@ -21482,12 +21524,15 @@ WHERE
 
               }
         
+              if (insert_array2.length > 0){
+                let columnsCount = insert_array2[0].length;
               let query2 = `INSERT INTO transaction_body
               (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
-      
-              // استخدم tx.batch بدلاً من tx.none
-              await tx.batch(insertData2.map(data => tx.none(query2, data)));
+              VALUES ${insert_array2.map((_, i) => 
+                `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+              ).join(', ')}`;
+              await tx.none(query2, insert_array2.flat());
+            }
       
       
               //! history
@@ -22030,7 +22075,7 @@ WHERE
               let Val_beforTax = 0
               let taxValue = 0
               let TotalValue = 0
-              let insertData2 = []
+              let insert_array2 = []
               for (const element of posted_elements.posted_array) {
         
                 //! make sure if account id != item  then location and amount = null
@@ -22083,7 +22128,7 @@ WHERE
                     }
                     
         
-                insertData2.push([
+                insert_array2.push([
                   posted_elements.x,
                   +Val_beforTax,
                   null,
@@ -22141,7 +22186,7 @@ WHERE
               //! insert the other part to transaction
               for (const object of other_posted_array){
       
-                insertData2.push([
+                insert_array2.push([
                 posted_elements.x,
                 +object.debit || null,
                 +object.credit || null,
@@ -22159,14 +22204,16 @@ WHERE
                 ]);
       
               }
-        
+              if (insert_array2.length > 0){
+                let columnsCount = insert_array2[0].length;
               let query2 = `INSERT INTO transaction_body
               (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
-      
-              // استخدم tx.batch بدلاً من tx.none
-              await tx.batch(insertData2.map(data => tx.none(query2, data)));
-      
+              VALUES ${insert_array2.map((_, i) => 
+                `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+              ).join(', ')}`;
+            
+            await tx.none(query2, insert_array2.flat());
+            }
       
               //! history
               await update_items_cogs(items_array,posted_elements.datex, req, tx)
@@ -23527,7 +23574,7 @@ WHERE
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
-        let insertData2 = []
+        let insert_array2 = []
         for (const element of posted_elements.posted_array) {
   
           //! make sure if account id != item  then location and amount = null
@@ -23584,7 +23631,7 @@ WHERE
           }
           const account_id = +account_row.item_revenue_account
           
-          insertData2.push([
+          insert_array2.push([
             newId_transaction_header,
             +Val_beforTax,
             null,
@@ -23642,7 +23689,7 @@ WHERE
         //! insert the other part to transaction
         for (const object of other_posted_array){
 
-          insertData2.push([
+          insert_array2.push([
           newId_transaction_header,
           +object.debit || null,
           +object.credit || null,
@@ -23660,13 +23707,17 @@ WHERE
           ]);
 
         }
-  
+
+        if (insert_array2.length > 0){
+          let columnsCount = insert_array2[0].length;
         let query2 = `INSERT INTO transaction_body
         (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id, is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+        VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
 
-        // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(insertData2.map(data => tx.none(query2, data)));
+await tx.none(query2, insert_array2.flat());
+}
 
         //! history
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
@@ -23958,7 +24009,7 @@ WHERE
         let Val_beforTax = 0
         let taxValue = 0
         let TotalValue = 0
-        let insertData2 = []
+        let insert_array2 = []
         for (const element of posted_elements.posted_array) {
   
           //! make sure if account id != item  then location and amount = null
@@ -24016,7 +24067,7 @@ WHERE
           
           
   
-          insertData2.push([
+          insert_array2.push([
             posted_elements.x,
             +Val_beforTax,
             null,
@@ -24074,7 +24125,7 @@ WHERE
         //! insert the other part to transaction
         for (const object of other_posted_array){
 
-          insertData2.push([
+          insert_array2.push([
           posted_elements.x,
           +object.debit || null,
           +object.credit || null,
@@ -24092,14 +24143,16 @@ WHERE
           ]);
 
         }
-  
+        if (insert_array2.length > 0){
+          let columnsCount = insert_array2[0].length;
         let query2 = `INSERT INTO transaction_body
         (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+        VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
 
-        // استخدم tx.batch بدلاً من tx.none
-        await tx.batch(insertData2.map(data => tx.none(query2, data)));
-
+await tx.none(query2, insert_array2.flat());
+}
 
         //! history
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
@@ -25303,7 +25356,7 @@ group by
       let Val_beforTax = 0
       let taxValue = 0
       let TotalValue = 0
-      let insertData2 = []
+      let insert_array2 = []
       for (const element of posted_elements.posted_array) {
 
         //! make sure if account id != item  then location and amount = null
@@ -25368,7 +25421,7 @@ group by
         }
         
 
-        insertData2.push([
+        insert_array2.push([
           posted_elements.x,
           null,
           +Val_beforTax,
@@ -25427,7 +25480,7 @@ group by
       for (const object of other_posted_array){
 
 
-        insertData2.push([
+        insert_array2.push([
         posted_elements.x,
         +object.debit || null,
         +object.credit || null,
@@ -25445,14 +25498,16 @@ group by
         ]);
 
       }
-
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
       let query2 = `INSERT INTO transaction_body
       (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id,  is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+      VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
 
-      // استخدم tx.batch بدلاً من tx.none
-      await tx.batch(insertData2.map(data => tx.none(query2, data)));
-
+await tx.none(query2, insert_array2.flat());
+}
 
       //! history
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
@@ -25746,7 +25801,7 @@ group by
       let Val_beforTax = 0
       let taxValue = 0
       let TotalValue = 0
-      let insertData2 = []
+      let insert_array2 = []
       for (const element of posted_elements.posted_array) {
 
         //! make sure if account id != item  then location and amount = null
@@ -25810,7 +25865,7 @@ group by
           account_id = +account_row.item_expense_account 
         }
 
-        insertData2.push([
+        insert_array2.push([
           newId_transaction_header,
           null,
           +Val_beforTax,
@@ -25869,7 +25924,7 @@ group by
       for (const object of other_posted_array){
 
 
-        insertData2.push([
+        insert_array2.push([
         newId_transaction_header,
         +object.debit || null,
         +object.credit || null,
@@ -25887,14 +25942,16 @@ group by
         ]);
 
       }
-
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
       let query2 = `INSERT INTO transaction_body
       (transaction_header_id, debit, credit, row_note, item_amount, item_price, account_id, is_discount_percentage, dicount_value, settings_tax_header_id, settings_tax_body_id, is_tax, item_id, item_location_id_tb)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+      VALUES ${insert_array2.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}`;
 
-      // استخدم tx.batch بدلاً من tx.none
-      await tx.batch(insertData2.map(data => tx.none(query2, data)));
-
+await tx.none(query2, insert_array2.flat());
+}
       //! history
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
       await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
@@ -28350,6 +28407,444 @@ app.post("/api/accumulated_depreciation_delete", async (req, res) => {
 });
 //#endregion
 
+//#region capital_accounts
+app.post("/capital_accounts_view", async (req, res) => {
+  try {
+    
+    //! Permission  
+    await permissions(req, "accounts_permission", "view");
+    if (!permissions) {
+      return;
+    }
+      
+
+    const posted_elements = req.body;
+
+        // سرد كل القيم مره واحده 
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+      
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+        
+
+
+      turn_EmptyValues_TO_null(posted_elements);
+    //* Start--------------------------------------------------------------
+
+ 
+
+let quer1 = `
+select
+	ah.id,
+	ah.account_name,
+	ah.account_no,
+	sum(COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)) as balance
+from
+	accounts_header ah
+left join transaction_body tb on tb.account_id = ah.id
+left join transaction_header th on th.id = tb.transaction_header_id
+where
+	ah.company_id = $1
+	and ah.is_final_account is true
+	and ah.account_type_id = 10 --  حسابات رأس المال
+	and th.is_deleted is null
+group by
+	ah.id
+;
+`;
+
+// تنفيذ الاستعلامات
+let data = await db.any(quer1, [req.session.company_id]);
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error capital_accounts_view:", error);
+    res.status(500).send("Error:");
+  }
+});
+
+
+app.post("/capital_accounts_add", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "accounts_permission", "add");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.cash_accounts_name_input_value || posted_elements.cash_accounts_name_input_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "❌ برجاء ادخال اسم الحساب",
+      });
+    }          
+    
+   
+    //* Start--------------------------------------------------------------
+    //500500
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
+               (select main_account_id FROM accounts_header WHERE company_id = $1 AND global_id = 15) as parent_main_account_id,
+               (select id FROM accounts_header WHERE company_id = $1 AND global_id = 15) as parent_id
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.cash_accounts_name_input_value
+        ]);
+    
+        console.log(result);
+        
+
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "اسم الحساب موجود بالفعل"
+      });
+    }
+
+
+    if (!result.parent_main_account_id || !result.parent_id) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "❌ حدث خطأ غير متوقع : برجاء التواصل مع الدعم الفنى والابلاغ عن كود الخطأ (Scaa01)"
+      });
+    }
+
+    //3: insert data into db
+    
+    
+
+    await db.tx(async (tx) => {
+
+
+    let query1 = `
+  INSERT INTO accounts_header (account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id)
+  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;
+`;
+
+  let params1 =[
+    posted_elements.cash_accounts_name_input_value,
+    posted_elements.cash_accounts_input_value,
+    true,
+    1,
+    req.session.company_id,
+    10,
+    +result.parent_main_account_id
+  ]
+
+  const insert = await tx.one(query1, params1);
+
+  const newId_header = insert.id;
+
+
+  let query2 = `INSERT INTO accounts_body (parent_id, account_id)
+                VALUES ($1, $2)`
+
+  let params2 = [
+    +result.parent_id,
+    newId_header
+  ]               
+
+
+    await tx.none(query2, params2);
+    await history(10, 1, newId_header, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "✅ تم حفظ بيانات حساب رأس المال بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error capital_accounts_add:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
+
+
+app.post("/capital_accounts_update", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "accounts_permission", "update");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements.cash_accounts_name_input_value || posted_elements.cash_accounts_name_input_value == ''){
+      return res.json({
+        success: false,
+        message_ar:
+          "❌ برجاء ادخال اسم الحساب",
+      });
+    }          
+    
+   
+    //* Start--------------------------------------------------------------
+
+    let query0 = `SELECT
+                
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2 AND id != $3) as count_account_name,
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $3) as count_id
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.cash_accounts_name_input_value,
+      posted_elements.x
+        ]);
+    
+    
+
+    if (result.count_account_name > 0) {
+      // اذا حصل على نتائج
+      return res.json({
+        success: false,
+        message_ar: "اسم الحساب موجود بالفعل"
+      });
+    }
+
+
+    if (!result.count_id === 0) {
+      await block_user(req,'Scau001')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    //3: insert data into db
+    
+    
+
+    let query1 = `
+  update accounts_header set account_name = $1, account_no = $2
+    where id = $3 AND company_id = $4
+`;
+
+  let params1 =[
+    posted_elements.cash_accounts_name_input_value,
+    posted_elements.cash_accounts_input_value,
+    posted_elements.x,
+    req.session.company_id
+  ]
+          
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await history(10, 2, posted_elements.x, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "✅ تم تعديل بيانات حساب رأس المال بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error capital_accounts_update:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
+
+
+app.post("/capital_accounts_delete", async (req, res) => {
+  try {
+        // إرسال رسالة إلى العميل عبر WebSocket
+        // io.emit('blockUser', { userId: req.session.userId });
+        
+    const posted_elements = req.body;
+    
+
+    //! Permission
+      await permissions(req, "accounts_permission", "delete");
+      if (!permissions) {
+        return;
+      }  
+
+    
+    //! sql injection check
+
+          // سرد كل القيم مره واحده 
+          const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+          if (hasBadSymbols) {
+            return res.json({
+              success: false,
+              message_ar:
+                "❌Invalid input detected due to prohibited characters. Please review your input and try again.",
+            });
+          }
+
+          
+          // const InValidDateFormat = isInValidDateFormat([posted_elements.purshase_date_input_value, posted_elements.started_accumulated_depeciation_date_input_value])
+          // if (InValidDateFormat){
+          //   return res.json({
+          //     success: false,
+          //     message_ar: InValidDateFormat_message_ar,
+          //   });
+          // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+
+       
+    //* Start--------------------------------------------------------------
+
+    //2: validation data befor inserting to db
+    // const rows = await db.any(
+    //   "SELECT TRIM(employee_name) FROM employees WHERE TRIM(employee_name) = $1",
+    //   [posted_elements.employee_name_input]
+    // );
+
+    let query0 = `SELECT
+               (select count(id) FROM accounts_header WHERE company_id = $1 AND id = $2 AND is_final_account IS TRUE and account_type_id = 9) as count_id,
+               (select count(id) FROM transaction_body WHERE account_id = $2) as count_transaction_body
+              `;
+    let result = await db.oneOrNone(query0, [
+      req.session.company_id,
+      posted_elements.x
+    ]);
+
+
+    if (result.count_id === 0) {
+      await block_user(req,'Sca001')
+      return res.json({
+        success: false,
+        xx: true,
+        message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+      });
+    }
+
+    if (result.count_transaction_body > 0) {
+      return res.json({
+        success: false,
+        message_ar: '❌ يوجد حركات على حساب رأس المال ولا يمكن حذفه',
+      });
+    }
+
+
+    let query1 = `
+  delete from accounts_header where id = $1 AND company_id = $2 AND is_final_account is true AND account_type_id = 10;
+  `;
+
+  let params1 =[
+    posted_elements.x,
+    req.session.company_id
+  ]
+
+
+
+  await db.tx(async (tx) => {
+    await tx.none(query1, params1);
+    await history(10, 3, posted_elements.x, 0, req, tx)
+  })
+
+  await last_activity(req)
+    //4: send a response to frontend about success transaction
+    res.json({
+      success: true,
+      message_ar: "✅ تم حذف بيانات حساب رأس المال بنجاح",
+    });
+  } catch (error) {
+    await last_activity(req)
+    console.error("Error capital_accounts_delete:", error);
+    // send a response to frontend about fail transaction
+    res.status(500).json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
+//#endregion 
 
 //#region cash_managemenet
 app.post("/cash_accounts_view", async (req, res) => {
@@ -29641,7 +30136,7 @@ let params1 = [req.session.company_id]
       ) AS referenceconcat,
       th.account_id,
       ah.account_name,
-      COALESCE(th.general_note, '') as general_note,
+      COALESCE(th.general_note, '') as general_note
     FROM
       transaction_header th
     inner join accounts_header ah on ah.id = th.account_id
@@ -29769,7 +30264,7 @@ let params1 = [req.session.company_id]
       ) AS referenceconcat,
       th.account_id,
       ah.account_name,
-      COALESCE(th.general_note, '') as general_note,
+      COALESCE(th.general_note, '') as general_note
     FROM
       transaction_header th
     inner join accounts_header ah on ah.id = th.account_id
@@ -31532,11 +32027,6 @@ app.post("/api/production_forms_add", async (req, res) => {
 
       const newId_transaction_header = insert.id; // The new header id
 
-      // Insert into production_forms_body using the new header id
-      const query2 = `INSERT INTO production_forms_body
-                      (production_forms_header_id, account_id, value)
-                      VALUES($1, $2, $3);`;
-
       let insert_array2 = [];
       for (const element of posted_elements.posted_array) {
         insert_array2.push([
@@ -31545,9 +32035,16 @@ app.post("/api/production_forms_add", async (req, res) => {
           +element.amount
         ]);
       }
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
+      const query2 = `INSERT INTO production_forms_body
+                      (production_forms_header_id, account_id, value)
+                      VALUES ${insert_array2.map((_, i) => 
+                        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+                      ).join(', ')}`;
+                      await tx.none(query2, insert_array2.flat());
+                    }
 
-      // Insert data into body table
-      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
 
       // Add history log
       await history(transaction_type, 1, newId_transaction_header, 0, req, tx);
@@ -31687,12 +32184,6 @@ app.post("/api/production_forms_update", async (req, res) => {
         req.session.company_id,
       ]);
 
-
-      // Insert into production_forms_body using the new header id
-      const query2 = `INSERT INTO production_forms_body
-                      (production_forms_header_id, account_id, value)
-                      VALUES($1, $2, $3);`;
-
       let insert_array2 = [];
       for (const element of posted_elements.posted_array) {
         insert_array2.push([
@@ -31701,9 +32192,16 @@ app.post("/api/production_forms_update", async (req, res) => {
           +element.amount
         ]);
       }
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
+      const query2 = `INSERT INTO production_forms_body
+                      (production_forms_header_id, account_id, value)
+                      VALUES ${insert_array2.map((_, i) => 
+                        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+                      ).join(', ')}`;
 
-      // Insert data into body table
-      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+                      await tx.none(query2, insert_array2.flat());
+                    }
 
       // Add history log
       await history(transaction_type, 2, posted_elements.x, 0, req, tx);
@@ -32341,10 +32839,6 @@ app.post("/api/production_orders_add", async (req, res) => {
 
       const newId_transaction_header = insert.id; // The new header id
 
-      // Insert into production_forms_body using the new header id
-      const query2 = `INSERT INTO transaction_body
-                      (transaction_header_id, debit, credit, item_amount, account_id, item_id, item_location_id_tb, is_production_item)
-                      VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
 
       let insert_array2 = [];
       for (const element of posted_elements.posted_array) {
@@ -32371,8 +32865,16 @@ app.post("/api/production_orders_add", async (req, res) => {
         posted_elements.location_account,
         true // is_production_item
       ]);
-      // Insert data into body table
-      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
+      const query2 = `INSERT INTO transaction_body
+      (transaction_header_id, debit, credit, item_amount, account_id, item_id, item_location_id_tb, is_production_item)
+      VALUES ${insert_array2.map((_, i) => 
+        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+      ).join(', ')}`;
+      await tx.none(query2, insert_array2.flat());
+    }
 
       const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
       if (!allow_amounts){
@@ -32556,10 +33058,6 @@ app.post("/api/production_orders_update", async (req, res) => {
 
      
 
-      // Insert into production_forms_body using the new header id
-      const query2 = `INSERT INTO transaction_body
-                      (transaction_header_id, debit, credit, item_amount, account_id, item_id, item_location_id_tb, is_production_item)
-                      VALUES($1, $2, $3, $4, $5, $6, $7, $8);`;
 
       let insert_array2 = [];
       for (const element of posted_elements.posted_array) {
@@ -32586,8 +33084,16 @@ app.post("/api/production_orders_update", async (req, res) => {
         posted_elements.location_account,
         true // is_production_item
       ]);
-      // Insert data into body table
-      await tx.batch(insert_array2.map(data => tx.none(query2, data)));
+
+      if (insert_array2.length > 0){
+        let columnsCount = insert_array2[0].length;
+      const query2 = `INSERT INTO transaction_body
+      (transaction_header_id, debit, credit, item_amount, account_id, item_id, item_location_id_tb, is_production_item)
+      VALUES ${insert_array2.map((_, i) => 
+        `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+      ).join(', ')}`;
+      await tx.none(query2, insert_array2.flat());
+}
 
       const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
       if (!allow_amounts){

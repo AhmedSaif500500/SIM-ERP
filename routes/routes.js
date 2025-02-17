@@ -1658,7 +1658,46 @@ router.get('/cash_transfer_update_ar', (req, res) => {
 
 //#endregion
 
+//#region capital_accounts
+router.get('/capital_accounts_view_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.accounts_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar', 'capital_accounts', 'capital_accounts_view_ar.html'));
+        }else{
+            res.redirect('/notes_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
 
+
+router.get('/capital_accounts_add_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.accounts_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar', 'capital_accounts', 'capital_accounts_add_ar.html'));
+        }else{
+            res.redirect('/capital_accounts_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+router.get('/capital_accounts_update_ar', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.accounts_permission > 0) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'capital_accounts', 'capital_accounts_update_ar.html'));
+        }else{
+            res.redirect('/capital_accounts_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
+//#endregion
 
 
 //#region reports 

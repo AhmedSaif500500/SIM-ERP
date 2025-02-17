@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+
+
 </head>
 
 <body class="body scroll">
@@ -28,33 +30,37 @@
         <div id="content_space" class="scroll">
 
           <h2 id="h2" class="h2">
-            <a id="back_href" class="back_href" href="itemsLocations_view_ar" title="مواقع المخزون">
+            <a id="back_href" class="back_href" href="capital_accounts_view_ar" title="حسابات رأس المال">
               <i class="fa-solid fa-arrow-right back_icon"></i>
             </a>
             <div class="h2_main_text_div">
-              <a id="h2_text_div" class="h2_text_div" href="itemsLocations_add_ar" title="اعادة تحميل الصفحة">
-                مواقع المخزون
+              <a id="h2_text_div" class="h2_text_div" href="capital_accounts_update_ar" title="اعادة تحميل الصفحة">
+                  حسابات رأس المال
               </a>
-              <span id="sub_h2_header" class="sub_h2_header">جديد</span>
+              <span id="sub_h2_header" class="sub_h2_header">عرض</span>
             </div>
           </h2>
+
+          <div id ="fn_container_div" class="fn_container_div"></div>
 
           <div id="page_content" style="display: none;">
             <!-- ________________________________________________CONTENT_____________________________________________________________ -->
 
 
-                <!-- اسم الموقع -->
-                <label for="account_name_input" class="lbl_sm">اسم الموقع</label>
-                <input type="search" id="account_name_input" class="input_text_md hover" placeholder="مطلوب"
-                  autocomplete="off" oninput="check_parse(this,'string')">
-                <input type="hidden" id="account_id_hidden">
->
-    
-                <div class="btn_container_top_border">
-                    <button class="btn_save" id="btn_save_accounts" onclick="save('A')">حفظ</button>
-                    <button class="btn_save" id="btn_save_and_add_another_accounts" onclick="save('B')">حفظ و إضافة أخر</button>
-                </div>
-            <!-- ______________________________________________________________________________________________________ -->
+
+            <label for="cash_accounts_input" class="lbl_sm">المعرف</label>
+            <input type="search" id="cash_accounts_input" class="input_text_sm hover" placeholder="اختياري" autocomplete="off" oninput="check_parse(this,'string')">
+         
+            <label for="cash_accounts_name_input" class="lbl_sm">اسم الحساب</label>
+            <input type="search" id="cash_accounts_name_input" class="input_text_md hover" autocomplete="off" oninput="check_parse(this,'string')" placeholder="مطلوب">
+        
+
+
+            <div class="btn_container_top_border notView">
+              <button class="btn_update" id="btn_update">تعديل</button>
+              <button class="btn_cancel" id="btn_delete">حذف</button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -71,7 +77,8 @@
   <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
   <script src="/public/socket/socket.io.min.js"></script>
   <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
-  <script src="/public/scripts/ar/items/itemsLocations/itemsLocations_add_ar.js"></script>
+  <!-- <script src="/public/scripts/ar/sales_management/sales/sales_invoice/sales_invoice_multi_pages.js"></script> -->
+  <script src="/public/scripts/ar/capital_accounts/capital_accounts_update_ar.js"></script>
 
 
 </body>

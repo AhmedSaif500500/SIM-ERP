@@ -254,10 +254,14 @@ function loadSidebarContents() {
     -->
 
     <a href="transaction_view_ar" target="_self" class="" style="display: ${module_display("transaction_permission")};" onclick="sessionStorage.removeItem('transactionViewArray')">
-      <i class="fa-duotone fa-solid fa-scale-balanced"></i>
+    <i class="fa-sharp-duotone fa-solid fa-sack-dollar"></i>
       القيود المحاسبية
     </a>
 
+    <a href="capital_accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};" onclick="sessionStorage.removeItem('capital_accounts_ViewArray')">
+      <i class="fa-duotone fa-solid fa-scale-balanced"></i>
+       حسابات رأس المال
+    </a>
 
     <a href="report_map_ar" target="_self" class="" style="display: ${module_display("0")};">
       <i class="fa-duotone fa-thin fa-book"></i>
