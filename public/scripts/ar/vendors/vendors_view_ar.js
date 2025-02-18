@@ -680,8 +680,29 @@ document.addEventListener("DOMContentLoaded", async function () {
      
         backUp_filter_div_conditions();
     }
+    handle_fn_options()
 
 });
+
+async function importData(){
+    const permission = await btn_permission('vendors_permission', 'add');
+
+    if (!permission) {
+        showAlert(`warning`, `⚠️ عذرا لا تملك الصلاحية لاستيراد البيانات`)
+      return;
+    };
+
+    window.location.href = 'import_data_vendors';
+}
+
+
+function handle_fn_options(){  
+    const newDivs = `
+      <div id="fn_importData_btn" onclick="importData()">استيراد بيانات</div>
+    `;
+    fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+  }
+
 
 window.addEventListener("beforeprint", function () {
     beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني

@@ -1213,6 +1213,7 @@ input[type="checkbox"]:hover {
   margin-inline-start: 0.5rem;
   margin-block-end: 0.8rem;
   margin-block-start: 0.7rem;
+  line-height: 1.7rem;
   color: var(--Font_Color);
   transition: var(--transition);
 }

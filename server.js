@@ -4658,6 +4658,10 @@ app.post("/api/add_imported_customers", async (req, res) => {
 
     const posted_elements = req.body;
  
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
+
     //! sql injection check - فحص كل البيانات داخل posted_array
     let hasBadSymbols = posted_elements.posted_array.some(row =>
       row.some(cell => sql_anti_injection([cell]))
@@ -4673,6 +4677,9 @@ app.post("/api/add_imported_customers", async (req, res) => {
     
     turn_EmptyValues_TO_null(posted_elements);
 
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
     //* Start Transaction --------------------------------------------------
 
     //! check diffrence between debit and credit
@@ -6179,6 +6186,199 @@ ORDER BY
 });
 
 //#endregion
+
+
+app.post("/api/add_imported_vendors", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "vendors_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+ 
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
+
+    //! sql injection check - فحص كل البيانات داخل posted_array
+    let hasBadSymbols = posted_elements.posted_array.some(row =>
+      row.some(cell => sql_anti_injection([cell]))
+    );
+    
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+    
+    turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+    
+    const vendorsParent = await db.oneOrNone(`select id from accounts_header where company_id = $1 AND global_id = 14`, [req.session.company_id])
+
+    if (!vendorsParent || !vendorsParent.id){
+      throw new Error(`❌ حدث خطأ اثناء معالجة البيانات : Saaici01 `);
+    }
+
+    const parent_id = vendorsParent.id
+
+    const db_AllAccounts = await db.any(
+      `select id, account_name, is_final_account, account_type_id, main_account_id from accounts_header where company_id = $1`,
+      [req.session.company_id]
+    );
+
+    
+    const company_id = req.session.company_id;
+    const account_type_id = 3;
+    
+
+
+    // مجموعة لتخزين أسماء الأصناف اللي بتتحقق أثناء اللوب
+    const vendorNamesSet = new Set();
+    
+    let array1 = [];
+    let validRows = []; // الصفوف اللي دخلت فعليًا
+    let index = 1;
+    
+    for (const row of posted_elements.posted_array) {
+      let account_no = row[0] || null;
+      let account_name = row[1] || null;
+      let credit_limit = row[2] || null;
+      let email = row[3] || null;
+      let tasgel_darepy = row[4] || null;
+      let kanonya = row[5] || null;
+      let tawasol_info = row[6] || null;
+      let bank_info = row[7] || null;
+      let taslem_address = row[8] || null;
+      let is_allow_buy = row[9] || null;
+    
+      if (!account_name) {
+        throw new Error(`❌ برجاء إدخال اسم المورد بشكل صحيح فى السطر رقم : ${index}`);
+      }
+    
+      if (account_no === 'معرف المورد ( اختيارى )' || account_name === 'اسم المورد ( مطلوب )' || credit_limit === 'الحد الائتمانى ( اختياري )') {
+        console.log(`skip header row`);
+        index++;
+        continue;
+      }
+
+      if (is_allow_buy && is_allow_buy === 'نعم'){
+        is_allow_buy = true
+      }else{
+        is_allow_buy = null
+      }
+    
+    
+      const isNameExists = db_AllAccounts.some((account) => account.account_name.trim() === account_name);
+      if (isNameExists) {
+        throw new Error(`❌ لا يمكن استخدام اسم المورد '${account_name}' السطر رقم: ${index}`);
+      }
+    
+      if (vendorNamesSet.has(account_name)) {
+        throw new Error(`❌ المورد '${account_name}' مكرر داخل البيانات المدخلة فى السطر رقم: ${index}`);
+      }
+      vendorNamesSet.add(account_name);
+    
+
+      if (credit_limit !== null && (credit_limit === "" || isNaN(+credit_limit))) {
+        throw new Error(`❌ حد الإئتمان غير صالح للمورد  ${account_name} فى السطر رقم : ${index}`);
+      }
+    
+    
+      array1.push([
+        account_name,
+        true,
+        account_no,
+        1,
+        company_id,
+        account_type_id,
+        1,
+        credit_limit,
+        email,
+        tasgel_darepy,
+        kanonya,
+        tawasol_info,
+        taslem_address,
+        bank_info,
+        is_allow_buy
+      ]);
+    
+      validRows.push(row); // تخزين الصف الصالح فقط
+    
+      index++;
+    }
+    
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+
+// إدخال accounts_header
+if (array1.length > 0){
+
+
+let columnsCount = array1[0].length;
+let query1 = `INSERT INTO accounts_header (account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
+      VALUES ${array1.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}
+  RETURNING id;`;
+
+const insertedIds = await tx.many(query1, array1.flat());
+
+// إعداد بيانات accounts_body
+let array2 = insertedIds.map((inserted) => [
+  parent_id, // ثابت لكل الصفوف
+  inserted.id
+]);
+
+
+let columnsCount2 = array2[0].length;
+let query2 = `INSERT INTO accounts_body (parent_id, account_id)
+              VALUES ${array1.map((_, i) => 
+                `(${Array.from({ length: columnsCount2 }, (_, j) => `$${i * columnsCount2 + j + 1}`).join(', ')})`
+              ).join(', ')}`
+
+
+await tx.none(query2, array2.flat());
+
+}
+
+ // await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+   // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `✅ تم حفظ بيانات النموذج الجدولى بنجاح `,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error add_imported_customers:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
 
   //#region add vendor
   app.post("/addNewVendor", async (req, res) => {
@@ -9967,6 +10167,10 @@ app.post("/api/add_imported_items", async (req, res) => {
 
     const posted_elements = req.body;
  
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
+
     //! sql injection check - فحص كل البيانات داخل posted_array
     let hasBadSymbols = posted_elements.posted_array.some(row =>
       row.some(cell => sql_anti_injection([cell]))
@@ -9984,6 +10188,9 @@ app.post("/api/add_imported_items", async (req, res) => {
 
     turn_EmptyValues_TO_null(posted_elements);
 
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
 
     
     //* Start Transaction --------------------------------------------------
