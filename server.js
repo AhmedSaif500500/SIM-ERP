@@ -4662,6 +4662,10 @@ app.post("/api/add_imported_customers", async (req, res) => {
       throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
     }
 
+    if (posted_elements.posted_array.length > 301) {
+      throw new Error(`⚠️ الحد الأقصى المسموح لاستيراد البيانات هو 300 صف. يرجى تقسيم البيانات على دفعات أصغر.`);
+    }
+
     //! sql injection check - فحص كل البيانات داخل posted_array
     let hasBadSymbols = posted_elements.posted_array.some(row =>
       row.some(cell => sql_anti_injection([cell]))
@@ -4728,7 +4732,7 @@ app.post("/api/add_imported_customers", async (req, res) => {
     
       if (account_no === 'معرف العميل ( اختيارى )' || account_name === 'اسم العميل ( مطلوب )' || credit_limit === 'الحد الائتمانى ( اختياري )') {
         console.log(`skip header row`);
-        index++;
+        //index++;
         continue;
       }
 
@@ -4803,7 +4807,7 @@ let array2 = insertedIds.map((inserted) => [
 
 let columnsCount2 = array2[0].length;
 let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-              VALUES ${array1.map((_, i) => 
+              VALUES ${array2.map((_, i) => 
                 `(${Array.from({ length: columnsCount2 }, (_, j) => `$${i * columnsCount2 + j + 1}`).join(', ')})`
               ).join(', ')}`
 
@@ -6206,6 +6210,10 @@ app.post("/api/add_imported_vendors", async (req, res) => {
       throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
     }
 
+    if (posted_elements.posted_array.length > 301) {
+      throw new Error(`⚠️ الحد الأقصى المسموح لاستيراد البيانات هو 300 صف. يرجى تقسيم البيانات على دفعات أصغر.`);
+    }
+
     //! sql injection check - فحص كل البيانات داخل posted_array
     let hasBadSymbols = posted_elements.posted_array.some(row =>
       row.some(cell => sql_anti_injection([cell]))
@@ -6272,7 +6280,7 @@ app.post("/api/add_imported_vendors", async (req, res) => {
     
       if (account_no === 'معرف المورد ( اختيارى )' || account_name === 'اسم المورد ( مطلوب )' || credit_limit === 'الحد الائتمانى ( اختياري )') {
         console.log(`skip header row`);
-        index++;
+        //index++;
         continue;
       }
 
@@ -6347,7 +6355,7 @@ let array2 = insertedIds.map((inserted) => [
 
 let columnsCount2 = array2[0].length;
 let query2 = `INSERT INTO accounts_body (parent_id, account_id)
-              VALUES ${array1.map((_, i) => 
+              VALUES ${array2.map((_, i) => 
                 `(${Array.from({ length: columnsCount2 }, (_, j) => `$${i * columnsCount2 + j + 1}`).join(', ')})`
               ).join(', ')}`
 
@@ -10167,6 +10175,10 @@ app.post("/api/add_imported_items", async (req, res) => {
 
     const posted_elements = req.body;
  
+    if (posted_elements.posted_array.length > 301) {
+      throw new Error(`⚠️ الحد الأقصى المسموح لاستيراد البيانات هو 300 صف. يرجى تقسيم البيانات على دفعات أصغر.`);
+    }
+
     if (!posted_elements){
       throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
     }
@@ -10232,7 +10244,7 @@ app.post("/api/add_imported_items", async (req, res) => {
     
       if (account_no === 'معرف الصنف ( اختيارى )' || item_name === 'اسم الصنف ( مطلوب )' || item_unite === 'وحدة القياس ( مطلوب )') {
         console.log(`skip header row`);
-        index++;
+        //index++;
         continue;
       }
     
@@ -27358,6 +27370,220 @@ app.post("/fixed_assests_add", async (req, res) => {
     });
   }
 });
+
+app.post("/api/add_imported_fixed_assests", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "fixed_assests_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+ 
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
+
+    if (posted_elements.posted_array.length > 301) {
+      throw new Error(`⚠️ الحد الأقصى المسموح لاستيراد البيانات هو 300 صف. يرجى تقسيم البيانات على دفعات أصغر.`);
+    }
+
+    //! sql injection check - فحص كل البيانات داخل posted_array
+    let hasBadSymbols = posted_elements.posted_array.some(row =>
+      row.some(cell => sql_anti_injection([cell]))
+    );
+    
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+    
+    turn_EmptyValues_TO_null(posted_elements);
+
+    if (!posted_elements){
+      throw new Error(`⚠️ برجاء إتباع المراحل وتقديم البيانات بشكل صحيح`);
+    }
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+    
+    const fixedAssestsParent = await db.oneOrNone(`select id, main_account_id from accounts_header where company_id = $1 AND global_id = 9`, [req.session.company_id])
+
+    if (!fixedAssestsParent || !fixedAssestsParent.id || !fixedAssestsParent.main_account_id){
+      throw new Error(`❌ حدث خطأ اثناء معالجة البيانات : Saaifa01 `);
+    }
+
+    const parent_id = fixedAssestsParent.id
+
+    const db_AllAccounts = await db.any(
+      `select id, account_name, is_final_account, account_type_id, main_account_id from accounts_header where company_id = $1`,
+      [req.session.company_id]
+    );
+
+    const db_expenses_accounts_array = db_AllAccounts.filter(
+      (row) => row.is_final_account === true && +row.main_account_id === 5
+    );
+    
+    const company_id = req.session.company_id;
+    const account_type_id = 6;
+    
+
+
+    // مجموعة لتخزين أسماء الأصناف اللي بتتحقق أثناء اللوب
+    const fixedAssestsNamesSet = new Set();
+    
+    let array1 = [];
+    let validRows = []; // الصفوف اللي دخلت فعليًا
+    let index = 1;
+    
+    for (const row of posted_elements.posted_array) {
+      let account_no = row[0] || null;
+      let account_name = row[1] || null;
+      let purshases_date = row[2] || null;
+      let started_accumulated_date = row[3] || null;
+      let rate = row[4] || null;
+      let value_canNot_deprecated = row[5] || null;
+      let group_dec = row[6] || null;
+      let other_info = row[7] || null;
+      let expense_account = row[8] || null;
+    
+
+    
+      if (account_no === 'معرف الأصل الثابت ( اختيارى )' || account_name === 'اسم الأصل الثابت ( مطلوب )' || purshases_date === 'تاريخ شراء الأصل ( مطلوب )') {
+        console.log(`skip header row`);
+        //index++;
+        continue;
+      }
+
+      if (!account_name) {
+        throw new Error(`❌ برجاء إدخال اسم الأصل بشكل صحيح فى السطر رقم : ${index}`);
+      }
+      const InValidDateFormat1 = isInValidDateFormat([started_accumulated_date]);
+      if (InValidDateFormat1) {
+        throw new Error(`❌ برجاء إدخال اسم تاريخ بداية إهلاك الأصل بشكل صحيح فى السطر رقم : ${index}`);
+      }
+
+
+      const InValidDateFormat2 = isInValidDateFormat([purshases_date]);
+      if (InValidDateFormat2) {
+        throw new Error(`❌ برجاء إدخال اسم تاريخ شراء الأصل بشكل صحيح فى السطر رقم : ${index}`);
+      }
+
+      if (!rate || isNaN(parseFloat(rate))) {
+        throw new Error(`❌ برجاء إدخال معدل الإهلاك بشكل صحيح فى السطر رقم : ${index}`);
+      }
+
+      if (value_canNot_deprecated !== null && (value_canNot_deprecated === "" || isNaN(+value_canNot_deprecated))) {
+        throw new Error(`❌ برجاء إدخال القيمة الغير قابلة للإهلاك بشكل صحيح للأصل ${account_name} فى السطر رقم : ${index}`);
+      }
+    
+  
+      const isNameExists = db_AllAccounts.some((account) => account.account_name.trim() === account_name);
+      if (isNameExists) {
+        throw new Error(`❌ لا يمكن استخدام اسم الأصل '${account_name}' السطر رقم: ${index}`);
+      }
+    
+     const get_expense_account_id = db_expenses_accounts_array.find((acc) => acc.account_name.trim() === expense_account && !acc.is_deleted);
+
+      if (!get_expense_account_id || !expense_account) {
+        throw new Error(`❌ برجاء إدخال حساب مصروف الإهلاك بشكل صحيح للأصل ${account_name} فى السطر رقم : ${index}`);
+      }
+      expense_account = get_expense_account_id.id
+
+
+      if (fixedAssestsNamesSet.has(account_name)) {
+        throw new Error(`❌ الأصل '${account_name}' مكرر داخل البيانات المدخلة فى السطر رقم: ${index}`);
+      }
+      fixedAssestsNamesSet.add(account_name);
+    
+    
+      array1.push([
+        account_name,
+        account_no,
+        true,
+        1,
+        company_id,
+        account_type_id,
+        fixedAssestsParent.main_account_id,
+        expense_account,
+        purshases_date,
+        started_accumulated_date,
+        rate,
+        value_canNot_deprecated,
+        group_dec,
+        other_info
+      ]);
+    
+      validRows.push(row); // تخزين الصف الصالح فقط
+    
+      index++;
+    }
+    
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+
+// إدخال accounts_header
+if (array1.length > 0){
+
+let columnsCount = array1[0].length;
+let query1 = `INSERT INTO accounts_header (account_name, account_no, is_final_account, finance_statement, company_id, account_type_id, main_account_id, item_expense_account, str10_data_column1, str10_data_column2, numeric_column1, numeric_column2, str50_column1, str_textarea_column1)
+  VALUES ${array1.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}
+  RETURNING id;`;
+
+const insertedIds = await tx.many(query1, array1.flat());
+
+// إعداد بيانات accounts_body
+let array2 = insertedIds.map((inserted) => [
+  parent_id, // ثابت لكل الصفوف
+  inserted.id
+]);
+
+
+let columnsCount2 = array2[0].length;
+let query2 = `INSERT INTO accounts_body (parent_id, account_id)
+              VALUES ${array2.map((_, i) => 
+                `(${Array.from({ length: columnsCount2 }, (_, j) => `$${i * columnsCount2 + j + 1}`).join(', ')})`
+              ).join(', ')}`
+
+
+await tx.none(query2, array2.flat());
+
+}
+
+ // await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+   // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `✅ تم حفظ بيانات النموذج الجدولى بنجاح `,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error add_imported_customers:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
+
 
 app.post("/get_fixed_assests_data_for_update_page", async (req, res) => {
   try {

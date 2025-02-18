@@ -876,6 +876,7 @@ function CheckUrlParams_salesInvoice_update_ar() {
 
 
 document.addEventListener("DOMContentLoaded", async function () {
+    showLoadingIcon(content_space)
     showRedirectionReason();
 
     sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
@@ -886,14 +887,34 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     await getData_fn();
+    handle_fn_options()
     const conditionsArray = sessionStorage.getItem(`fixed_assests_ViewArray`);
 
     if (!conditionsArray){
      
         backUp_filter_div_conditions();
     }
-
+hideLoadingIcon(content_space)
 });
+
+
+async function importData(){
+    const permission = await btn_permission('fixed_assests_permission', 'add');
+
+    if (!permission) {
+        showAlert(`warning`, `⚠️ عذرا لا تملك الصلاحية لاستيراد البيانات`)
+      return;
+    };
+
+    window.location.href = 'import_data_fixedAssests';
+}
+
+function handle_fn_options(){  
+    const newDivs = `
+      <div id="fn_importData_btn" onclick="importData()">استيراد بيانات</div>
+    `;
+    fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+  }
 
 window.addEventListener("beforeprint", function () {
     beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني

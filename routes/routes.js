@@ -1422,6 +1422,19 @@ router.get('/fixed_assests_add_ar', (req, res) => {
     }
 });
 
+router.get('/import_data_fixedAssests', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.fixed_assests_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'fixed_assests_management', 'fixed_assests', 'import_data_fixedAssests.html'));
+        }else{
+            res.redirect('/fixed_assests_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
+
+
 router.get('/fixed_assests_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.fixed_assests_permission > 0) {

@@ -1,4 +1,6 @@
 setActiveSidebar('general_settings_ar');
+pagePermission("view", "users_permission");
+
 
 //#region  get user data and show
 
@@ -189,16 +191,6 @@ function update_Permissions_Levels_Text_OnPageLoad() {
   });
 };
 
-document.addEventListener("DOMContentLoaded", async function () {
-  try {
-    await get_user_data_fn();
-    await general_permission_select_change();
-    update_Permissions_Levels_Text_OnPageLoad();
-    page_content.style.display = `flex`
-  } catch (error) {
-    catch_error('Error during DOMContentLoaded', error)
-  }
-});
 
 //#endregion END - get user data and show
 
@@ -339,6 +331,29 @@ try {
 
 
 
+document.addEventListener("DOMContentLoaded", async function () {
+  try {
+    showLoadingIcon(content_space)
+    await get_user_data_fn();
+    await general_permission_select_change();
+    update_Permissions_Levels_Text_OnPageLoad();
+    viewMode(true,'users_permission','view')
+    handle_fn_options()
+    hideLoadingIcon(content_space)
+    // page_content.style.display = `flex`
+  } catch (error) {
+    hideLoadingIcon(content_space)
+    catch_error('Error during DOMContentLoaded', error)
+  }
+});
+
+function handle_fn_options(){  
+  const newDivs = `
+    <div id="fn_option_update_btn" onclick="viewMode(false,'users_permission','update')">وضع التعديل</div>
+    <div id="fn_option_view_btn" onclick="viewMode(true,'users_permission','view')" style="display: none;">وضع العرض</div>
+  `;
+  fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
+}
 
 
 //#endregion End save Function
