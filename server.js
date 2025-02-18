@@ -696,7 +696,7 @@ if (backupData.user_company.length > 0) {
       disposed_fixed_asset_permission: x.disposed_fixed_asset_permission,
       items_transfer_permission: x.items_transfer_permission,
       cash_accounts_permission: x.cash_accounts_permission,
-      cash_transaction_permisson: x.cash_transaction_permisson
+      cash_transaction_permission: x.cash_transaction_permission
     }));
 
   // التأكد من عدم محاولة إدخال بيانات فارغة
@@ -707,7 +707,7 @@ if (backupData.user_company.length > 0) {
         "company_id", "user_id", "general_permission", "employees_permission", "effects_permission", "users_permission", "production_permission", "bread_permission", "acounts_permission", "transaction_permission",
         "items_permissions", "customers_permission", "vendors_permission", "departments_permission", "items_permission", "itemslocations_permission", "salesman_permission", "sales_qutation_permission", "sales_order_permission",
         "sales_invoice_permission", "purshases_qutation_permission", "purshases_order_permission", "purshases_invoice_permission", "services_permission",  "sales_returns_permission",
-        "purshases_returns_permission", "fixed_assests_permission", "accumulated_depreciation_permission", "disposed_fixed_asset_permission", "items_transfer_permission", "cash_accounts_permission", "cash_transaction_permisson"
+        "purshases_returns_permission", "fixed_assests_permission", "accumulated_depreciation_permission", "disposed_fixed_asset_permission", "items_transfer_permission", "cash_accounts_permission", "cash_transaction_permission"
       ],
       "user_company"
     );
@@ -2924,7 +2924,7 @@ const query_permissions =
     uc.disposed_fixed_asset_permission,
     uc.items_transfer_permission,
     uc.cash_accounts_permission,
-    uc.cash_transaction_permisson
+    uc.cash_transaction_permission
 FROM user_company uc 
     left join companies c on uc.company_id = c.id
 WHERE

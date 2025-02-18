@@ -1555,7 +1555,7 @@ const query_permissions =
     uc.disposed_fixed_asset_permission,
     uc.items_transfer_permission,
     uc.cash_accounts_permission,
-    uc.cash_transaction_permisson
+    uc.cash_transaction_permission
 FROM user_company uc 
     left join companies c on uc.company_id = c.id
 WHERE
