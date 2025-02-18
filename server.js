@@ -4642,6 +4642,194 @@ ORDER BY
 
 //#endregion
 
+
+//#region import customers data
+app.post("/api/add_imported_customers", async (req, res) => {
+  try {
+
+    //! Permission
+    await permissions(req, "customers_permission", "add");
+    if (!permissions) {
+      return res.status(403).json({
+        success: false,
+        message_ar: "ليس لديك الصلاحيات المطلوبة للقيام بهذه العملية.",
+      });
+    }
+
+    const posted_elements = req.body;
+ 
+    //! sql injection check - فحص كل البيانات داخل posted_array
+    let hasBadSymbols = posted_elements.posted_array.some(row =>
+      row.some(cell => sql_anti_injection([cell]))
+    );
+    
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar: sql_injection_message_ar,
+        message_en: sql_injection_message_en,
+      });
+    }
+    
+    turn_EmptyValues_TO_null(posted_elements);
+
+    //* Start Transaction --------------------------------------------------
+
+    //! check diffrence between debit and credit
+    
+    const customersParent = await db.oneOrNone(`select id from accounts_header where company_id = $1 AND global_id = 13`, [req.session.company_id])
+
+    if (!customersParent || !customersParent.id){
+      throw new Error(`❌ حدث خطأ اثناء معالجة البيانات : Saaici01 `);
+    }
+
+    const parent_id = customersParent.id
+
+    const db_AllAccounts = await db.any(
+      `select id, account_name, is_final_account, account_type_id, main_account_id from accounts_header where company_id = $1`,
+      [req.session.company_id]
+    );
+
+    
+    const company_id = req.session.company_id;
+    const account_type_id = 2;
+    
+
+
+    // مجموعة لتخزين أسماء الأصناف اللي بتتحقق أثناء اللوب
+    const customerNamesSet = new Set();
+    
+    let array1 = [];
+    let validRows = []; // الصفوف اللي دخلت فعليًا
+    let index = 1;
+    
+    for (const row of posted_elements.posted_array) {
+      let account_no = row[0] || null;
+      let account_name = row[1] || null;
+      let credit_limit = row[2] || null;
+      let email = row[3] || null;
+      let tasgel_darepy = row[4] || null;
+      let kanonya = row[5] || null;
+      let tawasol_info = row[6] || null;
+      let bank_info = row[7] || null;
+      let taslem_address = row[8] || null;
+      let is_allow_purshase = row[9] || null;
+    
+      if (!account_name) {
+        throw new Error(`❌ برجاء إدخال اسم العميل بشكل صحيح فى السطر رقم : ${index}`);
+      }
+    
+      if (account_no === 'معرف العميل ( اختيارى )' || account_name === 'اسم العميل ( مطلوب )' || credit_limit === 'الحد الائتمانى ( اختياري )') {
+        console.log(`skip header row`);
+        index++;
+        continue;
+      }
+
+      if (is_allow_purshase && is_allow_purshase === 'نعم'){
+        is_allow_purshase = true
+      }else{
+        is_allow_purshase = null
+      }
+    
+    
+      const isNameExists = db_AllAccounts.some((account) => account.account_name.trim() === account_name);
+      if (isNameExists) {
+        throw new Error(`❌ لا يمكن استخدام اسم العميل '${account_name}' السطر رقم: ${index}`);
+      }
+    
+      if (customerNamesSet.has(account_name)) {
+        throw new Error(`❌ العميل '${account_name}' مكرر داخل البيانات المدخلة فى السطر رقم: ${index}`);
+      }
+      customerNamesSet.add(account_name);
+    
+
+      if (credit_limit !== null && (credit_limit === "" || isNaN(+credit_limit))) {
+        throw new Error(`❌ حد الإئتمان غير صالح للعميل  ${account_name} فى السطر رقم : ${index}`);
+      }
+    
+    
+      array1.push([
+        account_name,
+        true,
+        account_no,
+        1,
+        company_id,
+        account_type_id,
+        1,
+        credit_limit,
+        email,
+        tasgel_darepy,
+        kanonya,
+        tawasol_info,
+        taslem_address,
+        bank_info,
+        is_allow_purshase
+      ]);
+    
+      validRows.push(row); // تخزين الصف الصالح فقط
+    
+      index++;
+    }
+    
+// تنفيذ معاملة قاعدة البيانات
+await db.tx(async (tx) => {
+
+// إدخال accounts_header
+if (array1.length > 0){
+
+
+let columnsCount = array1[0].length;
+let query1 = `INSERT INTO accounts_header (account_name, is_final_account, account_no, finance_statement, company_id, account_type_id, main_account_id, numeric_column1, str_textarea_column5, str20_column1, str_textarea_column1, str_textarea_column2, str_textarea_column3, str_textarea_column4, is_allow_to_buy_and_sell)
+      VALUES ${array1.map((_, i) => 
+    `(${Array.from({ length: columnsCount }, (_, j) => `$${i * columnsCount + j + 1}`).join(', ')})`
+  ).join(', ')}
+  RETURNING id;`;
+
+const insertedIds = await tx.many(query1, array1.flat());
+
+// إعداد بيانات accounts_body
+let array2 = insertedIds.map((inserted) => [
+  parent_id, // ثابت لكل الصفوف
+  inserted.id
+]);
+
+
+let columnsCount2 = array2[0].length;
+let query2 = `INSERT INTO accounts_body (parent_id, account_id)
+              VALUES ${array1.map((_, i) => 
+                `(${Array.from({ length: columnsCount2 }, (_, j) => `$${i * columnsCount2 + j + 1}`).join(', ')})`
+              ).join(', ')}`
+
+
+await tx.none(query2, array2.flat());
+
+}
+
+ // await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
+});
+
+
+    // await update_items_cogs(req,items_array,posted_elements.datex)
+   // const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
+    await last_activity(req);
+    // إذا تم تنفيذ جميع الاستعلامات بنجاح
+    return res.json({
+      success: true,
+      message_ar: `✅ تم حفظ بيانات النموذج الجدولى بنجاح `,
+    });
+  } catch (error) {
+    await last_activity(req);
+    console.error("Error add_imported_customers:", error);
+
+    // إذا حدث خطأ أثناء المعاملة، سيتم إلغاؤها تلقائيًا
+    return res.json({
+      success: false,
+      message_ar: error.message || deafultErrorMessage,
+    });
+  }
+});
+//#endregion
+
   //#region add customers
   app.post("/addNewCustomer", async (req, res) => {
     try {
@@ -33300,7 +33488,7 @@ app.post("/api/production_orders_delete", async (req, res) => {
     //50000
 
 
-
+/*
 let query1 = `
 WITH 
 stock_balances as(
@@ -33525,8 +33713,311 @@ from
         mt.main_account_id asc, mt.parent_id asc, mt.id asc
         ;
         `;
+*/
 
 
+
+let query1 = `
+WITH 
+stock_balances as(
+SELECT
+    -- حساب المخزون بدون شرط transaction_type
+    SUM(CASE 
+	    	WHEN ah.account_type_id = 5 AND th2.datex < $2 then
+	    		case
+	    			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+	    		end
+        ELSE 0 
+        END) AS stock_debit_begining,
+
+    -- حساب التكلفة مع شرط transaction_type
+
+    -- حساب المخزون بدون شرط transaction_type
+    SUM(CASE 
+        	WHEN ah.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then
+        		case
+        			when tb2.item_amount >= 0 then coalesce(tb2.cogs,0)
+        			when tb2.item_amount <0 then coalesce(tb2.cogs *-1, 0)
+        			else 0
+        		end
+        	ELSE 0
+        END) AS stock_debit_current,
+
+    -- حساب التكلفة مع شرط transaction_type
+        
+    SUM(CASE 
+        	WHEN th2.transaction_type = 2 AND ah2.global_id = 17 AND th2.datex < $2 then
+        		case
+	        		when coalesce(tb2.debit, 0) > 0 then coalesce(tb2.debit, 0)
+	        		when coalesce(tb2.credit, 0) > 0 then coalesce(tb2.credit, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_account_value_begining,
+        
+            SUM(CASE 
+        	WHEN th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_id is not null AND th2.datex < $2 then
+        		case
+	    			when  tb2.item_amount > 0 then coalesce(tb2.cogs *-1, 0)
+        			when  tb2.item_amount <0 then coalesce(tb2.cogs, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_items_value_begining,
+        
+        
+                    SUM(CASE 
+        	WHEN th2.transaction_type = 2 and  ah2.global_id = 17 AND th2.datex BETWEEN $2 AND $3 then
+        		case
+	        		when coalesce(tb2.debit, 0) > 0 then coalesce(tb2.debit, 0)
+	        		when coalesce(tb2.credit, 0) > 0 then coalesce(tb2.credit, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_account_value_current,
+        
+        
+            SUM(CASE 
+        	WHEN th2.transaction_type IN (3,4) AND ah.account_type_id = 5 and tb2.item_id is not null AND th2.datex BETWEEN $2 AND $3 then
+        		case
+	    			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount > 0 then coalesce(tb2.cogs *-1,0)
+        			when th2.transaction_type IN (3,4) AND ah.account_type_id = 5 AND tb2.item_amount <0 then coalesce(tb2.cogs, 0)
+        			else 0
+	    		end
+        	ELSE 0
+        END) AS cost_items_value_current
+
+FROM transaction_body tb2
+left JOIN accounts_header ah ON ah.id = tb2.item_id
+left join accounts_header ah2 on ah2.id = tb2.account_id
+LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
+WHERE th2.company_id = $1 
+AND th2.is_deleted IS null
+AND (tb2.item_id is not null or ah2.global_id = 17)
+),
+
+fixed_assests_balances as (
+SELECT
+    SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS NULL AND th.datex < $2 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS begening_fixed_assests_cost,
+
+        SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS NULL AND th.datex BETWEEN $2 AND $3 THEN COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ELSE 0 
+        END
+    ) AS current_fixed_assests_cost,
+    
+    SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS true AND th.datex < $2 THEN  COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS begening_fixed_assests_accumulated_depreciation,
+
+        SUM(CASE 
+            WHEN ah.account_type_id = 6 AND is_accumulated_depreciation IS true AND th.datex BETWEEN $2 AND $3 THEN  COALESCE(tb.credit, 0)  - COALESCE(tb.debit, 0)
+            ELSE 0 
+        END
+    ) AS current_fixed_assests_accumulated_depreciation
+
+FROM transaction_body tb
+INNER JOIN accounts_header ah ON ah.id = tb.account_id
+LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE ah.company_id = $1
+  and ah.is_final_account is true
+  AND th.is_deleted IS NULL
+),
+
+previous_profit_query as(
+select
+	sum(tb2.credit) - sum(tb2.debit) as previous_profit_value
+from transaction_body tb2
+INNER JOIN accounts_header ah ON ah.id = tb2.account_id
+LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
+where
+	ah.company_id = $1 
+	AND th2.is_deleted IS null
+	and (ah.main_account_id in (4,5) or ah.global_id in (23,16))  -- حساب الارباح الحالية و الارباح السابقه
+	AND th2.datex < $2
+),
+main_trial_balance AS (
+    SELECT
+        ah.id,
+        ah.account_name,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
+            	case
+            		when coalesce(sb.stock_debit_begining, 0) > 0 then coalesce(sb.stock_debit_begining, 0)
+            		else 0
+            	end
+            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
+            	case
+             		when ppq.previous_profit_value < 0 then ABS(ppq.previous_profit_value)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when coalesce(sb.cost_account_value_begining, 0) > 0 then coalesce(sb.cost_account_value_begining, 0)
+            		else 0
+            	end	
+            WHEN ah.global_id = 9 THEN -- الاصول
+            	case
+            		when coalesce(fx.begening_fixed_assests_cost, 0) > 0 then coalesce(fx.begening_fixed_assests_cost, 0)
+            		else 0
+            	end
+            WHEN ah.global_id = 10 THEN -- المجمع    
+            	case
+            		when coalesce(fx.begening_fixed_assests_accumulated_depreciation, 0) < 0 then ABS(fx.begening_fixed_assests_accumulated_depreciation)
+            		else 0
+            	end	            	
+            WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده            	
+            ELSE 
+                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex < $2 THEN tb.debit ELSE 0 END)
+        END AS debit_first,
+                CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون اول المدة
+            	case
+            		when coalesce(sb.stock_debit_begining, 0) < 0 then ABS(sb.stock_debit_begining)
+            		else 0
+            	end
+            WHEN ah.global_id = 23 then -- ارباح فترات سابقة
+            	case
+            		when ppq.previous_profit_value > 0 then ppq.previous_profit_value
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when coalesce(sb.cost_account_value_begining, 0) < 0 then ABS(coalesce(sb.cost_account_value_begining, 0))
+            		else 0
+            	end
+            WHEN ah.global_id = 9 THEN -- الاصول
+            	case
+            		when coalesce(fx.begening_fixed_assests_cost, 0) < 0 then ABS(fx.begening_fixed_assests_cost)
+            		else 0
+            	end
+            WHEN ah.global_id = 10 THEN -- المجمع    
+            	case
+            		when coalesce(fx.begening_fixed_assests_accumulated_depreciation, 0) > 0 then fx.begening_fixed_assests_accumulated_depreciation
+            		else 0
+            	end	             	
+            	 WHEN ah.main_account_id in (4,5) then 0  -- لا يجمع بنود قائمة الدخل اول المده   
+            ELSE 
+                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex < $2 THEN tb.credit ELSE 0 END)
+        END AS credit_first,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
+            	case
+            		when coalesce(sb.stock_debit_current, 0) > 0 then coalesce(sb.stock_debit_current, 0)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when (coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)) > 0 then coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)
+            		else 0
+            	end
+            WHEN ah.global_id = 9 THEN -- الاصول
+            	case
+            		when coalesce(fx.current_fixed_assests_cost, 0) > 0 then fx.current_fixed_assests_cost
+            		else 0
+            	end
+            WHEN ah.global_id = 10 THEN -- المجمع    
+            	case
+            		when coalesce(fx.current_fixed_assests_accumulated_depreciation, 0) < 0 then ABS(fx.current_fixed_assests_accumulated_depreciation)
+            		else 0
+            	end	            	
+            ELSE 
+                SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.debit ELSE 0 END)
+        END AS debit_current,
+        CASE
+            WHEN ah.global_id = 12 THEN -- قيمه مخزون ا المدة
+            	case
+            		when coalesce(sb.stock_debit_current, 0) < 0 then ABS(sb.stock_debit_current)
+            		else 0
+            	end
+            WHEN ah.global_id = 17 THEN -- تكلفه المخزون خلال الفتره
+            	case
+            		when  (coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)) < 0 then ABS((coalesce(sb.cost_items_value_current, 0) +  coalesce(sb.cost_account_value_current, 0)))
+            		else 0
+            	end
+            WHEN ah.global_id = 9 THEN -- الاصول
+            	case
+            		when coalesce(fx.current_fixed_assests_cost, 0) < 0 then ABS(fx.current_fixed_assests_cost)
+            		else 0
+            	end
+            WHEN ah.global_id = 10 THEN -- المجمع    
+            	case
+            		when coalesce(fx.current_fixed_assests_accumulated_depreciation, 0) > 0 then fx.current_fixed_assests_accumulated_depreciation
+            		else 0
+            	end	             	
+            ELSE 
+                SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.credit ELSE 0 END)
+        END AS credit_current,        
+        ah.is_final_account,
+        ah.account_no,
+        ah.finance_statement,
+        ah.cashflow_statement,
+        ah.account_type_id,
+        ah.account_name_en,
+        ah.global_id,
+        ah.main_account_id,
+        ah.is_inactive,
+        ab.parent_id
+    FROM
+        accounts_header ah
+    LEFT JOIN accounts_body ab ON ab.account_id = ah.id
+    LEFT JOIN transaction_body tb ON tb.account_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN stock_balances sb ON true -- ربط الاستعلام فى حاله الصف الوحد
+    LEFT JOIN previous_profit_query ppq ON true -- ربط الاستعلام فى حاله الصف الواحد
+    LEFT JOIN fixed_assests_balances fx ON true -- ربط الاستعلام فى حاله الصف الواحد
+    WHERE
+        ah.company_id = $1
+        AND (ah.account_type_id NOT IN (7, 8, 11) or ah.account_type_id is null)
+        --AND ((ah.account_type_id != 5 or ah.account_type_id is null) or ah.global_id = 12)
+        --AND ((ah.account_type_id != 6 or ah.account_type_id is null) or ah.global_id in (9 ,10))
+        AND ((ah.account_type_id NOT IN (5, 6) OR ah.account_type_id IS NULL) OR ah.global_id IN (9, 10, 12)) -- المخزون والاصول والمجمع
+    GROUP BY
+        ah.id, ab.parent_id, sb.stock_debit_begining, sb.cost_items_value_begining, ppq.previous_profit_value, sb.stock_debit_current, sb.cost_items_value_current, sb.cost_account_value_begining, sb.cost_account_value_current,
+        fx.begening_fixed_assests_cost, fx.current_fixed_assests_cost, fx.begening_fixed_assests_accumulated_depreciation, fx.current_fixed_assests_accumulated_depreciation
+)
+select
+    mt.id,
+    mt.account_name,
+          CASE
+        WHEN (mt.debit_first + mt.debit_current) > (mt.credit_first + mt.credit_current)
+        THEN (mt.debit_first + mt.debit_current) - (mt.credit_first + mt.credit_current)
+        ELSE NULL
+    END AS debit_end,
+        CASE
+        WHEN (mt.debit_first + mt.debit_current) < (mt.credit_first + mt.credit_current)
+        THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
+        ELSE NULL
+    END AS credit_end,
+   mt.debit_first,
+    mt.debit_current,
+    mt.credit_first,
+    mt.credit_current,
+    mt.is_final_account,
+    mt.account_no,
+    mt.finance_statement,
+    mt.cashflow_statement,
+    mt.account_type_id,
+    mt.account_name_en,
+    mt.global_id,
+    mt.main_account_id,
+    mt.is_inactive,
+    mt.parent_id,
+    null as padding
+from 
+	main_trial_balance mt
+  order by
+        mt.main_account_id asc, mt.parent_id asc, mt.id asc
+        ;
+        `;
         let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date];
 
         await db.tx(async (tx) => {

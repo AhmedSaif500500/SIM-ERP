@@ -810,7 +810,7 @@ import_data_btn.onclick = function (){
 }
 
 async function importData(){
-    const permission = await btn_permission('items_permission', 'update');
+    const permission = await btn_permission('items_permission', 'add');
 
     if (!permission) {
         showAlert(`warning`, `⚠️ عذرا لا تملك الصلاحية لاستيراد البيانات`)
@@ -818,7 +818,6 @@ async function importData(){
     };
 
     window.location.href = 'import_data_items';
-
 }
 
 function handle_fn_options(){  

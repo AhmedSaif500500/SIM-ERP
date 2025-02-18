@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIM-ERP</title>
+  <link rel="stylesheet" href="/public/css/style.css" />
+  <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
+  <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body class="body scroll">
+  <script src="/public/scripts/darkmode.js"></script>
+  <div id="alert-container" class="alert-container"></div>
+  <div id="body_content">
+    <script src="/public/scripts/ar/Authentication_ar.js"></script>
+    <button id="scrollToTopBtn">&#9650;</button>
+
+    <!-- start ------------------------------------------------------------------------------------------>
+    <div class="header" id="header_div"></div>
+
+    <div class="sub_container">
+      <div id="sidebar" class="sidebar scroll"></div>
+
+      <div id="white_backcolor" class="white_backcolor">
+        <!-- content -->
+        <div id="content_space" class="scroll">
+
+          <h2 id="h2" class="h2">
+            <a id="back_href" class="back_href" href="customers_view_ar" title="العملا">
+              <i class="fa-solid fa-arrow-right back_icon"></i>
+            </a>
+            <div class="h2_main_text_div">
+              <a id="h2_text_div" class="h2_text_div" href="import_data_customers" title="اعادة تحميل الصفحة">
+                استيراد بيانات ( العملاء )
+              </a>
+              <span id="sub_h2_header" class="sub_h2_header"></span>
+            </div>
+          </h2>
+
+          <div id="page_content" style="display: none;">
+            <!-- ________________________________________________CONTENT_____________________________________________________________ -->
+            
+            <label for="" id="" class="lbl_sm">1️⃣ : قم بالضغط على زر نسخ رؤوس الاعمده </label>
+            <button id="btn1" class="custom_button" style="width: fit-content;">نسخ رؤوس الأعمدة</button>
+
+            <label for="" id="" class="lbl_sm">2️⃣ : قم بلصق البيانات فى برنامج جدول البيانات  </label>
+            <label for="" id="" class="lbl_sm">3️⃣ : ستحصل على رؤوس الاعمده مع مثال توضيحى اسفل منها  </label>
+            <label for="" id="" class="lbl_sm">4️⃣ : احذف سطر المثال التوضيحى واملىء البيانات بعناية  </label>
+            <label for="" id="" class="lbl_sm">5️⃣ : انسخ البيانات كامله برؤوس الاعمده ثم الصقها فى المربع التالى</label>
+            <label for="" id="" class="lbl_sm">🟡 : برجاء الانتباه : سيظهر اسم العميل ضمن اسماء الموردين فى عمليات الشراء اذا قمت بتفعيل خيار ( امكانية الشراء من العميل ) ب نعم وبالتالى يفضل تركها فارغه او ملئها ب  ( لا ) فى الحالة الطبيعية </label>
+
+      
+              <!-- اسم الصنف -->
+              <!-- <label for="input_account_name_input_tree_group_div" id="lbl_acc_name" class="lbl_sm">اسم المجموعة</label> -->
+
+
+              <textarea id="text_area1" class="text_area1" placeholder="الصق البيانات هنا" style="margin-block-start: 1rem;"></textarea>
+              
+                    
+              <div class="btn_container_top_border">
+                <button class="btn_save" id="btn_save_account">معالجة وحفظ البيانات</button>
+              </div>
+
+
+            <!-- ______________________________________________________________________________________________________ -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+  <script>
+
+  </script>
+
+  <!-- scripts------------------------------------------------------------------------------ -->
+  <script src="/public/flatpickr/dist/flatpickr.min.js"></script> <!-- lazem da ykon apl el main.js -->
+  <script src="/public/socket/socket.io.min.js"></script>
+  <script src="/public/scripts/main.js"></script> <!-- lazem da ykon a5er malaf -->
+  <script src="/public/scripts/ar/customers/import_data_customers.js"></script>
+</body>
+
+</html>

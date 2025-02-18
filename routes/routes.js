@@ -651,6 +651,17 @@ router.get('/customers_add_ar', (req, res) => {
     }
 });
 
+router.get('/import_data_customers', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.is_owner_permission || req.session.general_permission > 1 ||  req.session.customers_permission > 1) {
+            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'customers' ,'import_data_customers.html'));
+        }else{
+            res.redirect('/customers_view_ar?reason=0');
+        };
+    } else {        
+        res.redirect('/login?reason=0');
+    }
+});
 
 router.get('/customers_update_ar', (req, res) => {
     if (req.session.isLoggedIn) {
