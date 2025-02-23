@@ -10,13 +10,18 @@
         redirection("cash_accounts_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الحسابات النقدية الرئيسية")
     }
     
-
-    const obj_items_cash_accounts = {pageName : 'cash_accounts_update_ar'}
-
-const encodedData = encodeURIComponent(JSON.stringify(obj_items_cash_accounts));
-back_href.href = `cash_accounts_view_ar?data=${encodedData}`
-
-
+    let href_pageName = 'cashMain_view_ar'
+    let href_pageTitle = 'الملاحظات'
+    
+    if (cash_accounts_update_data && cash_accounts_update_data.href_pageName){
+      href_pageName = cash_accounts_update_data.href_pageName
+      href_pageTitle = cash_accounts_update_data.href_pageTitle
+    }
+    
+    back_href.href = href_pageName
+    back_href.title = href_pageTitle
+    
+    
     const h2_text_div = document.querySelector(`#h2_text_div`)
     const sub_h2_header = document.querySelector(`#sub_h2_header`)
     const btn_update = document.querySelector(`#btn_update`)
@@ -39,12 +44,12 @@ back_href.href = `cash_accounts_view_ar?data=${encodedData}`
         'get_cash_accounts_data_for_update_page',
         {x},
         "cash_accounts_permission", "view",
-        15,
+        60,
         false,"",
         true,
         false,false,
         false,false,false,
-        false,false,
+        true,href_pageName,
         true,'cash_accounts_view_ar','حدث خطأ اثناء معالجه البيانات'
      ) 
   
@@ -84,13 +89,13 @@ back_href.href = `cash_accounts_view_ar?data=${encodedData}`
           '/cash_accounts_update',
           posted_elements,
           'cash_accounts_permission','update',
-          50,
+          60,
           true,'هل تعديل  بيانات الحساب النقدى؟',
           true,
           false,"",
-          true,obj_items_cash_accounts,'cash_accounts_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
           "حدث حطأ اثناء معالجة البيانات"
         )
 
@@ -105,13 +110,13 @@ back_href.href = `cash_accounts_view_ar?data=${encodedData}`
           '/cash_accounts_delete',
           {x},
           'cash_accounts_permission','update',
-          50,
+          60,
           true,'هل تعديل  حذف الحساب النقدى؟',
           true,
           false,"",
-          true,obj_items_cash_accounts,'cash_accounts_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
           "حدث حطأ اثناء معالجة البيانات"
         )
 

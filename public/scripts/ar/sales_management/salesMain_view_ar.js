@@ -28,7 +28,7 @@ function showData(){
   }
   
   sales_invoice_btn.onclick = function(){
-    sessionStorage.removeItem('sales_invoice_Array');
+    sessionStorage.removeItem('sales_invoice_viewArray');
     sessionStorage.removeItem('sales_order_update_data')
     window.location.href = "/sales_invoice_view_ar";
   }
@@ -40,7 +40,7 @@ function showData(){
   
 
   sales_returns_btn.onclick = function(){
-    sessionStorage.removeItem('sales_returns_Array');
+    sessionStorage.removeItem('sales_returns_ViewArray');
     window.location.href = "/sales_returns_view_ar";
   }
 

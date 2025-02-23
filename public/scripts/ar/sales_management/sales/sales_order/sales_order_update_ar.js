@@ -1,5 +1,5 @@
 setActiveSidebar('salesMain_view_ar'); //معلق
-pagePermission("add","sales_order_permission"); //معلق
+pagePermission("view","sales_order_permission"); //معلق
 
 
 const sales_order_update_data = JSON.parse(sessionStorage.getItem('sales_order_update_data'));
@@ -9,11 +9,16 @@ if (!sales_order_update_data){
     redirection("sales_order_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
 }
 
+let href_pageName = 'salesMain_view_ar'
+let href_pageTitle = 'إدارة المبيعات'
 
-const obj_sales_order_update = {pageName : 'sales_order_update_ar'}
+if (sales_order_update_data && sales_order_update_data.href_pageName){
+  href_pageName = sales_order_update_data.href_pageName
+  href_pageTitle = sales_order_update_data.href_pageTitle
+}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_sales_order_update));
-back_href.href = `sales_order_view_ar?data=${encodedData}`
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const date1 = document.querySelector('#date1');
@@ -139,18 +144,18 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/sales_order_update",
         posted_Obj,
         'sales_order_permission', 'update',
-        50,
+        60,
         true,"هل تريد تحديث بيانات امر البيع ؟",
         true,
         false,false,false,false,false,
-        true,"sales_order_view_ar",
-        false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
-    if (post){
-      sessionStorage.removeItem('sales_order_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('sales_order_ViewArray')
+    // }
     
 
   } else {
@@ -179,18 +184,18 @@ const post = await new_fetchData_postAndGet(
   "/api/sales_order_delete",
   {x, datex},
   'sales_order_permission', 'delete',
-  15,
+  60,
   true,"هل تريد حذف بيانات امر البيع ؟",
   true,
   false,false,false,false,false,
-  true,"sales_order_view_ar",
-  false,false,
+  true,href_pageName,
+  true,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('sales_order_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('sales_order_ViewArray')
+// }
 
 
   } catch (error) {
@@ -237,6 +242,8 @@ async function createSlalesInvoice(){
     
     const sales_qutation_update_data = {
       x: headerDataArray.id,
+      href_pageName : `sales_order_update_ar`,
+      href_pageTitle : 'أمر البيع',
       qutation_id: headerDataArray.qutation_id,
       orderToInvoice: true
     };

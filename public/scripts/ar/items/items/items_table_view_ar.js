@@ -1,53 +1,65 @@
 setActiveSidebar("itemsMain_view_ar");  
-pagePermission("view", "items_permission");  // معلق
+//pagePermission("view", "items_permission");  // معلق
+
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
+
+let permissionName;
+let start_date;
+let end_date;
+let Qkey;
+let back_href_page;
+let back_title_page;
 
 
 async function getItemsGroupData(){
     
-    const data = await new_fetchData_postAndGet(
+    const d1 = await new_fetchData_postAndGet(
         "getItemsGroupDataForItemsTableView",
         {},
         "items_permission","view",
-        15,
+        60,
         false,"",
         true,
         false,false,
         false,false,false,
         false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
     )
-    return data
+    return d1
 }
-
-
 
 async function getIRevenueAccountsData(){
     
-    const data = await new_fetchData_postAndGet(
+    const d2 = await new_fetchData_postAndGet(
         "getRevenueAccountsDataForItemsTableView",
         {},
         "items_permission","view",
-        15,
+        60,
         false,"",
         true,
         false,false,
         false,false,false,
         false,false,false,false,"حدث خطأ اثناء معالجة البيانات"
     )
-    return data
+    return d2
 }
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = async function (){
     try {
         showLoadingIcon(newBtn)
-    sessionStorage.removeItem('obj_items_create_group')
-    sessionStorage.removeItem('obj_items_create_account')
+
 
     const itemsGroup = await getItemsGroupData();
     const revenueAccouns = await getIRevenueAccountsData();
 
-    const obj_items_create_account = {
+    const items_add_data = {
         items_options: itemsGroup,
+        item_type : 'item',
+        href_pageName : `items_table_view_ar`,
+        href_pageTitle : 'أصناف المخزون',
         revenue_accounts_options: revenueAccouns,
         nodeId: null,
     };
@@ -56,22 +68,20 @@ newBtn.onclick = async function (){
     if (!itemsGroup || !revenueAccouns){
         await redirection("items_table_view_ar","fail","حدث خطأ اثناء معالجة البيانات : سيتم اعاده تحميل الصفحه")
     }
-
-    sessionStorage.setItem("obj_items_create_account", JSON.stringify(obj_items_create_account));
+    sessionStorage.removeItem('items_add_data')
+    sessionStorage.setItem("items_add_data", JSON.stringify(items_add_data));
     window.location.href = "items_add_ar";
-    hideLoadingIcon(newBtn)
 } catch (error) {
-    hideLoadingIcon(newBtn)
     catch_error(error)
+} finally {
+    hideLoadingIcon(newBtn)
 }
-  }
+}
 
 const newBtn_group = document.querySelector(`#newBtn_group`)
-newBtn_group.onclick = async function () {
+newBtn_group.onclick = async function () {  
     try {
         showLoadingIcon(newBtn_group)
-        sessionStorage.removeItem('obj_items_create_group')
-        sessionStorage.removeItem('obj_items_create_account')
 
         const itemsGroup = await getItemsGroupData();
 
@@ -79,21 +89,25 @@ newBtn_group.onclick = async function () {
             await redirection("items_table_view_ar","fail","حدث خطأ اثناء معالجة البيانات : سيتم اعاده تحميل الصفحه")
         }
 
-        const postedData = {
-            itemsArray: itemsGroup
+        const items_add_data = {
+            itemsArray: itemsGroup,
+            item_type : 'item_group',
+            href_pageName : `items_table_view_ar`,
+            href_pageTitle : 'أصناف المخزون',
         }
-        sessionStorage.setItem("obj_items_create_group", JSON.stringify(postedData));
-        
+
+        sessionStorage.removeItem('items_add_data')
+        sessionStorage.setItem("items_add_data", JSON.stringify(items_add_data));
         window.location.href = "items_add_ar";
-        hideLoadingIcon(newBtn_group)
     } catch (error) {
-        hideLoadingIcon(newBtn_group)
         catch_error(error)
+    } finally {
+        hideLoadingIcon(newBtn_group)
     }
-}
+    }
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
-// const sub_h2_header = document.querySelector(`#sub_h2_header`);
+const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
@@ -131,136 +145,11 @@ let f3_input = filter_div.querySelector(`#f3_input`);
 const btn_do = filter_div.querySelector(`#btn_do`);
 const indices = [1, 2, 3]; // ضع هنا الأرقام التي تريد تضمينها
 
-function backUp_filter_div_conditions() {
-    const conditions = {};
-
-    indices.forEach(index => {
-        // بناء الأسماء تلقائيًا باستخدام template literals
-        const fDiv = window[`f${index}_div`];
-        const fInput = window[`f${index}_input`];
-        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
-        const fCheckbox = window[`f${index}_checkbox`];
-        const fSelect = window[`f${index}_select`];
-        const fCheckboxDiv = window[`f${index}_checkbox_div`];
-        const fInputStartDate1 = window[`f${index}_input_start_date1`];
-        const fInputEndDate1 = window[`f${index}_input_end_date1`];
-
-        // التحقق من وجود كل عنصر قبل تخزين قيمته
-        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
-        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
-        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
-        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
-        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
-        if (fInput) conditions[`f${index}_input`] = fInput.value;
-        
-        // التحقق من العناصر الإضافية
-        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
-        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
-        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
-    });
-
-    // الشروط الأخرى
-    Object.assign(conditions, {
-        is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
-        // sub_h2_header: sub_h2_header.textContent,
-        back_href: back_href.href,
-        back_title: back_href.title
-    });
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('items_table_view_Array')) || [];
-
-    // إضافة الكائن الجديد إلى المصفوفة
-    conditionsArray.push(conditions);
-
-    // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('items_table_view_Array', JSON.stringify(conditionsArray));
-}
-
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   
-
-    const array = JSON.parse(sessionStorage.getItem(`items_table_view_Array`)) || [];
-
-    if (!array || array.length <= 1) {
-    
-   
-            window.location.href = `itemsMain_view_ar`;
-       
-    }else{
-
-        restore_filter_div_conditions(2)
-        await getData_fn();
-
-    }
+    await back_href_fn1(getData_fn, `items_table_viewArray`, `items_table_view_ar`, `itemsMain_view_ar`)
 };
-
-function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
-    let conditions;
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("items_table_view_Array")) || [];
-    
-    // التحقق إذا كانت المصفوفة تحتوي على عناصر
-    if (conditionsArray.length > 0) {
-        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
-        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
-
-        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
-        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
-            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("items_table_view_Array", JSON.stringify(conditionsArray));
-        }
-    } else {
-        return;
-    }
-
-    if (conditions) {
-        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
-        indices.forEach(index => {
-            const fDiv = window[`f${index}_div`];
-            const fInput = window[`f${index}_input`];
-            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
-            const fCheckbox = window[`f${index}_checkbox`];
-            const fSelect = window[`f${index}_select`];
-            const fCheckboxDiv = window[`f${index}_checkbox_div`];
-            const fInputStartDate1 = window[`f${index}_input_start_date1`];
-            const fInputEndDate1 = window[`f${index}_input_end_date1`];
-
-            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
-            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
-            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
-            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
-            if (fSelect) fSelect.value = conditions[`f${index}_select`];
-            if (fInput) fInput.value = conditions[`f${index}_input`];
-            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
-            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
-            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
-            if (fSelectAndInputDiv) {
-                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
-                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
-                } else {
-                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
-                }
-            }
-        });
-
-        // استرجاع الشروط الأخرى
-        // sub_h2_header.textContent = conditions.sub_h2_header;
-        is_filter = conditions.is_filter;
-        if (conditions.is_filter_div_hidden) {
-            hidden_filter_div();
-        } else {
-            show_filter_div();
-        }
-
-        back_href.title = conditions.back_title;
-        back_href.href = conditions.back_href;
-    }
-}
 
 
 filter_icon.onclick = () => {
@@ -270,6 +159,7 @@ filter_icon.onclick = () => {
         catch_error;
     }
 };
+
 
 function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
     // Check if the elements exist to avoid errors
@@ -330,7 +220,6 @@ function deafult_checkbox() {
     call_default_checkbox('f1',true,false,false)
     call_default_checkbox('f2',true,true,false)
     call_default_checkbox('f3',true,false,false)
-
 }
 
 
@@ -367,31 +256,30 @@ filter_icon_cancel.onclick = async () => {
 };
 
 
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
 
 async function getData_fn() {
     try {
 
-        // start_date = f0_input_start_date1.value;
-        // end_date = f0_input_end_date1.value;
-       
-        //  معلق
         data = await new_fetchData_postAndGet(
             "/get_All_items_Data_for_table",
             {},
             "items_permission","view",
-            15,
+            60,
             false,'',
             false,
-            true,content_space,
+            false,false,
             false,false,'',
             false,'',
             false,'itemsMain_view_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
+
+               // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+            //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+            //    back_href.title = back_href_page;
+            //    back_href.href = back_title_page;  
+            
+            
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -405,14 +293,20 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
-        showFirst50RowAtTheBegening();
-        backUp_filter_div_conditions();
-        hideLoadingIcon(content_space);
 
+        permissionName = 'items_permission'
+        start_date = false
+        end_date = false
+        Qkey = false
+        back_href_page = 'items_table_view_ar'
+        back_title_page = 'أصناف المخزون'
+
+        showFirst50RowAtTheBegening();
+        backUp_page1(`items_table_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
 
@@ -686,14 +580,13 @@ async function table_view_btn_fn(viewBtn) {
     }
 
 
-    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = viewBtn.closest("tr");
     const x = row.querySelector(`.td_id`).textContent 
-    const items_table_view_data = {
-        x: x,
-        // qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        // order_id: row.querySelector(`.td_order_id`).textContent,
-    };
+    // const items_table_view_data = {
+    //     x: x,
+    //     href_pageName : `items_table_view_ar`,
+    //     href_pageTitle : 'أصناف المخزون',
+    // };
 
     
 //============================================================
@@ -702,7 +595,7 @@ const d = await new_fetchData_postAndGet(
     "/get_data_for_items_table_view_btn",
     {x},
     "items_permission","view",
-    50,
+    60,
     false,"",
     true,
     false,false,
@@ -716,7 +609,10 @@ const d = await new_fetchData_postAndGet(
         return;
     }
                                     
-    const obj_items_update_account = {
+    const items_update_data = {
+        item_type : 'item',
+        href_pageName : `items_table_view_ar`,
+        href_pageTitle : 'أصناف المخزون',
         h2_header: d.item_data.account_name, // account_name
         account_no_input: d.item_data.account_no ?? '',  // account_no
         account_name_input: d.item_data.account_name, // account_name
@@ -732,68 +628,45 @@ const d = await new_fetchData_postAndGet(
         item_revenue_account_id: d.item_data.item_revenue_account, // revenue accout
     };
 
-    sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
+    sessionStorage.removeItem('items_update_data')
+    sessionStorage.setItem('items_update_data', JSON.stringify(items_update_data));                            
     window.location.href = `items_update_ar`;
-
-
-//=======================================================
-
-
-    hideLoadingIcon(viewBtn,true,'عرض')
 } catch (error) {
-    hideLoadingIcon(viewBtn,true,'عرض')
     catch_error(error)
+} finally {
+    hideLoadingIcon(viewBtn)
 }
 }
 
-function CheckUrlParams_salesInvoice_update_ar() {
-    try {
-        const urlData = getURLData(
-            "data",
-            "itemsMain_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
-        );
-
-        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") { // معلق
-            return true;
-        }
-
-    
-        if (urlData !== "noParams") {
-
-            restore_filter_div_conditions(2)
-
-            return true;
-        } else if (urlData === "noParams") {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        catch_error(error);
-        return false;
-    }
-}
 
 
 document.addEventListener("DOMContentLoaded", async function () {
-    showRedirectionReason();
-
-    // sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
+    try {
+        showLoadingIcon(content_space)
+        showRedirectionReason();
+        let conditionsArray = JSON.parse(sessionStorage.getItem("items_table_viewArray")) || [];
+        if (conditionsArray.length === 0){
+        
+            permissionName = 'items_permission'
+            start_date = false
+            end_date = false
+            Qkey = null
+            back_href_page = 'itemsMain_view_ar'
+            back_title_page = 'إدارة المخزون'
     
-    // const result2 = CheckUrlParams_salesInvoice_update_ar();
-    // if (!result2) {
-    //     return;
-    // }
-    handle_fn_options()
-    await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`items_table_view_Array`);
-
-    if (!conditionsArray){
-     
-        backUp_filter_div_conditions();
-    }
-
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('items_table_viewArray');
+            backUp_page1(`items_table_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `items_table_viewArray`)
+        } else {
+            await restore_page1(getData_fn, `items_table_viewArray`)
+        }
+    
+    } catch (error) {
+        catch_error(error)
+       } finally{
+        hideLoadingIcon(content_space)
+       }
 });
 
 window.addEventListener("beforeprint", function () {

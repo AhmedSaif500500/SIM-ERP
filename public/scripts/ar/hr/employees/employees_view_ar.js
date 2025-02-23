@@ -1,87 +1,249 @@
 
 setActiveSidebar('hr_ar');
-pagePermission('view', 'employees_permission');
+//pagePermission('view', 'employees_permission');
 
 
-const sub_h2_header = document.querySelector(`#sub_h2_header`);
-const back_href = document.querySelector(`#back_href`);
-
-
-const tableContainer = document.querySelector('#tableContainer');
-const searchBtn = document.querySelector('#searchBtn');
-const searchInput = document.querySelector('#searchInput');
-
-let checkbox_account_no = filter_div.querySelector(`#checkbox_account_no`) ; let select_account_no = filter_div.querySelector(`#select_account_no`); let input_account_no = filter_div.querySelector(`#input_account_no`);
-let select_account_name = filter_div.querySelector(`#select_account_name`) ; let input_account_name = filter_div.querySelector(`#input_account_name`);
-let checkbox_job = filter_div.querySelector(`#checkbox_job`) ; let select_job = filter_div.querySelector(`#select_job`); let input_job = filter_div.querySelector(`#input_job`);
-let checkbox_email = filter_div.querySelector(`#checkbox_email`) ; let select_email = filter_div.querySelector(`#select_email`); let input_email = filter_div.querySelector(`#input_email`);
-let checkbox_deparment_name = filter_div.querySelector(`#checkbox_deparment_name`) ; let select_department_name = filter_div.querySelector(`#select_department_name`); let input_department_name = filter_div.querySelector(`#input_department_name`);
-let checkbox_another_info = filter_div.querySelector(`#checkbox_another_info`) ; let select_another_info = filter_div.querySelector(`#select_another_info`); let input_another_info = filter_div.querySelector(`#input_another_info`);
-let checkbox_start_date = filter_div.querySelector(`#checkbox_start_date`) ; let select_start_date = filter_div.querySelector(`#select_start_date`); let input_start_date1 = filter_div.querySelector(`#input_start_date1`); input_start_date1.value = today; let input_end_date1 = filter_div.querySelector(`#input_end_date1`); input_end_date1.value = today; 
-let checkbox_end_date = filter_div.querySelector(`#checkbox_end_date`) ; let select_end_date = filter_div.querySelector(`#select_end_date`); let input_start_date2 = filter_div.querySelector(`#input_start_date2`); input_start_date2.value = today; let input_end_date2 = filter_div.querySelector(`#input_end_date2`); input_end_date2.value = today;
-let check_balance = filter_div.querySelector(`#check_balance`) ; let select_balance = filter_div.querySelector(`#select_balance`); let input_balance = filter_div.querySelector(`#input_balance`);
-let checkbox_active = filter_div.querySelector(`#checkbox_active`) ; let select_active = filter_div.querySelector(`#select_active`); //select_active.value = 1
-
-const btn_do = filter_div.querySelector(`#btn_do`);
-
-filter_icon.onclick = () =>{
-    try {
-        show_filter_div()
-    } catch (error) {
-        catch_error
-    }
-}
-
-
-filter_icon_cancel.onclick = async () =>{
-    try {
-        checkbox_account_no.checked = false;
-        checkbox_job.checked = false;
-        checkbox_email.checked = false;
-        checkbox_deparment_name.checked = false;
-        checkbox_another_info.checked = false;
-        checkbox_start_date.checked = false;
-        checkbox_end_date.checked = false;
-        check_balance.checked = true;
-
-
-        hidden_filter_div()
-        searchInput.value = ''
-
-        select_active.value = 0
-        showFirst50RowAtTheBegening()
-    } catch (error) {
-        catch_error
-    }
-}
-
-
-let QKey;
 let data = [];
 let array1 = [];
 let slice_array1 = [];
 let filteredData_Array = [];
 
+let permissionName;
+let start_date;
+let end_date;
+let Qkey;
+let back_href_page;
+let back_title_page;
+
+const newBtn = document.querySelector('#newBtn');
+newBtn.onclick = function (){
+    sessionStorage.removeItem('employees_update_data')
+    window.location.href = "/employees_add_ar";
+  }
+
+  const h2_text_div = document.querySelector(`#h2_text_div`);
+  const sub_h2_header = document.querySelector(`#sub_h2_header`);
+  let is_filter = false;
+  const back_href = document.querySelector(`#back_href`);
+  
+  let is_recieved_params_from_effects_update = false;
+  let is_recieved_params_from_department_view = false;
+
+
+  const tableContainer = document.querySelector("#tableContainer");
+  const searchBtn = document.querySelector("#searchBtn");
+  const searchInput = document.querySelector("#searchInput");
+  
+//! account no
+let f1_div = filter_div.querySelector(`#f1_div`);
+let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
+let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
+let f1_select = filter_div.querySelector(`#f1_select`);
+let f1_input = filter_div.querySelector(`#f1_input`);
+
+//! account name
+let f2_div = filter_div.querySelector(`#f2_div`);
+let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_input = filter_div.querySelector(`#f2_input`);
+
+//! job
+let f3_div = filter_div.querySelector(`#f3_div`);
+let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
+let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
+let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_input = filter_div.querySelector(`#f3_input`);
+
+//! department name
+let f4_div = filter_div.querySelector(`#f4_div`);
+let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
+let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
+let f4_select = filter_div.querySelector(`#f4_select`);
+let f4_input = filter_div.querySelector(`#f4_input`);
+
+//! email
+let f5_div = filter_div.querySelector(`#f5_div`);
+let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
+let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
+let f5_select = filter_div.querySelector(`#f5_select`);
+let f5_input = filter_div.querySelector(`#f5_input`);
+
+//! another info
+let f6_div = filter_div.querySelector(`#f6_div`);
+let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
+let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
+let f6_select = filter_div.querySelector(`#f6_select`);
+let f6_input = filter_div.querySelector(`#f6_input`);
+
+//! start datex
+let f0_div = filter_div.querySelector(`#f0_div`);
+let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
+let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
+let f0_select = filter_div.querySelector(`#f0_select`);
+let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
+
+//! end datex
+let f100_div = filter_div.querySelector(`#f100_div`);
+let f100_checkbox_div = filter_div.querySelector(`#f100_checkbox_div`);
+let f100_checkbox = filter_div.querySelector(`#f100_checkbox`);
+let f100_select = filter_div.querySelector(`#f100_select`);
+let f100_input_start_date1 = filter_div.querySelector(`#f100_input_start_date1`); f100_input_start_date1.value = firstDayOfYear;
+let f100_input_end_date1 = filter_div.querySelector(`#f100_input_end_date1`); f100_input_end_date1.value = lastDayOfYear;
+
+//! balance
+let f7_div = filter_div.querySelector(`#f7_div`);
+let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
+let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
+let f7_select = filter_div.querySelector(`#f7_select`);
+let f7_input = filter_div.querySelector(`#f7_input`);
+
+//! employees_status
+let f8_div = filter_div.querySelector(`#f8_div`);
+let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
+let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
+let f8_select = filter_div.querySelector(`#f8_select`);
+let f8_input = filter_div.querySelector(`#f8_input`);
+
+const btn_do = filter_div.querySelector(`#btn_do`);
+const indices = [0, 100, 1, 2, 3, 4, 5, 6, 7, 8]; // ضع هنا الأرقام التي تريد تضمينها
+
+
+back_href.onclick = async function (event) {
+    event.preventDefault();
+    await back_href_fn1(getData_fn, `employees_viewArray`, `employees_view_ar`, `hr_ar`)
+};
+
+
+filter_icon.onclick = () => {
+    try {
+        show_filter_div();
+    } catch (error) {
+        catch_error;
+    }
+};
+
+function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
+    // Check if the elements exist to avoid errors
+    const divElement = window[`${str_f}_div`];
+    const checkbox = window[`${str_f}_checkbox`];
+    const selectElement = window[`${str_f}_select`];
+    const inputElement = window[`${str_f}_input`];
+    const selectAndInputDiv = window[`${str_f}_selectAndInput_div`];
+
+    
+    if (divElement) {
+        divElement.style.display = is_showDiv ? 'flex' : 'none';
+    }
+    
+    if (selectElement) {
+        selectElement.value = 0;
+    }
+
+    if (inputElement) {
+        inputElement.value = '';
+        inputElement.style.display = 'none';
+    }
+
+    if (selectAndInputDiv) {
+        if (is_checkBox) {
+            selectAndInputDiv.classList.remove('hidden_select_and_input_div');
+            checkbox.checked = true
+        } else {
+            selectAndInputDiv.classList.add('hidden_select_and_input_div');
+            checkbox.checked = false
+        }
+    }
+
+    if (is_datex){
+        
+        const datex_checkbox_div = window[`${str_f}_checkbox_div`];
+        const datex_input_start_date1 = window[`${str_f}_input_start_date1`];
+        const datex_input_end_date1 = window[`${str_f}_input_end_date1`];
+    
+        if(datex_checkbox_div){
+            datex_checkbox_div.style.display = 'flex'
+        }
+    
+        if(datex_input_start_date1){
+            datex_input_start_date1.value = firstDayOfYear
+        }
+        if(datex_input_end_date1){
+            datex_input_end_date1.value = lastDayOfYear
+    
+        }
+    
+        }
+}
+
+
+function deafult_checkbox() {
+    call_default_checkbox('f0',true,false,true) // 
+    call_default_checkbox('f100',true,false,true) // 
+    call_default_checkbox('f1',true,false,false) // 
+    call_default_checkbox('f2',true,true,false) // 
+    call_default_checkbox('f3',true,false,false) // 
+    call_default_checkbox('f4',true,false,false) // 
+    call_default_checkbox('f5',true,false,false) // 
+    call_default_checkbox('f6',true,false,false) // 
+    call_default_checkbox('f7',true,true,false) //
+    call_default_checkbox('f8',true,true,false) //
+}
+
+async function filter_icon_cancel_fn() {
+    try {
+
+        if(is_filter){
+
+            await showDialog("","هل تريد الغاء التصفية والرجوع الى الحالة الافتراضية ؟","");
+            if (!dialogAnswer) {
+                return;
+            }
+    
+            deafult_checkbox();            
+            await getData_fn();
+            closeDialog();
+            sessionStorage.removeItem('employees_viewArray');
+            conditionsArray = []
+            
+        }
+
+        hidden_filter_div();
+        is_filter = false;
+    } catch (error) {
+        closeDialog();
+        catch_error;
+    }
+}
+
+filter_icon_cancel.onclick = async () => {
+    await filter_icon_cancel_fn();
+};
 
 async function getData_fn() {
    try {
         
-        data = await fetchData_postAndGet(
+        data = await new_fetchData_postAndGet(
         '/get_All_Employees_Data',
-        {QKey},
+        {},
         'employees_permission','view',
-        50,
+        60,
         false,'',
         false,
-        true,content_space,
-        false,'',
+        false,false,
+        false,false,false,
+        false,false,
+        true,'hr_ar',
         'حدث خطأ اثناء معالجة البيانات'
     )
-
-    QKey = false
+               // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+            //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+            //    back_href.title = back_href_page;
+            //    back_href.href = back_title_page;        
+        
 
     showFirst50RowAtTheBegening()
-
    } catch (error) {
     catch_error
    } 
@@ -89,33 +251,44 @@ async function getData_fn() {
 }
 
 
-async function Execution(){
+async function Execution() {
     try {
-        showLoadingIcon(btn_do)
-        searchInput.value = ""
-        showFirst50RowAtTheBegening()
-        hideLoadingIcon(btn_do) 
-    } catch (error) {
-        hideLoadingIcon(btn_do) 
-        catch_error(error)
-    }
-}
+        showLoadingIcon(content_space);
+        is_filter = true
+        searchInput.value = "";
 
-const inside_input_search_array = filter_div.querySelectorAll(`[name="inside_input_search"]`);
+        permissionName = 'employees_permission'
+        start_date = false
+        end_date = false
+        Qkey = false
+        back_href_page = 'employees_view_ar'
+        back_title_page = 'الموظفين'
+
+
+            showFirst50RowAtTheBegening();
+            backUp_page1(`employees_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        } catch (error) {
+            catch_error(error);
+        } finally {
+            hideLoadingIcon(content_space);
+        }
+    }
+
+const inside_input_search_array = filter_div.querySelectorAll(
+    `[name="inside_input_search"]`
+);
 
 for (const input of inside_input_search_array) {
     try {
-        input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
                 Execution();
             }
         });
     } catch (error) {
-        catch_error(error)
+        catch_error(error);
     }
-
 }
-
 
 btn_do.onclick = async () => {
     Execution()
@@ -125,28 +298,40 @@ btn_do.onclick = async () => {
 
 async function showFirst50RowAtTheBegening() {
 try {
-        page_content.style.display = 'none';
-filteredData_Array = data.filter(row => {
-    const isAccountNofoMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_account_no, select_account_no, input_account_no,'account_no',row);
-    const isNameMatch = filterData_string_column_without_showAndHiddenCheckbox(select_account_name,input_account_name,'account_name',row);
-    const isJoboMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_job, select_job, input_job, 'job',row);
-    const isEmailMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_email, select_email, input_email,'email',row);
-    const isDepartmentNameMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_deparment_name, select_department_name, input_department_name,'department_name',row);
-    const isAnotherInfoMatch = filterData_string_column_with_showAndHiddenCheckbox(checkbox_another_info,select_another_info,input_another_info,'another_info',row);
-    const isstartDateMatch = filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(checkbox_start_date, select_start_date, input_start_date1, input_end_date1, 'start_date', row)
-    const isEndDateMatch = filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(checkbox_end_date, select_end_date, input_start_date2, input_end_date2, 'end_date', row)
-    const isBalanceMatch = filterData_number_column_with_showAndHiddenCheckbox(check_balance, select_balance, input_balance, 'balance', row);
-    const isActiveceMatch = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(checkbox_active, select_active, 'is_inactive', row);
-    
 
     
-    return isAccountNofoMatch && isNameMatch && isJoboMatch && isEmailMatch && isDepartmentNameMatch && isAnotherInfoMatch && isstartDateMatch && isEndDateMatch && isBalanceMatch && isActiveceMatch; // && otherCondition;
+        page_content.style.display = 'none';
+        filteredData_Array = data.filter((row) => {
+    const f1 = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox, f1_select, f1_input,'account_no',row);
+    const f2 = filterData_string_column_with_showAndHiddenCheckbox(f2_checkbox,f2_select, f2_input,'account_name',row);
+    const f3 = filterData_string_column_with_showAndHiddenCheckbox(f3_checkbox, f3_select, f3_input, 'job',row);
+    const f4 = filterData_string_column_with_showAndHiddenCheckbox(f4_checkbox, f4_select, f4_input,'department_name',row);
+    const f5 = filterData_string_column_with_showAndHiddenCheckbox(f5_checkbox, f5_select, f5_input,'email',row);
+    const f6 = filterData_string_column_with_showAndHiddenCheckbox(f6_checkbox,f6_select,f6_input,'another_info',row);
+    const f0 = filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(f0_checkbox, f0_select, f0_input_start_date1, f0_input_end_date1, 'start_date', row)
+    const f100 = filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(f100_checkbox, f100_select, f100_input_start_date1, f100_input_end_date1, 'end_date', row)
+    const f7 = filterData_number_column_with_showAndHiddenCheckbox(f7_checkbox, f7_select, f7_input, 'balance', row);
+    const f8 = filterData_string_column_with_showAndHiddenCheckbox_with_only_select(f8_checkbox, f8_select, 'is_inactive', row);
+    
+    return (
+    f0 &&
+    f100 &&
+    f1 &&
+    f2 &&
+    f3 &&
+    f4 &&
+    f5 &&
+    f6 &&
+    f7 &&
+    f8
+    ); // && otherCondition;
 });
 
-    array1 = filteredData_Array.slice();
-    
-    slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillTable()
+
+array1 = filteredData_Array.slice();
+
+slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+fillTable();
 
     
 } catch (error) {
@@ -156,6 +341,8 @@ filteredData_Array = data.filter(row => {
 
 function fillTable() {
     try {
+
+        
     //  @@ هاااااام جدا 
     // el properties beta3 kol 3amod ytm wad3ha fe el <thead></thead> And <tbody></tbody> And <tfoor></tfoor> kol wa7ed lewa7do
     // el properties hya :
@@ -169,18 +356,18 @@ function fillTable() {
 
     let style_button = `width: auto; white-space: nowrap; text-align: center`
     let style_id = `display: none;`
-    let style_account_no = `display:${checkbox_account_no.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
-    let style_name = `width: ${checkbox_another_info.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start`
-    let style_job = `display:${checkbox_job.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
+    let style_account_no = `display:${f1_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
+    let style_name = `width: ${f6_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start`
+    let style_job = `display:${f3_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
     let style_department_id = `display: none;`
-    let style_department_name = `display:${checkbox_deparment_name.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
-    let style_email = `display:${checkbox_email.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
-    let style_another_info = `display:${checkbox_another_info.checked ? 'table-cell' : 'none'}; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`
-    let style_start_date = `display:${checkbox_start_date.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
-    let style_end_date = `display:${checkbox_end_date.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
-    let style_balance = `display:${check_balance.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
+    let style_department_name = `display:${f4_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
+    let style_email = `display:${f5_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start`
+    let style_another_info = `display:${f6_checkbox.checked ? 'table-cell' : 'none'}; width: 100%; min-width: 2rem; white-space: wrap; text-align: start;`
+    let style_start_date = `display:${f0_checkbox.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
+    let style_end_date = `display:${f100_checkbox.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
+    let style_balance = `display:${f7_checkbox.checked ? 'table-cell' : 'none'}; width: auto; white-space: nowrap; text-align: start`
     let style_is_salesman = `display: none;`
-    let style_active = `display:${checkbox_active.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start;`
+    let style_active = `display:${f8_checkbox.checked ? 'table-cell' : 'none'};  width: auto; white-space: nowrap; text-align: start;`
     let is_allow_to_buy_and_sell = `display: none;`;
 
     total_column1.value = 0
@@ -297,20 +484,31 @@ function performSearch() {
 
     // فلترة البيانات بناءً على قيمة البحث
     array1 = filteredData_Array.filter(row => {
-        const accNoMatch = performSearch_Row(checkbox_account_no, 'account_no', searchValue, row);
-        const nameMatch = performSearch_Row('', 'account_name', searchValue, row);
-        const jobMatch = performSearch_Row(checkbox_job, 'job', searchValue, row);
-        const departmentNameMatch = performSearch_Row(checkbox_deparment_name, 'department_name', searchValue, row);
-        const emailMatch = performSearch_Row(checkbox_email, 'email', searchValue, row);
-        const anotherInfoMatch = performSearch_Row(checkbox_another_info, 'another_info', searchValue, row);
-        const startDateInfoMatch = performSearch_Row(checkbox_start_date, 'start_date', searchValue, row);
-        const endDateInfoMatch = performSearch_Row(checkbox_end_date, 'end_date', searchValue, row);
-        const balanceMatch = performSearch_Row(check_balance, 'balance', searchValue, row);
-        const activeeMatch = performSearch_Row(checkbox_active, 'is_inactive', searchValue, row);
+        const s1 = performSearch_Row(f1_checkbox, 'account_no', searchValue, row);
+        const s2 = performSearch_Row(f2_checkbox, 'account_name', searchValue, row);
+        const s3 = performSearch_Row(f3_checkbox, 'job', searchValue, row);
+        const s4 = performSearch_Row(f4_checkbox, 'department_name', searchValue, row);
+        const s5 = performSearch_Row(f5_checkbox, 'email', searchValue, row);
+        const s6 = performSearch_Row(f6_checkbox, 'another_info', searchValue, row);
+        const s0 = performSearch_Row(f0_checkbox, 'start_date', searchValue, row);
+        const s100 = performSearch_Row(f100_checkbox, 'end_date', searchValue, row);
+        const s7 = performSearch_Row(f7_checkbox, 'balance', searchValue, row);
+        const s8 = performSearch_Row(f8_checkbox, 'is_inactive', searchValue, row);
         
 
         // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
-        return accNoMatch || nameMatch || jobMatch|| departmentNameMatch || emailMatch || anotherInfoMatch || startDateInfoMatch || endDateInfoMatch || balanceMatch || activeeMatch;
+        return (
+        s0 ||
+        s100 ||
+        s1 ||
+        s2 ||
+        s3 ||
+        s4 ||
+        s5 ||
+        s6 ||
+        s7 ||
+        s8
+    );
     });
 
     slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
@@ -320,17 +518,20 @@ function performSearch() {
 }
 }
 
-async function ShowAllDataInTable(){
-    showAlert('info', 'ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات')
+function ShowAllDataInTable() {
+    showAlert(
+        "info",
+        "ان ظهار كامل البيانات فى القائمة المنسدله لا يؤثر على عمليه البحث فى البيانات"
+    );
     slice_array1 = array1.slice(); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillTable()
+    fillTable();
 }
 
-async function showFirst50RowInTable(){
-    slice_array1 = array1.slice(0,50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
-    fillTable()
-}
 
+function showFirst50RowInTable() {
+    slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
+    fillTable();
+}
 // عند الضغط على زر البحث
 searchBtn.addEventListener('click',  performSearch);
 
@@ -348,6 +549,8 @@ searchInput.addEventListener('keydown', (event) => {
 
 
 async function table_view_btn_fn(updateBtn) {
+    try {
+        showLoadingIcon(updateBtn)
     const permission = await btn_permission('employees_permission','update');
 
     if (!permission){ // if false
@@ -356,13 +559,13 @@ async function table_view_btn_fn(updateBtn) {
 
 
     const row  = updateBtn.closest("tr")
-
     let is_inactive = row.cells[13].querySelector('span').textContent;
     is_inactive =  is_inactive === 'نشط' ? 0 : 1
     
     const employees_update_data = {
-        pageName : 'employees_view_ar',
-        id : row.cells[1].textContent,
+        x : row.cells[1].textContent,
+        href_pageName : `employees_view_ar`,
+        href_pageTitle : 'الموظفين',
         account_no : row.cells[2].textContent,
         account_name : row.cells[3].textContent,
         job : row.cells[4].textContent,
@@ -377,51 +580,45 @@ async function table_view_btn_fn(updateBtn) {
         is_allow_to_buy_and_sell: row.querySelector(`.td_is_allow_to_buy_and_sell`).textContent,
     }
   
-    const encodedData = encodeURIComponent(JSON.stringify(employees_update_data));
-    // نقل البيانات عبر الـ URL
-    window.location.href = `employees_update_ar?data=${encodedData}`;
-
-    // sessionStorage.setItem('employees_update_data',JSON.stringify(employees_update_data))
-    // window.location.href = 'employees_update_ar';
-};
-
-
-function CheckUrlParams(){
-    try {
-      const departmentData = getURLData('data','departments_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاقسام')
-        if (departmentData && departmentData !== 'noParams'){
-            sub_h2_header.textContent = ` قسم : ${departmentData.n}`
-            back_href.href = 'departments_view_ar';  back_href.title = 'الاقسام'
-            QKey = departmentData.x
-            document.querySelector(`#active_div`).style.display = 'none'
-            select_active.value = 1
-            return true
-        }else if(departmentData && departmentData === 'noParams'){
-              back_href.href = 'hr_ar' ;  back_href.title = 'الموارد البشرية'
-              QKey = null
-              document.querySelector(`#active_div`).style.display = 'flex'
-              return true
-        }else{
-            return false
-        }
-                
-    } catch (error) {
-        catch_error(error)
-        return false
-    }
+    sessionStorage.removeItem('employees_update_data')
+    sessionStorage.setItem('employees_update_data', JSON.stringify(employees_update_data));                            
+    window.location.href = `employees_update_ar`;
+} catch (error) {
+    catch_error(error)
+} finally {
+    hideLoadingIcon(updateBtn)
+}
 }
 
-
-//! الكود دا خاص بملف ال روووتس  هو الى من خلاله بجيب القيم بتاع  سويتش كيس
-
-  document.addEventListener('DOMContentLoaded', async function() {
-        const result = CheckUrlParams(); if (!result) {return}
-
-    showRedirectionReason();
-    await getData_fn()
-    showAlert('info', 'عرض البيانات الافتراضي يشمل الموظفين النشطين فقط. لتظهر بيانات موظف غير نشط، يرجى تعديل الحالة من الفلتر.');
+document.addEventListener("DOMContentLoaded", async function () {
+    try {
+        showLoadingIcon(content_space)
+        showRedirectionReason();
+        let conditionsArray = JSON.parse(sessionStorage.getItem("employees_viewArray")) || [];
+        if (conditionsArray.length === 0){
+        
+            permissionName = 'employees_permission'
+            start_date = firstDayOfYear
+            end_date = lastDayOfYear
+            Qkey = null
+            back_href_page = 'hr_ar'
+            back_title_page = 'إدارة الموارد البشرية'
+    
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('employees_viewArray');
+            backUp_page1(`employees_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `employees_viewArray`)
+        } else {
+            await restore_page1(getData_fn, `employees_viewArray`)
+        }
+    
+    } catch (error) {
+        catch_error(error)
+       } finally{
+        hideLoadingIcon(content_space)
+       }
 });
-  
+
 
 
 

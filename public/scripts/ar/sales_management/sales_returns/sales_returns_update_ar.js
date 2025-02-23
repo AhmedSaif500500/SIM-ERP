@@ -1,5 +1,5 @@
 setActiveSidebar('salesMain_view_ar'); //معلق
-pagePermission("update","sales_returns_permission"); //معلق
+//pagePermission("update","sales_returns_permission"); //معلق
 
 
 const sales_returns_update_data = JSON.parse(sessionStorage.getItem('sales_returns_update_data'));
@@ -9,11 +9,15 @@ if (!sales_returns_update_data){
     redirection("sales_returns_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المبيعات الرئيسية")
 }
 
-const obj_sales_returns_update = {pageName : 'sales_returns_update_ar'}
+let href_pageName = 'salesMain_view_ar'
+let href_pageTitle = 'إدارة المبيعات'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_sales_returns_update));
-back_href.href = `sales_returns_view_ar?data=${encodedData}`
-
+if (sales_returns_update_data && sales_returns_update_data.href_pageName){
+  href_pageName = sales_returns_update_data.href_pageName
+  href_pageTitle = sales_returns_update_data.href_pageTitle
+}
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector(`#note_inpute`);
@@ -146,16 +150,16 @@ document.querySelector(`#btn_update`).onclick = async function () {
           true,"هل تريد تعديل بيانات مرتجع المبيعات ؟",
           true,
           false,false,false,false,false,
-          true,"sales_returns_view_ar",
-          false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
         
         
-    if (post){
-      sessionStorage.removeItem('sales_returns_update_data')
-      sessionStorage.removeItem('sales_returns_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('sales_returns_update_data')
+    //   sessionStorage.removeItem('sales_returns_ViewArray')
+    // }
 
     } else {
       showAlert('fail', 'لا توجد بيانات')
@@ -187,14 +191,14 @@ const post = await new_fetchData_postAndGet(
   true,"هل تريد حذف بيانات مرتجع البيع ؟",
   true,
   false,false,false,false,false,
-  true,"sales_returns_view_ar",
-  false,false,
+  true,href_pageName,
+  true,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('sales_order_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('sales_order_ViewArray')
+// }
 
 
   } catch (error) {

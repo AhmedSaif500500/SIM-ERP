@@ -1,18 +1,23 @@
 setActiveSidebar('general_settings_ar');
  pagePermission("view","transaction_permission");
 
-const obj_settings_tax_view = JSON.parse(sessionStorage.getItem('obj_settings_tax_view'));
-sessionStorage.removeItem(`obj_settings_tax_view`)
+const settings_taxes_update_data = JSON.parse(sessionStorage.getItem('settings_taxes_update_data'));
+sessionStorage.removeItem(`settings_taxes_update_data`)
 
-if (!obj_settings_tax_view){
+if (!settings_taxes_update_data){
     redirection("settings_taxes_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الرمز الضريبية الرئيسية")
 }
 
-const obj_settings_tax_update = {pageName : 'settings_taxes_update_ar'}
+let href_pageName = 'general_settings_ar'
+let href_pageTitle = 'الإعدادات العامه'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_settings_tax_update));
-back_href.href = `settings_taxes_view_ar?data=${encodedData}`
+if (settings_taxes_update_data && settings_taxes_update_data.href_pageName){
+href_pageName = settings_taxes_update_data.href_pageName
+href_pageTitle = settings_taxes_update_data.href_pageTitle
+}
 
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 
@@ -37,7 +42,7 @@ let slice_Array1 = [];
 
 async function getTaxesData_fn() {
 
-  const x =  obj_settings_tax_view.x
+  const x =  settings_taxes_update_data.x
 
   if (!x){
     redirection(`settings_taxes_view_ar`,'fail','حدث خطأ اثناء معالجه البيانات سيتم توجيهك الى صفحه الرموز الضريبيه الرئيسية')
@@ -48,7 +53,7 @@ async function getTaxesData_fn() {
     "/get_settings_update_Data",
     {x},
     'pass','pass',
-    15,
+    60,
     false,"",
     true,
     true,content_space,
@@ -63,8 +68,8 @@ async function getTaxesData_fn() {
   };
   
   async function showData(){
-    tax_name_input.value = obj_settings_tax_view.taxe_package_name
-    inactive_select.value = obj_settings_tax_view.is_inactive === 'نشط' ? 0 : 1;
+    tax_name_input.value = settings_taxes_update_data.taxe_package_name
+    inactive_select.value = settings_taxes_update_data.is_inactive === 'نشط' ? 0 : 1;
     active_color(inactive_select)
   
     await getTaxesData_fn()
@@ -201,7 +206,7 @@ btn_update.onclick = async function () {
   
   const tax_package_name = tax_name_input.value.trim()
   const inactive_select_val = inactive_select.value
-  const header_Id = obj_settings_tax_view.x
+  const header_Id = settings_taxes_update_data.x
 
   if (!tax_package_name || tax_package_name === '') {
    showAlert(`warning`, 'ادخل اسم الضريبة')
@@ -242,18 +247,19 @@ btn_update.onclick = async function () {
        "/api/tax_update",
        {header_Id, tax_package_name, inactive_select_val, posted_array },
        'pass', 'pass',
-       15,
+       60,
        true,"هل تريد تعديل البيانات ؟",
        true,
-       false,false,false,false,false,
-       true,"settings_taxes_view_ar",
        false,false,
+       false,false,false,
+       true,href_pageName,
+       true,href_pageName,
         "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
      )
 
-   if (post){
-     sessionStorage.removeItem('settings_taxes_ViewArray')
-   }
+  //  if (post){
+  //    sessionStorage.removeItem('settings_taxes_viewArray')
+  //  }
 
 
 
@@ -268,7 +274,7 @@ btn_update.onclick = async function () {
 btn_delete.onclick = async function () {
   
 
-  const header_Id = obj_settings_tax_view.x
+  const header_Id = settings_taxes_update_data.x
 
   if (!header_Id || isNaN(header_Id)) {
    redirection('settings_taxes_view_ar','fail','حدث خطأ اثناء معالجه لبيانات')
@@ -303,18 +309,19 @@ btn_delete.onclick = async function () {
        "/api/tax_delete",
        {header_Id, posted_array },
        'pass', 'pass',
-       15,
+       60,
        true,"هل تريد حذف البيانات ؟",
        true,
-       false,false,false,false,false,
-       true,"settings_taxes_view_ar",
        false,false,
+       false,false,false,
+       true,href_pageName,
+       true,href_pageName,
         "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
      )
 
-   if (post){
-     sessionStorage.removeItem('settings_taxes_ViewArray')
-   }
+  //  if (post){
+  //    sessionStorage.removeItem('settings_taxes_viewArray')
+  //  }
 
 
 

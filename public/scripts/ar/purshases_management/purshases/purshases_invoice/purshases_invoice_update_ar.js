@@ -1,18 +1,23 @@
 setActiveSidebar('purshasesMain_view_ar');
-pagePermission("update","purshases_invoice_permission");
+pagePermission("view","purshases_invoice_permission");
 
 
 const purshases_invoice_update_data = JSON.parse(sessionStorage.getItem('purshases_invoice_update_data'));
 // sessionStorage.removeItem(`purshases_invoice_update_data`)
 
 if (!purshases_invoice_update_data){
-    redirection("purshases_invoice_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المبيعات الرئيسية")
+    redirection("purshases_invoice_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المشتريات الرئيسية")
+}
+let href_pageName = 'purshasesMain_view_ar'
+let href_pageTitle = 'إدارة المشتريات'
+
+if (purshases_invoice_update_data && purshases_invoice_update_data.href_pageName){
+  href_pageName = purshases_invoice_update_data.href_pageName
+  href_pageTitle = purshases_invoice_update_data.href_pageTitle
 }
 
-const obj_purshases_invoice_update = {pageName : 'purshases_invoice_update_ar'}
-
-const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_invoice_update));
-back_href.href = `purshases_invoice_view_ar?data=${encodedData}`
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const date1 = document.querySelector('#date1');
@@ -151,16 +156,16 @@ document.querySelector(`#btn_update`).onclick = async function () {
           true,"هل تريد حفظ بيانات فاتورة المشتريات ؟",
           true,
           false,false,false,false,false,
-          true,"purshases_invoice_view_ar",
-          false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
         
         
-    if (post){
-      sessionStorage.removeItem('purshases_invoice_update_data')
-      sessionStorage.removeItem('purshases_invoice_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('purshases_invoice_update_data')
+    //   sessionStorage.removeItem('purshases_invoice_ViewArray')
+    // }
 
     } else {
       showAlert('fail', 'لا توجد بيانات')
@@ -192,14 +197,14 @@ const post = await new_fetchData_postAndGet(
   true,"هل تريد حذف بيانات فاتورة المشتريات ؟",
   true,
   false,false,false,false,false,
-  true,"purshases_invoice_view_ar",
-  false,false,
+  true,href_pageName,
+  href_pageName,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('purshases_order_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('purshases_order_ViewArray')
+// }
 
 
   } catch (error) {
@@ -249,6 +254,8 @@ async function createpurshasesReturns(){
     
     const purshases_returns_update_data = {
       x: headerDataArray.id,
+      href_pageName : `purshases_invoice_update_ar`,
+      href_pageTitle : 'تحديث فاتورة المشتريات',
       vendor_id: headerDataArray.account_id,
       invoiceToReturns: true
     };

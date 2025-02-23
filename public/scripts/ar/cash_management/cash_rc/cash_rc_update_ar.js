@@ -9,10 +9,16 @@ if (!cash_rc_update_data){
     redirection("cash_transaction_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه  القيود المقبوضات الرئيسية")
 }
 
-const obj_cash_rc_update = {pageName : 'cash_rc_update_ar'}
+let href_pageName = 'cashMain_view_ar'
+let href_pageTitle = 'إدارة النقد وما فى حكمه'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_cash_rc_update));
-back_href.href = `cash_rc_view_ar?data=${encodedData}`
+if (cash_rc_update_data && cash_rc_update_data.href_pageName){
+  href_pageName = cash_rc_update_data.href_pageName
+  href_pageTitle = cash_rc_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const date1 = document.querySelector('#date1');
@@ -75,13 +81,13 @@ try {
         "/api/cash_rc_update",
         {x, main_account, total, datex, general_note, posted_array},
         'cash_transaction_permission', 'update',
-        50,
+        60,
         true,"هل تريد تعديل بيانات سند القبض ؟",
         true,
         false,false,
-        true,cash_rc_update_data,'cash_rc_view_ar',
-        false,false,
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       
       )
@@ -109,9 +115,9 @@ async function deleteX() {
         true,"هل تريد حذف بيانات سند القبض ؟",
         true,
         false,false,
-        true,cash_rc_update_data,"cash_rc_view_ar",
-        true,"cash_rc_view_ar",
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
     

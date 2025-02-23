@@ -10,10 +10,16 @@ if (!fixed_assests_update_data){
     redirection("fixed_assests_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الاصول الثابتة الرئيسية")
 }
 
-const obj_items_fixed_assests = {pageName : 'fixed_assests_update_ar'}
+let href_pageName = 'fixedAssestsMain_view_ar'
+let href_pageTitle = 'إدارة الأصول الثابتة'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_items_fixed_assests));
-back_href.href = `fixed_assests_view_ar?data=${encodedData}`
+if (fixed_assests_update_data && fixed_assests_update_data.href_pageName){
+  href_pageName = fixed_assests_update_data.href_pageName
+  href_pageTitle = fixed_assests_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
     const h2_text_div = document.querySelector(`#h2_text_div`)
@@ -42,13 +48,15 @@ back_href.href = `fixed_assests_view_ar?data=${encodedData}`
     data = await new_fetchData_postAndGet(
       'get_fixed_assests_data_for_update_page',
       {x},
-      "fixed_assests_permission", "view", 15,
+      "fixed_assests_permission", "view",
+      60,
       false,"",
       true,
       false,false,
       false,false,false,
       false,false,
-      true,'fexed_assests_view_ar','حدث خطأ اثناء معالجه البيانات'
+      true,href_pageName,
+      'حدث خطأ اثناء معالجه البيانات'
    ) 
 
    const headerData = data.asset_data
@@ -107,13 +115,13 @@ back_href.href = `fixed_assests_view_ar?data=${encodedData}`
         '/fixed_assests_update',
         posted_elements,
         'fixed_assests_permission','update',
-        50,
+        60,
         true,'هل تريد تعديل  بيانات الاصل الثابت ؟',
         true,
         false,"",
-        true,obj_items_fixed_assests,'fixed_assests_view_ar',
-        false,false,
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
         "حدث حطأ اثناء معالجة البيانات"
       )      
 
@@ -135,13 +143,13 @@ try {
     '/fixed_assests_delete',
     posted_elements,
     'fixed_assests_permission','delete',
-    15,
+    60,
     true,'هل تريد حذف  بيانات الاصل الثابت ؟',
     true,
     false,"",
     false,false,false,
-    true,'fixed_assests_view_ar',
-    false,false,
+    true,href_pageName,
+    true,href_pageName,
     "حدث حطأ اثناء معالجة البيانات"
   )      
 

@@ -1,7 +1,6 @@
 setActiveSidebar('itemsMain_view_ar');
 pagePermission("add", "items_permission");
 
-
 const sub_h2_header = document.querySelector(`#sub_h2_header`)
 const tree_add_account = document.querySelector(`#tree_add_account`)
 const tree_group_div = document.querySelector(`#tree_group_div`)
@@ -14,18 +13,46 @@ const sales_pricex = tree_add_account.querySelector(`#sales_price`)
 const purchase_pricex = tree_add_account.querySelector(`#purchase_price`)
 const reorder_pointx = tree_add_account.querySelector(`#reorder_point`)
 
-const obj_items_create_group = JSON.parse(sessionStorage.getItem('obj_items_create_group'));
 
-const obj_items_create_account = JSON.parse(sessionStorage.getItem('obj_items_create_account'));
+const items_add_data = JSON.parse(sessionStorage.getItem('items_add_data'));
+
+if (!items_add_data){
+    redirection("items_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه أصناف المخزون الرئيسية")
+}
+
+let href_pageName = 'items_view_ar'
+let href_pageTitle = 'أصناف المخزون'
+
+if (items_add_data && items_add_data.href_pageName){
+  href_pageName = items_add_data.href_pageName
+  href_pageTitle = items_add_data.href_pageTitle
+}
+
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
+
+
+let items_account_add_data = false;
+let items_group_add_data = false;
+if (items_add_data.item_type === 'item'){
+    items_account_add_data = items_add_data;
+} else if (items_add_data.item_type === 'item_group'){
+    items_group_add_data = items_add_data;
+}
+
 
     //#region create group
-if (obj_items_create_group){
+if (items_group_add_data){
   
     sub_h2_header.textContent = 'مجموعة جديده'
-    create_drop_down_with_External_DataArray(`dropdown_div1`,obj_items_create_group.itemsArray); selectedRow_dropdownDiv(`dropdown_div1`,obj_items_create_group.itemsArray,obj_items_create_group.nodeId);
+    create_drop_down_with_External_DataArray(`dropdown_div1`,items_group_add_data.itemsArray); selectedRow_dropdownDiv(`dropdown_div1`,items_group_add_data.itemsArray,items_group_add_data.nodeId);
   
     tree_group_div.style.display = 'flex'
 }
+
+
+
 
 async function save_group(A_or_B) {
     try {
@@ -77,12 +104,12 @@ async function save_group(A_or_B) {
 
 
     //#region create account
-    if (obj_items_create_account){
+    if (items_account_add_data){
         sub_h2_header.textContent = 'صنف جديد'
-        create_drop_down_with_External_DataArray(`dropdown_div2`,obj_items_create_account.items_options); selectedRow_dropdownDiv(`dropdown_div2`,obj_items_create_account.items_options,obj_items_create_account.nodeId);
+        create_drop_down_with_External_DataArray(`dropdown_div2`,items_account_add_data.items_options); selectedRow_dropdownDiv(`dropdown_div2`,items_account_add_data.items_options,items_account_add_data.nodeId);
                     
-        const revenue_id_row = obj_items_create_account.revenue_accounts_options.find(item => +item.global_id === 19) // 19 = global sales revenue        
-        create_drop_down_with_External_DataArray(`dropdown_div3`,obj_items_create_account.revenue_accounts_options); selectedRow_dropdownDiv(`dropdown_div3`,obj_items_create_account.revenue_accounts_options,revenue_id_row.id);    
+        const revenue_id_row = items_account_add_data.revenue_accounts_options.find(item => +item.global_id === 19) // 19 = global sales revenue        
+        create_drop_down_with_External_DataArray(`dropdown_div3`,items_account_add_data.revenue_accounts_options); selectedRow_dropdownDiv(`dropdown_div3`,items_account_add_data.revenue_accounts_options,revenue_id_row.id);    
         
 
 

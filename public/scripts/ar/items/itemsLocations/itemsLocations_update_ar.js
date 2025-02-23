@@ -2,16 +2,22 @@
 setActiveSidebar('itemsMain_view_ar');
 pagePermission('update', 'itemsLocations_permission');
 
-const obj_itemsLocations_view = JSON.parse(sessionStorage.getItem('obj_itemsLocations_view'));
+const itemsLocations_update_data = JSON.parse(sessionStorage.getItem('itemsLocations_update_data'));
 
-if (!obj_itemsLocations_view){
+if (!itemsLocations_update_data){
     redirection("itemsLocations_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه مواقع المخزون الرئيسية")
 }
 
-const itemsLocations_update_data = {pageName : 'itemsLocations_update_ar'}
+let href_pageName = 'itemsMain_view_ar'
+let href_pageTitle = 'إدارةالمخزون'
 
-const encodedData = encodeURIComponent(JSON.stringify(itemsLocations_update_data));
-back_href.href = `itemsLocations_view_ar?data=${encodedData}`
+if (itemsLocations_update_data && itemsLocations_update_data.href_pageName){
+  href_pageName = itemsLocations_update_data.href_pageName
+  href_pageTitle = itemsLocations_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const btn_update = document.querySelector(`#btn_update`);
@@ -23,8 +29,8 @@ const account_id_hidden = document.querySelector(`#account_id_hidden`);
 
 
 function showData(){
-    sub_h2_header.textContent = ` تعديل موقع مخزون : ${obj_itemsLocations_view.account_name_input}`
-    account_name_input.value = obj_itemsLocations_view.account_name_input;
+    sub_h2_header.textContent = ` تعديل موقع مخزون : ${itemsLocations_update_data.account_name_input}`
+    account_name_input.value = itemsLocations_update_data.account_name_input;
 
 }
 
@@ -32,7 +38,7 @@ function showData(){
 btn_update.onclick = async function () {
     try {
         
-        const account_id_hidden_value = obj_itemsLocations_view.x;
+        const account_id_hidden_value = itemsLocations_update_data.x;
         const account_name_input_value = account_name_input.value.trim();
 
     
@@ -55,13 +61,13 @@ btn_update.onclick = async function () {
                 account_name_input_value
             },
             'itemsLocations_permission','update',
-            50,
-            true,'هل تريد تعديل البيانات ؟',
+            60,
+            true,'هل تريد تعديل بيانات موقع المخزون ؟',
             true,
             false,false,
-            true,itemsLocations_update_data,"itemsLocations_view_ar",
-            false,false,
-            false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
 
@@ -74,7 +80,7 @@ btn_update.onclick = async function () {
 btn_delete.onclick = async function () {
     try {
    
-        const account_id_hidden_value = obj_itemsLocations_view.x;
+        const account_id_hidden_value = itemsLocations_update_data.x;
 
         if (!account_id_hidden_value) {
             redirection('itemsLocations_view_ar','fail','حدث خطأ اثناء معالجة البيانات : سيم توجيهك لصفحة العملاء')
@@ -88,13 +94,13 @@ btn_delete.onclick = async function () {
                 account_id_hidden_value
             },
             'itemsLocations_permission','delete',
-            50,
+            60,
             true,'هل تريد حذف البيانات ؟',
             true,
             false,false,
-            true,itemsLocations_update_data,"itemsLocations_view_ar",
-            false,"",
-            false,"",
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
     } catch (error) {

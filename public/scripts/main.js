@@ -214,12 +214,12 @@ function loadSidebarContents() {
       العيش
     </a>
     -->
-    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}" onclick="sessionStorage.removeItem('customersViewArray')">
+    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}" onclick="sessionStorage.removeItem('customers_viewArray')">
       <i class="fa-duotone fa-user-tie"></i>
       العملاء
     </a>
 
-    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}" onclick="sessionStorage.removeItem('vendorsViewArray')">
+    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}" onclick="sessionStorage.removeItem('vendors_viewArray')">
       <i class="fa-duotone fa-solid fa-user-tie"></i>
       الموردين
     </a>
@@ -258,7 +258,7 @@ function loadSidebarContents() {
       القيود المحاسبية
     </a>
 
-    <a href="capital_accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};" onclick="sessionStorage.removeItem('capital_accounts_ViewArray')">
+    <a href="capital_accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};" onclick="sessionStorage.removeItem('capital_accounts_viewArray')">
       <i class="fa-duotone fa-solid fa-scale-balanced"></i>
        حسابات رأس المال
     </a>
@@ -4456,3 +4456,143 @@ function checkPasswordStrength(password) {
       isStrong: length >= 8 && hasLetters && hasNumbers // شرط قوة الباسورد
   };
 }
+
+
+
+
+function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_date_p, end_date_p, back_href_p, back_title_p) {
+  const conditions = {};
+
+  indices.forEach(index => {
+      // بناء الأسماء تلقائيًا باستخدام template literals
+      const fDiv = window[`f${index}_div`];
+      const fInput = window[`f${index}_input`];
+      const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+      const fCheckbox = window[`f${index}_checkbox`];
+      const fSelect = window[`f${index}_select`];
+      const fCheckboxDiv = window[`f${index}_checkbox_div`];
+      const fInputStartDate1 = window[`f${index}_input_start_date1`];
+      const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+      // التحقق من وجود كل عنصر قبل تخزين قيمته
+      if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
+      if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
+      if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
+      if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
+      if (fSelect) conditions[`f${index}_select`] = fSelect.value;
+      if (fInput) conditions[`f${index}_input`] = fInput.value;
+      
+      // التحقق من العناصر الإضافية
+      if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
+      if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
+      if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
+  });
+
+  // الشروط الأخرى
+  Object.assign(conditions, {
+      is_filter: is_filter,
+      is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
+      sub_h2_header: sub_h2_header.textContent,
+      Qkey : Qkey_p || false,
+      permissionName : permissionName_p || false,
+      start_date : start_date_p || false,
+      end_date : end_date_p || false,
+      back_href_page: back_href_p,
+      back_title_page: back_title_p,
+  });
+
+  // استرجاع المصفوفة المحفوظة من sessionStorage
+  const conditionsArray = JSON.parse(sessionStorage.getItem(str_storage_array_name)) || [];
+
+  // إضافة الكائن الجديد إلى المصفوفة
+  conditionsArray.push(conditions);
+
+  // حفظ المصفوفة المحدثة في sessionStorage
+  sessionStorage.setItem(str_storage_array_name, JSON.stringify(conditionsArray));
+}
+
+
+async function restore_page1(getData_fn, str_storage_array_name) {
+  let conditions;
+
+  // استرجاع المصفوفة المحفوظة من sessionStorage
+  let conditionsArray = JSON.parse(sessionStorage.getItem(str_storage_array_name)) || [];
+  
+  // استرجاع اخر عنصر
+      conditions = conditionsArray[conditionsArray.length - 1];
+
+
+  if (conditions) {
+      // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
+      indices.forEach(index => {
+          const fDiv = window[`f${index}_div`];
+          const fInput = window[`f${index}_input`];
+          const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+          const fCheckbox = window[`f${index}_checkbox`];
+          const fSelect = window[`f${index}_select`];
+          const fCheckboxDiv = window[`f${index}_checkbox_div`];
+          const fInputStartDate1 = window[`f${index}_input_start_date1`];
+          const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+          // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
+          if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
+          if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
+          if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
+          if (fSelect) fSelect.value = conditions[`f${index}_select`];
+          if (fInput) fInput.value = conditions[`f${index}_input`];
+          if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
+          if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
+          if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
+          if (fSelectAndInputDiv) {
+              if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
+                  fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
+              } else {
+                  fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
+              }
+          }
+      });
+
+      // استرجاع الشروط الأخرى
+      sub_h2_header.textContent = conditions.sub_h2_header;
+      is_filter = conditions.is_filter;
+      if (conditions.is_filter_div_hidden) {
+          hidden_filter_div();
+      } else {
+          show_filter_div();
+      }
+
+      permissionName = conditions.permissionName
+      start_date = conditions.start_date;
+      end_date = conditions.end_date;
+      Qkey = conditions.Qkey
+      back_href_page = conditions.back_href_page;
+      back_title_page = conditions.back_title_page;
+
+        await getData_fn(permissionName, Qkey, start_date, end_date)
+      
+  }
+}
+
+async function back_href_fn1(getData_fn, str_storage_array_name, str_current_page_name, str_deafult_href_page) {
+  let conditionsArray = JSON.parse(sessionStorage.getItem(str_storage_array_name)) || [];
+  
+  
+  // استرجاع اخر عنصر
+     let conditions = conditionsArray[conditionsArray.length - 1];
+
+
+     
+      if (conditions.back_href_page === str_current_page_name){
+        
+          if (conditionsArray.length > 1){
+              conditionsArray.pop(); // يحذف آخر عنصر من المصفوفة
+              sessionStorage.setItem(str_storage_array_name, JSON.stringify(conditionsArray));
+              await restore_page1(getData_fn, str_storage_array_name)
+          }else{
+              window.location.href = str_deafult_href_page;
+          }
+      }else{
+          window.location.href = conditions.back_href_page;
+      }
+}
+

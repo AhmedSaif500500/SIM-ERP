@@ -1,6 +1,20 @@
 setActiveSidebar("general_settings_ar");
 // pagePermission("view", "customers_permission");
 
+
+
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
+
+let permissionName;
+let start_date;
+let end_date;
+let Qkey;
+let back_href_page;
+let back_title_page;
+
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
@@ -35,108 +49,12 @@ let f2_input = filter_div.querySelector(`#f2_input`);
 const btn_do = filter_div.querySelector(`#btn_do`);
 
 const indices = [1]; // ضع هنا الأرقام التي تريد تضمينها
-function backUp_filter_div_conditions() {
-    
-    const conditions = {};
 
-    indices.forEach(index => {
-        // بناء الأسماء تلقائيًا باستخدام template literals
-        conditions[`f${index}_div_display`] = window.getComputedStyle(window[`f${index}_div`]).display;
-        conditions[`f${index}_input_display`] = window.getComputedStyle(window[`f${index}_input`]).display;
-        conditions[`f${index}_selectAndInput_div_isHidden`] = window[`f${index}_selectAndInput_div`].classList.contains('hidden_select_and_input_div');
-        conditions[`f${index}_checkbox`] = window[`f${index}_checkbox`].checked;
-        conditions[`f${index}_select`] = window[`f${index}_select`].value;
-        conditions[`f${index}_input`] = window[`f${index}_input`].value;
-    });
-
-    // الشروط الأخرى
-    Object.assign(conditions, {
-        is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
-        sub_h2_header: sub_h2_header.textContent,
-        back_href: back_href.href,
-        back_title: back_href.title
-    });
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('settings_taxes_ViewArray')) || [];
-
-    // إضافة الكائن الجديد إلى المصفوفة
-    conditionsArray.push(conditions);
-
-    // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('settings_taxes_ViewArray', JSON.stringify(conditionsArray));
-}
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   
-
-    const array = JSON.parse(sessionStorage.getItem(`settings_taxes_ViewArray`)) || [];
-
-    if (!array || array.length <= 1) {
-    
-   
-            window.location.href = `general_settings_ar`;
-       
-    }else{
-
-        restore_filter_div_conditions(2)
-        await getData_fn();
-
-    }
+    await back_href_fn1(getData_fn, `settings_taxes_viewArray`, `settings_taxes_view_ar`, `general_settings_ar`)
 };
-
-function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
-    let conditions;
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("settings_taxes_ViewArray")) || [];
-    
-
-    // التحقق إذا كانت المصفوفة تحتوي على عناصر
-    if (conditionsArray.length > 0) {
-        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
-        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
-
-        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
-        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
-            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("settings_taxes_ViewArray", JSON.stringify(conditionsArray));
-        }
-    } else {
-        return;
-    }
-
-    if (conditions) {
-
-        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
-        indices.forEach(index => {
-            window[`f${index}_div`].style.display = conditions[`f${index}_div_display`];
-            window[`f${index}_input`].style.display = conditions[`f${index}_input_display`];
-            window[`f${index}_checkbox`].checked = conditions[`f${index}_checkbox`];
-            if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
-                window[`f${index}_selectAndInput_div`].classList.add('hidden_select_and_input_div');
-            } else {
-                window[`f${index}_selectAndInput_div`].classList.remove('hidden_select_and_input_div');
-            }
-            window[`f${index}_select`].value = conditions[`f${index}_select`];
-            window[`f${index}_input`].value = conditions[`f${index}_input`];
-        });
-
-        // استرجاع الشروط الأخرى
-        sub_h2_header.textContent = conditions.sub_h2_header;
-        is_filter = conditions.is_filter;
-        if (conditions.is_filter_div_hidden) {
-            hidden_filter_div();
-        } else {
-            show_filter_div();
-        }
-
-        back_href.title = conditions.back_title;
-        back_href.href = conditions.back_href;
-    }
-}
 
 
 filter_icon.onclick = () => {
@@ -221,10 +139,6 @@ filter_icon_cancel.onclick = async () => {
 };
 
 
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
 
 async function getData_fn() {
     try {
@@ -233,16 +147,21 @@ async function getData_fn() {
             '/get_settings_taxes_Data',
             {},
             'pass','pass',
-            15,
+            60,
             false,"",
             true,
-            true,content_space,
+            false,false,
             false,false,false,
             false,false,
             false,false,
             "حدث خطأ اثناء معالجه البيانات"
         )
         
+                // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+            //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+            //    back_href.title = back_href_page;
+            //    back_href.href = back_title_page;    
+
         showFirst50RowAtTheBegening();
     } catch (error) {
       catch_error(error)
@@ -250,24 +169,28 @@ async function getData_fn() {
 }
 
 
-
-
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
+
+        permissionName = 'pass' // معلق
+        start_date = false
+        end_date = false
+        Qkey = false
+        back_href_page = 'settings_taxes_view_ar'
+        back_title_page = 'الرموز الضريبية'
+
         showFirst50RowAtTheBegening();
 
-        backUp_filter_div_conditions();
-        hideLoadingIcon(content_space);
-
+        backUp_page1(`settings_taxes_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
-
 const inside_input_search_array = filter_div.querySelectorAll(`[name="inside_input_search"]`);
 
 for (const input of inside_input_search_array) {
@@ -472,16 +395,18 @@ async function table_view_btn_fn(updateBtn) {
     //     return;
     // };
 
-    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row  = updateBtn.closest("tr")
     
-    const obj_settings_tax_view = {
+    const settings_taxes_update_data = {
         x: row.cells[1].textContent,
+        href_pageName : `settings_taxes_view_ar`,
+        href_pageTitle : 'الرموز الضريبية',
         taxe_package_name: row.cells[2].textContent,
         is_inactive: row.cells[3].querySelector(`span`).textContent
     }
 
-    sessionStorage.setItem('obj_settings_tax_view', JSON.stringify(obj_settings_tax_view));                            
+    sessionStorage.removeItem('settings_taxes_update_data')
+    sessionStorage.setItem('settings_taxes_update_data', JSON.stringify(settings_taxes_update_data));                            
     window.location.href = `settings_taxes_update_ar`;
 } catch (error) {
     catch_error(error)
@@ -489,56 +414,33 @@ async function table_view_btn_fn(updateBtn) {
 };
 
 
-
-function CheckUrlParams_customers_update_ar() {
-    try {
-        const urlData = getURLData(
-            "data",
-            "transaction_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
-        );
-
-        
-        if (!urlData || urlData.pageName !== "customers_update_ar") {
-            return true;
-        }
-
-    
-        if (urlData !== "noParams") {
-
-            restore_filter_div_conditions(2)
-
-            return true;
-        } else if (urlData === "noParams") {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        catch_error(error);
-        return false;
-    }
-}
-
-
-
 document.addEventListener("DOMContentLoaded", async function () {
-    showRedirectionReason();
-
+    try {
+        showLoadingIcon(content_space)
+        showRedirectionReason();
+        let conditionsArray = JSON.parse(sessionStorage.getItem("settings_taxes_viewArray")) || [];
+        if (conditionsArray.length === 0){
+        
+            permissionName = 'pass' // معلق
+            start_date = false
+            end_date = false
+            Qkey = null
+            back_href_page = 'general_settings_ar'
+            back_title_page = 'الإعدادات العامة'
     
-    const result2 = CheckUrlParams_customers_update_ar();
-    if (!result2) {
-        return;
-    }
-
-    await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`settings_taxes_ViewArray`);
-
-    if (!conditionsArray){
-     
-        backUp_filter_div_conditions();
-    }
-
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('settings_taxes_viewArray');
+            backUp_page1(`settings_taxes_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `settings_taxes_viewArray`)
+        } else {
+            await restore_page1(getData_fn, `settings_taxes_viewArray`)
+        }
+    
+    } catch (error) {
+        catch_error(error)
+       } finally{
+        hideLoadingIcon(content_space)
+       }
 });
 
 window.addEventListener("beforeprint", function () {

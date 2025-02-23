@@ -2,16 +2,22 @@
 setActiveSidebar('vendors_view_ar');
 pagePermission('view','vendors_permission');
 
-const obj_vendors_view = JSON.parse(sessionStorage.getItem('obj_vendors_view'));
+const vendors_update_data = JSON.parse(sessionStorage.getItem('vendors_update_data'));
 
-if (!obj_vendors_view){
+if (!vendors_update_data){
     redirection("vendors_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
 }
 
-const vendors_update_data = {pageName : 'vendors_update_ar'}
+let href_pageName = 'notes_ar'
+let href_pageTitle = 'الملاحظات'
 
-const encodedData = encodeURIComponent(JSON.stringify(vendors_update_data));
-back_href.href = `vendors_view_ar?data=${encodedData}`
+if (vendors_update_data && vendors_update_data.href_pageName){
+  href_pageName = vendors_update_data.href_pageName
+  href_pageTitle = vendors_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const btn_new = document.querySelector(`#btn_new`);
@@ -38,17 +44,17 @@ const is_allow_to_buy_and_sell_checkbox = document.querySelector(`#is_allow_to_b
 
 
 function showData(){
-    sub_h2_header.textContent = ` تعديل مورد : ${obj_vendors_view.account_name_input}`
-    account_no_input.value = obj_vendors_view.account_no_input;
-    account_name_input.value = obj_vendors_view.account_name_input;
-    credit_limit.value = obj_vendors_view.credit_limit;
-    email_input.value = obj_vendors_view.email_input;
-    tasgel_darepy_input.value = obj_vendors_view.tasgel_darepy_input;
-    legal_info_input.value = obj_vendors_view.legal_info_input;
-    contact_info_input.value = obj_vendors_view.contact_info_input;
-    delivery_adress_input.value = obj_vendors_view.delivery_adress_input;
-    banking_info_input.value = obj_vendors_view.banking_info_input;
-    is_allow_to_buy_and_sell_checkbox.checked = obj_vendors_view.is_allow_to_buy_and_sell === 'true' ? true : false;
+    sub_h2_header.textContent = ` تعديل مورد : ${vendors_update_data.account_name_input}`
+    account_no_input.value = vendors_update_data.account_no_input;
+    account_name_input.value = vendors_update_data.account_name_input;
+    credit_limit.value = vendors_update_data.credit_limit;
+    email_input.value = vendors_update_data.email_input;
+    tasgel_darepy_input.value = vendors_update_data.tasgel_darepy_input;
+    legal_info_input.value = vendors_update_data.legal_info_input;
+    contact_info_input.value = vendors_update_data.contact_info_input;
+    delivery_adress_input.value = vendors_update_data.delivery_adress_input;
+    banking_info_input.value = vendors_update_data.banking_info_input;
+    is_allow_to_buy_and_sell_checkbox.checked = vendors_update_data.is_allow_to_buy_and_sell === 'true' ? true : false;
 
 }
 
@@ -56,7 +62,7 @@ function showData(){
 btn_update.onclick = async function () {
     try {
         
-        const account_id_hidden_value = obj_vendors_view.x;
+        const account_id_hidden_value = vendors_update_data.x;
         const acc_no_div_value = account_no_input.value.trim();
         const account_name_input_value = account_name_input.value.trim();
         const credit_limit_value = parseFloat(credit_limit.value);
@@ -97,13 +103,13 @@ btn_update.onclick = async function () {
                 is_allow_to_buy_and_sell
             },
             'vendors_permission','update',
-            50,
+            60,
             true,'هل تريد تعديل البيانات ؟',
             true,
             false,false,
-            true,vendors_update_data,"vendors_view_ar",
-            false,false,
-            false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
 
@@ -116,7 +122,7 @@ btn_update.onclick = async function () {
 btn_delete.onclick = async function () {
     try {
    
-        const account_id_hidden_value = obj_vendors_view.x;
+        const account_id_hidden_value = vendors_update_data.x;
 
         if (!account_id_hidden_value) {
             redirection('vendors_view_ar','fail','حدث خطأ اثناء معالجة البيانات : سيم توجيهك لصفحة العملاء')
@@ -130,13 +136,13 @@ btn_delete.onclick = async function () {
                 account_id_hidden_value
             },
             'vendors_permission','delete',
-            50,
+            60,
             true,'هل تريد حذف البيانات ؟',
             true,
             false,false,
-            true,vendors_update_data,"vendors_view_ar",
-            false,"",
-            false,"",
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
     } catch (error) {

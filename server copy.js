@@ -3207,7 +3207,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
 //#endregion users
 
 
-//#region cutomers
+//#region customers
 
 //#region get customers data
 app.post("/get_All_customers_Data", async (req, res) => {

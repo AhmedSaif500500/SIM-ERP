@@ -1,7 +1,20 @@
 
-
 setActiveSidebar("capital_accounts_view_ar");  
-pagePermission("view", "accounts_permission");  
+//pagePermission("view", "accounts_permission");  
+
+
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
+
+let permissionName;
+let start_date;
+let end_date;
+let Qkey;
+let back_href_page;
+let back_title_page;
+
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
@@ -49,134 +62,11 @@ let f4_input = filter_div.querySelector(`#f4_input`);
 const btn_do = filter_div.querySelector(`#btn_do`);
 const indices = [1, 2, 4]; // ضع هنا الأرقام التي تريد تضمينها
 
-function backUp_filter_div_conditions() {
-    const conditions = {};
-
-    indices.forEach(index => {
-        // بناء الأسماء تلقائيًا باستخدام template literals
-        const fDiv = window[`f${index}_div`];
-        const fInput = window[`f${index}_input`];
-        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
-        const fCheckbox = window[`f${index}_checkbox`];
-        const fSelect = window[`f${index}_select`];
-        const fCheckboxDiv = window[`f${index}_checkbox_div`];
-        const fInputStartDate1 = window[`f${index}_input_start_date1`];
-        const fInputEndDate1 = window[`f${index}_input_end_date1`];
-
-        // التحقق من وجود كل عنصر قبل تخزين قيمته
-        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
-        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
-        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
-        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
-        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
-        if (fInput) conditions[`f${index}_input`] = fInput.value;
-        
-        // التحقق من العناصر الإضافية
-        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
-        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
-        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
-    });
-
-    // الشروط الأخرى
-    Object.assign(conditions, {
-        is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
-        sub_h2_header: sub_h2_header.textContent,
-        back_href: back_href.href,
-        back_title: back_href.title
-    });
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('capital_accounts_ViewArray')) || [];
-
-    // إضافة الكائن الجديد إلى المصفوفة
-    conditionsArray.push(conditions);
-
-    // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('capital_accounts_ViewArray', JSON.stringify(conditionsArray));
-}
-
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   
-    const array = JSON.parse(sessionStorage.getItem(`capital_accounts_ViewArray`)) || [];
-
-    if (!array || array.length <= 1) {
-    
-            window.location.href = `notes_ar`;
-       
-    }else{
-
-        restore_filter_div_conditions(2)
-        await getData_fn();
-
-    }
+    await back_href_fn1(getData_fn, `capital_accounts_viewArray`, `capital_accounts_view_ar`, `notes_ar`)
 };
-
-function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
-    let conditions;
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("capital_accounts_ViewArray")) || [];
-    
-    // التحقق إذا كانت المصفوفة تحتوي على عناصر
-    if (conditionsArray.length > 0) {
-        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
-        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
-
-        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
-        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
-            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("capital_accounts_ViewArray", JSON.stringify(conditionsArray));
-        }
-    } else {
-        return;
-    }
-
-    if (conditions) {
-        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
-        indices.forEach(index => {
-            const fDiv = window[`f${index}_div`];
-            const fInput = window[`f${index}_input`];
-            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
-            const fCheckbox = window[`f${index}_checkbox`];
-            const fSelect = window[`f${index}_select`];
-            const fCheckboxDiv = window[`f${index}_checkbox_div`];
-            const fInputStartDate1 = window[`f${index}_input_start_date1`];
-            const fInputEndDate1 = window[`f${index}_input_end_date1`];
-
-            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
-            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
-            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
-            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
-            if (fSelect) fSelect.value = conditions[`f${index}_select`];
-            if (fInput) fInput.value = conditions[`f${index}_input`];
-            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
-            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
-            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
-            if (fSelectAndInputDiv) {
-                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
-                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
-                } else {
-                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
-                }
-            }
-        });
-
-        // استرجاع الشروط الأخرى
-        sub_h2_header.textContent = conditions.sub_h2_header;
-        is_filter = conditions.is_filter;
-        if (conditions.is_filter_div_hidden) {
-            hidden_filter_div();
-        } else {
-            show_filter_div();
-        }
-
-        back_href.title = conditions.back_title;
-        back_href.href = conditions.back_href;
-    }
-}
 
 
 filter_icon.onclick = () => {
@@ -277,12 +167,6 @@ filter_icon_cancel.onclick = async () => {
     await filter_icon_cancel_fn();
 };
 
-
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
-
 async function getData_fn() {
     try {
        
@@ -293,13 +177,17 @@ async function getData_fn() {
             60,
             false,'',
             false,
-            true,content_space,
+            false,false,
             false,false,'',
             false,'',
-            false,'notes_ar',
+            true,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
 
+               // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+            //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+            //    back_href.title = back_href_page;
+            //    back_href.href = back_title_page;        
         
 
         showFirst50RowAtTheBegening();
@@ -309,21 +197,28 @@ async function getData_fn() {
 }
 
 
-
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-            showFirst50RowAtTheBegening();
-        backUp_filter_div_conditions();
-        hideLoadingIcon(content_space);
 
-    } catch (error) {
-        hideLoadingIcon(content_space);
-        catch_error(error);
+        permissionName = 'accounts_permission'
+        start_date = false
+        end_date = false
+        Qkey = false
+        back_href_page = 'capital_accounts_view_ar'
+        back_title_page = 'حسابات رأس المال'
+
+
+            showFirst50RowAtTheBegening();
+            backUp_page1(`capital_accounts_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        } catch (error) {
+            catch_error(error);
+        } finally {
+            hideLoadingIcon(content_space);
+        }
     }
-}
 
 const inside_input_search_array = filter_div.querySelectorAll(
     `[name="inside_input_search"]`
@@ -582,52 +477,23 @@ async function table_update_btn_fn(updateBtn) {
         return;
     }
 
-
-    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
     const capital_accounts_update_data = {
         x: row.querySelector(`.td_id`).textContent,
+        href_pageName : `capital_accounts_view_ar`,
+        href_pageTitle : 'حسابات رأس المال',
         account_no: row.querySelector(`.td_account_no`).textContent,
         account_name: row.querySelector(`.td_account_name`).textContent
     };
 
-    
+    sessionStorage.removeItem('capital_accounts_update_data')
     sessionStorage.setItem('capital_accounts_update_data', JSON.stringify(capital_accounts_update_data));                            
     window.location.href = `capital_accounts_update_ar`;
-    hideLoadingIcon(updateBtn)
 } catch (error) {
-    hideLoadingIcon(updateBtn)
     catch_error(error)
+} finally {
+    hideLoadingIcon(updateBtn)
 }
-}
-
-function CheckUrlParams_capital_accounts_update_ar() {
-    try {
-        const urlData = getURLData(
-            "data",
-            "capital_accounts_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاصول الثابتة"
-        );
-
-        if (!urlData || urlData.pageName !== "capital_accounts_update_ar") {
-            return true;
-        }
-
-    
-        if (urlData !== "noParams") {
-
-            restore_filter_div_conditions(2)
-
-            return true;
-        } else if (urlData === "noParams") {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        catch_error(error);
-        return false;
-    }
 }
 
 
@@ -635,24 +501,29 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
         showLoadingIcon(content_space)
         showRedirectionReason();
+        let conditionsArray = JSON.parse(sessionStorage.getItem("capital_accounts_viewArray")) || [];
+        if (conditionsArray.length === 0){
+        
+            permissionName = 'accounts_permission'
+            start_date = firstDayOfYear
+            end_date = lastDayOfYear
+            Qkey = null
+            back_href_page = 'notes_ar'
+            back_title_page = 'الملاحاظات'
     
-        const result2 = CheckUrlParams_capital_accounts_update_ar();
-        if (!result2) {
-            return;
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('capital_accounts_viewArray');
+            backUp_page1(`capital_accounts_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `capital_accounts_viewArray`)
+        } else {
+            await restore_page1(getData_fn, `capital_accounts_viewArray`)
         }
     
-        await getData_fn();
-        const conditionsArray = sessionStorage.getItem(`capital_accounts_ViewArray`);
-    
-        if (!conditionsArray){
-         
-            backUp_filter_div_conditions();
-        }
-        hideLoadingIcon(content_space)
     } catch (error) {
-        hideLoadingIcon(content_space)
         catch_error(error)
-    }
+       } finally{
+        hideLoadingIcon(content_space)
+       }
 });
 
 window.addEventListener("beforeprint", function () {

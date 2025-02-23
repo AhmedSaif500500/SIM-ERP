@@ -9,7 +9,16 @@ if (!sales_qutation_update_data){
     redirection("sales_qutation_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
 }
 
+let href_pageName = 'salesMain_view_ar'
+let href_pageTitle = 'إدارة المبيعات'
 
+if (sales_qutation_update_data && sales_qutation_update_data.href_pageName){
+  href_pageName = sales_qutation_update_data.href_pageName
+  href_pageTitle = sales_qutation_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector(`#note_inpute`);
@@ -134,18 +143,18 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/sales_qutation_update",
         posted_Obj,
         'sales_qutation_permission', 'update',
-        50,
+        60,
         true,"هل تريد تحديث بيانات عرض سعر البيع ؟",
         true,
         false,false,false,false,false,
-        true,"sales_qutation_view_ar",
-        false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
-    if (post){
-      sessionStorage.removeItem('sales_qutation_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('sales_qutation_ViewArray')
+    // }
     
 
   } else {
@@ -176,14 +185,14 @@ const post = await new_fetchData_postAndGet(
   true,"هل تريد حذف بيانات عرض سعر البيع ؟",
   true,
   false,false,false,false,false,
-  true,"sales_qutation_view_ar",
-  false,false,
+  true,href_pageName,
+  true,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('sales_qutation_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('sales_qutation_ViewArray')
+// }
 
 
   } catch (error) {
@@ -466,6 +475,8 @@ async function createSlalesOrder(){
     }
     const sales_qutation_update_data = {
       x: headerDataArray.id,
+      href_pageName : `sales_qutation_update_ar`,
+      href_pageTitle : 'عروض أسعار المبيعات',
       qutationToOrder: true
     };
     sessionStorage.removeItem('sales_invoice_update_data')
@@ -492,6 +503,8 @@ async function createSlalesInvoice(){
 
     const sales_qutation_update_data = {
       x: headerDataArray.id,
+      href_pageName : `sales_qutation_update_ar`,
+      href_pageTitle : 'عروض أسعار المبيعات',
       qutationToInvoice: true
     };
     sessionStorage.removeItem('sales_invoice_update_data')
@@ -521,13 +534,14 @@ try {
     "/api/sales_qutation_reject",
     {x,datex},
     'sales_qutation_permission', 'update',   // معلق
-    15,
+    60,
     true,"هل تريد رفض عرض السعر الحالى ؟",
     true,
     false,false,
     false,false,
-    false,true,"sales_qutation_view_ar",
-    true,"sales_qutation_view_ar",
+    false,
+    true,href_pageName,
+    true,href_pageName,
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 } catch (error) {

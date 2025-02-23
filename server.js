@@ -1715,7 +1715,6 @@ app.get("/Logout", async (req, res) => {
 });
 
 
-//500500
 app.post("/delete_company", deleteLimiter, async (req, res) => {
   try {
 
@@ -4580,7 +4579,7 @@ app.post("/delete_User_from_user_update_ar", async (req, res) => {
 //#endregion users
 
 
-//#region cutomers
+//#region customers
 
 //#region get customers data
 app.post("/get_All_customers_Data", async (req, res) => {
@@ -5744,17 +5743,12 @@ app.post("/update_employee", async (req, res) => {
     const posted_elements = req.body;
 
     //! Permission
-    if (posted_elements.isUrlParams_salesman){
-      await permissions(req, "salesman_permission", "update");
-      if (!permissions) {
-        return;
-      }  
-    }else{
+
       await permissions(req, "employees_permission", "update");
       if (!permissions) {
         return;
       }  
-    }
+ 
 
 
     //! sql injection check
@@ -5887,7 +5881,7 @@ app.post("/update_employee", async (req, res) => {
   await db.tx(async (tx) => {
     await tx.none(query1, params1);
     await tx.none(query2, params2);
-    await history(posted_elements.isUrlParams_salesman ? 21 : 20, 2, posted_elements.id_value, 0, req, tx)
+    await history(20, 2, posted_elements.id_value, 0, req, tx)
 
   })
 
@@ -6015,7 +6009,7 @@ app.post("/delete_employee", async (req, res) => {
 // get all d employees data
 app.post("/get_All_Employees_Data", async (req, res) => {
   try {
- 
+ //500500
     const posted_elements = req.body;
     
     //! Permission
@@ -6037,8 +6031,7 @@ app.post("/get_All_Employees_Data", async (req, res) => {
       
 
     //* Start--------------------------------------------------------------
-    let is_salesman = posted_elements.salesman
-    is_salesman = is_salesman? true : false
+
    
     let query1 = `
 WITH main_account AS (
@@ -6085,8 +6078,6 @@ base_query AS (
         A.company_id = $1
         AND A.account_type_id = 4
         AND A.is_final_account = true
-        AND (B.parent_id = $2 OR $2 IS NULL)  
-        AND (A.is_salesman = true OR $3 = false)  
     GROUP BY
         A.id, 
         A.account_name, 
@@ -6112,7 +6103,7 @@ ORDER BY
 
     `;
     
-    let data = await db.any(query1, [req.session.company_id,posted_elements.QKey,is_salesman]);
+    let data = await db.any(query1, [req.session.company_id]);
     res.json(data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -23172,7 +23163,7 @@ app.post("/services_add", async (req, res) => {
 
     let query1 = `
   INSERT INTO accounts_header (account_name, account_no, item_unite, item_revenue_account, item_expense_account, item_sales_price, item_purshas_price, is_inactive, is_final_account, finance_statement, company_id, account_type_id)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id
 `;
 
   let params1 =[
@@ -23191,9 +23182,10 @@ app.post("/services_add", async (req, res) => {
   ]
 
   await db.tx(async (tx) => {
-    await tx.none(query1, params1);
+    const insert =  await tx.one(query1, params1);
+    const id = insert.id
     // await tx.none(query2, params2);
-    await history(27, 1, newId_header, 0, req, tx)
+    await history(27, 1, id, 0, req, tx)
 
   })
 
@@ -28379,12 +28371,16 @@ WITH main_query AS (
           message_ar: 'برجاء انشاء اصول ثابتة اولا : Sadd002',
         });
       }
-      await db.tx(async (tx) => {
 
-      // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
+
       const year = getYear(posted_elements.datex)
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+
+      await db.tx(async (tx) => {
+
+      // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
 
       let total = 0
       let insert_array2 = []
@@ -28416,42 +28412,26 @@ const newId_transaction_header = insert.id;
         
         if (!dbRow){
           await block_user(req,'Sada03')
-          return res.json({
-            success: false,
-            xx: true,
-            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-          });
+          throw new Error("🔴 تم تجميد الحساب الحالى  : برجاء التواصل مع الدعم الفنى : Sacda01");
         }
 
         if (!dbRow.item_expense_account){
-          return res.json({
-            success: false,
-            message_ar: ` حدث خطأ اثناء تحديد حساب مصروف الاهلاك المخصص فى السطر رقم: ${index}`,
-          });
+          throw new Error(`❌ حدث خطأ اثناء تحديد حساب مصروف الاهلاك المخصص فى السطر رقم: ${index}`);
         }
         
         if (!dbRow.started_depreciation_date){
-          return res.json({
-            success: false,
-            message_ar: ` حدث خطأ اثناء تحديد حساب تاريخ بداية الاهلاك فى السطر رقم: ${index}`,
-          });
+          throw new Error(`❌ حدث خطأ اثناء تحديد حساب تاريخ بداية الاهلاك فى السطر رقم: ${index}`);
         }
 
         
 
         if (frontEndDatex < dbRow.started_depreciation_date){
-          return res.json({
-            success: false,
-            message_ar: `التاريخ المحدد أصغر من تاريخ بداية فترة الإهلاك للأصل في السطر رقم: ${index}`,
-          });
+          throw new Error(`❌ التاريخ المحدد أصغر من تاريخ بداية فترة الإهلاك للأصل في السطر رقم: ${index}`);
         }
      
 
         if ((+dbRow.viable_value_to_depreciate || 0) - (+row.depreciation_value || 0) < 0) {
-          return res.json({
-            success: false,
-            message_ar: `القيمة المدخلة للإهلاك تتجاوز القيمة المتاحة للإهلاك في السطر رقم: ${index}.`,
-          });
+          throw new Error(`❌ القيمة المدخلة للإهلاك تتجاوز القيمة المتاحة للإهلاك في السطر رقم: ${index}.`);
         }
         
         // سطر المصورف
@@ -28488,6 +28468,10 @@ const newId_transaction_header = insert.id;
       await tx.none(query2, insert_array2.flat());
     }
 
+        // تحديث transaction_header بالقيمة الفعلية لـ total
+        let queryUpdate = `UPDATE transaction_header SET total_value = $1 WHERE id = $2;`;
+        await tx.none(queryUpdate, [total.toFixed(2), newId_transaction_header]);
+    
       //! history
       await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
     });
@@ -29147,7 +29131,6 @@ app.post("/capital_accounts_add", async (req, res) => {
     
    
     //* Start--------------------------------------------------------------
-    //500500
     let query0 = `SELECT
                (select count(id) FROM accounts_header WHERE company_id = $1 AND account_name = $2) as count_account_name,
                (select main_account_id FROM accounts_header WHERE company_id = $1 AND global_id = 15) as parent_main_account_id,
@@ -31945,13 +31928,13 @@ app.post("/api/cash_transfer_add", async (req, res) => {
     });
   }
   
-  
+  const year = getYear(posted_elements.datex)
+  const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
+  const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
+
+
   await db.tx(async (tx) => {
       // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
-      const year = getYear(posted_elements.datex)
-      const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
-      const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
-
 
             let query1 = `INSERT INTO transaction_header
                     (reference, company_id, transaction_type, total_value, general_note, datex, general_reference, items_location_id, items_location_id2)
@@ -32989,7 +32972,6 @@ WHERE
     ;
 `;
 
-//500500
 
     let data = await db.any(query1, [req.session.company_id,posted_elements.start_date, posted_elements.end_date]);
           
@@ -35374,8 +35356,9 @@ order by
 ),
 transaction_details AS (
     SELECT 
-        th.id AS transaction_id,
+        th.id AS x,
         th.datex,
+        th.transaction_type as type,
         th.reference,
        	CONCAT(
         	tt.doc_prefix, '-',
@@ -35400,8 +35383,9 @@ transaction_details AS (
         AND th.datex BETWEEN $2 AND $3
     UNION ALL
     SELECT 
-        NULL AS transaction_id,
+        NULL AS x,
         $2 AS datex, -- تاريخ بداية الفترة
+        NULL AS type,
         NULL AS reference,
         'الرصيد السابق' AS referenceconcat,
         null AS row_note,
@@ -35420,8 +35404,9 @@ transaction_details AS (
 ),
 cumulative_balance AS (
     SELECT 
-        transaction_id,
+        x,
         datex,
+        type,
         reference,
         referenceconcat,
         row_note,
@@ -35437,8 +35422,9 @@ cumulative_balance AS (
         
 )
 SELECT 
-    transaction_id AS id,
+    x,
     datex,
+    type,
     reference,
     referenceconcat,
     row_note,
@@ -36461,6 +36447,7 @@ server.listen(port, () => {
   make_all_users_is_active_to_false();
   //test_trial_balance() // معلق
   //accept_request(request_id, int_company_numbers, int_users_numbers, '2025-02-13', '2025-12-31')
+  //accept_request(9, 5, 5, '2025-02-13', '2025-12-31')
   //change_user_password(user_id, 'password')
   //change_user_password(user_id, 'password')
 });

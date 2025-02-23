@@ -5,15 +5,22 @@ pagePermission("update", "transaction_permission");
 const transaction_update_data = JSON.parse(sessionStorage.getItem('transaction_update_data'));
 // sessionStorage.removeItem(`purshases_invoice_update_data`)
 
+
 if (!transaction_update_data){
     redirection("transaction_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه  القيود المحاسبية الرئيسية")
 }
 
-const obj_transaction_update = {pageName : 'transaction_update_ar'}
+let href_pageName = 'notes_ar'
+let href_pageTitle = 'الملاحظات'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_transaction_update));
-back_href.href = `transaction_view_ar?data=${encodedData}`
 
+if (transaction_update_data && transaction_update_data.href_pageName){
+  href_pageName = transaction_update_data.href_pageName
+  href_pageTitle = transaction_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector('#note_inpute');
@@ -89,13 +96,13 @@ async function update() {
         "/api/transaction_update",
         { x, total, datex, general_note, posted_array },
         'transaction_permission', 'update',
-        50,
+        60,
         true,"هل تريد تعديل بيانات القيد المحاسبى ؟",
         true,
         false,false,
-        true,transaction_update_data,"transaction_view_ar",
-        false,false,
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
     
@@ -119,13 +126,13 @@ async function deleteX() {
         "/api/transaction_delete",
         {x, datex},
         'transaction_permission', 'delete',
-        50,
+        60,
         true,"هل تريد حذف بيانات القيد المحاسبى ؟",
         true,
         false,false,
-        true,transaction_update_data,"transaction_view_ar",
-        true,"transaction_view_ar",
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
     
@@ -157,13 +164,13 @@ async function getTransactionData_fn() {
     "/get_transaction_Data",
     {x},
     'transaction_permission','view',
-    15,
+    60,
     false,"",
     true,
     true,content_space,
     false,false,false,
     false,false,
-    true,"transaction_view_ar",
+    true,href_pageName,
     "حدث خطأ اثناء معالجة البيانات"
   )
 

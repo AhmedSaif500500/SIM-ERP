@@ -52,13 +52,13 @@ try {
 
     const posted_Obj = {datex, startDate, endDate, note, posted_array}
 
-    const redierction_page = A_OR_B == 'A' ? 'accumulated_depreciation_add_ar' : 'accumulated_depreciation_view_ar'
+    const redierction_page = A_OR_B == 'A' ? 'accumulated_depreciation_view_ar ' : 'accumulated_depreciation_add_ar'
 
       const post = await new_fetchData_postAndGet(
         "/api/accumulated_depreciation_add",
         posted_Obj,
         'accumulated_depreciation_permission', 'add',
-        50,
+        60,
         true,"هل تريد حفظ بيانات إهلاكات الاصول الثابتة؟",
         true,
         false,false,false,false,false,

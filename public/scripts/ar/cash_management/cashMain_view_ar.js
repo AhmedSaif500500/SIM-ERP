@@ -13,30 +13,30 @@ function showData(){
   cash_accounts_btn.style.display = style= module_display("cash_accounts_permission") // 
   cash_rc_btn.style.display = style= module_display("cash_transaction_permission") // 
   cash_pv_btn.style.display = style= module_display("cash_transaction_permission") // 
-  cash_transfer_btn.style.display = style= module_display("cash_transaction_permission") // 
+  cash_transfer_btn.style.display = style= module_display("cash_transfer_permission") // 
   checks_btn.style.display = style= module_display("checks_permission") // 
 
 
   cash_accounts_btn.onclick = function(){
-    sessionStorage.removeItem('cash_accounts_ViewArray');
+    sessionStorage.removeItem('cash_accounts_viewArray');
     window.location.href = "/cash_accounts_view_ar";
   }
   
   cash_rc_btn.onclick = function(){
-    sessionStorage.removeItem('cash_rc_ViewArray');
+    sessionStorage.removeItem('cash_rc_viewArray');
     window.location.href = "/cash_rc_view_ar";
   }
  
   
   cash_pv_btn.onclick = function(){
-    sessionStorage.removeItem('cash_pv_ViewArray');
+    sessionStorage.removeItem('cash_pv_viewArray');
     window.location.href = "/cash_pv_view_ar";
   }
 
 
     
   cash_transfer_btn.onclick = function(){
-    sessionStorage.removeItem('cashTransferViewArray');
+    sessionStorage.removeItem('cash_transfer_viewArray');
     window.location.href = "/cash_transfer_view_ar";
   }
 
@@ -53,10 +53,10 @@ function showData(){
 }
 
 function remove_arrays(){
-  sessionStorage.removeItem('cash_accounts_ViewArray');
-  sessionStorage.removeItem('cash_rc_ViewArray');
-  sessionStorage.removeItem('cash_pv_ViewArray');
-  sessionStorage.removeItem('cash_transfer_ViewArray');
+  sessionStorage.removeItem('cash_accounts_viewArray');
+  sessionStorage.removeItem('cash_rc_viewArray');
+  sessionStorage.removeItem('cash_pv_viewArray');
+  sessionStorage.removeItem('cash_transfer_viewArray');
   sessionStorage.removeItem('checks_btn_Array');
 }
 

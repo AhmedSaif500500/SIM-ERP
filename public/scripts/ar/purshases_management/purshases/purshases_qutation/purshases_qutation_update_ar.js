@@ -9,10 +9,16 @@ if (!purshases_qutation_update_data){
     redirection("purshases_qutation_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الموردين الرئيسية")
 }
 
-// const obj_purshases_qutation_update = {pageName : 'purshases_qutation_update_ar'}
+let href_pageName = 'purshasesMain_view_ar'
+let href_pageTitle = 'عروض أسعار المشتريات'
 
-// const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_qutation_update));
-// back_href.href = `purshases_qutation_view_ar?data=${encodedData}`
+if (purshases_qutation_update_data && purshases_qutation_update_data.href_pageName){
+  href_pageName = purshases_qutation_update_data.href_pageName
+  href_pageTitle = purshases_qutation_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const date1 = document.querySelector('#date1');
@@ -139,18 +145,18 @@ const is_RowTax  = is_RowTax_checkBox.checked
         "/api/purshases_qutation_update",
         posted_Obj,
         'purshases_qutation_permission', 'update', // معلق
-        50,
+        60,
         true,"هل تريد تحديث بيانات عرض سعر الشراء ؟",
         true,
         false,false,false,false,false,
-        true,"purshases_qutation_view_ar",
-        false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
 
-    if (post){
-      sessionStorage.removeItem('purshases_qutation_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('purshases_qutation_ViewArray')
+    // }
     
 
   } else {
@@ -181,14 +187,14 @@ const post = await new_fetchData_postAndGet(
   true,"هل تريد حذف بيانات عرض سعر الشراء ؟",
   true,
   false,false,false,false,false,
-  true,"purshases_qutation_view_ar",
-  false,false,
+  true,href_pageName,
+  true,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('purshases_qutation_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('purshases_qutation_ViewArray')
+// }
 
 
   } catch (error) {
@@ -238,7 +244,7 @@ async function get_Data_for_update_page_fn(x) {
     "/get_data_for_purshases_qutation_update",
     {x},
     'purshases_qutation_permission', 'update',
-    15,
+    60,
     false,false,
     true,
     false,false,
@@ -471,6 +477,8 @@ async function createpurshasesOrder(){
     }
     const purshases_qutation_update_data = {
       x: headerDataArray.id,
+      href_pageName : `purshases_qutation_update_ar`,
+      href_pageTitle : 'تحديث أمر شراء',
       qutationToOrder: true
     };
     sessionStorage.removeItem('purshases_order_update_data')
@@ -497,6 +505,8 @@ async function createpurshasesInvoice(){
 
     const purshases_qutation_update_data = {
       x: headerDataArray.id,
+      href_pageName : `purshases_qutation_update_ar`,
+      href_pageTitle : 'تحديث أمر شراء',
       qutationToInvoice: true
     };
     sessionStorage.removeItem('purshases_invoice_update_data')
@@ -521,13 +531,14 @@ try {
     "/api/purshases_qutation_reject",
     {x,datex},
     'purshases_qutation_permission', 'update',   // معلق
-    15,
+    60,
     true,"هل تريد رفض عرض السعر الحالى ؟",
     true,
     false,false,
     false,false,
-    false,true,"purshases_qutation_view_ar",
-    true,"purshases_qutation_view_ar",
+    false,
+    true,href_pageName,
+    true,href_pageName,
     "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
   )
 } catch (error) {

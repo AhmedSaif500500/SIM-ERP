@@ -9,13 +9,18 @@
     if (!capital_accounts_update_data){
         redirection("capital_accounts_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه حسابات رأس المال الرئيسية")
     }
+    let href_pageName = 'notes_ar'
+    let href_pageTitle = 'الملاحظات'
     
-
-    const obj_items_cash_accounts = {pageName : 'capital_accounts_update_ar'}
-
-const encodedData = encodeURIComponent(JSON.stringify(obj_items_cash_accounts));
-back_href.href = `capital_accounts_view_ar?data=${encodedData}`
-
+    if (capital_accounts_update_data && capital_accounts_update_data.href_pageName){
+      href_pageName = capital_accounts_update_data.href_pageName
+      href_pageTitle = capital_accounts_update_data.href_pageTitle
+    }
+    
+    back_href.href = href_pageName
+    back_href.title = href_pageTitle
+    
+    
 
     const h2_text_div = document.querySelector(`#h2_text_div`)
     const sub_h2_header = document.querySelector(`#sub_h2_header`)
@@ -64,13 +69,13 @@ back_href.href = `capital_accounts_view_ar?data=${encodedData}`
           '/capital_accounts_update',
           posted_elements,
           'accounts_permission','update',
-          50,
+          60,
           true,'هل تعديل  بيانات حساب رأس المال',
           true,
           false,"",
-          true,obj_items_cash_accounts,'capital_accounts_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
           "حدث حطأ اثناء معالجة البيانات"
         )
 
@@ -85,13 +90,13 @@ back_href.href = `capital_accounts_view_ar?data=${encodedData}`
           '/capital_accounts_delete',
           {x},
           'accounts_permission','update',
-          50,
+          60,
           true,'هل تعديل  حذف حساب رأس المال؟',
           true,
           false,"",
-          true,obj_items_cash_accounts,'capital_accounts_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
           "حدث حطأ اثناء معالجة البيانات"
         )
 

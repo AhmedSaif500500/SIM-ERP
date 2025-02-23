@@ -11,19 +11,33 @@ const btn_update = document.querySelector(`#btn_update`);
 const btn_delete = document.querySelector(`#btn_delete`);
 
 
-const sales_invoice_update_data = JSON.parse(sessionStorage.getItem('services_update_data'));
+const services_update_data = JSON.parse(sessionStorage.getItem('services_update_data'));
+    
+if (!services_update_data){
+  redirection("services_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الأصناف الخدمية الرئيسية")
+}
+let href_pageName = 'itemsMain_view_ar'
+let href_pageTitle = 'إدارة المخزون'
+
+if (services_update_data && services_update_data.href_pageName){
+href_pageName = services_update_data.href_pageName
+href_pageTitle = services_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 let data;
 
 async function getServicesDataForUpdate() {
   try {
-    const x = sales_invoice_update_data.x
+    const x = services_update_data.x
       data = await new_fetchData_postAndGet(
           "get_data_for_services_update",
           {x},
           "items_permission","view",
-          15,
+          60,
           false,"",
           true,
           false,false,
@@ -96,12 +110,13 @@ btn_update.onclick = async function () {
             "/services_update",
             {x,accountNo,account_name,unite_name,revenueAccount,expenseAccount,sales_price,purshase_price,inactive_select_value},
             'services_permission', 'update',
-            50,
+            60,
             true,"هل تريد تعديل بيانات الخدمة ؟",
             true,
-            false,false,false,false,false,
-            true,"services_view_ar",
             false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
              "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
           )
 
@@ -117,12 +132,13 @@ btn_delete.onclick = async function () {
             "/services_delete",
             {x},
             'services_permission', 'delete',
-            50,
+            60,
             true,"هل تريد حذف بيانات الخدمة ؟",
             true,
-            false,false,false,false,false,
-            true,"services_view_ar",
             false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
              "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
           )
 
@@ -131,7 +147,7 @@ btn_delete.onclick = async function () {
         catch_error(error)
     }
 }
-
+/*
 async function save(A_OR_B) {
 
 
@@ -165,7 +181,7 @@ async function save(A_OR_B) {
   
 }
 }
-
+*/
 
 inactive_select.onchange = function (){
   active_color(inactive_select)

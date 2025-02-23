@@ -99,7 +99,7 @@ btn_save.onclick = async function () {
 }
 
 btn_tax.onclick = function(){
-    sessionStorage.removeItem(`settings_taxes_ViewArray`);
+    sessionStorage.removeItem(`settings_taxes_viewArray`);
     window.location.href = `settings_taxes_view_ar`;
 }
 

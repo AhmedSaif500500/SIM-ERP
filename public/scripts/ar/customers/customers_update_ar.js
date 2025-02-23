@@ -8,10 +8,17 @@ if (!obj_customers_view){
     redirection("customers_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه العملاء الرئيسية")
 }
 
-const customers_update_data = {pageName : 'customers_update_ar'}
+let href_pageName = 'notes_ar'
+let href_pageTitle = 'الملاحظات'
 
-const encodedData = encodeURIComponent(JSON.stringify(customers_update_data));
-back_href.href = `customers_view_ar?data=${encodedData}`
+if (obj_customers_view && obj_customers_view.href_pageName){
+  href_pageName = obj_customers_view.href_pageName
+  href_pageTitle = obj_customers_view.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
+
 
 
 const btn_new = document.querySelector(`#btn_new`);
@@ -97,13 +104,13 @@ btn_update.onclick = async function () {
                 is_allow_to_buy_and_sell
             },
             'customers_permission','update',
-            50,
+            60,
             true,'هل تريد تعديل البيانات ؟',
             true,
             false,false,
-            true,customers_update_data,"customers_view_ar",
-            false,false,
-            false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
 
@@ -130,13 +137,13 @@ btn_delete.onclick = async function () {
                 account_id_hidden_value
             },
             'customers_permission','delete',
-            50,
+            60,
             true,'هل تريد حذف البيانات ؟',
             true,
             false,false,
-            true,customers_update_data,"customers_view_ar",
-            false,"",
-            false,"",
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
     } catch (error) {

@@ -9,11 +9,16 @@ if (!cash_pv_update_data){
     redirection("cash_transaction_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه  القيود المقبوضات الرئيسية")
 }
 
-const obj_cash_pv_update = {pageName : 'cash_pv_update_ar'}
+let href_pageName = 'cashMain_view_ar'
+let href_pageTitle = 'إدارة النقد وما فى حكمه'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_cash_pv_update));
-back_href.href = `cash_pv_view_ar?data=${encodedData}`
+if (cash_pv_update_data && cash_pv_update_data.href_pageName){
+  href_pageName = cash_pv_update_data.href_pageName
+  href_pageTitle = cash_pv_update_data.href_pageTitle
+}
 
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 const date1 = document.querySelector('#date1');
 const note_inpute = document.querySelector('#note_inpute');
@@ -75,13 +80,13 @@ try {
         "/api/cash_pv_update",
         {x, main_account, total, datex, general_note, posted_array},
         'cash_transaction_permission', 'update',
-        50,
+        60,
         true,"هل تريد تعديل بيانات سند الدفع ؟",
         true,
         false,false,
-        true,cash_pv_update_data,'cash_pv_view_ar',
-        false,false,
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       
       )
@@ -105,13 +110,13 @@ async function deleteX() {
         "/api/cash_pv_delete",
         {x, datex},
         'cash_transaction_permission', 'delete',
-        50,
+        60,
         true,"هل تريد حذف بيانات سند الدفع ؟",
         true,
         false,false,
-        true,cash_pv_update_data,"cash_pv_view_ar",
-        true,"cash_pv_view_ar",
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       )
     
@@ -145,7 +150,7 @@ async function getTransactionData_fn() {
     "/getCash_pv_AccountsData2",
     {x},
     'cash_transaction_permission','view',
-    15,
+    60,
     false,"",
     true,
     true,content_space,

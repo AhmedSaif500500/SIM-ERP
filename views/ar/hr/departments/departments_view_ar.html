@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>الاقسام الادراية</title>
+  <title>SIM-ERP</title>
   <link rel="stylesheet" href="/public/css/style.css" />
   <link rel="stylesheet" href="/public/css/fontawesome-free-6.4.2-web/css/all.min.css" />
   <link rel="stylesheet" href="/public/flatpickr/dist/flatpickr.min.css">
@@ -47,7 +47,7 @@
 
          <div id="page_content" style="display: none;">
             <div class="btn_container">
-              <a href="departments_add_ar" id="btn_new_employee" class="btn_new">جديد</a>
+              <button class="btn_new" id="newBtn">جديد</button>
             </div>
             <!-- search in table -->
             <div class="search_in_table_div">
@@ -66,61 +66,59 @@
 
 
 
-                <!-- acc no  -->
-                <div class="filter_div_sub">
-                  <div class="row">
-                    <span class="reference_input_checkbox"><input type="checkbox" id="checkbox_account_no"
-                        title="اظهار العمود"
-                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                    <div class="checkbox_label">المعرف</div>
-                  </div>
-                  <div class="select_and_input_div hidden_select_and_input_div">
-                    <select id="select_account_no" class="dark_select hover"
-                      onchange="filter_insideSelect_string_column_with_input(this)">
-                      <option value="0" selected>اظهار الكل</option>
-                      <option value="1">يحتوى على</option>
-                      <option value="2">لا يحتوى على</option>
-                      <option value="3">فارغ</option>
-                      <option value="4">ليس فارغ</option>
-                    </select>
-                    <input id="input_account_no" name="inside_input_search" type="search" class="input_text_sm hover"
-                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
-                  </div>
-                </div>
+            <!-- account_no  -->
+            <div class="filter_div_sub" id="f1_div">
+              <div class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f1_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">المعرف</div>
+              </div>
+              <div id="f1_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                <select id="f1_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f1_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
 
-                <!-- ACCOUNT NAME -->
-                <div class="filter_div_sub">
-                  <div class="row">
-                    <!-- no checkbox here -->
-                    <div class="checkbox_label">الاسم</div>
-                  </div>
-                  <div class="select_and_input_div">
-                    <select id="select_account_name" class="dark_select hover"
-                      onchange="filter_insideSelect_string_column_with_input(this)">
-                      <option value="0" selected>اظهار الكل</option>
-                      <option value="1">يحتوى على</option>
-                      <option value="2">لا يحتوى على</option>
-                      <option value="3">فارغ</option>
-                      <option value="4">ليس فارغ</option>
-                    </select>
-                    <input id="input_account_name" name="inside_input_search" type="search" class="input_text_sm hover"
-                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
-                  </div>
-                </div>
 
+            <!-- account_name  -->
+            <div class="filter_div_sub" id="f2_div">
+              <div class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f2_checkbox" title="اظهار العمود"
+                    onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" checked disabled></span>
+                <div class="checkbox_label">اسم الاصل</div>
+              </div>
+              <div id="f2_selectAndInput_div" class="select_and_input_div">
+                <select id="f2_select" class="dark_select hover"
+                  onchange="filter_insideSelect_string_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">يحتوى على</option>
+                  <option value="2">لا يحتوى على</option>
+                  <option value="3">فارغ</option>
+                  <option value="4">ليس فارغ</option>
+                </select>
+                <input id="f2_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
+              </div>
+            </div>
 
 
                 <!-- another info  -->
-
-                <div class="filter_div_sub">
+                <div class="filter_div_sub" id="f3_div">
                   <div class="row">
-                    <span class="reference_input_checkbox"><input type="checkbox" id="checkbox_another_info"
-                        title="اظهار العمود"
-                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                    <div class="checkbox_label">معلومات اخرى</div>
+                    <span class="reference_input_checkbox"><input type="checkbox" id="f3_checkbox" title="اظهار العمود"
+                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)" disabled></span>
+                    <div class="checkbox_label">اسم الاصل</div>
                   </div>
-                  <div class="select_and_input_div hidden_select_and_input_div">
-                    <select id="select_another_info" class="dark_select hover"
+                  <div id="f3_selectAndInput_div" class="select_and_input_div hidden_select_and_input_div">
+                    <select id="f3_select" class="dark_select hover"
                       onchange="filter_insideSelect_string_column_with_input(this)">
                       <option value="0" selected>اظهار الكل</option>
                       <option value="1">يحتوى على</option>
@@ -128,34 +126,32 @@
                       <option value="3">فارغ</option>
                       <option value="4">ليس فارغ</option>
                     </select>
-                    <input id="input_another_info" name="inside_input_search" type="search" class="input_text_sm hover"
+                    <input id="f3_input" name="inside_input_search" type="search" class="input_text_sm hover"
                       style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'string')">
                   </div>
                 </div>
-
-
-                <!-- balance  -->
-                <div class="filter_div_sub">
-                  <div class="row">
-                    <span class="reference_input_checkbox"><input type="checkbox" id="check_balance" checked
-                        title="اظهار العمود"
-                        onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
-                    <div class="checkbox_label">الرصيد</div>
-                  </div>
-                  <div class="select_and_input_div">
-                    <select id="select_balance" class="dark_select hover"
-                      onchange="filter_insideSelect_number_column_with_input(this)">
-                      <option value="0" selected>اظهار الكل</option>
-                      <option value="1">اكبر من</option>
-                      <option value="2">اصغر من</option>
-                      <option value="3">تساوى</option>
-                      <option value="4">صفر</option>
-                      <option value="5">ليس صفر</option>
-                    </select>
-                    <input id="input_balance" name="inside_input_search" type="search" class="input_text_sm hover"
-                      style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
-                  </div>
-                </div>
+    
+            <!-- الرصيد -->
+            <div id="f4_div" class="filter_div_sub">
+              <div class="row">
+                <span class="reference_input_checkbox"><input type="checkbox" id="f4_checkbox" title="اظهار العمود" checked onchange="filter_outsideCheckbox_string_column_with_select_and_input(this)"></span>
+                <div class="checkbox_label">الرصيد</div>
+              </div>
+              <div id="f4_selectAndInput_div" class="select_and_input_div">
+                <select id="f4_select" class="dark_select hover"
+                  onchange="filter_insideSelect_number_column_with_input(this)">
+                  <option value="0" selected>اظهار الكل</option>
+                  <option value="1">اكبر من</option>
+                  <option value="2">اصغر من</option>
+                  <option value="3">تساوى</option>
+                  <option value="4">صفر</option>
+                  <option value="5">ليس صفر</option>
+                </select>
+                <input id="f4_input" name="inside_input_search" type="search" class="input_text_sm hover"
+                  style="display: none;" placeholder="مطلوب" oninput="check_parse(this,'number')">
+              </div>
+            </div>  
+            
 
 
 

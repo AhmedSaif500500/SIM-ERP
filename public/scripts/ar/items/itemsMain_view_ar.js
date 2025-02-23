@@ -18,11 +18,12 @@ function showData(){
 
     items_btn.onclick = function(){
     sessionStorage.removeItem('itemsViewArray');
+    sessionStorage.removeItem('items_table_viewArray');
     window.location.href = "/items_view_ar";
   }
   
   itemsLocations_btn.onclick = function(){
-    sessionStorage.removeItem('itemsLocationsViewArray');
+    sessionStorage.removeItem('itemsLocations_update_data');
     window.location.href = "/itemsLocations_view_ar";
   }
   
@@ -32,7 +33,7 @@ function showData(){
   }
 
   services_btn.onclick = function(){
-    sessionStorage.removeItem('services_Array');
+    sessionStorage.removeItem('services_viewArray');
     window.location.href = "/services_view_ar";
   }
 

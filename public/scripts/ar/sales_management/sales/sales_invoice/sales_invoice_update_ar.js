@@ -9,10 +9,16 @@ if (!sales_invoice_update_data){
     redirection("sales_invoice_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المبيعات الرئيسية")
 }
 
-const obj_sales_invoice_update = {pageName : 'sales_invoice_update_ar'}
+let href_pageName = 'salesMain_view_ar'
+let href_pageTitle = 'إدارة المبيعات'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_sales_invoice_update));
-back_href.href = `sales_invoice_view_ar?data=${encodedData}`
+if (sales_invoice_update_data && sales_invoice_update_data.href_pageName){
+  href_pageName = sales_invoice_update_data.href_pageName
+  href_pageTitle = sales_invoice_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const date1 = document.querySelector('#date1');
@@ -150,16 +156,16 @@ document.querySelector(`#btn_update`).onclick = async function () {
           true,"هل تريد حفظ بيانات فاتورة المبيعات ؟",
           true,
           false,false,false,false,false,
-          true,"sales_invoice_view_ar",
-          false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
         
         
-    if (post){
-      sessionStorage.removeItem('sales_invoice_update_data')
-      sessionStorage.removeItem('sales_invoice_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('sales_invoice_update_data')
+    //   sessionStorage.removeItem('sales_invoice_ViewArray')
+    // }
 
     } else {
       showAlert('fail', 'لا توجد بيانات')
@@ -191,14 +197,14 @@ const post = await new_fetchData_postAndGet(
   true,"هل تريد حذف بيانات امر البيع ؟",
   true,
   false,false,false,false,false,
-  true,"sales_invoice_view_ar",
-  false,false,
+  true,href_pageName,
+  true,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('sales_order_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('sales_order_ViewArray')
+// }
 
 
   } catch (error) {
@@ -248,6 +254,8 @@ async function createSlalesReturns(){
     
     const sales_invoice_update_data = {
       x: headerDataArray.id,
+      href_pageName : `sales_invoice_update_ar`,
+      href_pageTitle : 'تحديث فاتورة المبيعات',
       customer_id: headerDataArray.account_id,
       invoiceToReturns: true
     };

@@ -27,7 +27,8 @@ function showData(){
 
    
   account_statment.onclick = function(){
-    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    sessionStorage.removeItem('accountStatement_view_Array');
+    sessionStorage.removeItem('obj_statement');
     window.location.href = "/account_statement_view_ar";
   }
 

@@ -1,6 +1,12 @@
 setActiveSidebar("transaction_view_ar");
 pagePermission("view", "transaction_permission");
 
+const newBtn = document.querySelector('#newBtn');
+newBtn.onclick = function (){
+    // sessionStorage.removeItem('purshases_order_update_data')
+    window.location.href = "/transaction_add_ar";
+  }
+
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
@@ -15,88 +21,86 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-let datex_div = filter_div.querySelector(`#datex_div`);
-let checkbox_datex_div = filter_div.querySelector(`#checkbox_datex_div`);
-let checkbox_datex = filter_div.querySelector(`#checkbox_datex`);
-let select_datex = filter_div.querySelector(`#select_datex`);
-let input_start_date1 = filter_div.querySelector(`#input_start_date1`); input_start_date1.value = firstDayOfYear;
-let input_end_date1 = filter_div.querySelector(`#input_end_date1`); input_end_date1.value = lastDayOfYear;
+//! datex
+let f0_div = filter_div.querySelector(`#f0_div`);
+let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
+let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
+let f0_select = filter_div.querySelector(`#f0_select`);
+let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
 
-let referenceCONCAT_div = filter_div.querySelector(`#referenceCONCAT_div`);
-let checkbox_referenceCONCAT = filter_div.querySelector(`#checkbox_referenceCONCAT`);
-let referenceCONCAT_selectAndInput_div = filter_div.querySelector(`#referenceCONCAT_selectAndInput_div`);
-let select_referenceCONCAT = filter_div.querySelector(`#select_referenceCONCAT`);
-let input_referenceCONCAT = filter_div.querySelector(`#input_referenceCONCAT`);
+//! reference
+let f1_div = filter_div.querySelector(`#f1_div`);
+let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
+let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
+let f1_select = filter_div.querySelector(`#f1_select`);
+let f1_input = filter_div.querySelector(`#f1_input`);
 
-let note_div = filter_div.querySelector(`#note_dive`);
-let checkbox_note = filter_div.querySelector(`#checkbox_note`);
-let note_selectAndInput_div = filter_div.querySelector(`#note_selectAndInput_div`);
-let select_note = filter_div.querySelector(`#select_note`);
-let input_note = filter_div.querySelector(`#input_note`);
+//! note
+let f2_div = filter_div.querySelector(`#f2_div`);
+let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_input = filter_div.querySelector(`#f2_input`);
 
-
-let balance3_div = filter_div.querySelector(`#balance3_div`);
-let checkbox_balance3 = filter_div.querySelector(`#checkbox_balance3`);
-let balance3_selectAndInput_div = filter_div.querySelector(`#balance3_selectAndInput_div`);
-let select_balance3 = filter_div.querySelector(`#select_balance3`);
-let input_balance3 = filter_div.querySelector(`#input_balance3`);
+//! total_value
+let f3_div = filter_div.querySelector(`#f3_div`);
+let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
+let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
+let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_input = filter_div.querySelector(`#f3_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
+const indices = [0, 1, 2, 3]; // ضع هنا الأرقام التي تريد تضمينها
 
 function backUp_filter_div_conditions() {
+    const conditions = {};
 
-    const conditions = {
+    indices.forEach(index => {
+        // بناء الأسماء تلقائيًا باستخدام template literals
+        const fDiv = window[`f${index}_div`];
+        const fInput = window[`f${index}_input`];
+        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+        const fCheckbox = window[`f${index}_checkbox`];
+        const fSelect = window[`f${index}_select`];
+        const fCheckboxDiv = window[`f${index}_checkbox_div`];
+        const fInputStartDate1 = window[`f${index}_input_start_date1`];
+        const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+        // التحقق من وجود كل عنصر قبل تخزين قيمته
+        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
+        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
+        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
+        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
+        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
+        if (fInput) conditions[`f${index}_input`] = fInput.value;
         
-        datex_div_display: window.getComputedStyle(datex_div).display,
-        checkbox_datex_div_display: window.getComputedStyle(checkbox_datex_div).display,
-        checkbox_datex: checkbox_datex.checked,
-        select_datex: select_datex.value,
-        input_start_date1: input_start_date1.value,
-        input_end_date1: input_end_date1.value,
+        // التحقق من العناصر الإضافية
+        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
+        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
+        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
+    });
 
-        referenceCONCAT_div_display: window.getComputedStyle(referenceCONCAT_div).display,
-        input_referenceCONCAT_display: window.getComputedStyle(input_referenceCONCAT).display,
-        referenceCONCAT_selectAndInput_div_isHidden : referenceCONCAT_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_referenceCONCAT: checkbox_referenceCONCAT.checked,
-        select_referenceCONCAT: select_referenceCONCAT.value,
-        input_referenceCONCAT: input_referenceCONCAT.value,
-
-        note_div_display: window.getComputedStyle(note_div).display,
-        input_note_display: window.getComputedStyle(input_note).display,
-        note_selectAndInput_div_isHidden : note_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_note: checkbox_note.checked,
-        select_note: select_note.value,
-        input_note: input_note.value,
-
-        balance3_div_display: window.getComputedStyle(balance3_div).display,
-        input_balance3_display: window.getComputedStyle(input_balance3).display,
-        balance3_selectAndInput_div_isHidden : balance3_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_balance3: checkbox_balance3.checked,
-        select_balance3: select_balance3.value,
-        input_balance3: input_balance3.value,
-
+    // الشروط الأخرى
+    Object.assign(conditions, {
         is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains(`hidden_height`) ? true : false,
+        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
         sub_h2_header: sub_h2_header.textContent,
-        
+        back_href: back_href.href,
+        back_title: back_href.title
+    });
 
-        back_href: back_href.herf,
-        back_title: back_href.title,
-    };
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    const conditionsArray = JSON.parse(sessionStorage.getItem('transactionViewArray')) || [];
 
-
-    // استرجاع المصفوفة المحفوظة في sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem(`transactionViewArray`)) || [];
-
-    
-    // إضافة العنصر الجديد إلى المصفوفة
+    // إضافة الكائن الجديد إلى المصفوفة
     conditionsArray.push(conditions);
 
     // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem(`transactionViewArray`,JSON.stringify(conditionsArray));
-   
+    sessionStorage.setItem('transactionViewArray', JSON.stringify(conditionsArray));
 }
+
 
 back_href.onclick = async function (event) {
     event.preventDefault();
@@ -107,7 +111,7 @@ back_href.onclick = async function (event) {
     if (!array || array.length <= 1) {
     
    
-            window.location.href = `notes_ar`;
+            window.location.href = `note_ar_view_ar`;
        
     }else{
 
@@ -120,75 +124,67 @@ back_href.onclick = async function (event) {
 function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
     let conditions;
 
-    // استرجاع المصفوفة المحفوظة في sessionStorage
+    // استرجاع المصفوفة المحفوظة من sessionStorage
     let conditionsArray = JSON.parse(sessionStorage.getItem("transactionViewArray")) || [];
-  
+    
     // التحقق إذا كانت المصفوفة تحتوي على عناصر
     if (conditionsArray.length > 0) {
-        // استحضار آخر عنصر وحذفه من المصفوفة
+        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
         conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
 
-        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1){
-
-         // حذف العنصر الاخير والقبل الاخير من المصفوفة
-        conditionsArray.splice(-`${NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore-1}`);
-
-        // حفظ المصفوفة المحدثة في sessionStorage بعد الحذف
-        sessionStorage.setItem("transactionViewArray",JSON.stringify(conditionsArray));
+        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
+        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
+            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
+            sessionStorage.setItem("transactionViewArray", JSON.stringify(conditionsArray));
         }
-
     } else {
-        return
+        return;
     }
 
     if (conditions) {
+        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
+        indices.forEach(index => {
+            const fDiv = window[`f${index}_div`];
+            const fInput = window[`f${index}_input`];
+            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+            const fCheckbox = window[`f${index}_checkbox`];
+            const fSelect = window[`f${index}_select`];
+            const fCheckboxDiv = window[`f${index}_checkbox_div`];
+            const fInputStartDate1 = window[`f${index}_input_start_date1`];
+            const fInputEndDate1 = window[`f${index}_input_end_date1`];
 
-        datex_div.style.display = conditions.datex_div_display;
-        checkbox_datex_div.style.display = conditions.checkbox_datex_div_display;
-        checkbox_datex.checked = conditions.checkbox_datex;
-        select_datex.value = conditions.select_datex;
-        input_start_date1.value = conditions.input_start_date1;
-        input_end_date1.value = conditions.input_end_date1;
+            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
+            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
+            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
+            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
+            if (fSelect) fSelect.value = conditions[`f${index}_select`];
+            if (fInput) fInput.value = conditions[`f${index}_input`];
+            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
+            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
+            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
+            if (fSelectAndInputDiv) {
+                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
+                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
+                } else {
+                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
+                }
+            }
+        });
 
-
-        referenceCONCAT_div.style.display = conditions.referenceCONCAT_div_display;
-        input_referenceCONCAT.style.display = conditions.input_referenceCONCAT_display;
-        checkbox_referenceCONCAT.checked = conditions.checkbox_referenceCONCAT;
-        if (conditions.referenceCONCAT_selectAndInput_div_isHidden){referenceCONCAT_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{referenceCONCAT_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_referenceCONCAT.value = conditions.select_referenceCONCAT;
-        input_referenceCONCAT.value = conditions.input_referenceCONCAT;
-
-        note_div.style.display = conditions.note_div_display;
-        input_note.style.display = conditions.input_note_display;
-        checkbox_note.checked = conditions.checkbox_note;
-        if (conditions.note_selectAndInput_div_isHidden){note_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{note_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_note.value = conditions.select_note;
-        input_note.value = conditions.input_note;
-
-        balance3_div.style.display = conditions.balance3_div_display;
-        input_balance3.style.display = conditions.input_balance3_display;
-        if (conditions.balance3_selectAndInput_div_isHidden){balance3_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance3_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        checkbox_balance3.checked = conditions.checkbox_balance3;
-        select_balance3.value = conditions.select_balance3;
-        input_balance3.value = conditions.input_balance3;
-
+        // استرجاع الشروط الأخرى
         sub_h2_header.textContent = conditions.sub_h2_header;
-
         is_filter = conditions.is_filter;
         if (conditions.is_filter_div_hidden) {
             hidden_filter_div();
-    
         } else {
             show_filter_div();
-
         }
 
         back_href.title = conditions.back_title;
-        back_href.href = conditions.back_href; // تأكد من صحة الاسم
+        back_href.href = conditions.back_href;
     }
-
-
 }
+
 
 filter_icon.onclick = () => {
     try {
@@ -198,14 +194,68 @@ filter_icon.onclick = () => {
     }
 };
 
+function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
+    // Check if the elements exist to avoid errors
+    const divElement = window[`${str_f}_div`];
+    const checkbox = window[`${str_f}_checkbox`];
+    const selectElement = window[`${str_f}_select`];
+    const inputElement = window[`${str_f}_input`];
+    const selectAndInputDiv = window[`${str_f}_selectAndInput_div`];
+
+    
+    if (divElement) {
+        divElement.style.display = is_showDiv ? 'flex' : 'none';
+    }
+    
+    if (selectElement) {
+        selectElement.value = 0;
+    }
+
+    if (inputElement) {
+        inputElement.value = '';
+        inputElement.style.display = 'none';
+    }
+
+    if (selectAndInputDiv) {
+        if (is_checkBox) {
+            selectAndInputDiv.classList.remove('hidden_select_and_input_div');
+            checkbox.checked = true
+        } else {
+            selectAndInputDiv.classList.add('hidden_select_and_input_div');
+            checkbox.checked = false
+        }
+    }
+
+    if (is_datex){
+        
+        const datex_checkbox_div = window[`${str_f}_checkbox_div`];
+        const datex_input_start_date1 = window[`${str_f}_input_start_date1`];
+        const datex_input_end_date1 = window[`${str_f}_input_end_date1`];
+    
+        if(datex_checkbox_div){
+            datex_checkbox_div.style.display = 'flex'
+        }
+    
+        if(datex_input_start_date1){
+            datex_input_start_date1.value = firstDayOfYear
+        }
+        if(datex_input_end_date1){
+            datex_input_end_date1.value = lastDayOfYear
+    
+        }
+    
+        }
+    
+}
+
+
 function deafult_checkbox() {
-    searchInput.value = "";
-    checkbox_datex.checked = true;
-    checkbox_referenceCONCAT.checked = true
-    input_referenceCONCAT.value = ""
-    note_div.style.display = `flex`
-    checkbox_note.checked = true;
-    checkbox_balance3.checked = true;
+    call_default_checkbox('f0',true,true,true) // datex
+    call_default_checkbox('f1',true,true,false) // reference
+    call_default_checkbox('f2',true,true,false) // note
+    call_default_checkbox('f3',true,true,false) // total_value
+
+
 }
 
 async function filter_icon_cancel_fn() {
@@ -219,11 +269,7 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            input_start_date1.value = firstDayOfYear;
-            input_end_date1.value = lastDayOfYear;
-            note_div.style.display = "flex";
-            referenceCONCAT_div.style.display = "flex";
-            sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
+            sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
             
             await getData_fn();
             closeDialog();
@@ -255,15 +301,16 @@ async function getData_fn() {
         let start_date;
         let end_date;
 
-        start_date = input_start_date1.value;
-        end_date = input_end_date1.value;
+        start_date = f0_input_start_date1.value;
+        end_date = f0_input_end_date1.value;
+
        
-    
+        //  معلق
         data = await new_fetchData_postAndGet(
             "/get_All_transaction_Data",
             {start_date, end_date},
             "transaction_permission","view",
-            15,
+            50,
             false,'',
             false,
             true,content_space,
@@ -283,8 +330,8 @@ async function getData_fn() {
 
 function is_datexChanged() {
     if (
-        input_start_date1.value !== startDate ||
-        input_end_date1.value !== endDate
+        f0_input_start_date1.value !== startDate ||
+        f0_input_end_date1.value !== endDate
     ) {
 
         return true;
@@ -299,7 +346,7 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
+        sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
         const datechange = is_datexChanged()
         if (datechange){
             await getData_fn();
@@ -346,50 +393,50 @@ function showFirst50RowAtTheBegening() {
 
             const isdatexMatch = 
             filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
-                checkbox_datex,
-                select_datex,
-                input_start_date1,
-                input_end_date1,
+                f0_checkbox,
+                f0_select,
+                f0_input_start_date1,
+                f0_input_end_date1,
                 "datex",
                 row
             );
 
             const isReferenceMatch =
             filterData_number_column_with_showAndHiddenCheckbox(
-                checkbox_referenceCONCAT,
-                select_referenceCONCAT,
-                input_referenceCONCAT,
-                "reference",
+                f1_checkbox,
+                f1_select,
+                f1_input,
+                "referenceconcat",
                 row
             );
 
 
             const isNoteMatch =
                 filterData_string_column_with_showAndHiddenCheckbox(
-                    checkbox_note,
-                    select_note,
-                    input_note,
+                    f2_checkbox,
+                    f2_select,
+                    f2_input,
                     "general_note",
                     row
                 );
 
-
-            const isBalanceMatch3 =
+            const isBalanceMatch =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    checkbox_balance3,
-                    select_balance3,
-                    input_balance3,
+                    f3_checkbox,
+                    f3_select,
+                    f3_input,
                     "total_value",
                     row
                 );
 
 
+
             return (
 
-                isNoteMatch &&
                 isdatexMatch &&
-                isBalanceMatch3 &&
-                isReferenceMatch
+                isReferenceMatch &&
+                isNoteMatch &&
+                isBalanceMatch 
             ); // && otherCondition;
         });
 
@@ -422,12 +469,12 @@ function fillTable() {
         let style_id = `display: none;`;
         let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
         let style_reference = `display: none;`; 
-        let style_referenceCONCAT = `display: table-cell; width: ${checkbox_note.checked ? "auto" : "100%"}; white-space: nowrap; text-align: start`;
-        let style_note = `display:${checkbox_note.checked ? "table-cell" : "none"}; min-width: 25rem; width: 100%; white-space: wrap; text-align: start;`;
-        let style_balance3 = `display:${checkbox_balance3.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
+        let style_referenceconcat = `display: table-cell; width: ${f2_checkbox.checked ? "auto" : "100%"}; white-space: nowrap; text-align: start`;
+        let style_note = `display:${f2_checkbox.checked ? "table-cell" : "none"}; min-width: 25rem; width: 100%; white-space: wrap; text-align: start;`;
+        let style_total_value = `display:${f3_checkbox.checked ? "table-cell" : "none" }; width: auto; white-space: nowrap; text-align: start`;
 
-        total_column3.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        total_column1.value = 0;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -438,27 +485,27 @@ function fillTable() {
                                 <th style="${style_id}">ID</th>
                                 <th style="${style_datex}">التاريخ</th>
                                 <th style="${style_reference}">#</th>
-                                <th style="${style_referenceCONCAT}">#</th>
+                                <th style="${style_referenceconcat}">#</th>
                                 <th style="${style_note}">البيان</th>
-                                <th style="${style_balance3}">قيمة</th>
-                                
+                                <th style="${style_total_value}">قيمة</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
         slice_array1.forEach((row) => {
                 
-            let referenceCONCAT = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
+
+            // let referenceconcat = `${getYear(row.datex)}-${formatToFiveDigits(row.reference)}`
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_update_btn" onclick="table_update_btn_fn(this)">تحرير</button></td>
-                        <td style="${style_id}">${row.id}</td>
-                        <td style="${style_datex}">${row.datex}</td>
-                        <td style="${style_reference}">${row.reference}</td>
-                        <td style="${style_referenceCONCAT}">${referenceCONCAT}</td>
-                        <td style="${style_note}">${row.general_note}</td>
-                        ${tdNumber(true,false,true,row.total_value,style_balance3,total_column3,fn)}                        
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
+                        <td style="${style_id}" class="td_id">${row.id}</td>
+                        <td style="${style_datex}" class="td_datex">${row.datex}</td>
+                        <td style="${style_reference}" class="td_reference">${row.reference}</td>
+                        <td style="${style_referenceconcat}" class="td_referenceconcat">${row.referenceconcat}</td>
+                        <td style="${style_note}" class="td_general_note">${row.general_note}</td>
+                        ${tdNumber(true,false,true,row.total_value,style_total_value,total_column1,fn,'td_total_value')}            
                       </tr>`;
         });
 
@@ -468,9 +515,9 @@ function fillTable() {
                         <td id="footer_style_id1" style="${style_id}"></td>
                         <td id="footer_style_datex" style="${style_datex}"></td>
                         <td id="footer_style_reference" style="${style_reference}"></td>
-                        <td id="footer_style_referenceCONCAT" style="${style_referenceCONCAT}"></td>
+                        <td id="footer_style_referenceCONCAT" style="${style_referenceconcat}"></td>
                         <td id="footer_style_note" style="${style_note}"></td>
-                        <td id="footer_style_balance3" style="${style_balance3}"></td>
+                        <td id="footer_style_total_value" style="${style_total_value}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -497,14 +544,14 @@ function fillTable() {
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_balance3`).textContent = floatToString(true,total_column3.value);
+        tableContainer.querySelector(`#footer_style_total_value`).textContent = floatToString(true,total_column1.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
 
-        startDate = input_start_date1.value;
-        endDate = input_end_date1.value;
+        startDate = f0_input_start_date1.value;
+        endDate = f0_input_end_date1.value;
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
@@ -519,17 +566,17 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const datexInfoMatch = performSearch_Row(checkbox_datex,"datex",searchValue,row);
-            const referenceCONCAT_Match = performSearch_Row(checkbox_referenceCONCAT,"reference",searchValue,row);
-            const noteMatch = performSearch_Row(checkbox_note,"general_note",searchValue,row);
-            const balanceMatch3 = performSearch_Row(checkbox_balance3,"total_value",searchValue,row);
+            const datexInfoMatch = performSearch_Row(f0_checkbox,"datex",searchValue,row);
+            const reference_Match = performSearch_Row(f1_checkbox,"referenceconcat",searchValue,row);
+            const noteMatch = performSearch_Row(f4_checkbox,"general_note",searchValue,row);
+            const totalValueMatch = performSearch_Row(f5_checkbox,"total_value",searchValue,row);
 
             // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
                 datexInfoMatch ||
-                referenceCONCAT_Match ||
+                reference_Match ||
                 noteMatch ||
-                balanceMatch3
+                totalValueMatch
             );
         });
 
@@ -569,8 +616,10 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
-    const permission = await btn_permission("transaction_permission", "update");
+async function table_view_btn_fn(viewBtn) {
+    try {
+    showLoadingIcon(viewBtn)
+    const permission = await btn_permission("transaction_permission", "view"); // معلق
 
     if (!permission) {
         // if false
@@ -579,24 +628,19 @@ async function table_update_btn_fn(updateBtn) {
 
 
     backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row = updateBtn.closest("tr");
-
+    const row = viewBtn.closest("tr");
     const transaction_update_data = {
-        x: row.cells[1].textContent,
-        datex: row.cells[2].textContent,
-        reference: row.cells[3].textContent,
-        referenceCONCAT: row.cells[4].textContent,
-        values: row.cells[6].textContent,
-        note: row.cells[5].textContent,        
+        x: row.querySelector(`.td_id`).textContent,
     };
 
-    
-
-    const transferedData = { transaction_update_data };
-    const encodedData = encodeURIComponent(JSON.stringify(transferedData));
- 
-
-    window.location.href = `transaction_update_ar?data=${encodedData}`;
+    sessionStorage.removeItem('transaction_update_data')
+    sessionStorage.setItem('transaction_update_data', JSON.stringify(transaction_update_data));                            
+    window.location.href = `transaction_update_ar`;
+    hideLoadingIcon(viewBtn)
+} catch (error) {
+    hideLoadingIcon(viewBtn)
+    catch_error(error)
+}
 }
 
 function CheckUrlParams_transaction_update_ar() {
@@ -606,12 +650,9 @@ function CheckUrlParams_transaction_update_ar() {
             "transaction_view_ar",
             "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
         );
-
         if (!urlData || urlData.pageName !== "transaction_update_ar") {
             return true;
         }
-
-    
         if (urlData !== "noParams") {
 
             restore_filter_div_conditions(2)
@@ -629,11 +670,10 @@ function CheckUrlParams_transaction_update_ar() {
 }
 
 
-
 document.addEventListener("DOMContentLoaded", async function () {
     showRedirectionReason();
 
-    sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
+    sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
     
     const result2 = CheckUrlParams_transaction_update_ar();
     if (!result2) {

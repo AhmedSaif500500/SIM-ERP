@@ -8,11 +8,16 @@ const purshases_returns_update_data = JSON.parse(sessionStorage.getItem('purshas
 if (!purshases_returns_update_data){
     redirection("purshases_returns_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المشتريات الرئيسية")
 }
+let href_pageName = 'purshasesMain_view_ar'
+let href_pageTitle = 'إدارة المشتريات'
 
-const obj_purshases_returns_update = {pageName : 'purshases_returns_update_ar'}
+if (purshases_returns_update_data && purshases_returns_update_data.href_pageName){
+  href_pageName = purshases_returns_update_data.href_pageName
+  href_pageTitle = purshases_returns_update_data.href_pageTitle
+}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_purshases_returns_update));
-back_href.href = `purshases_returns_view_ar?data=${encodedData}`
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const date1 = document.querySelector('#date1');
@@ -143,20 +148,20 @@ document.querySelector(`#btn_update`).onclick = async function () {
           "/api/purshases_returns_update",
           posted_Obj,
           'purshases_returns_permission', 'update',
-          50,
+          60,
           true,"هل تريد تعديل بيانات مرتجع المشتريات ؟",
           true,
           false,false,false,false,false,
-          true,"purshases_returns_view_ar",
-          false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
         
         
-    if (post){
-      sessionStorage.removeItem('purshases_returns_update_data')
-      sessionStorage.removeItem('purshases_returns_ViewArray')
-    }
+    // if (post){
+    //   sessionStorage.removeItem('purshases_returns_update_data')
+    //   sessionStorage.removeItem('purshases_returns_ViewArray')
+    // }
 
     } else {
       showAlert('fail', 'لا توجد بيانات')
@@ -184,18 +189,18 @@ const post = await new_fetchData_postAndGet(
   "/api/purshases_returns_delete",
   {x,datex},
   'purshases_returns_permission', 'delete',
-  15,
+  60,
   true,"هل تريد حذف بيانات مرتجع المشتريات ؟",
   true,
   false,false,false,false,false,
-  true,"purshases_returns_view_ar",
-  false,false,
+  true,href_pageName,
+  true,href_pageName,
    "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
 )
 
-if (post){
-sessionStorage.removeItem('purshases_order_ViewArray')
-}
+// if (post){
+// sessionStorage.removeItem('purshases_order_ViewArray')
+// }
 
 
   } catch (error) {

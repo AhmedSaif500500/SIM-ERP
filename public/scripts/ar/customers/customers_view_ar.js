@@ -1,10 +1,7 @@
-setActiveSidebar("vendors_view_ar");
-//pagePermission("view", "users_permission");
+setActiveSidebar("customers_view_ar");
+//pagePermission("view", "customers_permission");
 
-const h2_text_div = document.querySelector(`#h2_text_div`);
-const sub_h2_header = document.querySelector(`#sub_h2_header`);
-let is_filter = false;
-const back_href = document.querySelector(`#back_href`);
+
 
 let data = [];
 let array1 = [];
@@ -18,6 +15,11 @@ let Qkey;
 let back_href_page;
 let back_title_page;
 
+
+const h2_text_div = document.querySelector(`#h2_text_div`);
+const sub_h2_header = document.querySelector(`#sub_h2_header`);
+let is_filter = false;
+const back_href = document.querySelector(`#back_href`);
 
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
@@ -100,14 +102,16 @@ let f10_select = filter_div.querySelector(`#f10_select`);
 let f10_input = filter_div.querySelector(`#f10_input`);
 
 
+
 const btn_do = filter_div.querySelector(`#btn_do`);
+
 const indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // ضع هنا الأرقام التي تريد تضمينها
+
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-    await back_href_fn1(getData_fn, `vendors_viewArray`, `vendors_view_ar`, `notes_ar`)
+    await back_href_fn1(getData_fn, `customers_viewArray`, `customers_view_ar`, `notes_ar`)
 };
-
 
 
 filter_icon.onclick = () => {
@@ -180,7 +184,7 @@ async function filter_icon_cancel_fn() {
             
             showFirst50RowAtTheBegening()
             closeDialog();
-            sessionStorage.removeItem('vendorsViewArray');
+            sessionStorage.removeItem('customersViewArray');
             conditionsArray = []
             
         }
@@ -197,26 +201,28 @@ filter_icon_cancel.onclick = async () => {
     await filter_icon_cancel_fn();
 };
 
+
+
 async function getData_fn() {
     try {
 
         data = await new_fetchData_postAndGet(
-            '/get_All_vendors_Data',
+            '/get_All_customers_Data',
             {},
-            'vendors_permission','view',
+            'customers_permission','view',
             60,
             false,"",
             true,
             false,false,
             false,false,false,
             false,false,
-            true,`notes_ar`,
+            false,false,
             "حدث خطأ اثناء معالجه البيانات"
         )
-               // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+              // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
             //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             //    back_href.title = back_href_page;
-            //    back_href.href = back_title_page; 
+            //    back_href.href = back_title_page;
 
         showFirst50RowAtTheBegening();
     } catch (error) {
@@ -233,15 +239,16 @@ async function Execution() {
         is_filter = true
         searchInput.value = "";
 
-        permissionName = 'vendors_permission'
+
+        permissionName = 'customers_permission'
         start_date = false
         end_date = false
         Qkey = false
-        back_href_page = 'vendors_view_ar'
-        back_title_page = 'الموردين'
+        back_href_page = 'customers_view_ar'
+        back_title_page = 'العملاء'
 
         showFirst50RowAtTheBegening();
-        backUp_page1(`vendors_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        backUp_page1(`customers_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
     } catch (error) {
         catch_error(error);
     } finally {
@@ -299,7 +306,7 @@ function fillTable() {
 
 
         total_column1.value = 0;
-        let fn = `onclick = "table_view_btn_fn(this)"`;
+        let fn1 = `onclick = "table_balance1_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -326,21 +333,20 @@ function fillTable() {
         slice_array1.forEach((row) => {
                 
 
-
             tableHTML +=
                      `<tr>
                         <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
-                        <td style="${style_id}">${row.id}</td>
-                        <td style="${account_no}">${row.account_no}</td>
-                        <td style="${account_name}">${row.account_name}</td>
-                        <td style="${credit_limit}">${row.credit_limit}</td>
-                        <td style="${email}">${row.email}</td>
-                        <td style="${tasgel_darepy}">${row.tasgel_darepy}</td>
-                        <td style="${legal_info}">${row.legal_info}</td>
-                        <td style="${contact_info}">${row.contact_info}</td>
-                        <td style="${delivery_adress}">${row.delivery_adress}</td>
-                        <td style="${banking_info}">${row.banking_info}</td>
-                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn, 'td_balance')}
+                        <td style="${style_id}" class="td_id">${row.id}</td>
+                        <td style="${account_no} class="td_account_no"">${row.account_no}</td>
+                        <td style="${account_name}" class="td_account_name">${row.account_name}</td>
+                        <td style="${credit_limit}" class="td_credit_limit">${row.credit_limit}</td>
+                        <td style="${email}" class="td_email">${row.email}</td>
+                        <td style="${tasgel_darepy}" class="td_tasgel_darepy">${row.tasgel_darepy}</td>
+                        <td style="${legal_info}" class="td_legal_info">${row.legal_info}</td>
+                        <td style="${contact_info}" class="td_contact_info">${row.contact_info}</td>
+                        <td style="${delivery_adress}" class="td_delivery_adress">${row.delivery_adress}</td>
+                        <td style="${banking_info}" class="td_banking_info">${row.banking_info}</td>
+                        ${tdNumber(true,false,true,row.balance,balance,total_column1,fn1,'td_balance')}
                         <td style="${is_allow_to_buy_and_sell}" class="td_is_allow_to_buy_and_sell">${row.is_allow_to_buy_and_sell}</td>                      
                       </tr>`;
         });
@@ -403,7 +409,8 @@ function fillTable() {
 function showFirst50RowAtTheBegening() {
     try {
         page_content.style.display = "none";
-        
+
+
         filteredData_Array = data.filter((row) => {
 
             const f1_match = filterData_string_column_with_showAndHiddenCheckbox(f1_checkbox,f1_select,f1_input,"account_no",row);
@@ -432,6 +439,7 @@ function showFirst50RowAtTheBegening() {
             ); // && otherCondition;
         });
 
+        // QKey = null;
 
         array1 = filteredData_Array.slice();
 
@@ -515,7 +523,8 @@ searchInput.addEventListener("keydown", (event) => {
 
 async function table_view_btn_fn(updateBtn) {
     try {
-    const permission = await btn_permission('vendors_permission','view');
+        showLoadingIcon(updateBtn)
+    const permission = await btn_permission('customers_permission','update');
 
     if (!permission){ // if false
         return;
@@ -523,10 +532,10 @@ async function table_view_btn_fn(updateBtn) {
 
     const row  = updateBtn.closest("tr")
     
-    const vendors_update_data = {
+    const obj_customers_view = {
     x: row.cells[1].textContent,
-    href_pageName : `vendors_view_ar`,
-    href_pageTitle : 'الموردين',
+    href_pageName : `customers_view_ar`,
+    href_pageTitle : 'العملاء',
     account_no_input: row.cells[2].textContent,
     account_name_input: row.cells[3].textContent,
     credit_limit: row.cells[4].textContent,
@@ -537,12 +546,10 @@ async function table_view_btn_fn(updateBtn) {
     delivery_adress_input:  row.cells[9].textContent,
     banking_info_input: row.cells[10].textContent,
     is_allow_to_buy_and_sell: row.querySelector(`.td_is_allow_to_buy_and_sell`).textContent,
-
 }
-
-    sessionStorage.removeItem('vendors_update_data')
-    sessionStorage.setItem('vendors_update_data', JSON.stringify(vendors_update_data));                            
-    window.location.href = `vendors_update_ar`;
+    sessionStorage.removeItem('obj_customers_view')
+    sessionStorage.setItem('obj_customers_view', JSON.stringify(obj_customers_view));                            
+    window.location.href = `customers_update_ar`;
 } catch (error) {
     catch_error(error)
 } finally {
@@ -550,26 +557,57 @@ async function table_view_btn_fn(updateBtn) {
 }
 }
 
+
+
+
+async function table_balance1_btn_fn(balanceBtn1) {
+    try {
+    const permission = await btn_permission('customers_permission','view');
+
+    if (!permission){ // if false
+        return;
+    };
+
+    const row  = balanceBtn1.closest("tr")
+    
+    const obj_statement = {
+    x: row.querySelector(`.td_id`).textContent,
+    permissionName : 'customers_permission',
+    start_date : firstDayOfYear,
+    end_date : lastDayOfYear,
+    back_href_page : `customers_view_ar`,
+    back_title_page : 'العملاء'
+}
+    sessionStorage.removeItem('obj_statement')
+    sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));                            
+    window.location.href = `account_statement_view_ar`;
+} catch (error) {
+    catch_error(error)
+}
+};
+
+
+
 document.addEventListener("DOMContentLoaded", async function () {
     try {
         showLoadingIcon(content_space)
         showRedirectionReason();
-        let conditionsArray = JSON.parse(sessionStorage.getItem("vendors_viewArray")) || [];
+        let conditionsArray = JSON.parse(sessionStorage.getItem("customers_viewArray")) || [];
         if (conditionsArray.length === 0){
         
-            permissionName = 'vendors_permission'
-            start_date = false
-            end_date = false
+            permissionName = 'customers_permission'
+            start_date = firstDayOfYear
+            end_date = lastDayOfYear
             Qkey = null
             back_href_page = 'notes_ar'
             back_title_page = 'الملاحاظات'
     
             pagePermission("view", permissionName);  // معلق
-            sessionStorage.removeItem('vendors_viewArray');
-            backUp_page1(`vendors_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
-            await restore_page1(getData_fn, `vendors_viewArray`)
+            sessionStorage.removeItem('customers_viewArray');
+            backUp_page1(`customers_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `customers_viewArray`)
         } else {
-            await restore_page1(getData_fn, `vendors_viewArray`)
+            await restore_page1(getData_fn, `customers_viewArray`)
         }
     
     } catch (error) {
@@ -581,14 +619,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 async function importData(){
-    const permission = await btn_permission('vendors_permission', 'add');
+    const permission = await btn_permission('customers_permission', 'add');
 
     if (!permission) {
         showAlert(`warning`, `⚠️ عذرا لا تملك الصلاحية لاستيراد البيانات`)
       return;
     };
 
-    window.location.href = 'import_data_vendors';
+    window.location.href = 'import_data_customers';
 }
 
 
@@ -598,7 +636,6 @@ function handle_fn_options(){
     `;
     fn_options_div.insertAdjacentHTML('afterbegin', newDivs);
   }
-
 
 window.addEventListener("beforeprint", function () {
     beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني

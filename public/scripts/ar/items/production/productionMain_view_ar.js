@@ -13,12 +13,12 @@ function showData(){
 
 
   forms_btn.onclick = function(){
-    sessionStorage.removeItem('production_forms_ViewArray');
+    sessionStorage.removeItem('production_forms_viewArray');
     window.location.href = "/production_forms_view_ar";
   }
   
   orders_btn.onclick = function(){
-    sessionStorage.removeItem('production_orders_ViewArray');
+    sessionStorage.removeItem('production_orders_viewArray');
     window.location.href = "/production_orders_view_ar";
   }
   

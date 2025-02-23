@@ -1,60 +1,17 @@
-//setActiveSidebar("salesMain_view_ar");  
-//pagePermission("view", "sales_invoice_permission");  // معلق
-
-/*
-const newBtn = document.querySelector('#newBtn');
-newBtn.onclick = function (){
-    sessionStorage.removeItem('sales_invoice_update_data')
-    window.location.href = "/sales_invoice_add_ar";
-  }
-*/
-
-//account_statement_view_ar.js
 
 
-//! send
-/*
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
 
-const =effects_update_data {
-    x = id,
-    sd = start_date
-    ed = end_date
-    pn = 'pageName'
-}
+let permissionName;
+let start_date;
+let end_date;
+let Qkey;
+let back_href_page;
+let back_title_page;
 
-const transferedData = { effects_update_data };
-const encodedData = encodeURIComponent(JSON.stringify(transferedData));
-window.location.href = `effects_update_ar?data=${encodedData}`;
-*/
-
-//!recieve
-/*
-let effects_update_data = {}
-let is_coming_from_effects_view = false
-let urlData = getURLData('data','effects_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة المؤثرات')
-let effects_data = urlData.effects_update_data
-function CheckUrlParams (){
-  try {
-      if (effects_data && effects_data !== 'noParams'){
-        effects_update_data = {pageName : 'effects_update_ar',}
-            const encodedData = encodeURIComponent(JSON.stringify(effects_update_data));
-            back_href.href = `effects_view_ar?data=${encodedData}`
-            is_coming_from_effects_view = true
-            return true
-      }else if(effects_data && effects_data === 'noParams'){
-            return true
-      }else{
-          return false
-      }
-              
-  } catch (error) {
-      catch_error(error)
-      return false
-  }
-}
-
-x = effects_data.x
-  */
 
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
@@ -63,14 +20,12 @@ let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 const account_type_select = document.querySelector(`#account_type_select`);
 
-let startDate = firstDayOfYear;
-let endDate = lastDayOfYear;
+start_date = firstDayOfYear;
+start_date = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
-let start_date;
-let end_date;
-let x;
+
 
 const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
@@ -88,136 +43,14 @@ let f1_input = filter_div.querySelector(`#f1_input`);
 const btn_do = filter_div.querySelector(`#btn_do`);
 const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
 
-function backUp_filter_div_conditions() {
-    const conditions = {};
 
-    indices.forEach(index => {
-        // بناء الأسماء تلقائيًا باستخدام template literals
-        const fDiv = window[`f${index}_div`];
-        const fInput = window[`f${index}_input`];
-        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
-        const fCheckbox = window[`f${index}_checkbox`];
-        const fSelect = window[`f${index}_select`];
-        const fCheckboxDiv = window[`f${index}_checkbox_div`];
-        const fInputStartDate1 = window[`f${index}_input_start_date1`];
-        const fInputEndDate1 = window[`f${index}_input_end_date1`];
-
-        // التحقق من وجود كل عنصر قبل تخزين قيمته
-        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
-        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
-        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
-        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
-        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
-        if (fInput) conditions[`f${index}_input`] = fInput.value;
-        
-        // التحقق من العناصر الإضافية
-        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
-        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
-        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
-    });
-
-    // الشروط الأخرى
-    Object.assign(conditions, {
-        is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
-        sub_h2_header: sub_h2_header.textContent,
-        back_href: back_href.href,
-        back_title: back_href.title
-    });
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    const conditionsArray = JSON.parse(sessionStorage.getItem('accountStatement_view_Array')) || [];
-
-    // إضافة الكائن الجديد إلى المصفوفة
-    conditionsArray.push(conditions);
-
-    // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem('accountStatement_view_Array', JSON.stringify(conditionsArray));
-}
 
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   
-
-    const array = JSON.parse(sessionStorage.getItem(`accountStatement_view_Array`)) || [];
-
-    if (!array || array.length <= 1) {
-    
-   
-            window.location.href = `report_map_ar`;
-       
-    }else{
-
-        restore_filter_div_conditions(2)
-        await getData_fn();
-
-    }
+   await back_href_fn1(getData_fn, `accountStatement_viewArray`, 'account_statement_view_ar', `report_map_ar`)
 };
 
-function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
-    let conditions;
-
-    // استرجاع المصفوفة المحفوظة من sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("accountStatement_view_Array")) || [];
-    
-    // التحقق إذا كانت المصفوفة تحتوي على عناصر
-    if (conditionsArray.length > 0) {
-        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
-        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
-
-        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
-        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
-            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
-            sessionStorage.setItem("accountStatement_view_Array", JSON.stringify(conditionsArray));
-        }
-    } else {
-        return;
-    }
-
-    if (conditions) {
-        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
-        indices.forEach(index => {
-            const fDiv = window[`f${index}_div`];
-            const fInput = window[`f${index}_input`];
-            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
-            const fCheckbox = window[`f${index}_checkbox`];
-            const fSelect = window[`f${index}_select`];
-            const fCheckboxDiv = window[`f${index}_checkbox_div`];
-            const fInputStartDate1 = window[`f${index}_input_start_date1`];
-            const fInputEndDate1 = window[`f${index}_input_end_date1`];
-
-            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
-            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
-            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
-            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
-            if (fSelect) fSelect.value = conditions[`f${index}_select`];
-            if (fInput) fInput.value = conditions[`f${index}_input`];
-            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
-            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
-            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
-            if (fSelectAndInputDiv) {
-                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
-                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
-                } else {
-                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
-                }
-            }
-        });
-
-        // استرجاع الشروط الأخرى
-        sub_h2_header.textContent = conditions.sub_h2_header;
-        is_filter = conditions.is_filter;
-        if (conditions.is_filter_div_hidden) {
-            hidden_filter_div();
-        } else {
-            show_filter_div();
-        }
-
-        back_href.title = conditions.back_title;
-        back_href.href = conditions.back_href;
-    }
-}
 
 
 filter_icon.onclick = () => {
@@ -297,11 +130,11 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
+            sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('accountStatement_view_Array');
+            sessionStorage.removeItem('accountStatement_viewArray');
             conditionsArray = []
             
         }
@@ -319,40 +152,35 @@ filter_icon_cancel.onclick = async () => {
 };
 
 
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
 
-
-async function getData_fn() {
+async function getData_fn(permissionName, x, start_date, end_date) {
     try {       
-
-        const x = document.querySelector(`#dropdown_div1_hidden_input`).value;
-        const start_date = start_date_input.value;
-        const end_date = end_date_input.value;
 
         const d = await new_fetchData_postAndGet(
             "/report_account_statement_view_ar",
             {x, start_date, end_date},
-            "pass","pass",
-            15,
+            permissionName,"view",
+            60,
             false,'',
             false,
-            true,content_space,
+            false,false,
             false,false,'',
             false,'',
             false,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
-        )
-
-        console.log(d);
-        
+        )        
         
         data = d.account_statement
-        account_name = d.account_name
+
+        h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
         
         showFirst50RowAtTheBegening();
+        back_href.title = back_href_page;
+        back_href.href = back_title_page;
+        
+        //return d
+
     } catch (error) {
       catch_error(error)
     }
@@ -364,14 +192,19 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
-            showFirst50RowAtTheBegening();
-        backUp_filter_div_conditions();
-        hideLoadingIcon(content_space);
+
+        back_href_page = 'account_statement_view_ar'
+        back_title_page = 'كشف حساب'
+
+        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+            showFirst50RowAtTheBegening(); 
+            backUp_page1(`accountStatement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
 
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally{
+        hideLoadingIcon(content_space);
+
     }
 }
 
@@ -399,6 +232,7 @@ btn_do.onclick = async () => {
 
 function showFirst50RowAtTheBegening() {
     try {
+
         page_content.style.display = "none";
 
         filteredData_Array = data.filter((row) => {
@@ -454,7 +288,7 @@ function fillTable() {
         total_column1.value = 0;
         total_column2.value = 0;
         total_column3.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "statment_table_balance1_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -462,6 +296,7 @@ function fillTable() {
                         <thead>
                             <tr>
                                 <th style="${style_id}">id</th>
+                                <th style="${style_id}">type</th>
                                 <th style="${style_datex}">التاريخ</th>
                                 <th style="${style_referenceconcat}">المرجع</th>
                                 <th style="${style_row_note}">البيان</th>
@@ -492,19 +327,21 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_id};" class="td_id">${row.account_name}</td>
+                        <td style="${style_id};" class="td_id">${row.x}</td>
+                        <td style="${style_id};" class="td_type">${row.type}</td>
                         <td style="${style_datex};" class="td_datex">${row.datex}</td>
                         <td style="${style_referenceconcat};" class="td_referenceconcat">${row.referenceconcat}</td>
                         <td style="${style_row_note};" class="td_row_note">${row.row_note ? row.row_note : ''}</td>
                         ${tdNumber(true,false,false,+row.debit === 0? '' : +row.debit, style_debit,total_column1,fn,'debit')}
                         ${tdNumber(true,false,false,+row.credit === 0? '' : +row.credit, style_credit,total_column2,fn,'credit')}
-                        ${tdNumber(false,true,false,+row.balance === 0? '' : +row.balance, style_balance,false,fn,'balance')}
+                        ${tdNumber(false,true,false,+row.balance === 0? '' : +row.balance, style_balance,false,false,'balance')}
                       </tr>`;
         });
 
         tableHTML += `
                     <tr class="table_totals_row">
                                 <td id="footer_style_id" style="${style_id}"></td>
+                                <td id="footer_style_type" style="${style_id}"></td>
                                 <td id="footer_style_datex" style="${style_datex}"></td>
                                 <td id="footer_style_referenceconcat" style="${style_referenceconcat}"></td>
                                 <td id="footer_style_row_note" style="${style_row_note}"></td>
@@ -601,67 +438,68 @@ searchInput.addEventListener("keydown", (event) => {
 });
 
 
-/*
-async function table_update_btn_fn(updateBtn) {
-    try {
-    showLoadingIcon(updateBtn)
-    const permission = await btn_permission("sales_invoice_permission", "view");
 
-    if (!permission) {
-        // if false
+async function statment_table_balance1_btn_fn(balanceBtn1) {
+    try {
+    // const permission = await btn_permission('customers_permission','view');
+
+    // if (!permission){ // if false
+    //     return;
+    // };
+
+    const row  = balanceBtn1.closest("tr")
+     
+    const type = row.querySelector(`.td_type`).textContent
+    const obj = {
+    x: row.querySelector(`.td_id`).textContent,
+    href_pageName : 'account_statement_view_ar',
+    href_pageTitle : 'كشف الحساب'
+    }
+
+    if (!type || !obj.x){
         return;
     }
 
-
-    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row = updateBtn.closest("tr");
-    const sales_invoice_update_data = {
-        x: row.querySelector(`.td_id`).textContent,
-        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        order_id: row.querySelector(`.td_order_id`).textContent,
-    };
-
+    if (+type === 2){
+        sessionStorage.setItem('transaction_update_data', JSON.stringify(obj));                            
+        window.location.href = `transaction_update_ar`;
+    } else if (+type === 3){
+        sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(obj));                            
+        window.location.href = `sales_invoice_update_ar`;
+    } else if (+type === 4){
+        sessionStorage.setItem('sales_returns_update_data', JSON.stringify(obj));                            
+        window.location.href = `sales_returns_update_ar`;
+    } else if (+type === 6){
+        sessionStorage.setItem('purshases_invoice_update_data', JSON.stringify(obj));                            
+        window.location.href = `purshases_invoice_update_ar`;
+    } else if (+type === 7){
+        sessionStorage.setItem('purshases_returns_update_data', JSON.stringify(obj));                            
+        window.location.href = `purshases_returns_update_ar`;
+    } else if (+type === 28){
+        sessionStorage.setItem('cash_rc_update_data', JSON.stringify(obj));                            
+        window.location.href = `cash_rc_update_ar`;
+    } else if (+type === 29){
+        sessionStorage.setItem('cash_pv_update_data', JSON.stringify(obj));                            
+        window.location.href = `cash_pv_update_ar`;
+    } else if (+type === 11){
+        sessionStorage.setItem('cash_transfer_update_data', JSON.stringify(obj));                            
+        window.location.href = `cash_transfer_update_ar`;
+    } else if (+type === 15){
+        sessionStorage.setItem('accumulated_depreciation_update_data', JSON.stringify(obj));                            
+        window.location.href = `accumulated_depreciation_update_ar`;
+    }
     
-    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_invoice_update_data));                            
-    window.location.href = `sales_invoice_update_ar`;
-    hideLoadingIcon(updateBtn)
+    
+    
+
+
+    sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));                            
+    window.location.href = `account_statement_view_ar`;
 } catch (error) {
-    hideLoadingIcon(updateBtn)
     catch_error(error)
 }
-}
-*/
+};
 
-/*
-function CheckUrlParams_salesInvoice_update_ar() {
-    try {
-        const urlData = getURLData(
-            "data",
-            "sales_invoice_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
-        );
-
-        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
-            return true;
-        }
-
-    
-        if (urlData !== "noParams") {
-
-            restore_filter_div_conditions(2)
-
-            return true;
-        } else if (urlData === "noParams") {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        catch_error(error);
-        return false;
-    }
-}
-*/
 
 //#region dialog
 const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
@@ -675,37 +513,49 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
 
 
+
+async function viewReport_fn(x,startDate,endDate) {
+    
+}
+
+
 view_report_btn.onclick = async function () {
     try {
         showLoadingIcon(view_report_btn)
 
-        const x = document.querySelector(`#dropdown_div1_hidden_input`).value
-        if(!x){
+        Qkey = document.querySelector(`#dropdown_div1_hidden_input`).value
+        if(!Qkey){
             showAlert('warning', 'برجاء تحديد الحساب بشكل صحيح')
-            hideLoadingIcon(view_report_btn);
             return;
         }
-        
+        start_date = start_date_input.value;
+        end_date = end_date_input.value;
+        permissionName = `accounts_permissions`
+        back_href_page = 'report_map_ar'
+        back_title_page = 'التقارير'
+
         // is_hiding_zero_balances = checked_hide_zero_balabce.checked
         // is_show_account_no = false
-        await getData_fn();
-        start_date = start_date_input.value ;
-        end_date = end_date_input.value ;
-        h2_text_div.textContent = report_name_input.value ? report_name_input.value : `كشف حساب / ${account_name}` 
-        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
-        
-        const conditionsArray = sessionStorage.getItem(`accountStatement_view_Array`);
-    
-        if (!conditionsArray){
-         
-            backUp_filter_div_conditions();
-        }
 
-        hideLoadingIcon(view_report_btn)
+        const obj_statement = {
+            x: Qkey,
+            permissionName : permissionName,
+            start_date : start_date,
+            end_date : end_date,
+            back_href_page : back_href_page,
+            back_title_page : back_title_page
+        }
+        sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement)); 
+
+        backUp_page1(`accountStatement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        await restore_page1(getData_fn, `accountStatement_viewArray`)
+
         close_dialogx()
     } catch (error) {
-        hideLoadingIcon(view_report_btn)
         catch_error(error)
+    } finally{
+        hideLoadingIcon(view_report_btn)
+
     }
 }
 
@@ -760,19 +610,20 @@ account_type_select.onchange = async function () {
 async function load_accounts_data() {
   try {
 
-    data = await fetchData_postAndGet(
-      '/get_accounts_data_for_report_account_statement',
-      {},
-      '', '',
-      15,
-      false,
-      '',
-      true,
-      false, '',
-      false, '',
-      'حدث خطأ اثناء معالجه البيانات'
-    )
     
+    data = await new_fetchData_postAndGet(
+        '/get_accounts_data_for_report_account_statement',
+        {},
+        '', '',
+        60,
+        false,'',
+        true,
+        false, false,
+        false, false,
+        'حدث خطأ اثناء معالجه البيانات'
+      )
+
+
     for (const row of data.accounts_types) {
       const option = `<option value="${row.id}" ${row.id === 1 ? 'selected' : ''}>${row.account_type_name}</option>`;
       get_accounts_type_array.push(option);
@@ -789,19 +640,39 @@ async function load_accounts_data() {
 
 
 document.addEventListener("DOMContentLoaded", async function () {
+try {  
+    showLoadingIcon(content_space)
+
+const obj_statement = JSON.parse(sessionStorage.getItem('obj_statement'));
+
+
+
+if (obj_statement && obj_statement.x && obj_statement.permissionName && obj_statement.start_date && obj_statement.end_date && obj_statement.back_href_page && obj_statement.back_title_page){
+    report_setting_icon.style.display = 'none'
+
+    permissionName = obj_statement.permissionName
+    start_date = obj_statement.start_date;
+    end_date = obj_statement.end_date;
+    Qkey = obj_statement.x
+    back_href_page = obj_statement.back_href_page;
+    back_title_page = obj_statement.back_title_page;
+
+    pagePermission("view", obj_statement.permissionName);  // معلق
+    sessionStorage.removeItem('accountStatement_viewArray');
+    backUp_page1(`accountStatement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+    await restore_page1(getData_fn, `accountStatement_viewArray`)
+    
+}else{
+    pagePermission("view", 'accounts_permission');  // معلق
 
     await load_accounts_data()
-    
+}
     showRedirectionReason();
-/*    
-  
-    const result2 = CheckUrlParams_salesInvoice_update_ar();
-    if (!result2) {
-        return;
-    }
-
-
-*/
+} catch (error) {
+    catch_error(error)
+} finally{
+    hideLoadingIcon(content_space)
+}
 });
 
 window.addEventListener("beforeprint", function () {

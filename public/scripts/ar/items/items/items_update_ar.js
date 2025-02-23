@@ -23,41 +23,64 @@ const is_forbidden_adding_branches = [];
 const is_main_account = [12];
 const is_accumulated_account = [];
 
+const items_update_data = JSON.parse(sessionStorage.getItem('items_update_data'));
 
 
-const obj_items_update_account = JSON.parse(sessionStorage.getItem('obj_items_update_account'));
 
-const obj_items_update_group = JSON.parse(sessionStorage.getItem('obj_items_update_group'));
+if (!items_update_data){
+    redirection("items_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه أصناف المخزون الرئيسية")
+}
+
+let href_pageName = 'items_view_ar'
+let href_pageTitle = 'أصناف المخزون'
+
+if (items_update_data && items_update_data.href_pageName){
+  href_pageName = items_update_data.href_pageName
+  href_pageTitle = items_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
+
+
+let items_account_update_data = false;
+let items_group_update_data = false;
+if (items_update_data.item_type === 'item'){
+    items_account_update_data = items_update_data;
+} else if (items_update_data.item_type === 'item_group'){
+    items_group_update_data = items_update_data;
+}
+
 
 
 function showData(){
 
-    if (obj_items_update_group){
+    if (items_group_update_data){
                 
-        sub_h2_header.textContent = `تعديل مجموعة : ${obj_items_update_group.h2_header}`
-        input_account_name_input_tree_group_div.value = obj_items_update_group.input_account_name_input_tree_group_div
+        sub_h2_header.textContent = `تعديل مجموعة : ${items_group_update_data.h2_header}`
+        input_account_name_input_tree_group_div.value = items_group_update_data.input_account_name_input_tree_group_div
 
-        create_drop_down_with_External_DataArray(`dropdown_div1`,obj_items_update_group.items_options); selectedRow_dropdownDiv(`dropdown_div1`,obj_items_update_group.items_options,obj_items_update_group.parentNode);
-        // select_parent_gruop_name_tree_goup_div.innerHTML = obj_items_update_group.items_options;
-        // select_parent_gruop_name_tree_goup_div.value = obj_items_update_group.parentNode
+        create_drop_down_with_External_DataArray(`dropdown_div1`,items_group_update_data.items_options); selectedRow_dropdownDiv(`dropdown_div1`,items_group_update_data.items_options,items_group_update_data.parentNode);
+        // select_parent_gruop_name_tree_goup_div.innerHTML = items_group_update_data.items_options;
+        // select_parent_gruop_name_tree_goup_div.value = items_group_update_data.parentNode
         
         tree_group_div.style.display = 'flex'
     }
     
 
-    if (obj_items_update_account){
+    if (items_account_update_data){
         
-        sub_h2_header.textContent = `تعديل صنف : ${obj_items_update_account.h2_header}`;
-        account_no_input.value = obj_items_update_account.account_no_input;
-        account_name_input.value = obj_items_update_account.account_name_input;
-        account_id_hidden.value = obj_items_update_account.account_id_hidden;
-        item_unite_input.value = obj_items_update_account.item_unite_input;
-        sales_price.value = obj_items_update_account.sales_price;
-        purchase_price.value = obj_items_update_account.purchase_price;
-        reorder_point.value = obj_items_update_account.reorder_point;
+        sub_h2_header.textContent = `تعديل صنف : ${items_account_update_data.h2_header}`;
+        account_no_input.value = items_account_update_data.account_no_input;
+        account_name_input.value = items_account_update_data.account_name_input;
+        account_id_hidden.value = items_account_update_data.account_id_hidden;
+        item_unite_input.value = items_account_update_data.item_unite_input;
+        sales_price.value = items_account_update_data.sales_price;
+        purchase_price.value = items_account_update_data.purchase_price;
+        reorder_point.value = items_account_update_data.reorder_point;
         
-        create_drop_down_with_External_DataArray(`dropdown_div2`,obj_items_update_account.items_options); selectedRow_dropdownDiv(`dropdown_div2`,obj_items_update_account.items_options,obj_items_update_account.parentNode);
-        create_drop_down_with_External_DataArray(`dropdown_div3`,obj_items_update_account.revenue_accounts_options); selectedRow_dropdownDiv(`dropdown_div3`,obj_items_update_account.revenue_accounts_options,obj_items_update_account.item_revenue_account_id);
+        create_drop_down_with_External_DataArray(`dropdown_div2`,items_account_update_data.items_options); selectedRow_dropdownDiv(`dropdown_div2`,items_account_update_data.items_options,items_account_update_data.parentNode);
+        create_drop_down_with_External_DataArray(`dropdown_div3`,items_account_update_data.revenue_accounts_options); selectedRow_dropdownDiv(`dropdown_div3`,items_account_update_data.revenue_accounts_options,items_account_update_data.item_revenue_account_id);
 
         tree_add_account.style.display = 'flex'
     }
@@ -69,7 +92,7 @@ btn_update_group.onclick = async function () {
     try {
         // prepare data
         const account_name = input_account_name_input_tree_group_div.value.trim();
-        const account_id = parseInt(obj_items_update_group.account_id_hidden_tree_group_div)
+        const account_id = parseInt(items_group_update_data.account_id_hidden_tree_group_div)
 
 
         if (!account_name) {
@@ -111,7 +134,7 @@ btn_update_account.onclick = async function () {
         // prepare data
         const item_unite_input = item_unite_inputx.value.trim();
         const account_name = account_name_input.value.trim();
-        const item_id = parseInt(obj_items_update_account.account_id_hidden)
+        const item_id = parseInt(items_account_update_data.account_id_hidden)
 
 
         if (!item_unite_input || !account_name || !item_id || isNaN(item_id)) {
@@ -144,13 +167,13 @@ btn_update_account.onclick = async function () {
                 reorder_point
             },
             'items_permission', 'update',
-            15,
+            60,
             true,"هل تريد تعديل بيانات الصنف ؟ ",
             true,
             false,false,
             false,false,false,
-            true,"items_view_ar",
-            false,false,
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
 
@@ -166,9 +189,9 @@ async function deleteNode(type) {
 
         let account_id;
         if (type === 'group') {
-            account_id = parseInt(obj_items_update_group.account_id_hidden_tree_group_div);
+            account_id = parseInt(items_group_update_data.account_id_hidden_tree_group_div);
         } else if (type === 'item') {
-            account_id = parseInt(obj_items_update_account.account_id_hidden);
+            account_id = parseInt(items_account_update_data.account_id_hidden);
         }
 
         if (is_forbidden_deletion.includes(account_id)) {
@@ -181,13 +204,13 @@ async function deleteNode(type) {
             '/api/delete-item',
             { account_id },
             'items_permission', 'delete',
-            50,
+            60,
             true,"هل تريد حذف البيانات من دليل الاصناف ؟",
             true,
             false,false,
             false,false,false,
-            true,"items_view_ar",
-            false,"",
+            true,href_pageName,
+            true,href_pageName,
             "حدث خطأ اثناء معالجة البيانات"
         )
 

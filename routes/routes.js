@@ -625,7 +625,7 @@ router.get('/purshases_invoice_update_ar', (req, res) => {
 
 
 
-//#region cutomers 
+//#region customers 
 router.get('/customers_view_ar', (req, res) => {
     if (req.session.isLoggedIn) {
         if (req.session.is_owner_permission || req.session.general_permission > 1 ||  req.session.customers_permission > 0) {

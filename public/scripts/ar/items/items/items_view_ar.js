@@ -93,16 +93,17 @@ const is_accumulated_account = [];
 //let filterd_revenue_options_array = [];
 async function get_revenue_accounts_fn() {
     try {
-        const data = await fetchData_postAndGet(
+        const data = await new_fetchData_postAndGet(
             "/api/get_revenue_accounts",
             {},
             'pass', 'pass',
-            20,
-            false,
-            '',
-            false,
-            false,'',
-            false,'',
+            60,
+            false,false,
+            true,
+            false,false,
+            false,false,false,
+            false,false,
+            false,false,
             'حدث خطأ اثناء معالجة البيانات'
         )
         
@@ -197,7 +198,10 @@ async function fetchTreeData() {
                                     
 
                                     const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
-                                    const obj_items_update_account = {
+                                    const items_update_data = {
+                                        item_type : 'item',
+                                        href_pageName : `items_view_ar`,
+                                        href_pageTitle : 'أصناف المخزون',
                                         h2_header: node.text,
                                         account_no_input: node.data.account_no ?? '',
                                         account_name_input: node.text,
@@ -213,7 +217,7 @@ async function fetchTreeData() {
                                         item_revenue_account_id: node.data.item_revenue_account,
                                     };
                                     clear_items_sessionsStorage()
-                                    sessionStorage.setItem('obj_items_update_account', JSON.stringify(obj_items_update_account));                            
+                                    sessionStorage.setItem('items_update_data', JSON.stringify(items_update_data));                            
                                     window.location.href = `items_update_ar`;
                                     hideLoadingIcon(content_space)
                                 } else {
@@ -223,7 +227,10 @@ async function fetchTreeData() {
 
                                     const items_options =  get_items_groups_options_fn(node.id, false,'tree','');
 
-                                    const obj_items_update_group = {
+                                    const items_update_data = {
+                                        item_type : 'item_group',
+                                        href_pageName : `items_view_ar`,
+                                        href_pageTitle : 'أصناف المخزون',
                                         h2_header: node.text,
                                         input_account_name_input_tree_group_div: node.text,
                                         account_id_hidden_tree_group_div: node.id,
@@ -232,7 +239,7 @@ async function fetchTreeData() {
                                         items_options: items_options,
                                     };
                                     clear_items_sessionsStorage()
-                                    sessionStorage.setItem('obj_items_update_group', JSON.stringify(obj_items_update_group));                            
+                                    sessionStorage.setItem('items_update_data', JSON.stringify(items_update_data));                            
                                     window.location.href = `items_update_ar`;
                                     hideLoadingIcon(content_space)
 
@@ -257,12 +264,15 @@ async function fetchTreeData() {
                                 }
 
                                 const itemsArray =  get_items_groups_options_fn(node.id, true,'tree','');
-                                const obj_items_create_group = {
+                                const items_add_data = {
+                                    item_type : 'item_group',
+                                    href_pageName : `items_view_ar`,
+                                    href_pageTitle : 'أصناف المخزون',
                                     itemsArray: itemsArray,
                                     nodeId: node.id,
                                 };
                                 clear_items_sessionsStorage()
-                                sessionStorage.setItem('obj_items_create_group', JSON.stringify(obj_items_create_group));                            
+                                sessionStorage.setItem('items_add_data', JSON.stringify(items_add_data));                            
                                 window.location.href = `items_add_ar`;
                             }
                         },
@@ -281,7 +291,10 @@ async function fetchTreeData() {
                                 
                                 
                                 const items_options =  get_items_groups_options_fn(node.id, true,'tree','');
-                                const obj_items_create_account = {
+                                const items_add_data = {
+                                    item_type : 'item',
+                                    href_pageName : `items_view_ar`,
+                                    href_pageTitle : 'أصناف المخزون',
                                     items_options: items_options,
                                     revenue_accounts_options: revenue_accounts_options,
                                     nodeId: node.id,
@@ -289,7 +302,7 @@ async function fetchTreeData() {
 
 
                                 clear_items_sessionsStorage()
-                                sessionStorage.setItem('obj_items_create_account', JSON.stringify(obj_items_create_account));                            
+                                sessionStorage.setItem('items_add_data', JSON.stringify(items_add_data));                            
                                 window.location.href = `items_add_ar`;
 
                                 //---------------------------------------------
@@ -644,7 +657,7 @@ if (collapse_tree){
 if (accounts_view_table_btn){
     accounts_view_table_btn.addEventListener('click', function () {
         try {
-            sessionStorage.removeItem('items_table_view_Array')
+            sessionStorage.removeItem('items_table_viewArray')
             window.location.href = "/items_table_view_ar";
         } catch (error) {
             catch_error(error)

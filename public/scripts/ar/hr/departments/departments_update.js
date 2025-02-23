@@ -3,34 +3,23 @@ setActiveSidebar('hr_ar');
 //check permissions
 pagePermission('view', 'departments_permission');
 
-// let Authentication = true;
-// //#region  Authentication
-// const department_data = JSON.parse(sessionStorage.getItem('department_data'));
-// sessionStorage.removeItem('department_data');
-// if (!department_data) {
-//   Authentication = false;
-//   redirection('departments_view_ar','fail','من فضلك اختر القسم اولا للتعديل , سيتم توجيهك الى صفحه الاقسام')
-// };
+const departments_update_data = JSON.parse(sessionStorage.getItem('departments_update_data'));
+// sessionStorage.removeItem(`sales_invoice_update_data`)
 
-
-let department_data = getURLData('data','departments_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاقسام')
-function CheckUrlParams (){
-  try {
-    const x = department_data
-    
-      if (x && x !== 'noParams'){
-          return true
-      }else if(x && x === 'noParams'){
-            return true
-      }else{
-          return false
-      }
-              
-  } catch (error) {
-      catch_error(error)
-      return false
-  }
+if (!departments_update_data){
+    redirection("departments_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الأقسام الإدارية الرئيسية")
 }
+let href_pageName = 'hr_ar'
+let href_pageTitle = 'إدارة الموراد البشرية'
+
+if (departments_update_data && departments_update_data.href_pageName){
+  href_pageName = departments_update_data.href_pageName
+  href_pageTitle = departments_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
+
 
 
 
@@ -43,11 +32,10 @@ const btn_delete_department = document.querySelector(`#btn_delete_department`)
 
 
 
-function receive_data(){
+function showData(){
     try {
-        
-            department_name_input.value = department_data.department_name            
-            department_info_input.value = department_data.legal_info
+            department_name_input.value = departments_update_data.department_name            
+            department_info_input.value = departments_update_data.legal_info
             page_content.style.display = 'flex'
     } catch (error) {
         catch_error(error)
@@ -69,15 +57,17 @@ btn_update_department.onclick = async () => {
             return
           }
 
-        const postData = await fetchData_postAndGet(
+        const postData = await new_fetchData_postAndGet(
             '/updateDepartment',
             {id,name,info},
             'departments_permission','update',
-            15,
+            60,
             true,'هل تريد تعديل بيانات القسم ؟',
             true,
-            false,'',
-            true,'departments_view_ar',
+            false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             'حدث خطأ اثناء معالجة البيانات'
         )
 
@@ -96,15 +86,17 @@ btn_delete_department.onclick = async () => {
           }
 
 
-        const postData = await fetchData_postAndGet(
+        const postData = await new_fetchData_postAndGet(
             '/deleteDepartment',
             {id},
             'departments_permission','delete',
-            15,
+            60,
             true,'هل تريد حذف بيانات القسم ؟',
             true,
-            false,'',
-            true,'departments_view_ar',
+            false,false,
+            false,false,false,
+            true,href_pageName,
+            true,href_pageName,
             'حدث خطأ اثناء معالجة البيانات'
         )
 
@@ -116,8 +108,7 @@ btn_delete_department.onclick = async () => {
 document.addEventListener('DOMContentLoaded', function() {
     try {
         showLoadingIcon(content_space)
-        const result = CheckUrlParams(); if (!result) {return};
-        receive_data();
+            showData();
             viewMode(true,'departments_permission','view')
             handle_fn_options()
         hideLoadingIcon(content_space)

@@ -185,7 +185,7 @@ function build_table(){
     });
 
   //  return total;
-  document.querySelector(`#footer_depreciation_value`).textContent = total
+  document.querySelector(`#footer_depreciation_value`).textContent = total.toFixed(2)
 }
 
 
@@ -302,7 +302,7 @@ async function get_calculated_depreacation_data_for_update(x) {
     "/get_calculated_depreacation_data_for_update",
     {x},
     'accumulated_depeciaton_permission', 'view',
-    15,
+    60,
     false,false,
     true,
     false,false,
@@ -324,7 +324,7 @@ async function get_fixed_assests_accumulated_accounts() {
     "/get_accumulated_depeciaton_accounts",
     {},
     'accumulated_depeciaton_permission', 'add',
-    15,
+    60,
     false,false,
     true,
     false,false,

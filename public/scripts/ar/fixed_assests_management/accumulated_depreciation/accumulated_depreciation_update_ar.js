@@ -1,5 +1,5 @@
-setActiveSidebar('salesMain_view_ar');
-pagePermission("view","sales_invoice_permission");
+setActiveSidebar('fixedAssestsMain_view_ar');
+pagePermission("view","accumulated_depreciation_permission");
 
 
 const accumulated_depreciation_update_data = JSON.parse(sessionStorage.getItem('accumulated_depreciation_update_data'));
@@ -9,10 +9,16 @@ if (!accumulated_depreciation_update_data){
     redirection("accumulated_depreciation_view_data","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الاهلاكات الرئيسية")
 }
 
-const obj_accumulated_depreciation_update = {pageName : 'accumulated_depreciation_update_ar'}
+let href_pageName = 'fixedAssestsMain_view_ar'
+let href_pageTitle = 'إدارة الأصول الثابتة'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_accumulated_depreciation_update));
-back_href.href = `accumulated_depreciation_view_ar?data=${encodedData}`
+if (accumulated_depreciation_update_data && accumulated_depreciation_update_data.href_pageName){
+  href_pageName = accumulated_depreciation_update_data.href_pageName
+  href_pageTitle = accumulated_depreciation_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
  date1.value = today
 // const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_qutation_multi_pages
@@ -65,13 +71,13 @@ btn_update.onclick = async function(){
           "/api/accumulated_depreciation_update",
           {x, datex, startDate, endDate, note, posted_array},
           'accumulated_depreciation_permission', 'update',
-          50,
+          60,
           true,"هل تريد تعديل  بيانات إهلاكات الاصول الثابتة؟",
           true,
           false,false,
-          true,obj_accumulated_depreciation_update,'accumulated_depreciation_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
   
@@ -93,13 +99,13 @@ btn_delete.onclick = async function () {
       "/api/accumulated_depreciation_delete",
       {x, datex},
       'accumulated_depreciation_permission', 'delete',
-      15,
+      60,
       true,"هل تريد تعديل  بيانات إهلاكات الاصول الثابتة؟",
       true,
       false,false,
-      true,obj_accumulated_depreciation_update,'accumulated_depreciation_view_ar',
-      false,false,
-      false,false,
+      false,false,false,
+      true,href_pageName,
+      true,href_pageName,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
   } catch (error) {

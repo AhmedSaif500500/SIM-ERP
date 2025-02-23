@@ -1,49 +1,23 @@
 setActiveSidebar('hr_ar');
 pagePermission('view', 'employees_permission');
 
+const employees_update_data = JSON.parse(sessionStorage.getItem('employees_update_data'));
+// sessionStorage.removeItem(`sales_invoice_update_data`)
 
-let isUrlParams_salesman = false
-let urlData = getURLData('data','notes_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة الرئيسية')
+if (!employees_update_data){
+    redirection("capital_accounts_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه حسابات الموظفين الرئيسية")
+}
+let href_pageName = 'hr_ar'
+let href_pageTitle = 'إدارة الموراد البشريه'
 
-function CheckUrlParams (){
-  try {
-      if (urlData && urlData !== 'noParams'){
-        if (urlData.pageName === "employees_view_ar"){
-          return true
-        }
-        if (urlData.pageName === "salesman_view_ar"){
-          back_href.href = 'salesman_view_ar';  back_href.title = 'البائعين'
-          // is_salesman.checked = true
-          isUrlParams_salesman = true
-          // is_salesman_div.style.pointerEvents = "none";
-          // is_salesman_div.title = "هذه الخاصية لا يمكن تعطيلها عند إنشاء بائع جديد."
-          setActiveSidebar('salesMain_view_ar');
-          showAlert("info","يرجى ملاحظة أن البائعين هم جزء من طاقم الموظفين، إلا أن لديهم ميزة إضافية تمكنهم من القيام بمهام البيع")
-          return true
-        }    
-
-      }else if(urlData && urlData === 'noParams'){
-            return true
-      }else{
-          return false
-      }
-              
-  } catch (error) {
-      catch_error(error)
-      return false
-  }
+if (employees_update_data && employees_update_data.href_pageName){
+  href_pageName = employees_update_data.href_pageName
+  href_pageTitle = employees_update_data.href_pageTitle
 }
 
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
-
-document.addEventListener('DOMContentLoaded', async () =>{
-  const result = CheckUrlParams(); if (!result) {return}
-  await loadDeapartmentsOptions()
-  show_data()
-})
-
-
-const id = urlData.id;
 
 
 const h2_text_div = document.querySelector(`#h2_text_div`)
@@ -72,10 +46,10 @@ async function loadDeapartmentsOptions(){
     '/get_All_human_resources_department_Data',
     {},
     'employees_permission','update',
-    15,
+    60,
     false,"",
     true,
-    true,content_space,
+    false,false,
     false,false,false,
     false,"",
     false,"",
@@ -114,18 +88,18 @@ inactive_select.onchange = function (){
 
 function show_data() {
     try {
-      sub_h2_header.textContent = `  تعديل موظف : ${urlData.account_name}`
-      account_no_input.value = urlData.account_no
-      employee_name_input.value = urlData.account_name
-      employee_job_input.value = urlData.job
-      email_input.value = urlData.email
-      other_info_input.value = urlData.another_info
-      employee_start_date_input.value = urlData.start_date
-      employee_leave_date_input.value = urlData.end_date
-      select_department.value = urlData.department_id
-      is_salesman.checked = urlData.is_salesman  
-      inactive_select.value = urlData.is_inactive;
-      is_allow_to_buy_and_sell_checkbox.checked = urlData.is_allow_to_buy_and_sell === 'true' ? true : false;
+      sub_h2_header.textContent = `  تعديل موظف : ${employees_update_data.account_name}`
+      account_no_input.value = employees_update_data.account_no
+      employee_name_input.value = employees_update_data.account_name
+      employee_job_input.value = employees_update_data.job
+      email_input.value = employees_update_data.email
+      other_info_input.value = employees_update_data.another_info
+      employee_start_date_input.value = employees_update_data.start_date
+      employee_leave_date_input.value = employees_update_data.end_date
+      select_department.value = employees_update_data.department_id
+      is_salesman.checked = employees_update_data.is_salesman  
+      inactive_select.value = employees_update_data.is_inactive;
+      is_allow_to_buy_and_sell_checkbox.checked = employees_update_data.is_allow_to_buy_and_sell === 'true' ? true : false;
 
       
       active_color(inactive_select)
@@ -145,7 +119,7 @@ btn_update.onclick = async function update_employee_data() {
     };
 
 
-    const id_value = urlData.id;
+    const id_value = employees_update_data.x;
     const employee_name_value = employee_name_input.value.trim();
     const account_no_value = account_no_input.value.trim();
     const employee_job_value = employee_job_input.value.trim();
@@ -162,18 +136,16 @@ btn_update.onclick = async function update_employee_data() {
     
     const post = await new_fetchData_postAndGet(
       '/update_employee',
-      {id_value,employee_name_value,account_no_value,employee_job_value,select_department_value,email_value,other_info_value,employee_start_date_value,employee_leave_date_value,is_salesman_value,inactive_select_value,isUrlParams_salesman, is_allow_to_buy_and_sell},
-      isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','update',
-      15,
+      {id_value,employee_name_value,account_no_value,employee_job_value,select_department_value,email_value,other_info_value,employee_start_date_value,employee_leave_date_value,is_salesman_value,inactive_select_value, is_allow_to_buy_and_sell},
+      'employees_permission','update',
+      60,
       true,'هل تريد تعديل بيانات الموظف ؟',
       true,
-      false,"",
-      false,false,false,
-      true,isUrlParams_salesman ? "salesman_view_ar" : "employees_view_ar",
       false,false,
+      false,false,false,
+      true,href_pageName,
+      true,href_pageName,
       'حدث خطأ اثناء معالجة البيانات'
-
-
     )
 
   } catch (error) {
@@ -185,17 +157,20 @@ btn_update.onclick = async function update_employee_data() {
 btn_delete.onclick = async function () {
   try {
 
-    const id_value = urlData.id;
+    const id_value = employees_update_data.x;
 
 
-    const deleteData = await fetchData_postAndGet(
+    const deleteData = await new_fetchData_postAndGet(
       '/delete_employee',
-      {id_value,isUrlParams_salesman},
-      isUrlParams_salesman ? 'salesman_permission' : 'employees_permission','delete',
-      50,
+      {id_value},
+      'employees_permission','delete',
+      60,
       true,'هل تريد حذف بيانات الموظف ؟',
-      false,false,'',
-      true,'employees_view_ar',
+      true,
+      false,false,
+      false,false,false,
+      true,href_pageName,
+      true,href_pageName,
       'حدث خطأ اثناء معالجة البيانات'
     )
 
@@ -205,10 +180,15 @@ btn_delete.onclick = async function () {
   }
 }
 
+
+
+
  
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   try {
       showLoadingIcon(content_space)
+      await loadDeapartmentsOptions()
+      show_data()
           viewMode(true,'employees_permission','view')
           handle_fn_options()
       hideLoadingIcon(content_space)

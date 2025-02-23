@@ -14,12 +14,12 @@ function showData(){
 
 
   fixed_assests_btn.onclick = function(){
-    sessionStorage.removeItem('fixed_assests_ViewArray');
+    sessionStorage.removeItem('fixed_assests_viewArray');
     window.location.href = "/fixed_assests_view_ar";
   }
   
   accumulated_depreciation_btn.onclick = function(){
-    sessionStorage.removeItem('accumulated_depreciation_ViewArray');
+    sessionStorage.removeItem('accumulated_depreciation_viewArray');
     window.location.href = "/accumulated_depreciation_view_ar";
   }
   
@@ -34,8 +34,8 @@ function showData(){
 }
 
 function remove_arrays(){
-  sessionStorage.removeItem('fixed_assests_ViewArray');
-  sessionStorage.removeItem('accumulated_depreciation_ViewArray');
+  sessionStorage.removeItem('fixed_assests_viewArray');
+  sessionStorage.removeItem('accumulated_depreciation_viewArray');
   sessionStorage.removeItem('disposed_fixed_asset_btn_Array');
 }
 

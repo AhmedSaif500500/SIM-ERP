@@ -13,12 +13,12 @@ function showData(){
   effects_btn.style.display = style= module_display("effects_permission")
    
   departments_btn.onclick = function(){
-    // sessionStorage.removeItem('effectsConditionsArray');
+    sessionStorage.removeItem('departments_viewArray');
     window.location.href = "/departments_view_ar";
   }
   
   employees_btn.onclick = function(){
-    // sessionStorage.removeItem('effectsConditionsArray');
+    sessionStorage.removeItem('employees_viewArray');
     window.location.href = "/employees_view_ar";
   }
   
@@ -27,17 +27,9 @@ function showData(){
     window.location.href = "/effects_view_ar";
   }
   
-  
-  
-  
+ 
   page_content.style.display = 'flex'
 }
-
-
-
-
-
-
 
 
 document.addEventListener('DOMContentLoaded', function() {

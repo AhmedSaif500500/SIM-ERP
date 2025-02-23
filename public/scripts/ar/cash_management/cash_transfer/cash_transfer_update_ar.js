@@ -8,11 +8,16 @@ const cash_transfer_update_data = JSON.parse(sessionStorage.getItem('cash_transf
 if (!cash_transfer_update_data){
     redirection("cash_transfer_view_data","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه التحويلات بين الحسابات النقدية الرئيسية")
 }
+let href_pageName = 'cashMain_view_ar'
+let href_pageTitle = 'إدارة النقد وما فى حكمه'
 
-const obj_cash_transfer_update = {pageName : 'cash_transfer_update_ar'}
+if (cash_transfer_update_data && cash_transfer_update_data.href_pageName){
+  href_pageName = cash_transfer_update_data.href_pageName
+  href_pageTitle = cash_transfer_update_data.href_pageTitle
+}
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_cash_transfer_update));
-back_href.href = `cash_transfer_view_ar?data=${encodedData}`
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
  date1.value = today
 // const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_qutation_multi_pages
@@ -47,13 +52,13 @@ btn_update.onclick = async function(){
           "/api/cash_transfer_update",
           posted_Obj,
           'cash_transfer_permission', 'update',
-          50,
+          60,
           true,"هل تريد تعديل بيانات التحويل بين الحسابات النقدية ؟",
           true,
           false,false,
-          true,cash_transfer_update_data,'cash_transfer_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
   
@@ -72,13 +77,13 @@ btn_delete.onclick = async function () {
       "/api/cash_transfer_delete",
       {x, datex},
       'cash_transfer_permission', 'delete',
-      15,
+      60,
       true,"هل تريد حذف  بيانات التحويل بين الحسابات النقدية ؟",
       true,
       false,false,
-      true,cash_transfer_update_data,'cash_transfer_view_ar',
-      false,false,
-      false,false,
+      false,false,false,
+      true,href_pageName,
+      true,href_pageName,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
   } catch (error) {

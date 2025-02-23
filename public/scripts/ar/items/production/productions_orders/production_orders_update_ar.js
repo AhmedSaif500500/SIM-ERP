@@ -9,10 +9,16 @@ if (!production_orders_update_data){
     redirection("production_orders_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه اوامر التصنيع الرئيسية")
 }
 
-const obj_production_orders_update = {pageName : 'production_orders_update_ar'}
+let href_pageName = 'productionMain_view_ar'
+let href_pageTitle = 'إدارة التصنيع'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_production_orders_update));
-back_href.href = `production_orders_view_ar?data=${encodedData}`;
+if (production_orders_update_data && production_orders_update_data.href_pageName){
+  href_pageName = production_orders_update_data.href_pageName
+  href_pageTitle = production_orders_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 const btn_newRow = document.querySelector(`#btn_newRow`);
@@ -86,13 +92,13 @@ try {
         "/api/production_orders_update",
         {x, datex, form_name, amount, item_account,location_account, posted_array},
         'production_permission', 'update',
-        50,
+        60,
         true,"هل تريد تحديث بيانات امر التصنيع؟ ",
         true,
         false,false,
-        true,obj_production_orders_update,'production_orders_view_ar',
-        false,false,
-        false,false,
+        false,false,false,
+        true,href_pageName,
+        true,href_pageName,
          "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
       
       )
@@ -117,13 +123,13 @@ btn_delete.onclick = async function() {
           "/api/production_orders_delete",
           {x},
           'production_permission', 'delete',
-          50,
+          60,
           true,"هل تريد حذف بيانات امر التصنيع؟ ",
           true,
           false,false,
-          true,obj_production_orders_update,'production_orders_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         
         )

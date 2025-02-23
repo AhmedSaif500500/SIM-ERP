@@ -9,10 +9,17 @@ if (!items_transfer_update_data){
     redirection("items_transfer_view_data","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه الاهلاكات الرئيسية")
 }
 
-const obj_items_transfer_update = {pageName : 'items_transfer_update_ar'}
+let href_pageName = 'itemsMain_view_ar'
+let href_pageTitle = 'إدارة المخزون'
 
-const encodedData = encodeURIComponent(JSON.stringify(obj_items_transfer_update));
-back_href.href = `items_transfer_view_ar?data=${encodedData}`
+if (items_transfer_update_data && items_transfer_update_data.href_pageName){
+  href_pageName = items_transfer_update_data.href_pageName
+  href_pageTitle = items_transfer_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
+
 
  date1.value = today
 // const is_RowNote_checkBox = document.querySelector(`#is_RowNote_checkBox`); //!  already in sales_qutation_multi_pages
@@ -75,13 +82,13 @@ btn_update.onclick = async function(){
           "/api/items_transfer_update",
           posted_Obj,
           'items_transfer_permission', 'update',
-          50,
+          60,
           true,"هل تريد تعديل  بيانات تحويلات المخزون ؟",
           true,
           false,false,
-          true,obj_items_transfer_update,'items_transfer_view_ar',
-          false,false,
-          false,false,
+          false,false,false,
+          true,href_pageName,
+          true,href_pageName,
            "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
    
@@ -103,13 +110,13 @@ btn_delete.onclick = async function () {
       "/api/items_transfer_delete",
       {x, datex},
       'items_transfer_permission', 'delete',
-      15,
+      60,
       true,"هل تريد حذف  بيانات تحويل المخزون؟",
       true,
       false,false,
-      true,obj_items_transfer_update,'items_transfer_view_ar',
-      false,false,
-      false,false,
+      false,false,false,
+      true,href_pageName,
+      true,href_pageName,
        "An error occurred (Code: TAA2). Please check your internet connection and try again; if the issue persists, contact the administrators."
     )
   } catch (error) {
