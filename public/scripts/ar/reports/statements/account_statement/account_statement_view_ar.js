@@ -463,38 +463,47 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
     if (+type === 2){
         sessionStorage.setItem('transaction_update_data', JSON.stringify(obj));                            
         window.location.href = `transaction_update_ar`;
+        return;
     } else if (+type === 3){
         sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(obj));
         window.location.href = `sales_invoice_update_ar`;
+        return;
     } else if (+type === 4){
         sessionStorage.setItem('sales_returns_update_data', JSON.stringify(obj));                            
         window.location.href = `sales_returns_update_ar`;
+        return;
     } else if (+type === 6){
         sessionStorage.setItem('purshases_invoice_update_data', JSON.stringify(obj));                            
         window.location.href = `purshases_invoice_update_ar`;
+        return;
     } else if (+type === 7){
         sessionStorage.setItem('purshases_returns_update_data', JSON.stringify(obj));                            
         window.location.href = `purshases_returns_update_ar`;
+        return;
     } else if (+type === 28){
         sessionStorage.setItem('cash_rc_update_data', JSON.stringify(obj));                            
         window.location.href = `cash_rc_update_ar`;
+        return;
     } else if (+type === 29){
         sessionStorage.setItem('cash_pv_update_data', JSON.stringify(obj));                            
         window.location.href = `cash_pv_update_ar`;
+        return;
     } else if (+type === 11){
         sessionStorage.setItem('cash_transfer_update_data', JSON.stringify(obj));                            
         window.location.href = `cash_transfer_update_ar`;
+        return;
     } else if (+type === 15){
         sessionStorage.setItem('accumulated_depreciation_update_data', JSON.stringify(obj));                            
         window.location.href = `accumulated_depreciation_update_ar`;
+        return;
     }
     
     
     
 
 
-    sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));
-    window.location.href = `account_statement_view_ar`;
+    //sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));
+    //window.location.href = `account_statement_view_ar`;
 } catch (error) {
     catch_error(error)
 }
