@@ -306,7 +306,9 @@ function fillTable() {
 
 
         total_column1.value = 0;
-        let fn1 = `onclick = "table_balance1_btn_fn(this)"`;
+       // let fn1 = `onclick = "table_balance1_btn_fn(this)"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'customers_permission', firstDayOfYear, lastDayOfYear, 'customers_view_ar', 'العملاء')"`;
+
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -559,7 +561,7 @@ async function table_view_btn_fn(updateBtn) {
 
 
 
-
+/*
 async function table_balance1_btn_fn(balanceBtn1) {
     try {
     const permission = await btn_permission('customers_permission','view');
@@ -585,7 +587,7 @@ async function table_balance1_btn_fn(balanceBtn1) {
     catch_error(error)
 }
 };
-
+*/
 
 
 document.addEventListener("DOMContentLoaded", async function () {

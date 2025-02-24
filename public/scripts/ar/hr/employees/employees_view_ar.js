@@ -371,6 +371,8 @@ function fillTable() {
     let is_allow_to_buy_and_sell = `display: none;`;
 
     total_column1.value = 0
+    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'employees_permission', firstDayOfYear, lastDayOfYear, 'employees_view_ar', 'الموظفين')"`;
+
 
         // إعداد رأس الجدول
 // هنا بناء الجدول بدون صف الأزرار
@@ -402,7 +404,7 @@ slice_array1.forEach(row => {
 
     tableHTML += `<tr>
                     <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
-                    <td style="${style_id}">${row.id}</td>
+                    <td style="${style_id}" class="td_id">${row.id}</td>
                     <td style="${style_account_no}">${row.account_no}</td>
                     <td style="${style_name}">${row.account_name}</td>
                     <td style="${style_job}">${row.job}</td>
@@ -412,7 +414,7 @@ slice_array1.forEach(row => {
                     <td style="${style_another_info}">${row.another_info}</td>
                     <td style="${style_start_date}">${row.start_date}</td>
                     <td style="${style_end_date}">${row.end_date}</td>
-                    ${tdNumber(true, false, true, row.balance, style_balance, total_column1, '')}
+                    ${tdNumber(true, false, true, row.balance, style_balance, total_column1, fn1 , 'total_column1')}
                     <td style="${style_is_salesman}"><input type="checkbox" class="is_salesman" ${row.is_salesman ? 'checked' : ''}></td>
                     <td style="${style_active}"><span class="${activeClass}">${row.is_inactive}</span></td>
                     <td style="${is_allow_to_buy_and_sell}" class="td_is_allow_to_buy_and_sell">${row.is_allow_to_buy_and_sell}</td>

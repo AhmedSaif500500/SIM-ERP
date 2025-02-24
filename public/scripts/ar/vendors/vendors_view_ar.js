@@ -299,8 +299,10 @@ function fillTable() {
 
 
         total_column1.value = 0;
-        let fn = `onclick = "table_view_btn_fn(this)"`;
+       
+        let fn = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'vendors_permission', firstDayOfYear, lastDayOfYear, 'vendors_view_ar', 'الموردين')"`;
 
+        const r = lastDayOfYear
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
         let tableHTML = `<table id="review_table" class="review_table">
@@ -330,7 +332,7 @@ function fillTable() {
             tableHTML +=
                      `<tr>
                         <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
-                        <td style="${style_id}">${row.id}</td>
+                        <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${account_no}">${row.account_no}</td>
                         <td style="${account_name}">${row.account_name}</td>
                         <td style="${credit_limit}">${row.credit_limit}</td>
@@ -549,6 +551,9 @@ async function table_view_btn_fn(updateBtn) {
     hideLoadingIcon(updateBtn)
 }
 }
+
+
+
 
 document.addEventListener("DOMContentLoaded", async function () {
     try {

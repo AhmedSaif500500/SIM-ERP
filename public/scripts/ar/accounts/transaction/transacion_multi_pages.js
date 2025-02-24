@@ -186,16 +186,17 @@ function build_table(){
 let get_accounts_type_array = [];
 async function get_accounts_type() {
   try {
-    const data = await fetchData_postAndGet(
+    const data = await new_fetchData_postAndGet(
       '/api/transaction_accounts_types',
       {},
       '', '',
-      15,
-      false,
-      '',
+      60,
+      false,false,
       true,
-      false, '',
-      false, '',
+      false,false,
+      false,false,false,
+      false,false,
+      false, false,
       'حدث خطأ اثناء معالجه البيانات'
     )
 
@@ -219,16 +220,17 @@ let get_items_locations_array = [];
 let items_locations_array
 async function get_items_locations() {
   try {
-    const data = await fetchData_postAndGet(
+    const data = await new_fetchData_postAndGet(
       '/api/transaction_items_locations',
       {},
       '', '',
-      15,
-      false,
-      '',
+      60,
+      false,false,
       true,
-      false, '',
-      false, '',
+      false,false,
+      false,false,false,
+      false, false,
+      false, false,
       'حدث خطأ اثناء معالجه البيانات'
     )
 
@@ -359,7 +361,7 @@ async function getAccounsData_fn() {
     "/getAccountsData1",
     {},
     'transaction_permission', 'view',
-    15,
+    60,
     false,false,
     true,
     false,false,
@@ -390,13 +392,9 @@ function fill_filtered_data_accounts_Array(event) {
     const clickedIcon = event.target;
     const mainRow = clickedIcon.closest(`.mainTr`);
     const select_value = mainRow.querySelector(`.td_account_type .account_type`).value;
-    
-    if (+select_value === 2 || +select_value === 3){
-      filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value || item.is_allow_to_buy_and_sell === true);
-    }else{
-      filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value);
-    }
-    
+
+    filtered_data_accounts_Array = data_accounts.filter(item => +item.account_type_id === +select_value);
+
     const DropDown_accounts_tableColumnsName = ['id', 'account_name', 'item_unite', 'is_accumulated_depreciation'];
 
     // استدعاء tableDropdownList بعد التحديث

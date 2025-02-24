@@ -11371,7 +11371,7 @@ for (const rowData of posted_elements.posted_array) {
 
   // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
   if (!accountExists) {
-    await block_user(req,'Sta1')
+    await block_user(req,'Sta01')
     return res.json({
       success: false,
       xx: true,
@@ -11403,7 +11403,6 @@ for (const rowData of posted_elements.posted_array) {
 
   rowIndex++;
 }
-
 
 
 const year = getYear(posted_elements.datex);
@@ -13026,7 +13025,7 @@ ORDER BY
   
     // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
     if (!accountExists) {
-      await block_user(req,'Sta1')
+      await block_user(req,'Staxa01')
       return res.json({
         success: false,
         xx: true,
@@ -30573,7 +30572,7 @@ for (const rowData of posted_elements.posted_array) {
 
   // إذا لم يوجد الحساب، اوقف الكود وأرسل رسالة
   if (!accountExists) {
-    await block_user(req,'Sta1')
+    await block_user(req,'Scpd01')
     return res.json({
       success: false,
       xx: true,
@@ -33478,13 +33477,14 @@ app.post("/api/production_orders_add", async (req, res) => {
       ).join(', ')}`;
       await tx.none(query2, insert_array2.flat());
     }
-
+/*
       const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
       if (!allow_amounts){
         throw new Error(
           'رصيد احد الاصناف لا يسمح'
         );
       }
+*/        
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
       // Add history log
       await history(transaction_type, 1, newId_transaction_header, 0, req, tx);
@@ -35936,18 +35936,33 @@ let cogs = 0;
 
 // console.table(updatedRecords);
 turn_EmptyValues_TO_null(updatedRecords)
-
+/*  old
 const queries = updatedRecords.map(
   ({ id, cogs }) =>
       `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id}`
 );
-
-
 await tx.batch(queries.map((query) => tx.none(query)));
+*/
+
+if (updatedRecords.length > 0) {
+  const ids = updatedRecords.map(({ id }) => id);
+  const cases = updatedRecords
+    .map(({ id, cogs }, index) => `WHEN id = $${index + 1} THEN ${cogs}`)
+    .join(" ");
+
+  const query = `
+    UPDATE transaction_body
+    SET cogs = CASE ${cases} END
+    WHERE id IN (${ids.map((_, i) => `$${i + 1}`).join(", ")})
+  `;
+
+  await tx.none(query, ids);
+}
+
 }
 
 
-
+/* old
 async function update_cogspart2(items_array,datex, req, tx) {
   
 //! update production_items after everything is done
@@ -35991,6 +36006,63 @@ let updatedItemsArray = updatedItems.map(row => Number(row.item_id)) || [];
 
 return updatedItemsArray 
 
+}
+*/
+
+async function update_cogspart2(items_array, datex, req, tx) {
+  // استخراج transaction_header_id والقيم المطلوبة مسبقًا قبل التحديث
+  let query1 = `
+    SELECT
+        th.id AS transaction_header_id,
+        SUM(
+            COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0) + COALESCE(tb.cogs, 0)
+        ) AS new_total_cost
+    FROM transaction_header th
+    INNER JOIN transaction_body tb ON tb.transaction_header_id = th.id
+    WHERE
+        th.company_id = $1
+        AND (
+            th.transaction_type = 31 
+            AND th.id IN (
+                SELECT DISTINCT tb2.transaction_header_id
+                FROM transaction_body tb2
+                WHERE tb2.item_id = ANY($2)
+                    AND tb2.is_production_item IS NULL
+            )
+        )
+        AND th.datex >= $3
+    GROUP BY th.id;
+  `;
+
+  let balances = await tx.manyOrNone(query1, [req.session.company_id, items_array, datex]);
+
+  if (balances.length === 0) {
+    return [];
+  }
+
+  // تجهيز البيانات للتحديث السريع
+  const ids = balances.map(({ transaction_header_id }) => transaction_header_id);
+  const cases = balances
+    .map(({ transaction_header_id, new_total_cost }, index) => 
+      `WHEN transaction_header_id = $${index + 1} THEN ${new_total_cost}`)
+    .join(" ");
+
+  const query2 = `
+    UPDATE transaction_body
+    SET 
+        cogs = CASE ${cases} END,
+        debit = CASE ${cases} END
+    WHERE transaction_header_id IN (${ids.map((_, i) => `$${i + 1}`).join(", ")})
+      AND is_production_item = TRUE
+    RETURNING item_id;
+  `;
+
+  let updatedItems = await tx.manyOrNone(query2, ids);
+
+  // استخراج الأصناف في مصفوفة
+  let updatedItemsArray = updatedItems.map(row => Number(row.item_id)) || [];
+
+  return updatedItemsArray;
 }
 
 

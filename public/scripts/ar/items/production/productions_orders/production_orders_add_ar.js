@@ -72,7 +72,7 @@ async function save(A_OR_B) {
         {datex, form_name, amount, item_account,location_account, posted_array},
         'production_permission', 'add',
         50,
-        true,"هل تريد حفظ بيانات نموذج التصنيع؟ ؟",
+        true,"هل تريد حفظ بيانات نموذج التصنيع ؟",
         true,
         false,false,false,false,false,
         true,redirectionPage,

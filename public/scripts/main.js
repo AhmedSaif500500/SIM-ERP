@@ -3718,11 +3718,15 @@ async function tableDropdownList(dropdown, dataArray, Array_columnsNameToSHow, t
   if (tableDropdownList_DropdownMenue.style.display === "none") {
     if (typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse){
       const account_type_id = parseInt(tableDropdownList_TableMainTr.querySelector(`.${typeNameOfAccountTypeClassInTheSameRowIfExist_IfNoAccountTypeNotExistTypeFalse}`).value);
+      /*
       if (account_type_id === 2 || account_type_id === 3){
         tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id || item.is_allow_to_buy_and_sell === true);
       }else{
         tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id);
       }
+        */
+      tableDropdownList_DataFilterdArray = await dataArray.filter(item => item.account_type_id === account_type_id);
+
       tableDropdownList_Array1 = tableDropdownList_DataFilterdArray;
     }else{
       tableDropdownList_DataFilterdArray = dataArray
@@ -4596,3 +4600,28 @@ async function back_href_fn1(getData_fn, str_storage_array_name, str_current_pag
       }
 }
 
+async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calssName, str_permissionName, start_date, end_date, back_href_page, back_title_page) {
+  try {
+  const permission = await btn_permission(str_permissionName,'view');
+
+  if (!permission){ // if false
+      return;
+  };
+
+  const row  = balanceBtn1.closest("tr")
+  
+  const obj_statement = {
+  x: row.querySelector(`.${str_td_id_calssName}`).textContent,
+  permissionName : str_permissionName,
+  start_date : start_date,
+  end_date : end_date,
+  back_href_page : back_href_page,
+  back_title_page : back_title_page
+}
+  sessionStorage.removeItem('obj_statement')
+  sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));                            
+  window.location.href = `account_statement_view_ar`;
+} catch (error) {
+  catch_error(error)
+}
+};

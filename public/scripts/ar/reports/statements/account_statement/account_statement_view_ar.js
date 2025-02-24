@@ -464,7 +464,7 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
         sessionStorage.setItem('transaction_update_data', JSON.stringify(obj));                            
         window.location.href = `transaction_update_ar`;
     } else if (+type === 3){
-        sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(obj));                            
+        sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(obj));
         window.location.href = `sales_invoice_update_ar`;
     } else if (+type === 4){
         sessionStorage.setItem('sales_returns_update_data', JSON.stringify(obj));                            
@@ -493,7 +493,7 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
     
 
 
-    sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));                            
+    sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));
     window.location.href = `account_statement_view_ar`;
 } catch (error) {
     catch_error(error)

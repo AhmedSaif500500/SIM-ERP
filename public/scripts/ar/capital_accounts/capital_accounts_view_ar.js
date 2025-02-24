@@ -319,7 +319,8 @@ function fillTable() {
 
 
         total_column1.value = 0;
-        let fn1 = `onclick = "console.log('yes')"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'accounts_permission', firstDayOfYear, lastDayOfYear, 'capital_accounts_view_ar', 'حسابات رأس المال')"`;
+
         // let fn3 = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
