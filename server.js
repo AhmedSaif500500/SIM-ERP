@@ -1,5 +1,5 @@
 //#region  Helps and shourcut
-
+/* لا اهل الا الله */
 //#region Comments Color
 // ! #region app-Started
 /*
@@ -35881,8 +35881,6 @@ SELECT
 
 
   const item_transaction_arry = items_transactions_array.filter(item => +item.item_id === +item_id)  
-
-
 
 for (const row of item_transaction_arry) {
     
