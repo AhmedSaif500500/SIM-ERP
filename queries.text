@@ -1,0 +1,105 @@
+1 :🔵 
+استعلام بيجيب حركه الصنف بالرصيد التراكمى للكميات والتكلفه
+____________________________________________________________________
+WITH ordered_data AS (
+    SELECT
+        ah.id AS account_id,
+        ah.account_name,
+        th.id AS transaction_id,
+        th.reference,
+        th.datex,
+        th.transaction_type,
+        tb.item_id,
+        tb.debit,
+        tb.credit,
+        tb.item_amount,
+        tb.cogs,
+        tb.item_location_id_tb
+    FROM transaction_body tb
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN accounts_header ah ON ah.id = tb.item_id
+    WHERE
+        ah.id = $1
+        AND th.company_id = $2
+    ORDER BY 
+        th.datex ASC,
+        CASE th.transaction_type 
+            WHEN 6 THEN 1 
+            WHEN 7 THEN 2 
+            WHEN 2 THEN 3 
+            WHEN 31 THEN 4 
+            WHEN 4 THEN 5 
+            WHEN 3 THEN 6 
+            ELSE 7 
+        END ASC,
+        tb.id ASC
+)
+
+SELECT 
+    ordered_data.*,
+    -- الرصيد التراكمي لـ item_amount بنفس الترتيب الأصلي
+    SUM(item_amount) OVER (
+        PARTITION BY item_id 
+        ORDER BY datex ASC, 
+                 CASE transaction_type 
+                     WHEN 6 THEN 1 
+                     WHEN 7 THEN 2 
+                     WHEN 2 THEN 3 
+                     WHEN 31 THEN 4 
+                     WHEN 4 THEN 5 
+                     WHEN 3 THEN 6 
+                     ELSE 7 
+                 END ASC,
+                 transaction_id ASC
+    ) AS running_balance,
+    
+    -- الرصيد التراكمي لـ cogs بنفس الترتيب الأصلي
+    SUM(
+        CASE 
+            WHEN item_amount >= 0 THEN cogs  
+            ELSE -cogs  
+        END
+    ) OVER (
+        PARTITION BY item_id 
+        ORDER BY datex ASC, 
+                 CASE transaction_type 
+                     WHEN 6 THEN 1 
+                     WHEN 7 THEN 2 
+                     WHEN 2 THEN 3 
+                     WHEN 31 THEN 4 
+                     WHEN 4 THEN 5 
+                     WHEN 3 THEN 6 
+                     ELSE 7 
+                 END ASC,
+                 transaction_id ASC
+    ) AS running_cogs
+
+FROM ordered_data;
+
+
+
+
+
+2 :🔵 
+استعلام بيجيب الاصناف وكمياتها الحاليه وتكلفتها الحاليه
+_____________________________________________________
+select
+	ah.id,
+	ah.account_name,
+	sum(tb.item_amount) as item_amount,
+	sum(
+		case
+		when tb.item_amount >=0 then cogs
+		else cogs*1
+	end
+	) as cogs
+from
+	transaction_body tb
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    LEFT JOIN accounts_header ah ON ah.id = tb.item_id
+where
+	ah.id = $1
+	and th.company_id = $2
+	and tb.item_amount is not null
+group by
+ah.id
