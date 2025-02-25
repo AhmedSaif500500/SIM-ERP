@@ -300,7 +300,7 @@ function fillTable() {
 
         total_column1.value = 0;
        
-        let fn = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'vendors_permission', firstDayOfYear, lastDayOfYear, 'vendors_view_ar', 'الموردين')"`;
+        let fn = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'vendors_permission', firstDayOfYear, lastDayOfYear, 'vendors_view_ar', 'الموردين', false, 'account_statement_view_ar', 'obj_statement')"`;
 
         const r = lastDayOfYear
         // إعداد رأس الجدول

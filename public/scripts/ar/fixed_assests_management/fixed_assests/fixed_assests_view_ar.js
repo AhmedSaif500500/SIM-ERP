@@ -512,9 +512,10 @@ function fillTable() {
         total_column1.value = 0;
         total_column2.value = 0;
         total_column3.value = 0;
-        let fn1 = `onclick = "console.log('yes')"`;
-        let fn2 = `onclick = "console.log('yes')"`;
-        let fn3 = `onclick = "console.log('yes')"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'fixed_assests_permission', firstDayOfYear, lastDayOfYear, 'fixed_assests_view_ar', 'الأصول الثابتة', {fixed_assests : 'fixed_assest_only'}, 'account_statement_view_ar', 'obj_statement')"`;
+        let fn2 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'fixed_assests_permission', firstDayOfYear, lastDayOfYear, 'fixed_assests_view_ar', 'الأصول الثابتة', {fixed_assests : 'accumulated_depreciation_only'}, 'account_statement_view_ar', 'obj_statement')"`;
+        let fn3 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'fixed_assests_permission', firstDayOfYear, lastDayOfYear, 'fixed_assests_view_ar', 'الأصول الثابتة', {fixed_assests : 'mixed'}, 'account_statement_view_ar', 'obj_statement')"`;
+
         // let fn3 = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول

@@ -371,7 +371,7 @@ function fillTable() {
     let is_allow_to_buy_and_sell = `display: none;`;
 
     total_column1.value = 0
-    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'employees_permission', firstDayOfYear, lastDayOfYear, 'employees_view_ar', 'الموظفين')"`;
+    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'employees_permission', firstDayOfYear, lastDayOfYear, 'employees_view_ar', 'الموظفين', false, 'account_statement_view_ar', 'obj_statement')"`;
 
 
         // إعداد رأس الجدول

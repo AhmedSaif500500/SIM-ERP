@@ -307,7 +307,7 @@ function fillTable() {
 
         total_column1.value = 0;
        // let fn1 = `onclick = "table_balance1_btn_fn(this)"`;
-        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'customers_permission', firstDayOfYear, lastDayOfYear, 'customers_view_ar', 'العملاء')"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'customers_permission', firstDayOfYear, lastDayOfYear, 'customers_view_ar', 'العملاء', false, 'account_statement_view_ar', 'obj_statement')"`;
 
 
         // إعداد رأس الجدول

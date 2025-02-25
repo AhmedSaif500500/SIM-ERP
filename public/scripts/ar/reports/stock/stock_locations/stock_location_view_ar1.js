@@ -524,7 +524,8 @@ function fillTable() {
 
         let diffrence = 0;
         total_column1.value = 0;
-        let fn = `onclick="table_update_btn_fn(this)"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, lastDayOfYear, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'item_movement_view_ar', 'obj_item_movement')"`;
+
 
         // استخراج أسماء الأعمدة بشكل ديناميكي من أول صف
         let columns = slice_array1.length > 0 ? Object.keys(slice_array1[0]) : [];

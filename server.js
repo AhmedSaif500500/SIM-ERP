@@ -35256,7 +35256,7 @@ order by
 
         let query2 = `select id, account_type_name
           from account_type
-          where id IN (1, 2, 3, 4 ,5, 6, 8, 9, 10)
+          where id IN (1, 2, 3, 4, 6, 9, 10)
           order by order_asc ASC;`;  // in (1,2 ) ya3ny = 1 or 2 
     await db.tx(async (tx) => {
     
@@ -35314,8 +35314,8 @@ order by
         //* Start--------------------------------------------------------------
         // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-        const transaction_type = 7
-
+       // const transaction_type = 7
+        
         //! check
         let quer001 = ` select id, account_name, account_type_id, global_id, main_account_id from accounts_header where id = $1 and company_id = $2;`;
         let result = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id])
@@ -35329,7 +35329,26 @@ order by
           });  
         }
     
-    
+  
+        let fixed_assests_where = ''
+        let fixed_assests_status = posted_elements.other_obj
+        fixed_assests_status = fixed_assests_status ? fixed_assests_status.fixed_assests : false
+        
+        if (fixed_assests_status){
+          if (fixed_assests_status === 'fixed_assest_only'){
+            fixed_assests_where = ' AND tb.is_accumulated_depreciation is null'
+          } else if (fixed_assests_status === 'accumulated_depreciation_only'){
+            fixed_assests_where =  ' AND tb.is_accumulated_depreciation is true'
+          } else if (fixed_assests_status === 'mixed'){
+            fixed_assests_where ='' // get all
+          }
+        }
+  
+        console.log(fixed_assests_where);
+        
+        
+
+
         let query1 = `
        WITH previous_balance AS (
     SELECT 
@@ -35381,6 +35400,7 @@ transaction_details AS (
         and ah.company_id = $4
         and th.company_id = $4
         AND th.datex BETWEEN $2 AND $3
+        ${fixed_assests_where}
     UNION ALL
     SELECT 
         NULL AS x,
@@ -35672,24 +35692,332 @@ await last_activity(req);
       }
     });
 
-    /*
-SELECT 
-    tb.item_id, 
-    ah.account_name, 
-    COALESCE(SUM(CASE WHEN tb.item_location_id_tb = 23 THEN tb.item_amount END), 0) AS location_23, 
-    COALESCE(SUM(CASE WHEN tb.item_location_id_tb = 24 THEN tb.item_amount END), 0) AS location_24, 
-    COALESCE(SUM(tb.item_amount), 0) AS total_balance
-FROM transaction_body tb
-LEFT JOIN accounts_header ah ON ah.id = tb.item_id
-LEFT JOIN transaction_header th ON th.id = tb.id
-WHERE 
-    tb.item_location_id_tb IN (23, 24)  -- فقط المواقع المطلوبة
-    AND ah.company_id = 1  -- التأكد من فلترة الشركة
-    AND th.is_deleted IS NULL
-GROUP BY tb.item_id, ah.account_name
-ORDER BY tb.item_id;
+    app.post("/get_items_movement_data_for_report", async (req, res) => {
+      try {
+        //! Permission معلق
+        // await permissions(req, "purshases_returns_permission", "add");
+        // if (!permissions) {
+        //   return;
+        // }
+    
+        
+        const posted_elements = req.body;
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
 
-    */
+        // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        // if (InValidDateFormat) {
+        //   return res.status(400).json({
+        //     success: false,
+        //     message_ar: InValidDateFormat_message_ar,
+        //   });
+        // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    
+        // const transaction_type = 7
+
+        let query1 = `
+        SELECT
+          A.id,
+          A.account_name,
+          A.account_type_id,
+          COALESCE(A.item_unite, 'الكمية') AS item_unite,
+          NULL AS is_accumulated_depreciation
+        FROM
+          accounts_header A
+        WHERE
+          A.company_id = $1
+          AND is_final_account = true
+          AND (global_id != 8 OR global_id IS NULL)
+        
+        UNION ALL
+        
+        SELECT
+          A.id,
+          'مجمع اهلاك - ' || A.account_name AS account_name,
+          A.account_type_id,
+          COALESCE(A.item_unite, 'الكمية') AS item_unite,
+          true AS is_accumulated_depreciation
+        FROM
+          accounts_header A
+        WHERE
+          A.company_id = $1
+          AND is_final_account = true
+          AND (global_id != 8 OR global_id IS NULL)
+          AND A.account_type_id = 6;
+        `;
+        let params1 = [req.session.company_id];
+
+        let query2 = `select id, account_type_name
+          from account_type
+          where id IN (5)
+          order by order_asc ASC;`;  // in (1,2 ) ya3ny = 1 or 2 
+
+
+          let query3 = `
+          -- مواقع المخزون
+     select
+       id as id,
+       account_name as account_name
+     from
+       accounts_header 
+     WHERE company_id = $1 
+       AND account_type_id = 7
+     ORDER BY
+        id ASC
+       ;
+     `;
+     let params3 = [req.session.company_id]
+
+    await db.tx(async (tx) => {
+    
+      const accounts = await tx.any(query1, params1);
+      const accounts_types = await tx.any(query2)
+      const locations = await tx.any(query3, params3)
+
+      const postedData = {accounts, accounts_types, locations};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_accounts_data_for_report_account_statement", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: "❌ Error while get_data_for_purshasesInvoiceToreturns" });
+      }
+    });
+
+
+    app.post("/report_item_movement_view_ar", async (req, res) => {
+      try {
+        //! Permission معلق
+        // await permissions(req, "purshases_returns_permission", "add");
+        // if (!permissions) {
+        //   return;
+        // }
+    
+        
+        const posted_elements = req.body;
+        
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+
+        const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        if (InValidDateFormat) {
+          return res.status(400).json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+       // const transaction_type = 7
+        
+        //! check
+
+        let quer001 = ` select id, account_name, account_type_id, global_id, main_account_id from accounts_header where id = $1 and company_id = $2 AND account_type_id = 5 AND is_final_account is true;`;
+        let result = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id])
+
+        if (!result || !result.account_name || result.account_name === ''){
+          await block_user(req,'Srimva01')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });  
+        }
+    
+        if (posted_elements.item_location){
+          const query01 = `select count(id) as count_location from accounts_header where id = $1 and company_id = $2 and account_type_id = 7`
+          const result01 = await db.oneOrNone(query01, [posted_elements.item_location, req.session.company_id])
+          
+          if (!result01 || +result01.count_location === 0){
+            await block_user(req,'Srimva02')
+            return res.json({
+              success: false,
+              xx: true,
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            });  
+          }  
+        }
+
+        
+        let item_location_where = ''
+        let item_location_status = posted_elements.item_location
+        item_location_status = item_location_status ? item_location_status.item_location : false
+        
+        if (item_location_status){
+          if (item_location_status === 'fixed_assest_only'){
+            item_location_where = `AND tb.item_location_id_tb = ${item_location_status}`
+          } else {
+            item_location_where =  ''
+          }
+        }
+  
+        
+        
+
+
+        let query1 = `
+       WITH previous_balance AS (
+SELECT 
+    ah.id,
+    COALESCE(SUM(tb.item_amount), 0) AS balance
+FROM 
+    accounts_header ah
+    LEFT JOIN transaction_body tb ON tb.item_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE 
+    ah.id = $1
+    AND th.company_id = $4
+    and th.is_including_items is true
+    AND th.datex < $2
+    AND tb.item_amount IS NOT null
+    ${item_location_where}
+GROUP BY 
+    ah.id
+),
+transaction_details AS (
+    SELECT 
+        th.id AS x,
+        th.datex,
+        th.transaction_type as type,
+        th.reference,
+       	CONCAT(
+        	tt.doc_prefix, '-',
+        	SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        	LPAD(CAST(th.reference AS TEXT), 5, '0'), ' / ', -- تحويل reference إلى نص وإضافة الأصفار
+    		tt.transaction_type_name
+        ) AS referenceconcat,
+        tb.row_note,
+        ah.main_account_id,
+        th.transaction_type,
+CASE 
+    WHEN COALESCE(tb.item_amount, 0) > 0 THEN tb.item_amount 
+    ELSE 0 
+END AS debit,
+CASE 
+    WHEN COALESCE(tb.item_amount, 0) < 0 THEN ABS(tb.item_amount) 
+    ELSE 0 
+END AS credit
+    FROM 
+        accounts_header ah
+        JOIN transaction_body tb on tb.item_id = ah.id
+        JOIN transaction_header th ON th.id = tb.transaction_header_id
+        LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+    WHERE 
+        ah.id = $1
+        and th.company_id = $4
+        AND th.datex BETWEEN $2 AND $3
+        and th.is_including_items is true
+        AND tb.item_amount IS NOT null
+        ${item_location_where}
+    UNION ALL
+    SELECT 
+        NULL AS x,
+        $2 AS datex, -- تاريخ بداية الفترة
+        NULL AS type,
+        NULL AS reference,
+        'الرصيد السابق' AS referenceconcat,
+        null AS row_note,
+        null as main_account_id,
+        NULL AS transaction_type,
+        case
+	        when  pb.balance >= 0 then pb.balance
+        	else 0	
+        end AS debit,
+        case
+	        when pb.balance <= 0 then pb.balance
+        	else 0
+        end AS credit
+    FROM 
+        previous_balance pb
+),
+cumulative_balance AS (
+    SELECT 
+        x,
+        datex,
+        type,
+        reference,
+        referenceconcat,
+        row_note,
+        transaction_type,
+        debit,
+        credit,
+        SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) AS cumulative_balance
+    FROM 
+        transaction_details td
+)
+SELECT 
+    x,
+    datex,
+    type,
+    reference,
+    referenceconcat,
+    row_note,
+    transaction_type,
+    debit,
+    credit,
+    cumulative_balance AS balance
+FROM 
+    cumulative_balance
+ORDER BY 
+    datex DESC,
+    reference DESC
+      ;
+    `;
+    
+    let params1 = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
+    
+
+    
+    await db.tx(async (tx) => {
+    
+      const account_statement = await tx.any(query1, params1);
+      const account_name = result.account_name
+
+      const postedData = {account_statement, account_name};      
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_data_for_purshasesInvoiceToreturns", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
+      }
+    });
+
   //#endregion stock
 //#endregion end reports
 
@@ -35820,6 +36148,10 @@ tb.item_id
 
   const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
   
+  console.log(`started_balance`);
+  console.log(started_balance);
+  
+  
 
 const query1 = `
 SELECT 
@@ -35840,21 +36172,30 @@ SELECT
       th.company_id = $1
       AND th.is_deleted IS NULL
       AND tb.item_id is not null
-      AND tb.item_id IN (${items_array.join(',')})
+      AND tb.item_id IN (${items_array.join(",")})
       --and tb.is_production_item is null
       AND th.datex >= $2
-  ORDER BY 
-      th.datex ASC,
-      CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
-        WHEN 6 THEN 1 -- مشتريات
-        WHEN 7 THEN 2 -- مرتجع مشتريات
-        WHEN 2 THEN 3 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
-        WHEN 31 THEN 4 -- تصنيع
-        WHEN 4 THEN 5 -- مرتجع مبيعات
-        WHEN 3 THEN 6 -- مبيعات
-        ELSE 7 -- القيم الأخرى تكون في النهاية
-      END ASC,
-      tb.id ASC
+ORDER BY 
+    th.datex ASC, 
+    CASE 
+        -- 🟢 أولًا: العمليات التي تضيف للمخزون
+        WHEN th.transaction_type = 6 THEN 1  -- المشتريات
+        WHEN th.transaction_type = 2 AND (tb.item_amount > 0 OR tb.debit > 0) THEN 2  -- قيد محاسبي يضيف مخزون
+        WHEN th.transaction_type = 31 AND tb.item_amount > 0 THEN 3  -- تصنيع - إضافة منتج نهائي
+
+        -- 🔵 ثانيًا: العمليات التي تقلل المخزون بعد الإضافات
+        WHEN th.transaction_type = 7 THEN 4  -- مرتجع مشتريات
+        WHEN th.transaction_type = 2 AND (tb.item_amount < 0 OR tb.credit > 0) THEN 5  -- قيد محاسبي يسحب مخزون
+        WHEN th.transaction_type = 31 AND tb.item_amount < 0 THEN 6  -- تصنيع - استهلاك مواد خام
+
+        -- 🔴 ثالثًا: العمليات التي تسحب المخزون في النهاية (COGS)
+        WHEN th.transaction_type = 3 THEN 7  -- المبيعات
+        WHEN th.transaction_type = 4 THEN 8  -- مرتجع مبيعات
+
+        -- ⏺️ أخيرًا: أي عمليات أخرى غير معروفة
+        ELSE 9  
+    END ASC,
+    tb.id ASC
       ;
 `;
 
@@ -36164,17 +36505,18 @@ where
 	th.is_including_items is true
 	and tb.item_amount is not null
   and th.company_id = $1
-order by
-	th.datex desc,
-	CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
-            WHEN 6 THEN 1 -- مشتريات
-            WHEN 7 THEN 2 -- مرتجع مشتريات
-            WHEN 2 THEN 3 -- 
-            WHEN 31 THEN 4 -- تقيد محاسبى ( مشتريات ومرتجع مشتريات )
-            WHEN 4 THEN 5 -- مرتجع مبيعات
-            WHEN 3 THEN 6 -- مبيعات
-            ELSE 7 -- القيم الأخرى تكون في النهاية
-    END desc
+  ORDER BY 
+      th.datex ASC,
+      CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
+        WHEN 6 THEN 1 -- مشتريات
+        WHEN 7 THEN 2 -- مرتجع مشتريات
+        WHEN 31 THEN 3 -- تصنيع
+        WHEN 2 THEN 4 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
+        WHEN 4 THEN 5 -- مرتجع مبيعات
+        WHEN 3 THEN 6 -- مبيعات
+        ELSE 7 -- القيم الأخرى تكون في النهاية
+      END ASC,
+      tb.id ASC
     
 
 
@@ -36483,18 +36825,18 @@ WHERE
         )
     )
     AND th.datex >= $2
-ORDER BY 
-    th.datex ASC,
-    CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
-      WHEN 6 THEN 1 -- مشتريات
-      WHEN 7 THEN 2 -- مرتجع مشتريات
-      WHEN 2 THEN 3 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
-      WHEN 31 THEN 4 -- تصنيع
-      WHEN 4 THEN 5 -- مرتجع مبيعات
-      WHEN 3 THEN 6 -- مبيعات
-      ELSE 7 -- القيم الأخرى تكون في النهاية
-    END ASC,
-    tb.id ASC;
+  ORDER BY 
+      th.datex ASC,
+      CASE th.transaction_type -- الترتيب المخصص لـ transaction_type
+        WHEN 6 THEN 1 -- مشتريات
+        WHEN 7 THEN 2 -- مرتجع مشتريات
+        WHEN 31 THEN 3 -- تصنيع
+        WHEN 2 THEN 4 -- قيد محاسبى ( مشتريات ومرتجع مشتريات )
+        WHEN 4 THEN 5 -- مرتجع مبيعات
+        WHEN 3 THEN 6 -- مبيعات
+        ELSE 7 -- القيم الأخرى تكون في النهاية
+      END ASC,
+      tb.id ASC
 
 */
 

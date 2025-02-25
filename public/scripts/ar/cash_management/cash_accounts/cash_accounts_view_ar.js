@@ -339,7 +339,7 @@ function fillTable() {
 
 
         total_column1.value = 0;
-        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'cash_accounts_permission', firstDayOfYear, lastDayOfYear, 'cash_accounts_view_ar', 'الحسابات النقدية')"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'cash_accounts_permission', firstDayOfYear, lastDayOfYear, 'cash_accounts_view_ar', 'الحسابات النقدية', false, 'account_statement_view_ar', 'obj_statement')"`;
 
         // let fn3 = `onclick = "table_update_btn_fn(this)"`;
 

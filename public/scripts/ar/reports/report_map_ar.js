@@ -12,18 +12,20 @@ const income_statement_view_ar = document.querySelector(`#income_statement_view_
 //! stock
 const stock_div = document.querySelector(`#stock_div`)
 const stock_location_report_btn = document.querySelector(`#stock_location_report_btn`)
+const item_movement_report_btn = document.querySelector(`#item_movement_report_btn`)
 
 
 //! sales_div
 
 
 function showData(){
-  finance_statemebt_dive.style.display = style= module_display("sales_qutation_permission") // معلق
-  trial_balance.style.display = style= module_display("sales_order_permission") // معلق
-  finance_statement.style.display = style= module_display("sales_order_permission") // معلق
-  income_statement_view_ar.style.display = style= module_display("sales_order_permission") // معلق
-  account_statment.style.display = style= module_display("sales_order_permission") // معلق
-  stock_location_report_btn.style.display = style= module_display("stock_location_report_btn") // معلق
+  finance_statemebt_dive.style.display = style= module_display("accounts_permission") // معلق
+  trial_balance.style.display = style= module_display("accounts_permission") // معلق
+  finance_statement.style.display = style= module_display("accounts_permission") // معلق
+  income_statement_view_ar.style.display = style= module_display("accounts_permission") // معلق
+  account_statment.style.display = style= module_display("accounts_permission") // معلق
+  stock_location_report_btn.style.display = style= module_display("items_permission") // معلق
+  item_movement_report_btn.style.display = style= module_display("items_permission") // معلق
 
    
   account_statment.onclick = function(){
@@ -52,6 +54,12 @@ function showData(){
     window.location.href = "/stock_location_view_ar";
   }
   
+
+  item_movement_report_btn.onclick = function(){
+    sessionStorage.removeItem('item_movement_view_Array');
+    sessionStorage.removeItem('obj_item_movement');
+    window.location.href = "/item_movement_view_ar";
+  }
 
   page_content.style.display = 'flex'
 }

@@ -4600,7 +4600,7 @@ async function back_href_fn1(getData_fn, str_storage_array_name, str_current_pag
       }
 }
 
-async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calssName, str_permissionName, start_date, end_date, back_href_page, back_title_page) {
+async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calssName, str_permissionName, start_date, end_date, back_href_page, back_title_page, other_obj, str_report_page, str_session_storage_obj) {
   try {
   const permission = await btn_permission(str_permissionName,'view');
 
@@ -4616,11 +4616,12 @@ async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calss
   start_date : start_date,
   end_date : end_date,
   back_href_page : back_href_page,
-  back_title_page : back_title_page
+  back_title_page : back_title_page,
+  other_obj : other_obj
 }
-  sessionStorage.removeItem('obj_statement')
-  sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));                            
-  window.location.href = `account_statement_view_ar`;
+  sessionStorage.removeItem(str_session_storage_obj)
+  sessionStorage.setItem(str_session_storage_obj, JSON.stringify(obj_statement));                            
+  window.location.href = str_report_page;
 } catch (error) {
   catch_error(error)
 }

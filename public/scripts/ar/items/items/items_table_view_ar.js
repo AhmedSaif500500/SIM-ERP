@@ -414,7 +414,8 @@ function fillTable() {
         
         total_column1.value = 0;
 
-        let fn = `onclick = "table_view_btn_fn(this)"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, lastDayOfYear, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'item_movement_view_ar', 'obj_item_movement')"`;
+
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -453,10 +454,10 @@ function fillTable() {
                         <td style="${style_accountgroup}" class="td_parent_account_name">${row.parent_account_name}</td>
                         <td style="${style_account_no}" class="td_account_no">${row.account_no}</td>
                         <td style="${style_accountName}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(true,false,true,row.current_amount,style_amount,false,false,'td_amount')}
+                        ${tdNumber(true,false,true,row.current_amount,style_amount,false,fn1,'td_amount')}
                         <td style="${style_item_unit}" class="td_item_unite">${row.item_unite}</td>
                         ${tdNumber(false,false,true,avg,style_avg,false,false,'td_avg')}
-                        ${tdNumber(true,false,true,row.value,style_value,total_column1,false,'td_value')}            
+                        ${tdNumber(false,false,true,row.value,style_value,total_column1,false,'td_value')}            
                       </tr>`;
         });
 
