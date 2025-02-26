@@ -30,7 +30,7 @@ const btn_delete = document.querySelector('#btn_delete');
 
 btn_update.onclick = async function() {
 try {
-  const x = data_accounts.headerData_array.id;
+  const x = headerData_array.id;
   const datex = date1.value
   const form_name = form_name_input.value.trim();
   const amount = amount_input.value;
@@ -117,7 +117,7 @@ try {
 
 btn_delete.onclick = async function() {
   try {
-    const x = data_accounts.headerData_array.id;
+    const x = headerData_array.id;
 
         const post = await new_fetchData_postAndGet(
           "/api/production_orders_delete",
@@ -166,12 +166,18 @@ try {
   const x = production_orders_update_data.x
   data_accounts = await getAccounsData_fn(x) // *
 
+  account_type_array = data_accounts.account_type_array
+  accounts_data_array = data_accounts.accounts_data_array
+  bodyData_array = data_accounts.bodyData_array
+  forms_array = data_accounts.forms_array
+  headerData_array = data_accounts.headerData_array
+  location_accounts_array = data_accounts.location_accounts_array
 
-  if (!data_accounts || !data_accounts.accounts_data_array || !data_accounts.location_accounts_array || !data_accounts.headerData_array || data_accounts.bodyData_array.length === 0){
+  if (!data_accounts || !accounts_data_array || !location_accounts_array || !headerData_array || bodyData_array.length === 0){
     redirection('production_orders_view_ar', `fail`, `حدث خطأ اثناء معالجة البيانات : سيتم تحويلك الى صفحه نماذج التصنيع الرئيسيه`)
   }
 
-  showHeaderData(data_accounts.headerData_array)
+  showHeaderData(headerData_array)
   build_table()
   fillBodyTable()
   document.querySelector(`#footer_style_roduction_value`).textContent = production_orders_update_data ? production_orders_update_data.val : ''

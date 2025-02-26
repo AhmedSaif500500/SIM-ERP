@@ -97,6 +97,14 @@ document.addEventListener('DOMContentLoaded', async function () {
   try {
   showLoadingIcon(content_space)
   data_accounts = await getAccounsData_fn(false) // *
+
+  account_type_array = data_accounts.account_type_array
+  accounts_data_array = data_accounts.accounts_data_array
+  bodyData_array = data_accounts.bodyData_array
+  forms_array = data_accounts.forms_array
+  headerData_array = data_accounts.headerData_array
+  location_accounts_array = data_accounts.location_accounts_array
+  
   build_table()
   addRow()
   makeTableRowsDraggable('myTable'); // make sure that the table already loaded

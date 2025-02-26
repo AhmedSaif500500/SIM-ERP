@@ -2675,7 +2675,7 @@ async function new_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, per
     hideLoadingIcon(Element_showLoadingIcon_as_avariable)
     closeDialog();
     if (error.name === 'AbortError') {
-      showAlert('fail', '⚠️ Request timed out. Please try again.');
+      showAlert('warning', '⚠️ العملية تستغرق وقتًا أطول من المتوقع. ستتم المعالجة في الخلفية، يرجى التحقق لاحقًا والتأكد من اتصال الإنترنت.');
       return false;
     } else {
       

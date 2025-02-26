@@ -1693,7 +1693,7 @@ html[dir="rtl"] {
 
 .closeMenueIcon {
   display: none;
-  position: relative;
+  position: absolute;
   height: 3rem;
   cursor: pointer;
   align-items: center;
@@ -1701,8 +1701,10 @@ html[dir="rtl"] {
   justify-content: center;
   margin-block-end: 1rem;
   width: 3rem;
-  inset-inline-start: 88%;
+  inset-block-start: 1rem ;
+  inset-inline-end: 1rem;
   transition: var(--transition);
+  z-index: 3;
 }
 
 .closeMenueIcon:hover {

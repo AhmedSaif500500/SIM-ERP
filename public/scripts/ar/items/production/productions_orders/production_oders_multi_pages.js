@@ -9,6 +9,14 @@ let tableBody = table.querySelector(`tbody`);
 let tableTfoot = table.querySelector(`tfoot`);
 
 
+
+let account_type_array = []
+let accounts_data_array = []
+let bodyData_array = []
+let forms_array = []
+let headerData_array = []
+let location_accounts_array = []
+
 let style_account = `display: table-cell; min-width: 33rem; width: auto; white-space: nowrap; text-align: start`;
 let style_roduction_value = `display: none; width: auto; white-space: nowrap; text-align: start`;
 
@@ -254,14 +262,13 @@ let slice_Array_accounts = [];
 let get_accounts_type_array = [];
 
 
-// تحضير البيانات من السيرفر
 async function getAccounsData_fn(x) {
 
   const d = await new_fetchData_postAndGet(
     "/production_orders_AccountsData1",
     {x},
     'cash_transaction_permission', 'view',
-    50,
+    60,
     false,false,
     true,
     false,false,
@@ -316,8 +323,8 @@ function fill_filtered_data_accounts_Array(event) {
     const clickedIcon = event.target;
     const mainRow = clickedIcon.closest(`.mainTr`);
     const select_value = mainRow.querySelector(`.td_account_type .account_type`).value;
-
-    filtered_data_accounts_Array = data_accounts.accounts_data_array.filter(item => +item.account_type_id === +select_value);
+    
+    filtered_data_accounts_Array = accounts_data_array.filter(item => +item.account_type_id === +select_value);
 
     const DropDown_accounts_tableColumnsName = ['id', 'account_name', 'item_unite', 'account_type_id'];
 
@@ -352,7 +359,7 @@ function fillBodyTable() {
   // إضافة صفوف الجدول بناءً على البيانات
   // slice_Array1 = ""; // تفريغ المصفوفه
   
-  data_accounts.bodyData_array.forEach((row) => {
+  bodyData_array.forEach((row) => {
     
     const newTr =
      `
@@ -473,11 +480,11 @@ view_report_btn.onclick = async function () {
           return;
       }
       
-        data_accounts = await new_fetchData_postAndGet(
+        const d = await new_fetchData_postAndGet(
           "/calculate_production_order_data",
           {x,xamount_input},
           'production_permission', 'add',
-          50,
+          60,
           false,false,
           true,
           false,false,
@@ -487,9 +494,11 @@ view_report_btn.onclick = async function () {
           "An error occurred (Code: TAA1). Please check your internet connection and try again; if the issue persists, contact the administrators."
         )
 
-        const h = data_accounts.calc_header
-        const b = data_accounts.bodyData_array
-        if (!h, !b){
+        
+        headerData_array = d.calc_header
+        bodyData_array = d.bodyData_array 
+
+        if (!headerData_array, !bodyData_array){
           showAlert(`fail`,'حدث خطأ اثناء معالجة البيانات')
           hideLoadingIcon(view_report_btn)
           close_dialogx()
@@ -497,13 +506,13 @@ view_report_btn.onclick = async function () {
         }
 
 
-        form_name_input.value = h.form_name
-        unite_spane.textContent = h.item_unite
-        amount_input.value = h.value || ''
-        document.querySelector(`#dropdown_div1_hidden_input`).value = h.production_item_id
-        document.querySelector(`#dropdown_div1_select_input`).value = h.account_name
-        document.querySelector(`#dropdown_div2_hidden_input`).value = h.location_from
-        document.querySelector(`#dropdown_div2_select_input`).value = h.location_name
+        form_name_input.value = headerData_array.form_name
+        unite_spane.textContent = headerData_array.item_unite
+        amount_input.value = headerData_array.value || ''
+        document.querySelector(`#dropdown_div1_hidden_input`).value = headerData_array.production_item_id
+        document.querySelector(`#dropdown_div1_select_input`).value = headerData_array.account_name
+        document.querySelector(`#dropdown_div2_hidden_input`).value = headerData_array.location_from
+        document.querySelector(`#dropdown_div2_select_input`).value = headerData_array.location_name
 
         clear_tbody('myTable');
 

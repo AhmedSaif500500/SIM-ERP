@@ -33625,7 +33625,8 @@ app.post("/api/production_orders_update", async (req, res) => {
           message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
         });
       }
-        
+      
+      
       total += amount || 0
       if (+account_typeId === 5){
         items_array.push(+rowData.account_id)
@@ -36147,11 +36148,7 @@ tb.item_id
 ;`
 
   const started_balance = await tx.any(query0,[datex, req.session.company_id])  //! dayman 5aly el datex $1 3ashan mortpt be be el arkam fe ele est3lam 
-  
-  console.log(`started_balance`);
-  console.log(started_balance);
-  
-  
+    
 
 const query1 = `
 SELECT 
@@ -36202,7 +36199,6 @@ ORDER BY
   // جلب البيانات من قاعدة البيانات
   const items_transactions_array = await tx.any(query1,[req.session.company_id,datex]);
   
-
   let updatedRecords = [];
 
   for (const item_id of items_array){
@@ -36251,7 +36247,7 @@ let cogs = 0;
     if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
       cogs = 0  
     }else{
-      cogs = (started_value / started_amount) * row_amount;
+      cogs = parseFloat(((started_value / started_amount) * row_amount).toFixed(2));
     }
     started_amount -= +row_amount;
     started_value -= cogs;
@@ -36262,7 +36258,7 @@ let cogs = 0;
     if(+started_value === 0 || +started_amount === 0 || +row_amount === 0){
       cogs = 0  
     }else{
-      cogs = (started_value / started_amount) * Math.abs(row_amount)
+      cogs = parseFloat(((started_value / started_amount) * Math.abs(row_amount)).toFixed(2))
     }
     started_amount += +row_amount;
     started_value += cogs; // عملنا دى بالسالب لانى ضربت الكوجز فوق بالسالب  وبالتالى هيدينى زائد
@@ -36275,7 +36271,7 @@ let cogs = 0;
 
 // console.table(updatedRecords);
 turn_EmptyValues_TO_null(updatedRecords)
-/*  old
+ /* old
 const queries = updatedRecords.map(
   ({ id, cogs }) =>
       `UPDATE transaction_body SET cogs = ${cogs} WHERE id = ${id}`
@@ -36285,10 +36281,13 @@ await tx.batch(queries.map((query) => tx.none(query)));
 
 if (updatedRecords.length > 0) {
   const ids = updatedRecords.map(({ id }) => id);
+
+  
   const cases = updatedRecords
     .map(({ id, cogs }, index) => `WHEN id = $${index + 1} THEN ${cogs}`)
     .join(" ");
 
+    
   const query = `
     UPDATE transaction_body
     SET cogs = CASE ${cases} END
@@ -36300,8 +36299,6 @@ if (updatedRecords.length > 0) {
 
 }
 
-
-/* old
 async function update_cogspart2(items_array,datex, req, tx) {
   
 //! update production_items after everything is done
@@ -36346,64 +36343,6 @@ let updatedItemsArray = updatedItems.map(row => Number(row.item_id)) || [];
 return updatedItemsArray 
 
 }
-*/
-
-async function update_cogspart2(items_array, datex, req, tx) {
-  // استخراج transaction_header_id والقيم المطلوبة مسبقًا قبل التحديث
-  let query1 = `
-    SELECT
-        th.id AS transaction_header_id,
-        SUM(
-            COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0) + COALESCE(tb.cogs, 0)
-        ) AS new_total_cost
-    FROM transaction_header th
-    INNER JOIN transaction_body tb ON tb.transaction_header_id = th.id
-    WHERE
-        th.company_id = $1
-        AND (
-            th.transaction_type = 31 
-            AND th.id IN (
-                SELECT DISTINCT tb2.transaction_header_id
-                FROM transaction_body tb2
-                WHERE tb2.item_id = ANY($2)
-                    AND tb2.is_production_item IS NULL
-            )
-        )
-        AND th.datex >= $3
-    GROUP BY th.id;
-  `;
-
-  let balances = await tx.manyOrNone(query1, [req.session.company_id, items_array, datex]);
-
-  if (balances.length === 0) {
-    return [];
-  }
-
-  // تجهيز البيانات للتحديث السريع
-  const ids = balances.map(({ transaction_header_id }) => transaction_header_id);
-  const cases = balances
-    .map(({ transaction_header_id, new_total_cost }, index) => 
-      `WHEN transaction_header_id = $${index + 1} THEN ${new_total_cost}`)
-    .join(" ");
-
-  const query2 = `
-    UPDATE transaction_body
-    SET 
-        cogs = CASE ${cases} END,
-        debit = CASE ${cases} END
-    WHERE transaction_header_id IN (${ids.map((_, i) => `$${i + 1}`).join(", ")})
-      AND is_production_item = TRUE
-    RETURNING item_id;
-  `;
-
-  let updatedItems = await tx.manyOrNone(query2, ids);
-
-  // استخراج الأصناف في مصفوفة
-  let updatedItemsArray = updatedItems.map(row => Number(row.item_id)) || [];
-
-  return updatedItemsArray;
-}
-
 
 
 
