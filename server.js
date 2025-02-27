@@ -35330,11 +35330,12 @@ order by
           });  
         }
     
-  
+
+
+        //! 🟡 fixed assests
         let fixed_assests_where = ''
         let fixed_assests_status = posted_elements.other_obj
         fixed_assests_status = fixed_assests_status ? fixed_assests_status.fixed_assests : false
-        
         if (fixed_assests_status){
           if (fixed_assests_status === 'fixed_assest_only'){
             fixed_assests_where = ' AND tb.is_accumulated_depreciation is null'
@@ -35345,12 +35346,9 @@ order by
           }
         }
   
-        console.log(fixed_assests_where);
         
         
-
-
-        let query1 = `
+        let normal_query = `
        WITH previous_balance AS (
     SELECT 
         ah.id AS account_id,
@@ -35371,6 +35369,7 @@ order by
         and ah.company_id = $4
         and th.company_id = $4
         AND (th.datex IS NULL OR th.datex < $2)
+        AND th.is_deleted is null
     GROUP BY 
         ah.id
 ),
@@ -35401,6 +35400,7 @@ transaction_details AS (
         and ah.company_id = $4
         and th.company_id = $4
         AND th.datex BETWEEN $2 AND $3
+        AND th.is_deleted is null
         ${fixed_assests_where}
     UNION ALL
     SELECT 
@@ -35460,11 +35460,155 @@ ORDER BY
     reference DESC
       ;
     `;
-    
-    let params1 = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
+  
+    let normal_params = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
     
 
+  
     
+        //! 🟡 cogs
+        let is_cogs = false;
+        if (result.global_id && +result.global_id === 17){
+          is_cogs = true
+        }
+
+        let cogs_account_query = `
+       WITH previous_balance AS (
+    SELECT 
+    SUM(CASE 
+	    	when ah1.global_id = 17 then
+	    		coalesce(tb.debit, 0) - coalesce(tb.credit, 0)
+            WHEN ah2.account_type_id = 5 AND th.transaction_type in (3,4) THEN 
+            	case
+	    			when coalesce(tb.item_amount,0) > 0 then coalesce(tb.cogs *-1, 0) -- مرتجع المبيعات
+        			when coalesce(tb.item_amount,0) < 0 then coalesce(tb.cogs, 0) -- حالة المبيعات العادية
+        			else 0
+	    		end
+            ELSE 0 
+        END
+    ) AS balance
+    FROM 
+        transaction_body tb
+        LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+        LEFT JOIN accounts_header ah1 ON ah1.id = tb.account_id
+        LEFT JOIN accounts_header ah2 ON ah2.id = tb.item_id
+    WHERE 
+        th.company_id = $1
+        AND (th.datex IS NULL OR th.datex < $2)
+        and (th.transaction_type in (3,4) or (th.transaction_type = 2 and ah1.global_id = 17))
+        and th.is_deleted is null
+        and (tb.item_id is not null or ah1.global_id = 17)
+),
+transaction_details AS (
+    SELECT 
+        th.id AS x,
+        th.datex,
+        th.transaction_type as type,
+        th.reference,
+       	CONCAT(
+        	tt.doc_prefix, '-',
+        	SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        	LPAD(CAST(th.reference AS TEXT), 5, '0'), ' / ', -- تحويل reference إلى نص وإضافة الأصفار
+    		tt.transaction_type_name
+        ) AS referenceconcat,
+        tb.row_note,
+        null as main_account_id,
+        th.transaction_type,
+        case
+        	when ah1.global_id = 17 then
+        		COALESCE(tb.debit, 0)
+        	WHEN ah2.account_type_id = 5 AND th.transaction_type in (3,4) then
+        		case
+        			when coalesce(tb.item_amount,0) < 0 then coalesce(tb.cogs, 0) -- المبيعات
+        			else 0
+        		end
+        	else 0	
+        end AS debit,
+                case
+        	when ah1.global_id = 17 then
+        		COALESCE(tb.credit, 0)
+        	WHEN ah2.account_type_id = 5 AND th.transaction_type in (3,4) then
+        		case
+        			when coalesce(tb.item_amount,0) > 0 then coalesce(tb.cogs * -1, 0) -- المبيعات
+        			else 0
+        		end
+        	else 0	
+        end AS credit
+    FROM         
+        transaction_body tb
+        LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id        
+		LEFT JOIN accounts_header ah1 ON ah1.id = tb.account_id
+        LEFT JOIN accounts_header ah2 ON ah2.id = tb.item_id
+        LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+    WHERE 
+        th.company_id = $1
+        AND th.datex BETWEEN $2 AND $3
+        and (th.transaction_type in (3,4) or (th.transaction_type = 2 and ah1.global_id = 17))
+        and th.is_deleted is null
+        and (tb.item_id is not null or ah1.global_id = 17)
+    UNION ALL
+    SELECT 
+        NULL AS x,
+        $2 AS datex, -- تاريخ بداية الفترة
+        NULL AS type,
+        NULL AS reference,
+        'الرصيد السابق' AS referenceconcat,
+        null AS row_note,
+        null as main_account_id,
+        NULL AS transaction_type,
+        case
+	        when pb.balance >= 0 then pb.balance
+        	else 0	
+        end AS debit,
+        case
+	        when pb.balance < 0 then pb.balance
+        	else 0
+        end AS credit
+    FROM 
+        previous_balance pb
+),
+cumulative_balance AS (
+    SELECT 
+        x,
+        datex,
+        type,
+        reference,
+        referenceconcat,
+        row_note,
+        transaction_type,
+        debit,
+        credit,
+        	SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) cumulative_balance
+    FROM 
+        transaction_details td
+)
+SELECT 
+    x,
+    datex,
+    type,
+    reference,
+    referenceconcat,
+    row_note,
+    transaction_type,
+    debit,
+    credit,
+    cumulative_balance AS balance
+FROM 
+    cumulative_balance
+ORDER BY 
+    datex DESC,
+    reference DESC
+      ;
+    `;
+    let cogs_account_params = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
+
+let query1;
+let params1;
+
+    query1 = is_cogs ? cogs_account_query : normal_query;
+    params1 = is_cogs ? cogs_account_params : normal_params;
+
+
     await db.tx(async (tx) => {
     
       const account_statement = await tx.any(query1, params1);
@@ -36345,8 +36489,6 @@ return updatedItemsArray
 }
 
 
-
-
 async function get_current_avg_cost(items_array, datex, req, tx) {
   let query1= `
   SELECT
@@ -36800,5 +36942,5 @@ server.listen(port, () => {
   //accept_request(request_id, int_company_numbers, int_users_numbers, '2025-02-13', '2025-12-31')
   //accept_request(9, 5, 5, '2025-02-13', '2025-12-31')
   //change_user_password(user_id, 'password')
-  //change_user_password(user_id, 'password')
+  //change_user_password(36, '12344321')
 });

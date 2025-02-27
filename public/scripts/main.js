@@ -4464,7 +4464,7 @@ function checkPasswordStrength(password) {
 
 
 
-function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_date_p, end_date_p, back_href_p, back_title_p) {
+function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_date_p, end_date_p, back_href_p, back_title_p, report_is_hiding_zero_balances, report_is_show_account_no) {
   const conditions = {};
 
   indices.forEach(index => {
@@ -4503,6 +4503,8 @@ function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_da
       end_date : end_date_p || false,
       back_href_page: back_href_p,
       back_title_page: back_title_p,
+      report_is_hiding_zero_balances: report_is_hiding_zero_balances,
+      report_is_show_account_no: report_is_show_account_no,
   });
 
   // استرجاع المصفوفة المحفوظة من sessionStorage
@@ -4571,8 +4573,10 @@ async function restore_page1(getData_fn, str_storage_array_name) {
       Qkey = conditions.Qkey
       back_href_page = conditions.back_href_page;
       back_title_page = conditions.back_title_page;
+      is_hiding_zero_balances = conditions.report_is_hiding_zero_balances;
+      is_show_account_no = conditions.report_is_show_account_no;
 
-        await getData_fn(permissionName, Qkey, start_date, end_date)
+        await getData_fn(permissionName, Qkey, start_date, end_date, is_hiding_zero_balances, is_show_account_no)
       
   }
 }

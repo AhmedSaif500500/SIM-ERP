@@ -1,21 +1,5 @@
-setActiveSidebar("report_map_ar"); 
+//setActiveSidebar("salesMain_view_ar");  
 //pagePermission("view", "sales_invoice_permission");  // معلق
-
-
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
-
-let permissionName;
-let start_date;
-let end_date;
-let Qkey;
-let back_href_page;
-let back_title_page;
-let is_hiding_zero_balances;
-let is_show_account_no;
-
 
 /*
 const newBtn = document.querySelector('#newBtn');
@@ -33,11 +17,15 @@ const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
-
+let startDate = firstDayOfYear;
+let endDate = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
-
+let start_date;
+let end_date;
+let is_hiding_zero_balances;
+let is_show_account_no = false;
 
 const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
@@ -55,13 +43,136 @@ let f1_input = filter_div.querySelector(`#f1_input`);
 const btn_do = filter_div.querySelector(`#btn_do`);
 const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
 
+function backUp_filter_div_conditions() {
+    const conditions = {};
+
+    indices.forEach(index => {
+        // بناء الأسماء تلقائيًا باستخدام template literals
+        const fDiv = window[`f${index}_div`];
+        const fInput = window[`f${index}_input`];
+        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+        const fCheckbox = window[`f${index}_checkbox`];
+        const fSelect = window[`f${index}_select`];
+        const fCheckboxDiv = window[`f${index}_checkbox_div`];
+        const fInputStartDate1 = window[`f${index}_input_start_date1`];
+        const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+        // التحقق من وجود كل عنصر قبل تخزين قيمته
+        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
+        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
+        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
+        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
+        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
+        if (fInput) conditions[`f${index}_input`] = fInput.value;
+        
+        // التحقق من العناصر الإضافية
+        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
+        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
+        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
+    });
+
+    // الشروط الأخرى
+    Object.assign(conditions, {
+        is_filter: is_filter,
+        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
+        sub_h2_header: sub_h2_header.textContent,
+        back_href: back_href.href,
+        back_title: back_href.title
+    });
+
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    const conditionsArray = JSON.parse(sessionStorage.getItem('incomeStatement_view_Array')) || [];
+
+    // إضافة الكائن الجديد إلى المصفوفة
+    conditionsArray.push(conditions);
+
+    // حفظ المصفوفة المحدثة في sessionStorage
+    sessionStorage.setItem('incomeStatement_view_Array', JSON.stringify(conditionsArray));
+}
 
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-    await back_href_fn1(getData_fn, `income_statement_viewArray`, `income_statement_view_ar`, `report_map_ar`)
+   
+
+    const array = JSON.parse(sessionStorage.getItem(`incomeStatement_view_Array`)) || [];
+
+    if (!array || array.length <= 1) {
+    
+   
+            window.location.href = `report_map_ar`;
+       
+    }else{
+
+        restore_filter_div_conditions(2)
+        await getData_fn();
+
+    }
 };
 
+function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
+    let conditions;
+
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    let conditionsArray = JSON.parse(sessionStorage.getItem("incomeStatement_view_Array")) || [];
+    
+    // التحقق إذا كانت المصفوفة تحتوي على عناصر
+    if (conditionsArray.length > 0) {
+        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
+        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
+
+        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
+        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
+            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
+            sessionStorage.setItem("incomeStatement_view_Array", JSON.stringify(conditionsArray));
+        }
+    } else {
+        return;
+    }
+
+    if (conditions) {
+        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
+        indices.forEach(index => {
+            const fDiv = window[`f${index}_div`];
+            const fInput = window[`f${index}_input`];
+            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+            const fCheckbox = window[`f${index}_checkbox`];
+            const fSelect = window[`f${index}_select`];
+            const fCheckboxDiv = window[`f${index}_checkbox_div`];
+            const fInputStartDate1 = window[`f${index}_input_start_date1`];
+            const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
+            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
+            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
+            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
+            if (fSelect) fSelect.value = conditions[`f${index}_select`];
+            if (fInput) fInput.value = conditions[`f${index}_input`];
+            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
+            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
+            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
+            if (fSelectAndInputDiv) {
+                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
+                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
+                } else {
+                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
+                }
+            }
+        });
+
+        // استرجاع الشروط الأخرى
+        sub_h2_header.textContent = conditions.sub_h2_header;
+        is_filter = conditions.is_filter;
+        if (conditions.is_filter_div_hidden) {
+            hidden_filter_div();
+        } else {
+            show_filter_div();
+        }
+
+        back_href.title = conditions.back_title;
+        back_href.href = conditions.back_href;
+    }
+}
 
 
 filter_icon.onclick = () => {
@@ -165,30 +276,29 @@ filter_icon_cancel.onclick = async () => {
 };
 
 
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
 
 async function getData_fn() {
     try {       
 
         
+
         data = await new_fetchData_postAndGet(
             "/reports_income_statement_view_ar",
             {start_date, end_date, is_hiding_zero_balances, is_show_account_no},
             "pass","pass",
-            60,
+            15,
             false,'',
-            true,
-            false,false,
+            false,
+            true,content_space,
             false,false,'',
             false,'',
-            false,'report_map_ar',
+            false,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
-
-            h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'قائمة الدخل' 
-            h2_text_div.textContent = `قائمة الدخل`
-            sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
-            back_href.title = back_href_page;
-            back_href.href = back_title_page; 
 
         data = data.trial_balance
         
@@ -199,19 +309,15 @@ async function getData_fn() {
 }
 
 
+
+
+
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-
-        permissionName = 'accounts_permission'
-        start_date = false
-        end_date = false
-        Qkey = null
-        back_href_page = 'income_statement_view_ar'
-        back_title_page = 'قائمة الدخل'
-
+        sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value.value)}`;
         const datechange = is_datexChanged()
         if (datechange){
             await getData_fn();
@@ -219,11 +325,12 @@ async function Execution() {
             showFirst50RowAtTheBegening();
         }
 
-        backUp_page1(`income_statment_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no)
-    } catch (error) {
-        catch_error(error);
-    } finally {
+        backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
+
+    } catch (error) {
+        hideLoadingIcon(content_space);
+        catch_error(error);
     }
 }
 
@@ -302,15 +409,13 @@ function fillTable() {
 
         let diffrence = 0
         total_column1.value = 0;
-        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'accounts_permission', start_date, end_date, 'income_statement_view_ar', 'قائمة الدخل', false, 'account_statement_view_ar', 'obj_statement')"`;
-
+        let fn = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
         let tableHTML = `<table id="review_table" class="review_table">
                         <thead>
                             <tr>
-                                <td style="${style_id}"></td>
                                 <th style="${style_account_name}">الحساب</th>
                                 <th style="${style_total_value}">${end_date_input.value}</th>
 
@@ -365,16 +470,14 @@ if (+row.global_id === 6){
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${style_account_name};${handle_account_name_style}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(row.is_final_account? true : false,false,false,row.balance,style_total_value,false,row.is_final_account? fn1 : false,'balance')}
+                        ${tdNumber(true,false,false,row.balance,style_total_value,false,fn,'balance')}
                       </tr>`;
         });
 
         style_total_value = deafult_style_total_value
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td style="${style_id}"></td>
                         <td id="footer_style_account_name" style="${style_account_name}; font-size: 1.7rem;">ارباح / خسائر الفترة</td>
                         <td id="footer_debit_first" style="${style_total_value}; opacity: 0.9; font-size: 1.7rem;" class="${+diffrence < 0 ? 'td_negative_number' : ''}">${floatToString(true, diffrence)}</td>
                     </tr>
@@ -407,10 +510,8 @@ if (+row.global_id === 6){
         // }
 
     } catch (error) {
-        catch_error(error);
-    } finally{
         hideLoadingIcon(content_space);
-        close_dialogx()
+        catch_error(error);
     }
 }
 
@@ -500,6 +601,36 @@ async function table_update_btn_fn(updateBtn) {
 }
 */
 
+/*
+function CheckUrlParams_salesInvoice_update_ar() {
+    try {
+        const urlData = getURLData(
+            "data",
+            "sales_invoice_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
+        );
+
+        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
+            return true;
+        }
+
+    
+        if (urlData !== "noParams") {
+
+            restore_filter_div_conditions(2)
+
+            return true;
+        } else if (urlData === "noParams") {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        catch_error(error);
+        return false;
+    }
+}
+*/
 
 //#region dialog
 const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
@@ -518,23 +649,27 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
 view_report_btn.onclick = async function () {
     try {
-        showLoadingIcon(view_report_btn)
-        permissionName = 'cash_transaction_permission'
-        start_date = start_date_input.value;
-        end_date = end_date_input.value;
-        Qkey = null
-        back_href_page = 'report_map_ar'
-        back_title_page = 'التقارير'
+
+        start_date = start_date_input.value ;
+        end_date = end_date_input.value ;
         is_hiding_zero_balances = checked_hide_zero_balabce.checked
         is_show_account_no = false
+                
+        showLoadingIcon(view_report_btn)
+        h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'قائمة الدخل' 
+        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date_input.value)}   الى   ${reverseDateFormatting(end_date_input.value)}`;
+        await getData_fn();
+        const conditionsArray = sessionStorage.getItem(`incomeStatement_view_Array`);
+    
+        if (!conditionsArray){
+         
+            backUp_filter_div_conditions();
+        }
 
-        backUp_page1(`income_statement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no)
-        await restore_page1(getData_fn, `income_statement_viewArray`)                        
-
+        hideLoadingIcon(view_report_btn)
+        close_dialogx()
     } catch (error) {
-        catch_error(error);
-    } finally {
-        hideLoadingIcon(view_report_btn);
+        catch_error(error)
     }
 }
 
@@ -571,23 +706,10 @@ function close_dialogx(){
 
 
 document.addEventListener("DOMContentLoaded", async function () {
-    try {
-        showLoadingIcon(content_space)
-        let conditionsArray = JSON.parse(sessionStorage.getItem("income_statement_viewArray")) || [];
-        if (conditionsArray.length === 0){
-            show_dialogx()
-        }else {
-            await restore_page1(getData_fn, `income_statement_viewArray`)
-        }
-        showRedirectionReason();
-    } catch (error) {
-        catch_error(error)
-    } finally {
-        hideLoadingIcon(content_space)
-    }
+
+    show_dialogx()
     
-    
-    
+    showRedirectionReason();
 /*    
   
     const result2 = CheckUrlParams_salesInvoice_update_ar();

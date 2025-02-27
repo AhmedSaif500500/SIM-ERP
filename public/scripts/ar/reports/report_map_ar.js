@@ -45,7 +45,7 @@ function showData(){
   }
   
   income_statement_view_ar.onclick = function(){
-    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    sessionStorage.removeItem('income_statement_viewArray');
     window.location.href = "/income_statement_view_ar";
   }
   
