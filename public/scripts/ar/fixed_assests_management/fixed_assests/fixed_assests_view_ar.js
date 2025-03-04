@@ -760,7 +760,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         } else {
             await restore_page1(getData_fn, `fixed_assests_viewArray`)
         }
-    
+        handle_fn_options()
     } catch (error) {
         catch_error(error)
        } finally{

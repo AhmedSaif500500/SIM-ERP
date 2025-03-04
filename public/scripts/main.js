@@ -792,9 +792,11 @@ if (content_space !== null) {
   const scrollToTopBtn = document.getElementById("scrollToTopBtn");
   content_space.addEventListener("scroll", () => {
     if (content_space.scrollTop > 200 || document.documentElement.scrollTop > 200) { /* عنصر البودى اوى عنصر داخل البودى  اذا الاسكرول اكبر من 500 بيكسيل*/
-      scrollToTopBtn.style.display = "block";
+      // scrollToTopBtn.style.display = "block";
+      scrollToTopBtn.classList.add(`scrollToTopBtn_onSHow`)
     } else {
-      scrollToTopBtn.style.display = "none";
+      // scrollToTopBtn.style.display = "none";
+      scrollToTopBtn.classList.remove(`scrollToTopBtn_onSHow`)
     }
   });
 

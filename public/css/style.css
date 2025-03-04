@@ -308,9 +308,9 @@ body {
 #scrollToTopBtn {
   position: fixed;
   /* bottom: 20px; */
-  inset-block-end: 1rem;
+  inset-block-end: 1.5rem;
   /* inset-inline-end: 20px; */
-  inset-inline-end: 2rem;
+  inset-inline-end: 1.5rem;
   display: none;
   /* background-color: #007bff; */
   background-color: #712cf9;
@@ -332,6 +332,16 @@ body {
 
 #scrollToTopBtn:hover {
   opacity: 0.8;
+  
+}
+
+
+.scrollToTopBtn_onSHow{
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
 }
 
 @media print {
@@ -3979,13 +3989,15 @@ cursor: grabbing;
 
 
 .custom_button:hover,
-.custom_setting_button:hover{
+.custom_setting_button:hover,
+#scrollToTopBtn:hover{
   transform: translateY(-4px); /* تأثير البروز عند التمرير */
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4); /* تأثير الظل عند التمرير */
 }
 
 .custom_button:active,
-.custom_setting_button:active {
+.custom_setting_button:active,
+#scrollToTopBtn:active {
   transform: translateY(2px); /* تأثير الضغط على الزر */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* تقليل الظل عند الضغط */
 }

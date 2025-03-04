@@ -662,7 +662,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         } else {
             await restore_page1(getData_fn, `items_table_viewArray`)
         }
-    
+        handle_fn_options()
     } catch (error) {
         catch_error(error)
        } finally{
@@ -677,11 +677,6 @@ window.addEventListener("beforeprint", function () {
 /*--------------------------------------------------------------------------------*/
 
 
-const import_data_btn = document.querySelector(`#import_data_btn`)
-
-import_data_btn.onclick = function (){
-    window.location.href = "import_data_items";
-}
 
 async function importData(){
     const permission = await btn_permission('items_permission', 'add');

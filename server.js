@@ -28175,8 +28175,8 @@ second_query AS (
         END AS original_calculated_value,
         mq.asset_cost - mq.un_depreciated_value - mq.depreciation_value AS viable_value_to_depreciate
     FROM main_query mq
-)
-SELECT
+),
+calc_query as ( SELECT
     sq.id,
     sq.account_name,
 ROUND(
@@ -28193,8 +28193,16 @@ ROUND(
 ) AS depreciated_value
 
 FROM
-    second_query sq;
-
+    second_query sq
+)
+select
+  calc.id,
+  calc.account_name,
+  calc.depreciated_value
+from
+    calc_query calc
+where
+  COALESCE(calc.depreciated_value, 0) > 0
   ;
 `;
 let params1 = [req.session.company_id, posted_elements.startDate, posted_elements.endDate]
@@ -35376,6 +35384,7 @@ order by
 ),
 transaction_details AS (
     SELECT 
+        ROW_NUMBER() OVER (ORDER BY th.datex ASC, th.id ASC) AS serial_number,
         th.id AS x,
         th.datex,
         th.transaction_type as type,
@@ -35405,7 +35414,8 @@ transaction_details AS (
         ${fixed_assests_where}
     UNION ALL
     SELECT 
-        NULL AS x,
+        0 AS serial_number,  -- الرصيد السابق أول واحد
+        0 AS x,
         $2 AS datex, -- تاريخ بداية الفترة
         NULL AS type,
         NULL AS reference,
@@ -35426,6 +35436,7 @@ transaction_details AS (
 ),
 cumulative_balance AS (
     SELECT 
+        serial_number,
         x,
         datex,
         type,
@@ -35436,8 +35447,8 @@ cumulative_balance AS (
         debit,
         credit,
         case
-        	when td.main_account_id in (1,5) then SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC)
-        	when td.main_account_id in (2,3,4) then SUM(credit - debit) OVER (ORDER BY datex ASC, reference ASC) 
+        	when td.main_account_id in (1,5) then SUM(debit - credit) OVER (ORDER BY serial_number ASC)
+        	when td.main_account_id in (2,3,4) then SUM(credit - debit) OVER (ORDER BY serial_number ASC)
         end AS cumulative_balance
     FROM 
         transaction_details td
@@ -35457,8 +35468,7 @@ SELECT
 FROM 
     cumulative_balance
 ORDER BY 
-    datex DESC,
-    reference DESC
+    serial_number DESC;
       ;
     `;
   
@@ -35501,7 +35511,8 @@ ORDER BY
         and (tb.item_id is not null or ah1.global_id = 17)
 ),
 transaction_details AS (
-    SELECT 
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY th.datex ASC, th.id ASC) AS serial_number,
         th.id AS x,
         th.datex,
         th.transaction_type as type,
@@ -35549,7 +35560,8 @@ transaction_details AS (
         and (tb.item_id is not null or ah1.global_id = 17)
     UNION ALL
     SELECT 
-        NULL AS x,
+        0 AS serial_number,  -- الرصيد السابق أول واحد
+        0 AS x,
         $2 AS datex, -- تاريخ بداية الفترة
         NULL AS type,
         NULL AS reference,
@@ -35569,7 +35581,8 @@ transaction_details AS (
         previous_balance pb
 ),
 cumulative_balance AS (
-    SELECT 
+    SELECT
+        serial_number,
         x,
         datex,
         type,
@@ -35579,7 +35592,7 @@ cumulative_balance AS (
         transaction_type,
         debit,
         credit,
-        	SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) cumulative_balance
+        	SUM(debit - credit) OVER (ORDER BY serial_number ASC) cumulative_balance
     FROM 
         transaction_details td
 )
@@ -35597,8 +35610,7 @@ SELECT
 FROM 
     cumulative_balance
 ORDER BY 
-    datex DESC,
-    reference DESC
+    serial_number DESC;
       ;
     `;
     let cogs_account_params = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
@@ -36063,7 +36075,8 @@ GROUP BY
     ah.id
 ),
 transaction_details AS (
-    SELECT 
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY th.datex ASC, th.id ASC) AS serial_number,
         th.id AS x,
         th.datex,
         th.transaction_type as type,
@@ -36099,7 +36112,8 @@ END AS credit
         ${item_location_where}
     UNION ALL
     SELECT 
-        NULL AS x,
+        0 AS serial_number,  -- الرصيد السابق أول واحد
+        0 AS x,
         $2 AS datex, -- تاريخ بداية الفترة
         NULL AS type,
         NULL AS reference,
@@ -36119,7 +36133,8 @@ END AS credit
         previous_balance pb
 ),
 cumulative_balance AS (
-    SELECT 
+    SELECT
+        serial_number,
         x,
         datex,
         type,
@@ -36129,7 +36144,7 @@ cumulative_balance AS (
         transaction_type,
         debit,
         credit,
-        SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) AS cumulative_balance
+        SUM(debit - credit) OVER (ORDER BY serial_number ASC) AS cumulative_balance
     FROM 
         transaction_details td
 )
@@ -36147,8 +36162,7 @@ SELECT
 FROM 
     cumulative_balance
 ORDER BY 
-    datex DESC,
-    reference DESC
+    serial_number DESC;
       ;
     `;
     

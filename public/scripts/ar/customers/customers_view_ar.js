@@ -611,7 +611,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         } else {
             await restore_page1(getData_fn, `customers_viewArray`)
         }
-    
+        handle_fn_options()
     } catch (error) {
         catch_error(error)
        } finally{
@@ -632,7 +632,7 @@ async function importData(){
 }
 
 
-function handle_fn_options(){  
+function handle_fn_options(){
     const newDivs = `
       <div id="fn_importData_btn" onclick="importData()">استيراد بيانات</div>
     `;
