@@ -4606,14 +4606,19 @@ async function back_href_fn1(getData_fn, str_storage_array_name, str_current_pag
 
 async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calssName, str_permissionName, start_date, end_date, back_href_page, back_title_page, other_obj, str_report_page, str_session_storage_obj) {
   try {
+
+    
   const permission = await btn_permission(str_permissionName,'view');
 
   if (!permission){ // if false
       return;
   };
 
+
+
   const row  = balanceBtn1.closest("tr")
   
+
   const obj_statement = {
   x: row.querySelector(`.${str_td_id_calssName}`).textContent,
   permissionName : str_permissionName,

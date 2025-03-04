@@ -9,6 +9,17 @@ newBtn.onclick = function (){
   }
 */
 
+// const h2_text_div = document.querySelector(`#h2_text_div`);
+// const sub_h2_header = document.querySelector(`#sub_h2_header`);
+
+// let startDate = firstDayOfYear;
+// let endDate = lastDayOfYear;
+// let is_recieved_params_from_effects_update = false;
+// let is_recieved_params_from_department_view = false;
+
+const tableContainer1 = document.querySelector("#tableContainer1");
+const searchBtn1 = document.querySelector("#searchBtn1");
+const searchInput1 = document.querySelector("#searchInput1");
 
 
 //-------------------------------------------------
@@ -19,13 +30,11 @@ let array2 = [];
 let slice_array2 = [];
 let filteredData_Array2 = [];
 let checkedAll = false
-let locations_array = []
 
 
 // let end_date;
 // let is_hiding_zero_balances;
 // let is_show_account_no = false;
-
 
 async function getData_fn1() {
     try {       
@@ -37,7 +46,7 @@ async function getData_fn1() {
             60,
             false,'',
             false,
-            false,false,
+            true,content_space,
             false,false,'',
             false,'',
             false,false,
@@ -51,6 +60,8 @@ async function getData_fn1() {
       catch_error(error)
     }
 }
+
+
 
 function showFirst50RowAtTheBegening1() {
     try {
@@ -236,6 +247,7 @@ function checkAll(){
 }
 
 
+
 //#region dialog
 const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
 const report_name_input = document.querySelector(`#report_name_input`);
@@ -246,8 +258,27 @@ const view_report_btn = document.querySelector(`#view_report_btn`);
 const cancel_report_btn = document.querySelector(`#cancel_report_btn`);
 const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
+async function getData_report(end_date, is_hiding_zero_balances, is_show_account_no, locations_array) {
 
+        data = await new_fetchData_postAndGet(
+            "/get_stock_report",
+            {checkedAll, end_date, is_hiding_zero_balances, is_show_account_no, locations_array},
+            "pass","pass", // معلق
+            60,
+            false,'',
+            false,
+            false,false,
+            false,false,'',
+            false,'',
+            false,false,
+            'حدث خطأ اثناء معالجة البيانات'
+        )
 
+        data = data.report
+                
+        showFirst50RowAtTheBegening();
+
+}
 
 
 view_report_btn.onclick = async function () {
@@ -255,18 +286,13 @@ view_report_btn.onclick = async function () {
 
 
         showLoadingIcon(view_report_btn)
-        const stock_location_viewArray = JSON.parse(sessionStorage.getItem('stock_location_viewArray')) || [];
 
-
-                start_date = false;
-                end_date = end_date_input.value;
-                permissionName = `items_permissions`
-                back_href_page = stock_location_viewArray.length === 0  ?'report_map_ar' : 'stock_location_view_ar';
-                back_title_page = stock_location_viewArray.length === 0  ? 'التقارير' : 'جرد الاصناف حسب اموقع'
+                //  معلق
+                end_date = end_date_input.value ;
                 is_hiding_zero_balances = checked_hide_zero_balabce.checked
                 is_show_account_no = false
                 
-                
+                let locations_array = []
                 const rows = tableContainer1.querySelectorAll(`#tableContainer1 table tbody tr .td_checkbox`)
                 
                 for (const row of rows){
@@ -278,26 +304,18 @@ view_report_btn.onclick = async function () {
         
                 if (locations_array.length === 0){
                     showAlert(`info`,'رجاء تحديد موقع مخزون او اكثر بشكل صحيح')
+                    hideLoadingIcon(view_report_btn)
                     return;
                 }
 
-                sessionStorage.removeItem('locations_array')
-                sessionStorage.setItem('locations_array', JSON.stringify(locations_array));  
-
         h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'جرد المخزون حسب المواقع' 
         sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value)}`;
-        //await getData_fn(end_date, is_hiding_zero_balances, is_show_account_no, locations_array);
+        await getData_report(end_date, is_hiding_zero_balances, is_show_account_no, locations_array);
 
-
-        backUp_page1(`stock_location_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no, {locations_array : locations_array})
-        await restore_page1(getData_fn, `stock_location_viewArray`)
-        
-        
+        hideLoadingIcon(view_report_btn)
+        close_dialogx()
     } catch (error) {
         catch_error(error)
-    } finally {
-        close_dialogx()
-        hideLoadingIcon(view_report_btn)
     }
 }
 
@@ -332,28 +350,18 @@ function close_dialogx(){
 
 
 document.addEventListener("DOMContentLoaded", async function () {
-    try {
-        showLoadingIcon(content_space)
-        await getData_fn1()
-
-      
-        const stock_location_viewArray = JSON.parse(sessionStorage.getItem('stock_location_viewArray')) || [];
-
-        if (stock_location_viewArray.length === 0){
-            show_dialogx()
-        }else{
-           
-            locations_array = JSON.parse(sessionStorage.getItem('locations_array')) || [];
-            await restore_page1(getData_fn, `stock_location_viewArray`)
-            
-        }
-
-        showRedirectionReason();
-    } catch (error) {
-        catch_error(error)
-    } finally {
-        hideLoadingIcon(content_space)
+    await getData_fn1()
+    show_dialogx()
+    showRedirectionReason();
+/*    
+  
+    const result2 = CheckUrlParams_salesInvoice_update_ar();
+    if (!result2) {
+        return;
     }
+
+
+*/
 });
 
 window.addEventListener("beforeprint", function () {

@@ -13,6 +13,7 @@ const income_statement_view_ar = document.querySelector(`#income_statement_view_
 const stock_div = document.querySelector(`#stock_div`)
 const stock_location_report_btn = document.querySelector(`#stock_location_report_btn`)
 const item_movement_report_btn = document.querySelector(`#item_movement_report_btn`)
+const stock_cost_and_items_btn = document.querySelector(`#stock_cost_and_items_btn`)
 
 
 //! sales_div
@@ -26,6 +27,7 @@ function showData(){
   account_statment.style.display = style= module_display("accounts_permission") // معلق
   stock_location_report_btn.style.display = style= module_display("items_permission") // معلق
   item_movement_report_btn.style.display = style= module_display("items_permission") // معلق
+  stock_cost_and_items_btn.style.display = style= module_display("items_permission") // معلق
 
    
   account_statment.onclick = function(){
@@ -50,15 +52,21 @@ function showData(){
   }
   
   stock_location_report_btn.onclick = function(){
-    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    sessionStorage.removeItem('stock_location_viewArray');
     window.location.href = "/stock_location_view_ar";
   }
   
 
   item_movement_report_btn.onclick = function(){
-    sessionStorage.removeItem('item_movement_view_Array');
+    sessionStorage.removeItem('item_movement_viewArray');
     sessionStorage.removeItem('obj_item_movement');
     window.location.href = "/item_movement_view_ar";
+  }
+
+  stock_cost_and_items_btn.onclick = function(){
+    sessionStorage.removeItem('stock_cost_and_items_viewArray');
+    sessionStorage.removeItem('obj_stock_cost_and_items');
+    window.location.href = "/stock_cost_and_items_view_ar";
   }
 
   page_content.style.display = 'flex'

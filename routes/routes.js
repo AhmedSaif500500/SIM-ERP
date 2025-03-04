@@ -1826,6 +1826,18 @@ router.get('/capital_accounts_update_ar', (req, res) => {
             }
         });
 
+        router.get('/stock_cost_and_items_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner_permission || req.session.general_permission > 1) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'stock' , 'stock_cost_and_items', 'stock_cost_and_items_view_ar.html'));
+                }else{
+                    res.redirect('/report_map_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
+
         //#endregion end trial balance
     //#endregion end statements reports
 

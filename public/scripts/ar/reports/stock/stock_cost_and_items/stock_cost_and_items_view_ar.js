@@ -22,11 +22,8 @@ let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 const account_type_select = document.querySelector(`#account_type_select`);
 
-start_date = firstDayOfYear;
-start_date = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
-
 
 
 const tableContainer = document.querySelector("#tableContainer");
@@ -50,7 +47,7 @@ const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمي
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   await back_href_fn1(getData_fn, `item_movement_viewArray`, 'item_movement_view_ar', `report_map_ar`)
+   await back_href_fn1(getData_fn, `stock_cost_and_items_viewArray`, 'stock_cost_and_items_view_ar', `report_map_ar`)
 };
 
 
@@ -136,7 +133,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('item_movement_viewArray');
+            sessionStorage.removeItem('stock_cost_and_items_viewArray');
             conditionsArray = []
             
         }
@@ -159,8 +156,8 @@ async function getData_fn(permissionName, x, start_date, end_date) {
     try {       
 
         const d = await new_fetchData_postAndGet(
-            "/report_item_movement_view_ar",
-            {x, start_date, end_date, item_location, other_obj},
+            "/report_stock_cost_and_items_view_ar",
+            {x, start_date, end_date, item_location, other_obj,},
             permissionName,"view",
             60,
             false,'',
@@ -168,7 +165,7 @@ async function getData_fn(permissionName, x, start_date, end_date) {
             false,false,
             false,false,'',
             false,'',
-            true,'report_map_ar',
+            false,'report_map_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )        
         
@@ -195,12 +192,12 @@ async function Execution() {
         is_filter = true
         searchInput.value = "";
 
-        back_href_page = 'item_movement_view_ar'
+        back_href_page = 'stock_cost_and_items_view_ar'
         back_title_page = 'حركة صنف'
 
         sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             showFirst50RowAtTheBegening(); 
-            backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
 
     } catch (error) {
         catch_error(error);
@@ -454,7 +451,7 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
     const type = row.querySelector(`.td_type`).textContent
     const obj = {
     x: row.querySelector(`.td_id`).textContent,
-    href_pageName : 'item_movement_view_ar',
+    href_pageName : 'stock_cost_and_items_view_ar',
     href_pageTitle : 'حركة صنف'
     }
 
@@ -492,8 +489,8 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
         return;
     }
 
-    //sessionStorage.setItem('obj_item_movement', JSON.stringify(obj_item_movement));
-    //window.location.href = `item_movement_view_ar`;
+    //sessionStorage.setItem('obj_stock_cost_and_items', JSON.stringify(obj_stock_cost_and_items));
+    //window.location.href = `stock_cost_and_items_view_ar`;
 } catch (error) {
     catch_error(error)
 }
@@ -512,13 +509,19 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
 
 
+
+async function viewReport_fn(x,startDate,endDate) {
+    
+}
+
+
 view_report_btn.onclick = async function () {
     try {
         showLoadingIcon(view_report_btn)
 
         Qkey = document.querySelector(`#dropdown_div1_hidden_input`).value
         if(!Qkey){
-            showAlert('warning', 'برجاء تحديد الصنف بشكل صحيح')
+            showAlert('warning', 'برجاء تحديد الحساب بشكل صحيح')
             return;
         }
         start_date = start_date_input.value;
@@ -531,7 +534,7 @@ view_report_btn.onclick = async function () {
         // is_hiding_zero_balances = checked_hide_zero_balabce.checked
         // is_show_account_no = false
 
-        const obj_item_movement = {
+        const obj_stock_cost_and_items = {
             x: Qkey,
             permissionName : permissionName,
             start_date : start_date,
@@ -540,10 +543,10 @@ view_report_btn.onclick = async function () {
             back_title_page : back_title_page,
             item_location : item_location
         }
-        sessionStorage.setItem('obj_item_movement', JSON.stringify(obj_item_movement)); 
+        sessionStorage.setItem('obj_stock_cost_and_items', JSON.stringify(obj_stock_cost_and_items)); 
 
-        backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
-        await restore_page1(getData_fn, `item_movement_viewArray`)
+        backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        await restore_page1(getData_fn, `stock_cost_and_items_viewArray`)
 
         close_dialogx()
     } catch (error) {
@@ -640,27 +643,28 @@ document.addEventListener("DOMContentLoaded", async function () {
 try {  
     showLoadingIcon(content_space)
 
-const obj_item_movement = JSON.parse(sessionStorage.getItem('obj_item_movement'));
+const obj_stock_cost_and_items = JSON.parse(sessionStorage.getItem('obj_stock_cost_and_items'));
 
 
-if (obj_item_movement && obj_item_movement.x && obj_item_movement.permissionName && obj_item_movement.start_date && obj_item_movement.end_date && obj_item_movement.back_href_page && obj_item_movement.back_title_page){
+
+if (obj_stock_cost_and_items && obj_stock_cost_and_items.x && obj_stock_cost_and_items.permissionName && obj_stock_cost_and_items.start_date && obj_stock_cost_and_items.end_date && obj_stock_cost_and_items.back_href_page && obj_stock_cost_and_items.back_title_page){
     report_setting_icon.style.display = 'none'
 
-    permissionName = obj_item_movement.permissionName
-    start_date = obj_item_movement.start_date;
-    end_date = obj_item_movement.end_date;
-    Qkey = obj_item_movement.x
-    back_href_page = obj_item_movement.back_href_page;
-    back_title_page = obj_item_movement.back_title_page;
-    other_obj = obj_item_movement.other_obj;
-    item_location = obj_item_movement.other_obj.item_location;
+    permissionName = obj_stock_cost_and_items.permissionName
+    start_date = obj_stock_cost_and_items.start_date;
+    end_date = obj_stock_cost_and_items.end_date;
+    Qkey = obj_stock_cost_and_items.x
+    back_href_page = obj_stock_cost_and_items.back_href_page;
+    back_title_page = obj_stock_cost_and_items.back_title_page;
+    other_obj = obj_stock_cost_and_items.other_obj;
+    item_location = obj_stock_cost_and_items.other_obj.item_location;
 
     
 
-    pagePermission("view", obj_item_movement.permissionName);  // معلق
-    sessionStorage.removeItem('item_movement_viewArray');
-    backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
-    await restore_page1(getData_fn, `item_movement_viewArray`)
+    pagePermission("view", obj_stock_cost_and_items.permissionName);  // معلق
+    sessionStorage.removeItem('stock_cost_and_items_viewArray');
+    backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+    await restore_page1(getData_fn, `stock_cost_and_items_viewArray`)
     
 }else{
     pagePermission("view", 'items_permission');  // معلق

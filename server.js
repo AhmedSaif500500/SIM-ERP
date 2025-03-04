@@ -9187,8 +9187,8 @@ let params2 = [req.session.company_id]
         await db.tx(async (tx) => {
 
           let query1 = `INSERT INTO transaction_header
-          (reference, company_id, transaction_type, general_note, datex, general_reference, items_location_id, items_location_id2)
-          VALUES($1, $2, $3, $4, $5, $6, $7 , $8) RETURNING id;`;
+          (reference, company_id, transaction_type, general_note, datex, general_reference, items_location_id, items_location_id2, is_including_items)
+          VALUES($1, $2, $3, $4, $5, $6, $7 , $8, $9) RETURNING id;`;
 
 let params1 = [
 newReference_transaction_header,
@@ -9199,6 +9199,7 @@ posted_elements.datex,
 newId_general_reference,
 +posted_elements.location_from,
 +posted_elements.location_to,
+true,
 ]   
 
   
@@ -35998,21 +35999,19 @@ await last_activity(req);
           });  
         }
     
-        if (posted_elements.item_location){
-          const query01 = `select count(id) as count_location from accounts_header where id = $1 and company_id = $2 and account_type_id = 7`
-          const result01 = await db.oneOrNone(query01, [posted_elements.item_location, req.session.company_id])
-          
-          if (!result01 || +result01.count_location === 0){
-            await block_user(req,'Srimva02')
-            return res.json({
-              success: false,
-              xx: true,
-              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-            });  
-          }  
+
+        let item_location = posted_elements.item_location || false
+        let item_location_name = ''
+        if (posted_elements.other_obj && posted_elements.other_obj.item_location_name){
+          item_location_name = posted_elements.other_obj.item_location_name
+          const result = await db.oneOrNone(`select id from accounts_header where account_name = $1 AND company_id = $2 AND account_type_id = 7`, [item_location_name, req.session.company_id])
+          if (result && result.id){
+            item_location = result.id
+          }
         }
 
-        
+
+  /*      
         let item_location_where = ''
         let item_location_status = posted_elements.item_location
         item_location_status = item_location_status ? item_location_status.item_location : false
@@ -36024,9 +36023,24 @@ await last_activity(req);
             item_location_where =  ''
           }
         }
-  
-        
-        
+  */
+
+
+        let item_location_where = ''
+
+        if (item_location){
+          const result = await db.oneOrNone(`select count(id) as count_location_id from accounts_header where account_type_id = 7 AND company_id = $1`, [req.session.company_id])
+          if (!result || result.count_location_id === 0){
+            await block_user(req,'Srimva02')
+            return res.json({
+              success: false,
+              xx: true,
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            });  
+          }else {
+            item_location_where = `AND tb.item_location_id_tb = ${item_location}`
+          }
+        }
 
 
         let query1 = `
@@ -36163,10 +36177,218 @@ ORDER BY
       }
     });
 
+    app.post("/report_stock_cost_and_items_view_ar", async (req, res) => {
+      try {
+        //! Permission معلق
+        await permissions(req, "items_permission", "view");
+        if (!permissions) {
+          return;
+        }
+    
+        
+        const posted_elements = req.body;
+        
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+
+        const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        if (InValidDateFormat) {
+          return res.status(400).json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+       // const transaction_type = 7
+        
+        //! check
+
+        let quer001 = ` select id, account_name, account_type_id, global_id, main_account_id from accounts_header where id = $1 and company_id = $2 AND account_type_id = 5 AND is_final_account is true;`;
+        let result = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id])
+
+        if (!result || !result.account_name || result.account_name === ''){
+          await block_user(req,'Srimva01')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });  
+        }
+    
+        if (posted_elements.item_location){
+          const query01 = `select count(id) as count_location from accounts_header where id = $1 and company_id = $2 and account_type_id = 7`
+          const result01 = await db.oneOrNone(query01, [posted_elements.item_location, req.session.company_id])
+          
+          if (!result01 || +result01.count_location === 0){
+            await block_user(req,'Srimva02')
+            return res.json({
+              success: false,
+              xx: true,
+              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+            });  
+          }  
+        }
+
+        
+        let item_location_where = ''
+        let item_location_status = posted_elements.item_location
+        item_location_status = item_location_status ? item_location_status.item_location : false
+        
+        if (item_location_status){
+          if (item_location_status === 'fixed_assest_only'){
+            item_location_where = `AND tb.item_location_id_tb = ${item_location_status}`
+          } else {
+            item_location_where =  ''
+          }
+        }
+  
+        
+
+        let query1 = `
+       WITH previous_balance AS (
+SELECT 
+    ah.id,
+    COALESCE(SUM(tb.item_amount), 0) AS balance
+FROM 
+    accounts_header ah
+    LEFT JOIN transaction_body tb ON tb.item_id = ah.id
+    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+WHERE 
+    ah.id = $1
+    AND th.company_id = $4
+    and th.is_including_items is true
+    AND th.datex < $2
+    AND tb.item_amount IS NOT null
+    ${item_location_where}
+GROUP BY 
+    ah.id
+),
+transaction_details AS (
+    SELECT 
+        th.id AS x,
+        th.datex,
+        th.transaction_type as type,
+        th.reference,
+       	CONCAT(
+        	tt.doc_prefix, '-',
+        	SUBSTRING(th.datex, 1, 4), '-',  -- استخراج السنة من datex
+        	LPAD(CAST(th.reference AS TEXT), 5, '0'), ' / ', -- تحويل reference إلى نص وإضافة الأصفار
+    		tt.transaction_type_name
+        ) AS referenceconcat,
+        tb.row_note,
+        ah.main_account_id,
+        th.transaction_type,
+CASE 
+    WHEN COALESCE(tb.item_amount, 0) > 0 THEN tb.item_amount 
+    ELSE 0 
+END AS debit,
+CASE 
+    WHEN COALESCE(tb.item_amount, 0) < 0 THEN ABS(tb.item_amount) 
+    ELSE 0 
+END AS credit
+    FROM 
+        accounts_header ah
+        JOIN transaction_body tb on tb.item_id = ah.id
+        JOIN transaction_header th ON th.id = tb.transaction_header_id
+        LEFT JOIN transaction_type tt ON tt.id = th.transaction_type
+    WHERE 
+        ah.id = $1
+        and th.company_id = $4
+        AND th.datex BETWEEN $2 AND $3
+        and th.is_including_items is true
+        AND tb.item_amount IS NOT null
+        ${item_location_where}
+    UNION ALL
+    SELECT 
+        NULL AS x,
+        $2 AS datex, -- تاريخ بداية الفترة
+        NULL AS type,
+        NULL AS reference,
+        'الرصيد السابق' AS referenceconcat,
+        null AS row_note,
+        null as main_account_id,
+        NULL AS transaction_type,
+        case
+	        when  pb.balance >= 0 then pb.balance
+        	else 0	
+        end AS debit,
+        case
+	        when pb.balance <= 0 then pb.balance
+        	else 0
+        end AS credit
+    FROM 
+        previous_balance pb
+),
+cumulative_balance AS (
+    SELECT 
+        x,
+        datex,
+        type,
+        reference,
+        referenceconcat,
+        row_note,
+        transaction_type,
+        debit,
+        credit,
+        SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) AS cumulative_balance
+    FROM 
+        transaction_details td
+)
+SELECT 
+    x,
+    datex,
+    type,
+    reference,
+    referenceconcat,
+    row_note,
+    transaction_type,
+    debit,
+    credit,
+    cumulative_balance AS balance
+FROM 
+    cumulative_balance
+ORDER BY 
+    datex DESC,
+    reference DESC
+      ;
+    `;
+    
+    let params1 = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
+    
+    await db.tx(async (tx) => {
+    
+      const account_statement = await tx.any(query1, params1);
+      const account_name = result.account_name
+
+      const postedData = {account_statement, account_name};      
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_data_for_purshasesInvoiceToreturns", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
+      }
+    });
   //#endregion stock
 //#endregion end reports
-
-
 
 
 //!====================================================================================================================================
@@ -36235,8 +36457,6 @@ ORDER BY
 
   return check;
 }
-
-
 
 
 async function update_items_cogs(items_array,datex, req, tx) {
@@ -36519,10 +36739,6 @@ return data
 }
 
 
-
-
-
-
 async function get_last_avg_cost(items_array, datex, req) {
   const query0 = `
    SELECT 
@@ -36555,13 +36771,9 @@ WHERE
 `;
 
   const avg_cost = await db.any(query0, [req.session.company_id, datex]);
-
   return avg_cost
 
-
 }
-
-
 
 
 //! 
