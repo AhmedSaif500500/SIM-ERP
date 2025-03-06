@@ -12,6 +12,7 @@ let end_date;
 let Qkey;
 let back_href_page;
 let back_title_page;
+let item_location;
 
 
 async function getItemsGroupData(){
@@ -415,7 +416,7 @@ function fillTable() {
         total_column1.value = 0;
 
         let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, lastDayOfYear, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'item_movement_view_ar', 'obj_item_movement')"`;
-
+        let fn2 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, lastDayOfYear, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'stock_cost_and_items_view_ar', 'obj_stock_cost_and_items')"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -457,7 +458,7 @@ function fillTable() {
                         ${tdNumber(true,false,true,row.current_amount,style_amount,false,fn1,'td_amount')}
                         <td style="${style_item_unit}" class="td_item_unite">${row.item_unite}</td>
                         ${tdNumber(false,false,true,avg,style_avg,false,false,'td_avg')}
-                        ${tdNumber(false,false,true,row.value,style_value,total_column1,false,'td_value')}            
+                        ${tdNumber(true,false,true,row.value,style_value,total_column1,fn2,'td_value')}            
                       </tr>`;
         });
 

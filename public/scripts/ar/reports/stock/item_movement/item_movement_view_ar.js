@@ -13,6 +13,7 @@ let back_href_page;
 let back_title_page;
 let other_obj = {};
 let item_location;
+let item_location_name;
 
 
 
@@ -173,9 +174,10 @@ async function getData_fn(permissionName, x, start_date, end_date) {
         )        
         
         data = d.account_statement
-
-        h2_text_div.textContent = `حركة صنف / ${d.account_name}`
-        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+        const location_name_extintion = item_location_name? ` / ${item_location_name}` : '';
+        h2_text_div.textContent = `حركة صنف / ${d.account_name} ${location_name_extintion}`
+        sub_h2_header.textContent = `من 
+        ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
         
         showFirst50RowAtTheBegening();
         back_href.title = back_href_page;
@@ -200,7 +202,7 @@ async function Execution() {
 
         sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             showFirst50RowAtTheBegening(); 
-            backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
 
     } catch (error) {
         catch_error(error);
@@ -531,18 +533,8 @@ view_report_btn.onclick = async function () {
         // is_hiding_zero_balances = checked_hide_zero_balabce.checked
         // is_show_account_no = false
 
-        const obj_item_movement = {
-            x: Qkey,
-            permissionName : permissionName,
-            start_date : start_date,
-            end_date : end_date,
-            back_href_page : back_href_page,
-            back_title_page : back_title_page,
-            item_location : item_location
-        }
-        sessionStorage.setItem('obj_item_movement', JSON.stringify(obj_item_movement)); 
 
-        backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
         await restore_page1(getData_fn, `item_movement_viewArray`)
 
         close_dialogx()
@@ -629,7 +621,7 @@ async function load_accounts_data() {
 
         create_drop_down_with_External_DataArray(`dropdown_div2`,data.locations);// selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
         
-        show_dialogx()
+        
   } catch (error) {
     catch_error(error)
   }
@@ -639,8 +631,10 @@ async function load_accounts_data() {
 document.addEventListener("DOMContentLoaded", async function () {
 try {  
     showLoadingIcon(content_space)
-
+    pagePermission("view", 'items_permission');  // معلق
+    
 const obj_item_movement = JSON.parse(sessionStorage.getItem('obj_item_movement'));
+const item_movement_viewArray = JSON.parse(sessionStorage.getItem('item_movement_viewArray'));
 
 
 if (obj_item_movement && obj_item_movement.x && obj_item_movement.permissionName && obj_item_movement.start_date && obj_item_movement.end_date && obj_item_movement.back_href_page && obj_item_movement.back_title_page){
@@ -653,19 +647,25 @@ if (obj_item_movement && obj_item_movement.x && obj_item_movement.permissionName
     back_href_page = obj_item_movement.back_href_page;
     back_title_page = obj_item_movement.back_title_page;
     other_obj = obj_item_movement.other_obj;
-    item_location = obj_item_movement.other_obj.item_location;
+    item_location = obj_item_movement.item_location;
+    if (other_obj && other_obj.item_location_name){
+        item_location_name = other_obj.item_location_name
+    } 
 
     
 
     pagePermission("view", obj_item_movement.permissionName);  // معلق
+    sessionStorage.removeItem('obj_item_movement');
     sessionStorage.removeItem('item_movement_viewArray');
-    backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+    backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
     await restore_page1(getData_fn, `item_movement_viewArray`)
     
-}else{
-    pagePermission("view", 'items_permission');  // معلق
-
+}else if (item_movement_viewArray){
+    
+    await restore_page1(getData_fn, `item_movement_viewArray`)
+} else{
     await load_accounts_data()
+    show_dialogx()
 }
     showRedirectionReason();
 } catch (error) {

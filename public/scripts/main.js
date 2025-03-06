@@ -4466,7 +4466,7 @@ function checkPasswordStrength(password) {
 
 
 
-function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_date_p, end_date_p, back_href_p, back_title_p, report_is_hiding_zero_balances, report_is_show_account_no) {
+function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_date_p, end_date_p, back_href_p, back_title_p, report_is_hiding_zero_balances, report_is_show_account_no, item_location) {
   const conditions = {};
 
   indices.forEach(index => {
@@ -4507,6 +4507,7 @@ function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_da
       back_title_page: back_title_p,
       report_is_hiding_zero_balances: report_is_hiding_zero_balances,
       report_is_show_account_no: report_is_show_account_no,
+      item_location : item_location
   });
 
   // استرجاع المصفوفة المحفوظة من sessionStorage
@@ -4518,7 +4519,6 @@ function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_da
   // حفظ المصفوفة المحدثة في sessionStorage
   sessionStorage.setItem(str_storage_array_name, JSON.stringify(conditionsArray));
 }
-
 
 async function restore_page1(getData_fn, str_storage_array_name) {
   let conditions;
@@ -4572,13 +4572,14 @@ async function restore_page1(getData_fn, str_storage_array_name) {
       permissionName = conditions.permissionName
       start_date = conditions.start_date;
       end_date = conditions.end_date;
-      Qkey = conditions.Qkey
+      Qkey = conditions.Qkey;
+      item_location = conditions.item_location;
       back_href_page = conditions.back_href_page;
       back_title_page = conditions.back_title_page;
       is_hiding_zero_balances = conditions.report_is_hiding_zero_balances;
       is_show_account_no = conditions.report_is_show_account_no;
 
-        await getData_fn(permissionName, Qkey, start_date, end_date, is_hiding_zero_balances, is_show_account_no)
+        await getData_fn(permissionName, Qkey, start_date, end_date, is_hiding_zero_balances, is_show_account_no, item_location)
       
   }
 }
@@ -4606,7 +4607,7 @@ async function back_href_fn1(getData_fn, str_storage_array_name, str_current_pag
       }
 }
 
-async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calssName, str_permissionName, start_date, end_date, back_href_page, back_title_page, other_obj, str_report_page, str_session_storage_obj) {
+async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calssName, str_permissionName, start_date, end_date, back_href_page, back_title_page, other_obj, str_report_page, str_session_storage_obj, item_location) {
   try {
 
     
@@ -4619,7 +4620,6 @@ async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calss
 
 
   const row  = balanceBtn1.closest("tr")
-  
 
   const obj_statement = {
   x: row.querySelector(`.${str_td_id_calssName}`).textContent,
@@ -4628,7 +4628,8 @@ async function table_balance1_btn_to_statetment_fn1(balanceBtn1, str_td_id_calss
   end_date : end_date,
   back_href_page : back_href_page,
   back_title_page : back_title_page,
-  other_obj : other_obj
+  other_obj : other_obj,
+  item_location : item_location
 }
   sessionStorage.removeItem(str_session_storage_obj)
   sessionStorage.setItem(str_session_storage_obj, JSON.stringify(obj_statement));                            

@@ -9146,36 +9146,10 @@ let params2 = [req.session.company_id]
       }
   
   
-      const accounts_array = posted_elements.posted_array.map(row => parseInt(row.rowAccountId)); // ستظهر النتيجة: [15, 54, 51]
+      const items_array = posted_elements.posted_array.map(row => parseInt(row.rowAccountId)); // ستظهر النتيجة: [15, 54, 51]
+      const locations_array = [+posted_elements.location_from]
       
-      //! فحص الجرد الكميات حسب الموقع
-      const query_items = `
-       select 
-    	tb.item_id,
-    	sum(tb.item_amount) as current_location_amount
-    from
-    	transaction_body tb
-	inner join transaction_header th on th.id = tb.transaction_header_id
-	where 
-		th.company_id = $1
-		and th.is_deleted is null
-		and th.is_including_items is TRUE
-		and tb.item_id IN (${accounts_array.join(',')})
-		and tb.item_location_id_tb = $2
-    and th.datex <= $3
-	group by
-		tb.item_id;
-      `
 
-      const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.location_from, posted_elements.datex]) || [];
-      
-  
-        if (items_amount_location.length === 0) {
-          return res.json({
-            success: false,
-            message_ar: "❌ لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
-          });
-        }
     
         // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
         const year = getYear(posted_elements.datex)
@@ -9208,16 +9182,6 @@ const newId_transaction_header = insert.id;
 
 
         for ( const row of posted_elements.posted_array){
-          const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
-          
-          if (!dbRow) {
-            throw new Error(`لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`);
-          }
-          
-          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)) {
-            throw new Error(`لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`);
-          }
-          
 
           // الموقع المحول منه
           insert_array2.push([
@@ -9249,6 +9213,12 @@ const newId_transaction_header = insert.id;
         await tx.none(query2, insert_array2.flat());
         }
   
+        const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+        if (!allow_amounts){
+          throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+        } else if (allow_amounts !== true) {
+          throw new Error(allow_amounts);
+        }
         //! history
         await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
       });
@@ -9581,37 +9551,8 @@ where
       }
   
   
-      const accounts_array = posted_elements.posted_array.map(row => parseInt(row.rowAccountId)); // ستظهر النتيجة: [15, 54, 51]
-      
-      //! فحص الجرد الكميات حسب الموقع
-      const query_items = `
-       select 
-    	tb.item_id,
-    	sum(tb.item_amount) as current_location_amount
-    from
-    	transaction_body tb
-	inner join transaction_header th on th.id = tb.transaction_header_id
-	where 
-		th.company_id = $1
-    and th.id != $2 -- استثناء المعامله نفسها 
-		and th.is_deleted is null
-		and th.is_including_items is TRUE
-		and tb.item_id IN (${accounts_array.join(',')})
-		and tb.item_location_id_tb = $3
-    and th.datex <= $4
-	group by
-		tb.item_id;
-      `
-
-      const items_amount_location = await db.any(query_items,[req.session.company_id, posted_elements.x, +posted_elements.location_from, posted_elements.datex]) || [];
-      
-  
-        if (items_amount_location.length === 0) {
-          return res.json({
-            success: false,
-            message_ar: "❌ لا يمكن تنفيذ عملية التحويل، حيث أن الأصناف المحددة ليس لها رصيد متوفر في الموقع المُحوَّل منه.",
-          });
-        }
+      const items_array = posted_elements.posted_array.map(row => parseInt(row.rowAccountId)); // ستظهر النتيجة: [15, 54, 51]
+      const locations_array = [+posted_elements.location_from];
     
         // فحص اذا كان تاريخ بدايه الاهلاك فى الفرونت اند اصغر من تاريخ بدايه الاهلاك لاحد الاصول فى قاعدة البيانات
         const year = getYear(posted_elements.datex)
@@ -9621,16 +9562,7 @@ where
 
         
         for ( const row of posted_elements.posted_array){
-          const dbRow = items_amount_location.find(item => +item.item_id === row.rowAccountId);
-          
-          if (!dbRow) {
-            throw new Error(`لا يوجد كميات متوفرة فى الموقع المحول منه للصنف الموجود  بالسطر رقم ${index}`);
-          }
-          
-          if ((+dbRow.current_location_amount || 0) < (+row.rowAmount || 0)) {
-            throw new Error(`لا يتوفر رصيد كافى لاتمام عمليه التحويل فى السطر رقم  : ${index}`);
-          }
-          
+
           // الموقع المحول منه
           insert_array2.push([
             posted_elements.x, // transaction_header_id
@@ -9686,7 +9618,12 @@ if (insert_array2.length > 0){
 await tx.none(query2, insert_array2.flat());
 }
   
-  
+const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+if (!allow_amounts){
+  throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+} else if (allow_amounts !== true) {
+  throw new Error(allow_amounts);
+}
         //! history
         await history(transaction_type,2,posted_elements.x,result0.reference,req,tx);
       });
@@ -10628,7 +10565,8 @@ app.post("/get_All_items_Data_for_table", async (req, res) => {
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
-    let query1 = ` 
+    let query1 = `
+  WITH main_query as (    
 SELECT
     ah.id,
     ah.account_no,
@@ -10636,13 +10574,13 @@ SELECT
     ah.item_unite,
     ab.parent_id,
     parent_ah.account_name AS parent_account_name,
-    SUM(tb.item_amount) AS current_amount,
-SUM(
+    COALESCE(SUM(tb.item_amount), 0) AS current_amount,
+COALESCE(SUM(
     CASE 
         WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
         ELSE tb.cogs -- زيادة في التكلفة
     END
-) AS value
+), 0) AS value
 FROM
     accounts_header ah
     LEFT JOIN accounts_body ab ON ab.account_id = ah.id
@@ -10655,10 +10593,18 @@ WHERE
     and ah.account_type_id = 5
     -- and th.is_including_items is TRUE متشغلوش عشان يجيب الاصناف كلها
     and th.is_deleted is NULL
-    --and th.datex <= $2
-    --and tb.item_id is not NULL متشغلوش عشان يجيب الاصناف كلها
 GROUP BY
     ah.id, ab.parent_id, parent_ah.account_name
+)
+  SELECT *
+FROM 
+    main_query mq
+ORDER BY 
+    CASE 
+        WHEN mq.current_amount = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                      -- الأرصدة غير الصفرية تبقى بالأعلى
+    END, 
+    mq.current_amount DESC  -- ترتيب الأرصدة غير الصفرية تنازليًا
     ;
 `;
     let data = await db.any(query1, [req.session.company_id, today]); // معلق -- هنا المفروض كان الكود لحد تاريخ اليوم خلى بالك كمان فى شرط معلق فى الاستعلام
@@ -11431,6 +11377,7 @@ await db.tx(async (tx) => {
 
   let insert_array2 = [];
   let items_array = [];
+  let locations_array = [];
 
 
 
@@ -11446,6 +11393,7 @@ await db.tx(async (tx) => {
     let is_accumulated_depreciation = null
     if (+element.account_typeId === itemTypeId) { // صنف مخزون
       items_array.push(+element.account_id);
+      locations_array.push(+element.items_location_id);
       item_id = +element.account_id;
     } else if (+element.account_typeId === 8) { // صنف خدمة
       item_id = +element.account_id;
@@ -11490,6 +11438,13 @@ await tx.none(query2, insert_array2.flat());
 
   //! history // 500500
   if (items_array.length > 0){
+
+    const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+if (!allow_amounts){
+  throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+} else if (allow_amounts !== true) {
+  throw new Error(allow_amounts);
+}
     await update_items_cogs(items_array,posted_elements.datex, req, tx)
   }
   await history(transaction_type, 1, newId_transaction_header, newReference_transaction_header, req, tx);
@@ -11674,7 +11629,7 @@ if (+totaldebit.toFixed(2) !== +totalCredit.toFixed(2)){
 let end_time = performance.now()
 
 
-console.log(end_time - start_time);
+//console.log(end_time - start_time);
 
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
@@ -11701,7 +11656,8 @@ AND (datex IS DISTINCT FROM $1 OR total_value IS DISTINCT FROM $2 OR general_not
       ]);
 
       let insert_array2 = [];
-  let items_array = [];
+      let items_array = [];
+      let locations_array = [];
 
  
   // let query2 = `INSERT INTO transaction_body
@@ -11722,6 +11678,7 @@ AND (datex IS DISTINCT FROM $1 OR total_value IS DISTINCT FROM $2 OR general_not
 
     if (+element.account_typeId === itemTypeId) { // صنف مخزون
       items_array.push(+element.account_id);
+      locations_array.push(+element.items_location_id);
       item_id = +element.account_id;
     } else if (+element.account_typeId === 8) { // صنف خدمة
       item_id = +element.account_id;
@@ -11769,6 +11726,14 @@ await tx.none(query2, insert_array2.flat());
 
   //! history // 500500
   if (items_array.length > 0){
+
+    const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+    if (!allow_amounts){
+      throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+    } else if (allow_amounts !== true) {
+      throw new Error(allow_amounts);
+    }
+
     await update_items_cogs(items_array,posted_elements.datex, req, tx)
   }
       
@@ -15801,6 +15766,7 @@ where
       const posted_elements = req.body;
       const transaction_type = 3
       let items_array = []
+      let locations_array = []
     
   
       //! sql injection check
@@ -15972,6 +15938,7 @@ where
     items_array.push(+rowData.item_id)
   }
   
+  locations_array.push(+posted_elements.itemLocationId)
   
       // جلب من قاعدة البيانات
       let query03 = `SELECT id FROM settings_tax_header WHERE company_id = $1`;
@@ -16017,15 +15984,7 @@ where
 
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
-
-
-        const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.itemLocationId,req,tx)
-        if (!allow_amounts){
-          throw new Error(
-            'رصيد احد الاصناف لا يسمح'
-          );
-        }
-        
+ 
         if (rows04 && rows04.is_qutation_status === null) {
           await tx.none(
             `UPDATE befor_invoice_header 
@@ -16207,6 +16166,13 @@ where
       }
       
         //! history
+        const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+        if (!allow_amounts){
+          throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+        } else if (allow_amounts !== true) {
+          throw new Error(allow_amounts);
+        }
+
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
         await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
       });
@@ -17075,6 +17041,7 @@ WHERE
       const posted_elements = req.body;
       const transaction_type = 3
       let items_array = []
+      let locations_array = []
     
   
       //! sql injection check
@@ -17258,6 +17225,7 @@ WHERE
     items_array.push(+rowData.item_id)
   }
   
+  locations_array.push(+posted_elements.itemLocationId)
   
       // جلب من قاعدة البيانات
       let query03 = `SELECT id FROM settings_tax_header WHERE company_id = $1`;
@@ -17297,14 +17265,6 @@ WHERE
 
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
-
-        const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.itemLocationId,req,tx)
-        if (!allow_amounts){
-          throw new Error(
-            'رصيد احد الاصناف لا يسمح'
-          );
-        }
-        
 
         let query01 = `SELECT qutation_id, order_id FROM transaction_header WHERE id = $1 AND company_id = $2 AND is_deleted IS NULL;`;
         let rows01 = await db.oneOrNone(query01, [posted_elements.x, req.session.company_id]);
@@ -17525,6 +17485,12 @@ WHERE
       await tx.none(query2, insert_array2.flat());
       }
 
+      const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+      if (!allow_amounts){
+        throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+      } else if (allow_amounts !== true) {
+        throw new Error(allow_amounts);
+      }
         //! history
         await update_items_cogs(items_array,posted_elements.datex, req, tx)
         await history(transaction_type,2,posted_elements.x,result_1.reference,req,tx);
@@ -23936,7 +23902,6 @@ WHERE
       const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',4, year, req);
       const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
-      // const items_avg = await get_last_avg_cost(items_array, posted_elements.datex, req)
       
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
@@ -24363,7 +24328,6 @@ await tx.none(query2, insert_array2.flat());
 
       const year = getYear(posted_elements.datex)
 
-      // const items_avg = await get_last_avg_cost(items_array, posted_elements.datex, req)
       // تنفيذ معاملة قاعدة البيانات
       await db.tx(async (tx) => {
 
@@ -25488,6 +25452,7 @@ app.post("/api/purshases_returns_update", async (req, res) => {
     const posted_elements = req.body;
     const transaction_type = 7 // مرتجع المبيعات 4
     let items_array = []
+    let locations_array = []
   
 
     //! sql injection check
@@ -25653,6 +25618,7 @@ for (const rowData of posted_elements.posted_array) {
   items_array.push(+rowData.item_id)
 }
 
+locations_array.push(+posted_elements.itemLocationId)
 
     // جلب من قاعدة البيانات
     let query03 = `SELECT id FROM settings_tax_header WHERE company_id = $1`;
@@ -25687,31 +25653,9 @@ for (const rowData of posted_elements.posted_array) {
     }
 
 
-    //! فحص الجرد الكميات حسب الموقع
-    const query_items = `
-     select 
-    tb.item_id,
-    sum(tb.item_amount) as current_location_amount
-  from
-    transaction_body tb
-inner join transaction_header th on th.id = tb.transaction_header_id
-where 
-  th.company_id = $1
-  and th.is_deleted is null
-  and th.is_including_items is TRUE
-  and th.id != $2
-  and tb.item_id IN (${items_array.join(',')})
-  and tb.item_location_id_tb = $3
-  and th.datex <= $4
-group by
-  tb.item_id;
-    `
-    const items_amount_location = await db.any(query_items,[req.session.company_id, posted_elements.x, +posted_elements.itemLocationId, posted_elements.datex])
-
     
     const year = getYear(posted_elements.datex)
 
-    // const items_avg = await get_last_avg_cost(items_array, posted_elements.datex, req)
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
 
@@ -25767,18 +25711,7 @@ group by
           );
         }
 
-        
-        //! check amount
-        const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
-        const db_amount = +(current_location_amount_data?.current_location_amount || 0);
-        const result_amount = db_amount - +element.row_amount;
-          
-        if (isNaN(result_amount) || result_amount <= 0) {       
-          throw new Error(
-            `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
-          );
-        }
-        
+      
         
        const rowDiscountType = +element.row_discountTypeId || 0
        const rowDiscountValue= +element.row_discountValue || 0
@@ -25908,7 +25841,12 @@ group by
 await tx.none(query2, insert_array2.flat());
 }
 
-      //! history
+const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+if (!allow_amounts){
+  throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+} else if (allow_amounts !== true) {
+  throw new Error(allow_amounts);
+}
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
       await history(transaction_type,2,posted_elements.x,result_1.reference,req,tx);
     });
@@ -25952,6 +25890,7 @@ app.post("/api/purshases_returns_add", async (req, res) => {
     const posted_elements = req.body;
     const transaction_type = 7 // sales_returns
     let items_array = []
+    let locations_array = []
   
 
     //! sql injection check
@@ -26105,6 +26044,7 @@ for (const rowData of posted_elements.posted_array) {
   items_array.push(+rowData.item_id)
 }
 
+locations_array.push(+posted_elements.itemLocationId)
 
     // جلب من قاعدة البيانات
     let query03 = `SELECT id FROM settings_tax_header WHERE company_id = $1`;
@@ -26140,32 +26080,10 @@ for (const rowData of posted_elements.posted_array) {
     }
     }
 
-
-    //! فحص الجرد الكميات حسب الموقع
-    const query_items = `
-     select 
-    tb.item_id,
-    sum(tb.item_amount) as current_location_amount
-  from
-    transaction_body tb
-inner join transaction_header th on th.id = tb.transaction_header_id
-where 
-  th.company_id = $1
-  and th.is_deleted is null
-  and th.is_including_items is TRUE
-  and tb.item_id IN (${items_array.join(',')})
-  and tb.item_location_id_tb = $2
-  and th.datex <= $3
-group by
-  tb.item_id;
-    `
-       const items_amount_location = await db.any(query_items,[req.session.company_id, +posted_elements.itemLocationId, posted_elements.datex])
-    
     const year = getYear(posted_elements.datex)
     const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header',transaction_type, year, req);
     const newId_general_reference = await newId_fn("transaction_header", 'general_reference');
 
-    // const items_avg = await get_last_avg_cost(items_array, posted_elements.datex, req)
     
     // تنفيذ معاملة قاعدة البيانات
     await db.tx(async (tx) => {
@@ -26212,18 +26130,6 @@ group by
           );
         }
 
-       
-        //! check amount
-        const current_location_amount_data = items_amount_location.find(item => +item.item_id === +element.item_id);
-        const db_amount = +(current_location_amount_data?.current_location_amount || 0);
-        const result_amount = db_amount - +element.row_amount;
-          
-        if (isNaN(result_amount) || result_amount <= 0) {       
-          throw new Error(
-            `لا يوجد رصيد كافى فى موقع ${posted_elements.location_name} للصنف ${element.item_name}`
-          );
-        }
-       
         
        const rowDiscountType = +element.row_discountTypeId || 0
        const rowDiscountValue= +element.row_discountValue || 0
@@ -26351,7 +26257,14 @@ group by
 
 await tx.none(query2, insert_array2.flat());
 }
-      //! history
+      
+const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+if (!allow_amounts){
+  throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+} else if (allow_amounts !== true) {
+  throw new Error(allow_amounts);
+}
+
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
       await history(transaction_type,1,newId_transaction_header,newReference_transaction_header,req,tx);
     });
@@ -33320,6 +33233,7 @@ app.post("/api/production_orders_add", async (req, res) => {
     const posted_elements = req.body;
     const transaction_type = 31;
     let items_array = []
+    let locations_array = []
     let total = 0
 
     //! sql injection check
@@ -33419,6 +33333,8 @@ app.post("/api/production_orders_add", async (req, res) => {
       rowIndex++;
     }
 
+    locations_array.push(+posted_elements.location_account)
+    
     const year = getYear(posted_elements.datex);
     const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req);
     const new_referenceFormatting = formatFromFiveDigits(newReference_transaction_header);
@@ -33426,10 +33342,6 @@ app.post("/api/production_orders_add", async (req, res) => {
 
     // Start Transaction
     await db.tx(async (tx) => {
-
-      // const current_avg_cost = await get_current_avg_cost(items_array,posted_elements.datex,req,tx)
-      // console.log(current_avg_cost);
-      
 
       // Insert into production_forms_header and get the new id
       const query1 = `INSERT INTO transaction_header
@@ -33486,14 +33398,15 @@ app.post("/api/production_orders_add", async (req, res) => {
       ).join(', ')}`;
       await tx.none(query2, insert_array2.flat());
     }
-/*
-      const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
+
+
+      const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
       if (!allow_amounts){
-        throw new Error(
-          'رصيد احد الاصناف لا يسمح'
-        );
+        throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+      } else if (allow_amounts !== true) {
+        throw new Error(allow_amounts);
       }
-*/        
+        
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
       // Add history log
       await history(transaction_type, 1, newId_transaction_header, 0, req, tx);
@@ -33532,6 +33445,7 @@ app.post("/api/production_orders_update", async (req, res) => {
     const posted_elements = req.body;
     const transaction_type = 31;
     let items_array = []
+    let locations_array = []
     let total = 0
 
     //! sql injection check
@@ -33643,6 +33557,7 @@ app.post("/api/production_orders_update", async (req, res) => {
       rowIndex++;
     }
 
+    locations_array.push(+posted_elements.location_account)
     const year = getYear(posted_elements.datex);
     // const newReference_transaction_header = await newReference_transaction_header_fn('transaction_header', transaction_type, year, req);
     const new_referenceFormatting = formatFromFiveDigits(reference);
@@ -33651,8 +33566,6 @@ app.post("/api/production_orders_update", async (req, res) => {
     // Start Transaction
     await db.tx(async (tx) => {
   
-      // const current_avg_cost = await get_current_avg_cost(items_array,posted_elements.datex,req,tx)
-      // console.log(current_avg_cost);
 
       let query00 = `delete from transaction_body where transaction_header_id = $1`
       await tx.none(query00, [posted_elements.x])
@@ -33708,13 +33621,12 @@ app.post("/api/production_orders_update", async (req, res) => {
       await tx.none(query2, insert_array2.flat());
 }
 
-      const allow_amounts =  await check_itemAmounts_for_one_location(posted_elements.datex, items_array, posted_elements.location_account,req,tx)
-      if (!allow_amounts){
-        throw new Error(
-          'رصيد احد الاصناف لا يسمح'
-        );
-      }
-      
+const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
+if (!allow_amounts){
+  throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
+} else if (allow_amounts !== true) {
+  throw new Error(allow_amounts);
+}
       await update_items_cogs(items_array,posted_elements.datex, req, tx)
       // Add history log
 
@@ -36011,8 +35923,11 @@ await last_activity(req);
           });  
         }
     
-
+        console.log(posted_elements);
+        
         let item_location = posted_elements.item_location || false
+        
+       /*
         let item_location_name = ''
         if (posted_elements.other_obj && posted_elements.other_obj.item_location_name){
           item_location_name = posted_elements.other_obj.item_location_name
@@ -36021,7 +35936,7 @@ await last_activity(req);
             item_location = result.id
           }
         }
-
+*/
 
   /*      
         let item_location_where = ''
@@ -36194,10 +36109,10 @@ ORDER BY
     app.post("/report_stock_cost_and_items_view_ar", async (req, res) => {
       try {
         //! Permission معلق
-        await permissions(req, "items_permission", "view");
-        if (!permissions) {
-          return;
-        }
+        // await permissions(req, "purshases_returns_permission", "add");
+        // if (!permissions) {
+        //   return;
+        // }
     
         
         const posted_elements = req.body;
@@ -36241,40 +36156,20 @@ ORDER BY
           });  
         }
     
-        if (posted_elements.item_location){
-          const query01 = `select count(id) as count_location from accounts_header where id = $1 and company_id = $2 and account_type_id = 7`
-          const result01 = await db.oneOrNone(query01, [posted_elements.item_location, req.session.company_id])
-          
-          if (!result01 || +result01.count_location === 0){
-            await block_user(req,'Srimva02')
-            return res.json({
-              success: false,
-              xx: true,
-              message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
-            });  
-          }  
-        }
 
-        
-        let item_location_where = ''
-        let item_location_status = posted_elements.item_location
-        item_location_status = item_location_status ? item_location_status.item_location : false
-        
-        if (item_location_status){
-          if (item_location_status === 'fixed_assest_only'){
-            item_location_where = `AND tb.item_location_id_tb = ${item_location_status}`
-          } else {
-            item_location_where =  ''
-          }
-        }
-  
-        
 
-        let query1 = `
-       WITH previous_balance AS (
+    let query1 = `
+  WITH previous_balance AS (
 SELECT 
     ah.id,
-    COALESCE(SUM(tb.item_amount), 0) AS balance
+    COALESCE(SUM(tb.item_amount), 0) AS amount,
+    COALESCE(SUM(
+        CASE 
+            WHEN COALESCE(tb.item_amount, 0) >= 0 THEN COALESCE(tb.cogs, 0)
+            WHEN COALESCE(tb.item_amount, 0) < 0 THEN COALESCE(tb.cogs * -1, 0)
+            ELSE 0
+        END
+    ), 0) AS cogs
 FROM 
     accounts_header ah
     LEFT JOIN transaction_body tb ON tb.item_id = ah.id
@@ -36282,15 +36177,16 @@ FROM
 WHERE 
     ah.id = $1
     AND th.company_id = $4
-    and th.is_including_items is true
+    AND th.is_including_items IS true
+    AND th.transaction_type NOT IN (12)
     AND th.datex < $2
-    AND tb.item_amount IS NOT null
-    ${item_location_where}
+    AND tb.item_amount IS NOT NULL
 GROUP BY 
     ah.id
 ),
 transaction_details AS (
-    SELECT 
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY th.datex ASC, th.id ASC) AS serial_number,
         th.id AS x,
         th.datex,
         th.transaction_type as type,
@@ -36304,14 +36200,13 @@ transaction_details AS (
         tb.row_note,
         ah.main_account_id,
         th.transaction_type,
-CASE 
-    WHEN COALESCE(tb.item_amount, 0) > 0 THEN tb.item_amount 
-    ELSE 0 
-END AS debit,
-CASE 
-    WHEN COALESCE(tb.item_amount, 0) < 0 THEN ABS(tb.item_amount) 
-    ELSE 0 
-END AS credit
+    	COALESCE(tb.item_amount, 0) AS amount,
+    	COALESCE(
+    		case
+    			when COALESCE(tb.item_amount, 0) >=0 then COALESCE(tb.cogs, 0)
+    			when COALESCE(tb.item_amount, 0) <0 then COALESCE(tb.cogs * -1, 0)
+    		end
+    	,0) as cogs
     FROM 
         accounts_header ah
         JOIN transaction_body tb on tb.item_id = ah.id
@@ -36321,12 +36216,13 @@ END AS credit
         ah.id = $1
         and th.company_id = $4
         AND th.datex BETWEEN $2 AND $3
-        and th.is_including_items is true
+        AND th.is_including_items is true
+        AND th.transaction_type NOT IN (12)
         AND tb.item_amount IS NOT null
-        ${item_location_where}
     UNION ALL
     SELECT 
-        NULL AS x,
+        0 AS serial_number,  -- الرصيد السابق أول واحد
+        0 AS x,
         $2 AS datex, -- تاريخ بداية الفترة
         NULL AS type,
         NULL AS reference,
@@ -36334,19 +36230,14 @@ END AS credit
         null AS row_note,
         null as main_account_id,
         NULL AS transaction_type,
-        case
-	        when  pb.balance >= 0 then pb.balance
-        	else 0	
-        end AS debit,
-        case
-	        when pb.balance <= 0 then pb.balance
-        	else 0
-        end AS credit
+	    pb.amount AS amount,
+	    pb.cogs AS cogs
     FROM 
         previous_balance pb
 ),
 cumulative_balance AS (
-    SELECT 
+    SELECT
+        serial_number,
         x,
         datex,
         type,
@@ -36354,9 +36245,11 @@ cumulative_balance AS (
         referenceconcat,
         row_note,
         transaction_type,
-        debit,
-        credit,
-        SUM(debit - credit) OVER (ORDER BY datex ASC, reference ASC) AS cumulative_balance
+        amount,
+        COALESCE(ABS(COALESCE(cogs, 0)) / NULLIF(ABS(COALESCE(amount, 0)), 0), 0) AS avg,
+        cogs,
+        SUM(amount) OVER (ORDER BY serial_number ASC) AS cumulative_amount,
+        SUM(cogs) OVER (ORDER BY serial_number ASC) AS cumulative_cogs
     FROM 
         transaction_details td
 )
@@ -36368,18 +36261,21 @@ SELECT
     referenceconcat,
     row_note,
     transaction_type,
-    debit,
-    credit,
-    cumulative_balance AS balance
+    amount,
+    avg,
+    cogs,
+    cumulative_amount AS total_amount,
+    COALESCE(ABS(COALESCE(cumulative_cogs, 0)) / NULLIF(ABS(COALESCE(cumulative_amount, 0)), 0), 0) AS total_avg,
+    cumulative_cogs AS total_cogs
 FROM 
     cumulative_balance
-ORDER BY 
-    datex DESC,
-    reference DESC
-      ;
-    `;
-    
+ORDER BY
+    serial_number DESC
+    ;
+ `;
     let params1 = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
+    
+
     
     await db.tx(async (tx) => {
     
@@ -36407,71 +36303,146 @@ ORDER BY
 
 //!====================================================================================================================================
 
-async function check_itemAmounts_for_one_location(datex, items_array, location, req, tx) {
+
+async function check_itemAmounts_for_all_location(datex, items_array, locations_array, req, tx) {
 
   const query = `
-WITH previous_balance AS (
-    SELECT
-      tb.item_id,
-      COALESCE(SUM(tb.item_amount), 0) AS opening_balance
-    FROM
-      transaction_body tb
-    JOIN
-      transaction_header th ON th.id = tb.transaction_header_id
-    WHERE
-      th.company_id = $1
-      AND th.is_deleted IS NULL
-      AND tb.item_id IN (${items_array.join(',')})
-      AND th.datex < $2  -- حساب الرصيد السابق (حتى قبل التاريخ المدخل)
-      AND tb.item_location_id_tb = $3
-    GROUP BY
-      tb.item_id
-)
-SELECT
-    tb.item_id,
-    th.datex,
-    tb.item_amount,
-    -- إذا كانت الحركات في نفس اليوم أو بعده نضيفها إلى الرصيد التراكمي
-    CASE
-      WHEN th.datex = $2 THEN COALESCE(previous_balance.opening_balance, 0) + COALESCE(SUM(tb.item_amount) OVER (PARTITION BY tb.item_id ORDER BY th.datex), 0)
-      WHEN th.datex > $2 THEN COALESCE(previous_balance.opening_balance, 0) + COALESCE(SUM(tb.item_amount) OVER (PARTITION BY tb.item_id ORDER BY th.datex), 0)
-      ELSE COALESCE(previous_balance.opening_balance, 0)  -- عند عدم وجود حركات، نعرض الرصيد الافتتاحي فقط
-    END AS cumulative_balance
-FROM
-    transaction_body tb
-JOIN
-    transaction_header th ON th.id = tb.transaction_header_id
-LEFT JOIN
-    previous_balance ON previous_balance.item_id = tb.item_id
-WHERE
-    th.company_id = $1
-    AND th.is_deleted IS NULL
-    AND tb.item_id IN (${items_array.join(',')})
-    AND th.datex <= $2  -- جلب الحركات حتى التاريخ المدخل
-    AND tb.item_location_id_tb = $3
-ORDER BY
-    th.datex;
+
+  WITH previous_balance AS (
+    SELECT 
+        ah1.id,
+        ah1.account_name as item_name,
+        tb.item_location_id_tb,
+        ah2.account_name as location_name,
+        COALESCE(SUM(tb.item_amount), 0) AS amount
+    FROM 
+         transaction_body tb
+        LEFT JOIN accounts_header ah1 ON ah1.id = tb.item_id
+        LEFT JOIN accounts_header ah2 ON ah2.id = tb.item_location_id_tb
+        LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE 
+        th.company_id = $1
+      AND th.is_including_items IS true
+      AND th.datex < $2
+      AND tb.item_amount IS NOT null
+      AND ah1.id IN (${items_array.join(',')}) -- AND ah1.id IN (195,189)
+      AND tb.item_location_id_tb IN (${locations_array.join(',')}) --AND tb.item_location_id_tb IN (23,104)
+    GROUP BY 
+        ah1.id, tb.item_location_id_tb, ah2.account_name
+    ),
+    transaction_details AS (
+        select
+          ah1.id,
+          ah1.account_name as item_name,
+            th.id AS th_id,
+            tb.item_location_id_tb as location_id,
+            ah2.account_name as location_name,
+            th.datex,
+            th.transaction_type,
+            tb.debit,
+            tb.credit,
+          COALESCE(tb.item_amount, 0) AS amount
+        FROM 
+            transaction_body tb
+            left join accounts_header ah1 on ah1.id =  tb.item_id
+            left join accounts_header ah2 on ah2.id =  tb.item_location_id_tb
+            left join transaction_header th ON th.id = tb.transaction_header_id
+        WHERE 
+            th.company_id = $1
+            AND th.datex >= $2
+            AND th.is_including_items is true
+          AND tb.item_amount IS NOT null
+          AND ah1.id IN (${items_array.join(',')}) -- AND ah1.id IN (195,189)
+          AND tb.item_location_id_tb IN (${locations_array.join(',')}) -- AND tb.item_location_id_tb IN (23,104)
+        UNION ALL
+        SELECT 
+            0 AS id,
+            pb.item_name,
+            0 as th_id,
+            pb.item_location_id_tb as location_id,
+            pb.location_name,
+            $2 AS datex, -- تاريخ بداية الفترة
+            0 AS transaction_type,
+            0 as debit,
+            0 as credit,
+          pb.amount AS amount
+        FROM 
+            previous_balance pb
+    ),
+    order_data as (
+    select
+      ROW_NUMBER() OVER (ORDER by
+            id asc, location_id asc, datex ASC,
+        CASE 
+            -- 🟢 أولًا: العمليات التي تضيف للمخزون
+            WHEN transaction_type = 0 THEN 1  -- ا
+          WHEN transaction_type = 6 THEN 2  -- المشتريات
+            WHEN transaction_type = 2 AND (amount > 0 OR debit > 0) THEN 3  -- قيد محاسبي يضيف مخزون
+            WHEN transaction_type = 31 AND amount > 0 THEN 4  -- تصنيع - إضافة منتج نهائي
+            WHEN transaction_type = 12 AND amount > 0 THEN 5  -- تحويلات المخزون - إضافة  ( بس مش بيأثر على التكلفه )
+    
+            -- 🔵 ثانيًا: العمليات التي تقلل المخزون بعد الإضافات
+            WHEN transaction_type = 7 THEN 6  -- مرتجع مشتريات
+            WHEN transaction_type = 2 AND (amount < 0 OR credit > 0) THEN 7  -- قيد محاسبي يسحب مخزون
+            WHEN transaction_type = 31 AND amount < 0 THEN 8  -- تصنيع - استهلاك مواد خام
+            WHEN transaction_type = 12 AND amount < 0 THEN 9  -- تحويلات المخزون - خصم  ( بس مش بيأثر على التكلفه )
+    
+    
+            -- 🔴 ثالثًا: العمليات التي تسحب المخزون في النهاية (COGS)
+            WHEN transaction_type = 3 THEN 10  -- المبيعات
+            WHEN transaction_type = 4 THEN 11  -- مرتجع مبيعات
+    
+            -- ⏺️ أخيرًا: أي عمليات أخرى غير معروفة
+            ELSE 12  
+        END ASC,
+            id ASC) AS serial_number,
+      id,
+      item_name,
+      location_id,
+      location_name,
+      datex,
+      th_id,
+      transaction_type,
+      amount
+    from 	
+      transaction_details
+      
+    )
+        SELECT
+            serial_number,
+            id,
+            item_name,
+            location_id,
+            location_name,
+            datex,
+            transaction_type,
+            amount,
+            SUM(amount) OVER (
+              PARTITION BY id, location_id 
+              ORDER BY serial_number ASC
+          ) AS cumulative_balance
+        FROM 
+            order_data od
+        --order by
+          --serial_number DESC    -- شغال كويس بس سيبه عشان دالة فايند هتجيب اول نتيجه تقابلها فلازم نرتبه صح
   `;
 
-  const params = [req.session.company_id, datex, location];
+  const params = [req.session.company_id, datex];
 
-  const result = await tx.any(query, params) || [];
+  const cumulative_array = await tx.any(query, params) || [];
   
+  let result = true
 
-  let check = true; // اعتبار أن الرصيد جيد بشكل افتراضي
-
-  if (result.length > 0) {
-    const negativeBalance = result.find(item => +item.cumulative_balance < 0);
-    if (negativeBalance) {
-      check = false; // إذا وجد رصيد سالب، نغير القيمة إلى false
+  if (cumulative_array.length > 0){
+    const negative_row = cumulative_array.find(item => +item.cumulative_balance < 0)
+    if (negative_row){
+      result = `سيكون هناك كمية سالبة للصنف '${negative_row.item_name}'  فى موقع  '${negative_row.location_name}'  فى تاريخ  '${negative_row.datex}'`
     }
-  } else {
-    check = false; // إذا كانت النتيجة فارغة، نعتبر أن الرصيد غير جيد
+
   }
 
-  return check;
+  return result;
 }
-
 
 async function update_items_cogs(items_array,datex, req, tx) {
   
@@ -36495,7 +36466,6 @@ async function update_items_cogs(items_array,datex, req, tx) {
     await update_cogs_part1(last_array,datex, req, tx)
   }
 }
-
 
 async function update_cogs_part1(items_array,datex, req, tx) {
   
@@ -36557,18 +36527,21 @@ ORDER BY
         WHEN th.transaction_type = 6 THEN 1  -- المشتريات
         WHEN th.transaction_type = 2 AND (tb.item_amount > 0 OR tb.debit > 0) THEN 2  -- قيد محاسبي يضيف مخزون
         WHEN th.transaction_type = 31 AND tb.item_amount > 0 THEN 3  -- تصنيع - إضافة منتج نهائي
+        WHEN th.transaction_type = 12 AND tb.item_amount > 0 THEN 4  -- تحويلات المخزون - إضافة  ( بس مش بيأثر على التكلفه )
 
         -- 🔵 ثانيًا: العمليات التي تقلل المخزون بعد الإضافات
-        WHEN th.transaction_type = 7 THEN 4  -- مرتجع مشتريات
-        WHEN th.transaction_type = 2 AND (tb.item_amount < 0 OR tb.credit > 0) THEN 5  -- قيد محاسبي يسحب مخزون
-        WHEN th.transaction_type = 31 AND tb.item_amount < 0 THEN 6  -- تصنيع - استهلاك مواد خام
+        WHEN th.transaction_type = 7 THEN 5  -- مرتجع مشتريات
+        WHEN th.transaction_type = 2 AND (tb.item_amount < 0 OR tb.credit > 0) THEN 6  -- قيد محاسبي يسحب مخزون
+        WHEN th.transaction_type = 31 AND tb.item_amount < 0 THEN 7  -- تصنيع - استهلاك مواد خام
+        WHEN th.transaction_type = 12 AND tb.item_amount < 0 THEN 8  -- تحويلات المخزون - خصم  ( بس مش بيأثر على التكلفه )
+
 
         -- 🔴 ثالثًا: العمليات التي تسحب المخزون في النهاية (COGS)
-        WHEN th.transaction_type = 3 THEN 7  -- المبيعات
-        WHEN th.transaction_type = 4 THEN 8  -- مرتجع مبيعات
+        WHEN th.transaction_type = 3 THEN 9  -- المبيعات
+        WHEN th.transaction_type = 4 THEN 10  -- مرتجع مبيعات
 
         -- ⏺️ أخيرًا: أي عمليات أخرى غير معروفة
-        ELSE 9  
+        ELSE 11  
     END ASC,
     tb.id ASC
       ;
@@ -36723,72 +36696,6 @@ return updatedItemsArray
 }
 
 
-async function get_current_avg_cost(items_array, datex, req, tx) {
-  let query1= `
-  SELECT
-    tb.item_id,
-    SUM(
-        CASE
-            WHEN tb.item_amount < 0 THEN -tb.cogs -- تخفيض في التكلفة
-            ELSE tb.cogs -- زيادة في التكلفة
-        END
-    ) / NULLIF(SUM(tb.item_amount), 0) AS avg_cost_per_unit
-FROM
-    transaction_body tb
-INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
-INNER JOIN accounts_header ah ON ah.id = tb.item_id
-WHERE
-    ah.account_type_id = 5
-    AND th.datex <= $1
-    AND th.company_id = $2
-    AND tb.item_id IN (${items_array.join(',')})
-    AND th.is_deleted IS NULL
-    AND th.is_including_items IS TRUE
-    AND NOT (th.transaction_type IN (3,4) AND th.datex = $1) -- استثناء العمليات
-GROUP BY
-    tb.item_id;
-  `
- const data =  await tx.none(query1, [datex, req.session.company_id]) || []
-return data
-}
-
-
-async function get_last_avg_cost(items_array, datex, req) {
-  const query0 = `
-   SELECT 
-    tb.item_id,
-    (tb.cogs / tb.item_amount) AS avg
-FROM 
-    transaction_body tb
-LEFT JOIN 
-    transaction_header th ON th.id = tb.transaction_header_id
-WHERE 
-    th.company_id = $1
-    AND th.is_including_items IS TRUE
-    AND th.is_deleted IS NULL
-    AND th.datex <= $2
-    AND tb.item_id IN (${items_array.join(',')})
-    AND tb.cogs IS NOT NULL
-    AND tb.item_amount IS NOT NULL
-    AND tb.item_id IS NOT NULL
-    AND tb.item_amount > 0
-    AND th.datex = (
-        SELECT MAX(th2.datex)
-        FROM transaction_header th2
-        WHERE th2.company_id = $1
-        AND th2.is_including_items IS TRUE
-        AND th2.is_deleted IS NULL
-        AND th2.datex <= $2
-        AND th2.id = tb.transaction_header_id
-    )
-;
-`;
-
-  const avg_cost = await db.any(query0, [req.session.company_id, datex]);
-  return avg_cost
-
-}
-
 
 //! 
 /*
@@ -36873,196 +36780,7 @@ GROUP BY
 //*-- server----------------------------------------------
 //#region started server functions
 
-async function test_trial_balance() {
-  // we use this function in the begining of server start
-  let trial_balance =  await db.any(`
-	
 
-		
-    -- #1 stock_values
-    WITH main_trial_balance AS (
-        SELECT
-            ah.id,
-            ah.account_name,
-            -- الحسابات قبل التاريخ $2
-            CASE
-                WHEN ah.global_id = 12 THEN 
-                    (SELECT stock_value_begining
-                     FROM 
-                         (SELECT
-                              sum(case when ah2.account_type_id = 5 AND th2.datex < $2 then tb2.debit else 0 end) - 
-                              sum(case when ah2.account_type_id = 5 AND th2.datex < $2 then tb2.cogs else 0 end) as stock_value_begining
-                          FROM
-                              transaction_body tb2
-                          INNER JOIN accounts_header ah2 ON ah2.id = tb2.item_id
-                          LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-                          WHERE ah2.company_id = $1 AND th2.is_deleted IS NULL
-                          GROUP BY ah2.id
-                         ) AS stock_values
-                    )
-                WHEN ah.global_id = 17 THEN 
-                    (SELECT stock_value_begining
-                     FROM 
-                         (SELECT
-                              sum(case when (ah2.account_type_id = 5 or ah2.global_id = 17) AND th2.datex < $2 then tb2.cogs else 0 end) as stock_value_begining
-                          FROM
-                              transaction_body tb2
-                          INNER JOIN accounts_header ah2 ON ah2.id = tb2.item_id
-                          LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-                          WHERE ah2.company_id = $1 AND th2.is_deleted IS NULL
-                          GROUP BY ah2.id
-                         ) AS stock_values
-                    )
-                ELSE 
-                    SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex < $2 THEN tb.debit ELSE 0 END)
-            END AS debit_first,
-            
-            -- الحسابات في الفترة بين التاريخين $2 و $3
-            CASE
-                WHEN ah.global_id = 12 THEN 
-                    (SELECT stock_value_current
-                     FROM 
-                         (SELECT
-                              sum(case when ah2.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then tb2.debit else 0 end) - 
-                              sum(case when ah2.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then tb2.cogs else 0 end) as stock_value_current
-                          FROM
-                              transaction_body tb2
-                          INNER JOIN accounts_header ah2 ON ah2.id = tb2.item_id
-                          LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-                          WHERE ah2.company_id = $1 AND th2.is_deleted IS NULL
-                          GROUP BY ah2.id
-                         ) AS stock_values
-                    )
-                WHEN ah.global_id = 17 THEN 
-                    (SELECT stock_value_current
-                     FROM 
-                         (SELECT
-                              sum(case when ah2.account_type_id = 5 AND th2.datex BETWEEN $2 AND $3 then tb2.cogs else 0 end) as stock_value_current
-                          FROM
-                              transaction_body tb2
-                          INNER JOIN accounts_header ah2 ON ah2.id = tb2.item_id
-                          LEFT JOIN transaction_header th2 ON th2.id = tb2.transaction_header_id
-                          WHERE ah2.company_id = $1 AND th2.is_deleted IS NULL
-                          GROUP BY ah2.id
-                         ) AS stock_values
-                    )
-                ELSE 
-                    SUM(CASE WHEN tb.debit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.debit ELSE 0 END)
-            END AS debit_current,
-            
-            -- باقي الأعمدة
-            SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex < $2 THEN tb.credit ELSE 0 END) AS credit_first,
-            SUM(CASE WHEN tb.credit IS NOT NULL AND th.datex BETWEEN $2 AND $3 THEN tb.credit ELSE 0 END) AS credit_current,
-            ah.is_final_account,
-            ah.account_no,
-            ah.finance_statement,
-            ah.cashflow_statement,
-            ah.account_type_id,
-            ah.account_name_en,
-            ah.global_id,
-            ah.main_account_id,
-            ah.is_inactive,
-            ab.parent_id
-        FROM
-            accounts_header ah
-        LEFT JOIN accounts_body ab ON ab.account_id = ah.id
-        LEFT JOIN transaction_body tb ON tb.account_id = ah.id
-        LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
-        WHERE
-            ah.company_id = $1
-            AND ah.account_type_id NOT IN (0, 7, 8)
-            AND NOT (ah.account_type_id = 5 AND ah.global_id != 12)
-        GROUP BY
-            ah.id, ab.parent_id
-    ),
-    befor_profit as(
-    select
-        mt.id,
-        mt.account_name,
-        mt.debit_first,
-        mt.debit_current,
-        mt.credit_first,
-        mt.credit_current,
-          CASE
-            WHEN (mt.debit_first + mt.debit_current) > (mt.credit_first + mt.credit_current)
-            THEN (mt.debit_first + mt.debit_current) - (mt.credit_first + mt.credit_current)
-            ELSE NULL
-        END AS debit_end,
-            CASE
-            WHEN (mt.debit_first + mt.debit_current) < (mt.credit_first + mt.credit_current)
-            THEN (mt.credit_first + mt.credit_current) - (mt.debit_first + mt.debit_current)
-            ELSE NULL
-        END AS credit_end,
-        mt.is_final_account,
-        mt.account_no,
-        mt.finance_statement,
-        mt.cashflow_statement,
-        mt.account_type_id,
-        mt.account_name_en,
-        mt.global_id,
-        mt.main_account_id,
-        mt.is_inactive,
-        mt.parent_id
-    from 
-      main_trial_balance mt)
-      
-    select 
-        bp.id,
-           bp.account_name,
-        CASE
-            WHEN bp.global_id = 23 THEN 
-                CASE 
-                    WHEN (bp.credit_first - bp.debit_first) > 0 THEN NULL
-                    ELSE ABS(bp.credit_first - bp.debit_first)
-                END
-            ELSE bp.debit_first
-        END AS debit_first,
-        CASE
-            WHEN bp.global_id = 23 THEN 
-                CASE 
-                    WHEN (bp.credit_first - bp.debit_first) > 0 THEN (bp.credit_first - bp.debit_first)
-                    ELSE NULL
-                END
-            ELSE bp.credit_first
-        END AS credit_first,
-    CASE
-        WHEN bp.global_id = 16 THEN 
-            CASE 
-                WHEN (bp.debit_current - bp.credit_current) > 0 THEN (bp.debit_current - bp.credit_current)
-                ELSE NULL
-            END
-        ELSE bp.debit_current
-    END AS debit_current,
-    CASE
-        WHEN bp.global_id = 16 THEN 
-            CASE 
-                WHEN (bp.debit_current - bp.credit_current) > 0 THEN NULL
-                ELSE ABS(bp.credit_current - bp.debit_current)
-            END
-        ELSE bp.credit_current
-    END AS credit_current,
-      bp.debit_end,
-      bp.credit_end,
-        bp.is_final_account,
-        bp.account_no,
-        bp.finance_statement,
-        bp.cashflow_statement,
-        bp.account_type_id,
-        bp.account_name_en,
-        bp.global_id,
-        bp.main_account_id,
-        bp.is_inactive,
-        bp.parent_id
-    from
-      befor_profit bp
-      
-
-;`,
-  [1,'2025-01-01','2025-12-13']);
-
-
-
-}
 
 /*
 

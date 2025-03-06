@@ -197,7 +197,8 @@ async function Execution() {
 
         sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             showFirst50RowAtTheBegening(); 
-            backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
+            backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+
     } catch (error) {
         catch_error(error);
     } finally{
@@ -337,10 +338,10 @@ function fillTable() {
                         <td style="${style_referenceconcat};" class="td_referenceconcat">${row.referenceconcat}</td>
                         <td style="${style_row_note};" class="td_row_note">${row.row_note ? row.row_note : ''}</td>
                         ${tdNumber(true,false,false,+row.amount === 0? '' : +row.amount, style_amount,total_column1,fn,'td_amount')}
-                        ${tdNumber(false,false,false,+row.avg === 0? '' : +row.avg, style_avg,total_column2,false,'td_avg')}
-                        ${tdNumber(true,false,false,+row.cogs === 0? '' : +row.cogs, style_cost,false,fn,'td_cogs')}
-                        ${tdNumber(false,false,false,+row.total_amount === 0? '' : +row.total_amount, style_total_amount,false,false,'td_total_amount')}
-                        ${tdNumber(false,false,false,+row.total_avg === 0? '' : +row.total_avg, style_total_avg,false,false,'td_total_avg')}
+                        ${tdNumber(true,false,false,+row.avg === 0? '' : +row.avg, style_avg,total_column2,fn,'td_avg')}
+                        ${tdNumber(false,true,false,+row.cogs === 0? '' : +row.cogs, style_cost,false,false,'td_cogs')}
+                        ${tdNumber(false,true,false,+row.total_amount === 0? '' : +row.total_amount, style_total_amount,false,false,'td_total_amount')}
+                        ${tdNumber(false,true,false,+row.total_avg === 0? '' : +row.total_avg, style_total_avg,false,false,'td_total_avg')}
                         ${tdNumber(false,true,false,+row.total_cogs === 0? '' : +row.total_cogs, style_total_cost,total_column2,false,'td_total_cogs')}
                       </tr>`;
         });
@@ -463,7 +464,7 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
     const obj = {
     x: row.querySelector(`.td_id`).textContent,
     href_pageName : 'stock_cost_and_items_view_ar',
-    href_pageTitle : 'حركة صنف / كمية وقيمة'
+    href_pageTitle : 'حركة صنف'
     }
 
     if (!type || !obj.x){
@@ -520,6 +521,12 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
 
 
+
+async function viewReport_fn(x,startDate,endDate) {
+    
+}
+
+
 view_report_btn.onclick = async function () {
     try {
         showLoadingIcon(view_report_btn)
@@ -546,11 +553,11 @@ view_report_btn.onclick = async function () {
             end_date : end_date,
             back_href_page : back_href_page,
             back_title_page : back_title_page,
-           // item_location : item_location
+            //item_location : item_location
         }
         sessionStorage.setItem('obj_stock_cost_and_items', JSON.stringify(obj_stock_cost_and_items)); 
 
-        backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
+        backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
         await restore_page1(getData_fn, `stock_cost_and_items_viewArray`)
 
         close_dialogx()
@@ -610,38 +617,7 @@ account_type_select.onchange = async function () {
     select_change()
 }
 
-async function load_accounts_data() {
-  try {
 
-    
-    data = await new_fetchData_postAndGet(
-        '/get_items_movement_data_for_report',
-        {},
-        '', '',
-        60,
-        false,'',
-        true,
-        false, false,
-        false, false,
-        'حدث خطأ اثناء معالجه البيانات'
-      )
-
-
-    for (const row of data.accounts_types) {
-      const option = `<option value="${row.id}" ${row.id === 1 ? 'selected' : ''}>${row.account_type_name}</option>`;
-      get_accounts_type_array.push(option);
-    }
-        account_type_select.innerHTML = get_accounts_type_array;
-        orignal_accounts_array = data.accounts
-        select_change()
-
-       // create_drop_down_with_External_DataArray(`dropdown_div2`,data.locations);// selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
-        
-        show_dialogx()
-  } catch (error) {
-    catch_error(error)
-  }
-}
 
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -662,19 +638,19 @@ if (obj_stock_cost_and_items && obj_stock_cost_and_items.x && obj_stock_cost_and
     back_href_page = obj_stock_cost_and_items.back_href_page;
     back_title_page = obj_stock_cost_and_items.back_title_page;
     other_obj = obj_stock_cost_and_items.other_obj;
-    item_location = obj_stock_cost_and_items.item_location;
+    item_location = obj_stock_cost_and_items.other_obj.item_location;
 
     
 
     pagePermission("view", obj_stock_cost_and_items.permissionName);  // معلق
     sessionStorage.removeItem('stock_cost_and_items_viewArray');
-    backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
+    backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
     await restore_page1(getData_fn, `stock_cost_and_items_viewArray`)
     
 }else{
     pagePermission("view", 'items_permission');  // معلق
 
-    await load_accounts_data()
+    show_dialogx()
 }
     showRedirectionReason();
 } catch (error) {

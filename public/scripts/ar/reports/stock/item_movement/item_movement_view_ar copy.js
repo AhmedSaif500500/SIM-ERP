@@ -22,8 +22,11 @@ let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 const account_type_select = document.querySelector(`#account_type_select`);
 
+start_date = firstDayOfYear;
+start_date = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
+
 
 
 const tableContainer = document.querySelector("#tableContainer");
@@ -47,7 +50,7 @@ const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمي
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   await back_href_fn1(getData_fn, `stock_cost_and_items_viewArray`, 'stock_cost_and_items_view_ar', `report_map_ar`)
+   await back_href_fn1(getData_fn, `item_movement_viewArray`, 'item_movement_view_ar', `report_map_ar`)
 };
 
 
@@ -133,7 +136,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('stock_cost_and_items_viewArray');
+            sessionStorage.removeItem('item_movement_viewArray');
             conditionsArray = []
             
         }
@@ -156,8 +159,8 @@ async function getData_fn(permissionName, x, start_date, end_date) {
     try {       
 
         const d = await new_fetchData_postAndGet(
-            "/report_stock_cost_and_items_view_ar",
-            {x, start_date, end_date, other_obj},
+            "/report_item_movement_view_ar",
+            {x, start_date, end_date, item_location, other_obj},
             permissionName,"view",
             60,
             false,'',
@@ -165,7 +168,7 @@ async function getData_fn(permissionName, x, start_date, end_date) {
             false,false,
             false,false,'',
             false,'',
-            false,'report_map_ar',
+            true,'report_map_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )        
         
@@ -192,12 +195,13 @@ async function Execution() {
         is_filter = true
         searchInput.value = "";
 
-        back_href_page = 'stock_cost_and_items_view_ar'
+        back_href_page = 'item_movement_view_ar'
         back_title_page = 'حركة صنف'
 
         sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             showFirst50RowAtTheBegening(); 
-            backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
+            backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+
     } catch (error) {
         catch_error(error);
     } finally{
@@ -279,12 +283,9 @@ function fillTable() {
         let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
         let style_referenceconcat = `display: table-cell; width: ${f1_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start`;
         let style_row_note = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
-        let style_amount = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_avg = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_cost = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_total_amount = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_total_avg = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_total_cost = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_debit = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_credit = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_balance = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
 
         total_column1.value = 0;
         total_column2.value = 0;
@@ -301,12 +302,9 @@ function fillTable() {
                                 <th style="${style_datex}">التاريخ</th>
                                 <th style="${style_referenceconcat}">المرجع</th>
                                 <th style="${style_row_note}">البيان</th>
-                                <th style="${style_amount}">الكمية</th>
-                                <th style="${style_avg}">المتوسط</th>
-                                <th style="${style_cost}">التكلفة</th>
-                                <th style="${style_total_amount}">اجمالى الكمية</th>
-                                <th style="${style_total_avg}">المتوسط</th>
-                                <th style="${style_total_cost}">اجمالى التكلفة</th>
+                                <th style="${style_debit}">وارد</th>
+                                <th style="${style_credit}">منصرف</th>
+                                <th style="${style_balance}">الرصيد</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -336,12 +334,9 @@ function fillTable() {
                         <td style="${style_datex};" class="td_datex">${row.datex}</td>
                         <td style="${style_referenceconcat};" class="td_referenceconcat">${row.referenceconcat}</td>
                         <td style="${style_row_note};" class="td_row_note">${row.row_note ? row.row_note : ''}</td>
-                        ${tdNumber(true,false,false,+row.amount === 0? '' : +row.amount, style_amount,total_column1,fn,'td_amount')}
-                        ${tdNumber(false,false,false,+row.avg === 0? '' : +row.avg, style_avg,total_column2,false,'td_avg')}
-                        ${tdNumber(true,false,false,+row.cogs === 0? '' : +row.cogs, style_cost,false,fn,'td_cogs')}
-                        ${tdNumber(false,false,false,+row.total_amount === 0? '' : +row.total_amount, style_total_amount,false,false,'td_total_amount')}
-                        ${tdNumber(false,false,false,+row.total_avg === 0? '' : +row.total_avg, style_total_avg,false,false,'td_total_avg')}
-                        ${tdNumber(false,true,false,+row.total_cogs === 0? '' : +row.total_cogs, style_total_cost,total_column2,false,'td_total_cogs')}
+                        ${tdNumber(true,false,false,+row.debit === 0? '' : +row.debit, style_debit,total_column1,fn,'debit')}
+                        ${tdNumber(true,false,false,+row.credit === 0? '' : +row.credit, style_credit,total_column2,fn,'credit')}
+                        ${tdNumber(false,true,false,+row.balance === 0? '' : +row.balance, style_balance,false,false,'balance')}
                       </tr>`;
         });
 
@@ -352,12 +347,9 @@ function fillTable() {
                                 <td id="footer_style_datex" style="${style_datex}"></td>
                                 <td id="footer_style_referenceconcat" style="${style_referenceconcat}"></td>
                                 <td id="footer_style_row_note" style="${style_row_note}"></td>
-                                <td id="footer_style_amount" style="${style_amount}"></td>
-                                <td id="footer_style_avg" style="${style_avg}"></td>
-                                <td id="footer_style_cost" style="${style_cost}"></td>
-                                <td id="footer_style_total_amount" style="${style_total_amount}"></td>
-                                <td id="footer_style_total_avg" style="${style_total_avg}"></td>
-                                <td id="footer_style_total_cost" style="${style_total_cost}"></td>
+                                <td id="footer_style_debit" style="${style_debit}"></td>
+                                <td id="footer_style_credit" style="${style_credit}"></td>
+                                <td id="footer_style_balance" style="${style_balance}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -379,8 +371,8 @@ function fillTable() {
 //500500
       tableContainer.querySelector(`#footer_style_datex`).textContent = slice_array1.length; //  عدد الصفوف
 
-        tableContainer.querySelector(`#footer_style_amount`).textContent = floatToString(true,total_column1.value);  aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_amount`), total_column1.value);
-        tableContainer.querySelector(`#footer_style_total_cost`).textContent = floatToString(true,total_column2.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_total_cost`), total_column2.value);
+        tableContainer.querySelector(`#footer_style_debit`).textContent = floatToString(true,total_column1.value);  aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_debit`), total_column1.value);
+        tableContainer.querySelector(`#footer_style_credit`).textContent = floatToString(true,total_column2.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_credit`), total_column2.value);
         // tableContainer.querySelector(`#footer_style_balance`).textContent = floatToString(true,total_column3.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_balance`), total_column3.value)
 
         // if (array1.length > 0 && array1.length <= 50) {
@@ -462,8 +454,8 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
     const type = row.querySelector(`.td_type`).textContent
     const obj = {
     x: row.querySelector(`.td_id`).textContent,
-    href_pageName : 'stock_cost_and_items_view_ar',
-    href_pageTitle : 'حركة صنف / كمية وقيمة'
+    href_pageName : 'item_movement_view_ar',
+    href_pageTitle : 'حركة صنف'
     }
 
     if (!type || !obj.x){
@@ -500,8 +492,8 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
         return;
     }
 
-    //sessionStorage.setItem('obj_stock_cost_and_items', JSON.stringify(obj_stock_cost_and_items));
-    //window.location.href = `stock_cost_and_items_view_ar`;
+    //sessionStorage.setItem('obj_item_movement', JSON.stringify(obj_item_movement));
+    //window.location.href = `item_movement_view_ar`;
 } catch (error) {
     catch_error(error)
 }
@@ -526,7 +518,7 @@ view_report_btn.onclick = async function () {
 
         Qkey = document.querySelector(`#dropdown_div1_hidden_input`).value
         if(!Qkey){
-            showAlert('warning', 'برجاء تحديد الحساب بشكل صحيح')
+            showAlert('warning', 'برجاء تحديد الصنف بشكل صحيح')
             return;
         }
         start_date = start_date_input.value;
@@ -534,24 +526,24 @@ view_report_btn.onclick = async function () {
         permissionName = `items_permissions`
         back_href_page = 'report_map_ar'
         back_title_page = 'التقارير'
-        //item_location = document.querySelector(`#dropdown_div2_hidden_input`).value || false
+        item_location = document.querySelector(`#dropdown_div2_hidden_input`).value || false
 
         // is_hiding_zero_balances = checked_hide_zero_balabce.checked
         // is_show_account_no = false
 
-        const obj_stock_cost_and_items = {
+        const obj_item_movement = {
             x: Qkey,
             permissionName : permissionName,
             start_date : start_date,
             end_date : end_date,
             back_href_page : back_href_page,
             back_title_page : back_title_page,
-           // item_location : item_location
+            item_location : item_location
         }
-        sessionStorage.setItem('obj_stock_cost_and_items', JSON.stringify(obj_stock_cost_and_items)); 
+        sessionStorage.setItem('obj_item_movement', JSON.stringify(obj_item_movement)); 
 
-        backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
-        await restore_page1(getData_fn, `stock_cost_and_items_viewArray`)
+        backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        await restore_page1(getData_fn, `item_movement_viewArray`)
 
         close_dialogx()
     } catch (error) {
@@ -635,7 +627,7 @@ async function load_accounts_data() {
         orignal_accounts_array = data.accounts
         select_change()
 
-       // create_drop_down_with_External_DataArray(`dropdown_div2`,data.locations);// selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
+        create_drop_down_with_External_DataArray(`dropdown_div2`,data.locations);// selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
         
         show_dialogx()
   } catch (error) {
@@ -648,28 +640,27 @@ document.addEventListener("DOMContentLoaded", async function () {
 try {  
     showLoadingIcon(content_space)
 
-const obj_stock_cost_and_items = JSON.parse(sessionStorage.getItem('obj_stock_cost_and_items'));
+const obj_item_movement = JSON.parse(sessionStorage.getItem('obj_item_movement'));
 
 
-
-if (obj_stock_cost_and_items && obj_stock_cost_and_items.x && obj_stock_cost_and_items.permissionName && obj_stock_cost_and_items.start_date && obj_stock_cost_and_items.end_date && obj_stock_cost_and_items.back_href_page && obj_stock_cost_and_items.back_title_page){
+if (obj_item_movement && obj_item_movement.x && obj_item_movement.permissionName && obj_item_movement.start_date && obj_item_movement.end_date && obj_item_movement.back_href_page && obj_item_movement.back_title_page){
     report_setting_icon.style.display = 'none'
 
-    permissionName = obj_stock_cost_and_items.permissionName
-    start_date = obj_stock_cost_and_items.start_date;
-    end_date = obj_stock_cost_and_items.end_date;
-    Qkey = obj_stock_cost_and_items.x
-    back_href_page = obj_stock_cost_and_items.back_href_page;
-    back_title_page = obj_stock_cost_and_items.back_title_page;
-    other_obj = obj_stock_cost_and_items.other_obj;
-    item_location = obj_stock_cost_and_items.item_location;
+    permissionName = obj_item_movement.permissionName
+    start_date = obj_item_movement.start_date;
+    end_date = obj_item_movement.end_date;
+    Qkey = obj_item_movement.x
+    back_href_page = obj_item_movement.back_href_page;
+    back_title_page = obj_item_movement.back_title_page;
+    other_obj = obj_item_movement.other_obj;
+    item_location = obj_item_movement.other_obj.item_location;
 
     
 
-    pagePermission("view", obj_stock_cost_and_items.permissionName);  // معلق
-    sessionStorage.removeItem('stock_cost_and_items_viewArray');
-    backUp_page1(`stock_cost_and_items_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
-    await restore_page1(getData_fn, `stock_cost_and_items_viewArray`)
+    pagePermission("view", obj_item_movement.permissionName);  // معلق
+    sessionStorage.removeItem('item_movement_viewArray');
+    backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+    await restore_page1(getData_fn, `item_movement_viewArray`)
     
 }else{
     pagePermission("view", 'items_permission');  // معلق

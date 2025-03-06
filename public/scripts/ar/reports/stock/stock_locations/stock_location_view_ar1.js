@@ -260,7 +260,7 @@ function showFirst50RowAtTheBegening() {
 
 function fillTable() {
     try {
-        page_content.style.display = "none";
+        // page_content.style.display = "none";
         showLoadingIcon(content_space);
         // تعريف أنماط الأعمدة
         let style_id = `display: none;`;
@@ -304,10 +304,12 @@ function fillTable() {
                 }else if (col === "account_name"){
                     tableHTML += `<td style="${style_account_name}">${row[col]}</td>`; 
                 }else if (col === "total_balance"){
-                    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, end_date, 'stock_location_view_ar', 'جرد المخزون حسب الموقع', {item_location_name : false}, 'item_movement_view_ar', 'obj_item_movement')"`;
+                    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, end_date, 'stock_location_view_ar', 'جرد المخزون حسب الموقع', {item_location_name : false}, 'item_movement_view_ar', 'obj_item_movement', false)"`;
                     tableHTML += tdNumber(true,true,true,row[col],deafult_style_balance,false,fn1,false)                
-                }else{
-                    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, end_date, 'stock_location_view_ar', 'جرد المخزون حسب الموقع', {item_location_name : '${col}'}, 'item_movement_view_ar', 'obj_item_movement')"`;
+                }else{  
+                    let foundItem = data2.find(item => item.account_name === col);       
+                    let item_location = foundItem ? foundItem.id : '';
+                    let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, end_date, 'stock_location_view_ar', 'جرد المخزون حسب الموقع', {item_location_name : '${col}'}, 'item_movement_view_ar', 'obj_item_movement', ${item_location})"`;
                     tableHTML += tdNumber(true,false,true,row[col],deafult_style_balance,false,fn1,false)                
                 }
             });
@@ -345,7 +347,7 @@ function fillTable() {
 
         // تحديث الصفحة وعرض الجدول
         tableContainer.innerHTML = tableHTML;
-        page_content.style.display = "flex";
+        // page_content.style.display = "flex";
 
     } catch (error) {
         catch_error(error);
