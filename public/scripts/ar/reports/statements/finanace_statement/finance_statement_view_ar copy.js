@@ -1,4 +1,4 @@
-setActiveSidebar("report_map_ar");
+//setActiveSidebar("salesMain_view_ar");  
 //pagePermission("view", "sales_invoice_permission");  // معلق
 
 /*
@@ -8,20 +8,6 @@ newBtn.onclick = function (){
     window.location.href = "/sales_invoice_add_ar";
   }
 */
-
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
-
-let permissionName;
-let start_date;
-let end_date;
-let Qkey;
-let back_href_page;
-let back_title_page;
-let is_hiding_zero_balances;
-let is_show_account_no;
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
@@ -47,13 +33,138 @@ let f1_input = filter_div.querySelector(`#f1_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [1]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
+
+function backUp_filter_div_conditions() {
+    const conditions = {};
+
+    indices.forEach(index => {
+        // بناء الأسماء تلقائيًا باستخدام template literals
+        const fDiv = window[`f${index}_div`];
+        const fInput = window[`f${index}_input`];
+        const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+        const fCheckbox = window[`f${index}_checkbox`];
+        const fSelect = window[`f${index}_select`];
+        const fCheckboxDiv = window[`f${index}_checkbox_div`];
+        const fInputStartDate1 = window[`f${index}_input_start_date1`];
+        const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+        // التحقق من وجود كل عنصر قبل تخزين قيمته
+        if (fDiv) conditions[`f${index}_div_display`] = window.getComputedStyle(fDiv).display;
+        if (fInput) conditions[`f${index}_input_display`] = window.getComputedStyle(fInput).display;
+        if (fSelectAndInputDiv) conditions[`f${index}_selectAndInput_div_isHidden`] = fSelectAndInputDiv.classList.contains('hidden_select_and_input_div');
+        if (fCheckbox) conditions[`f${index}_checkbox`] = fCheckbox.checked;
+        if (fSelect) conditions[`f${index}_select`] = fSelect.value;
+        if (fInput) conditions[`f${index}_input`] = fInput.value;
+        
+        // التحقق من العناصر الإضافية
+        if (fCheckboxDiv) conditions[`f${index}_checkbox_div_display`] = window.getComputedStyle(fCheckboxDiv).display;
+        if (fInputStartDate1) conditions[`f${index}_input_start_date1`] = fInputStartDate1.value;
+        if (fInputEndDate1) conditions[`f${index}_input_end_date1`] = fInputEndDate1.value;
+    });
+
+    // الشروط الأخرى
+    Object.assign(conditions, {
+        is_filter: is_filter,
+        is_filter_div_hidden: filter_div.classList.contains('hidden_height'),
+        sub_h2_header: sub_h2_header.textContent,
+        back_href: back_href.href,
+        back_title: back_href.title
+    });
+
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    const conditionsArray = JSON.parse(sessionStorage.getItem('financeStatement_view_Array')) || [];
+
+    // إضافة الكائن الجديد إلى المصفوفة
+    conditionsArray.push(conditions);
+
+    // حفظ المصفوفة المحدثة في sessionStorage
+    sessionStorage.setItem('financeStatement_view_Array', JSON.stringify(conditionsArray));
+}
+
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-    await back_href_fn1(getData_fn, `finance_statement_viewArray`, `finance_statement_view_ar`, `report_map_ar`)
+   
+
+    const array = JSON.parse(sessionStorage.getItem(`financeStatement_view_Array`)) || [];
+
+    if (!array || array.length <= 1) {
+    
+   
+            window.location.href = `report_map_ar`;
+       
+    }else{
+
+        restore_filter_div_conditions(2)
+        await getData_fn();
+
+    }
 };
 
+function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
+    let conditions;
+
+    // استرجاع المصفوفة المحفوظة من sessionStorage
+    let conditionsArray = JSON.parse(sessionStorage.getItem("financeStatement_view_Array")) || [];
+    
+    // التحقق إذا كانت المصفوفة تحتوي على عناصر
+    if (conditionsArray.length > 0) {
+        // استرجاع العنصر المطلوب بناءً على الرقم المحدد
+        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
+
+        // حذف العناصر من المصفوفة بناءً على الرقم المحدد
+        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1) {
+            conditionsArray.splice(-NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore + 1);
+            sessionStorage.setItem("financeStatement_view_Array", JSON.stringify(conditionsArray));
+        }
+    } else {
+        return;
+    }
+
+    if (conditions) {
+        // استرجاع الحالات ديناميكيًا بناءً على الأرقام في المصفوفة
+        indices.forEach(index => {
+            const fDiv = window[`f${index}_div`];
+            const fInput = window[`f${index}_input`];
+            const fSelectAndInputDiv = window[`f${index}_selectAndInput_div`];
+            const fCheckbox = window[`f${index}_checkbox`];
+            const fSelect = window[`f${index}_select`];
+            const fCheckboxDiv = window[`f${index}_checkbox_div`];
+            const fInputStartDate1 = window[`f${index}_input_start_date1`];
+            const fInputEndDate1 = window[`f${index}_input_end_date1`];
+
+            // استرجاع القيم لكل عنصر، بعد التأكد من وجوده
+            if (fDiv) fDiv.style.display = conditions[`f${index}_div_display`];
+            if (fInput) fInput.style.display = conditions[`f${index}_input_display`];
+            if (fCheckbox) fCheckbox.checked = conditions[`f${index}_checkbox`];
+            if (fSelect) fSelect.value = conditions[`f${index}_select`];
+            if (fInput) fInput.value = conditions[`f${index}_input`];
+            if (fCheckboxDiv) fCheckboxDiv.style.display = conditions[`f${index}_checkbox_div_display`];
+            if (fInputStartDate1) fInputStartDate1.value = conditions[`f${index}_input_start_date1`];
+            if (fInputEndDate1) fInputEndDate1.value = conditions[`f${index}_input_end_date1`];
+            if (fSelectAndInputDiv) {
+                if (conditions[`f${index}_selectAndInput_div_isHidden`]) {
+                    fSelectAndInputDiv.classList.add('hidden_select_and_input_div');
+                } else {
+                    fSelectAndInputDiv.classList.remove('hidden_select_and_input_div');
+                }
+            }
+        });
+
+        // استرجاع الشروط الأخرى
+        sub_h2_header.textContent = conditions.sub_h2_header;
+        is_filter = conditions.is_filter;
+        if (conditions.is_filter_div_hidden) {
+            hidden_filter_div();
+        } else {
+            show_filter_div();
+        }
+
+        back_href.title = conditions.back_title;
+        back_href.href = conditions.back_href;
+    }
+}
 
 
 filter_icon.onclick = () => {
@@ -157,6 +268,15 @@ filter_icon_cancel.onclick = async () => {
 };
 
 
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
+
+
+let end_date;
+let is_hiding_zero_balances;
+let is_show_account_no = false;
 
 async function getData_fn() {
     try {       
@@ -165,21 +285,15 @@ async function getData_fn() {
             "/reports_finance_statement_view",
             {end_date, is_hiding_zero_balances, is_show_account_no},
             "pass","pass",
-            60,
+            15,
             false,'',
-            true,
-            false,false,
+            false,
+            true,content_space,
             false,false,'',
             false,'',
-            true,'report_map_ar',
+            false,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
-
-        h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'قائمة المركز المالى' 
-        h2_text_div.textContent = `قائمة المركز المالى`
-        sub_h2_header.textContent = `كما فى  ${reverseDateFormatting(end_date)}`;
-        back_href.title = back_href_page;
-        back_href.href = back_title_page; 
 
         data = data.trial_balance
         
@@ -190,20 +304,15 @@ async function getData_fn() {
 }
 
 
+
+
+
 async function Execution() {
     try {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-
-
-        permissionName = 'accounts_permission'
-        start_date = false
-        end_date = false
-        Qkey = null
-        back_href_page = 'finance_statement_view_ar'
-        back_title_page = 'قائمة المركز المالى'
-
+        sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value.value)}`;
         const datechange = is_datexChanged()
         if (datechange){
             await getData_fn();
@@ -211,11 +320,12 @@ async function Execution() {
             showFirst50RowAtTheBegening();
         }
 
-        backUp_page1(`income_statment_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no)
-    } catch (error) {
-        catch_error(error);
-    } finally {
+        backUp_filter_div_conditions();
         hideLoadingIcon(content_space);
+
+    } catch (error) {
+        hideLoadingIcon(content_space);
+        catch_error(error);
     }
 }
 
@@ -288,24 +398,19 @@ function fillTable() {
         showLoadingIcon(content_space);
 
         let style_id = `display: none;`;
-        let style_g = `display: none;`;
-        let style_f = `display: none;`;
         let style_account_name = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
         let deafult_style_total_value = `display: table-cell; width: auto; white-space: nowrap; text-align: start; padding-inline-end: 1.5rem;`; 
         let style_total_value = deafult_style_total_value;
 
         let diffrence = 0
         total_column1.value = 0;
-        let fn1 = `onclick = "statment_table_balance1_btn_fn(this)"`;
+        let fn = `onclick = "table_update_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
         let tableHTML = `<table id="review_table" class="review_table">
                         <thead>
                             <tr>
-                                <th style="${style_id}">#</th>
-                                <th style="${style_g}">#</th>
-                                <th style="${style_f}">#</th>
                                 <th style="${style_account_name}">الحساب</th>
                                 <th style="${style_total_value}">${end_date_input.value}</th>
 
@@ -334,44 +439,38 @@ function fillTable() {
 */
 
 const current_padding = row.padding + 0.5;
-const font_size = (+row.g === 3 || +row.g === 4 || +row.g === 5) ? `1.7rem` : 'var(--Font_normal)';
-const text_decoration = (+row.g === 3 || +row.g === 4 || +row.g === 5) ? 'underline' : 'none';
-const font_weight = !row.f ? 'bold;': 'normal';
-let font_color = !row.f ? 'darkorange': `var(--Font_Color)`;
+const font_size = (+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5) ? `1.7rem` : 'var(--Font_normal)';
+const text_decoration = (+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5) ? 'underline' : 'none';
+const font_weight = !row.is_final_account ? 'bold;': 'normal';
+let font_color = !row.is_final_account ? 'darkorange': `var(--Font_Color)`;
 
 const handle_account_name_style = `padding-inline-start:${current_padding}rem; font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration}; color:${font_color};`;
 const handle_balance_style = `font-size:${font_size}; font-weight:${font_weight}; text-decoration: ${text_decoration};`;
 
-if ((+row.g === 3 || +row.g === 4 || +row.g === 5)){
+if ((+row.global_id === 3 || +row.global_id === 4 || +row.global_id === 5)){
     style_total_value =`padding-inline-start:${current_padding}rem;` + handle_balance_style + deafult_style_total_value
 }else{
     style_total_value = `padding-inline-start:${current_padding}rem;` + deafult_style_total_value
 }
 
 
-    if (+row.g === 3){
+    if (+row.global_id === 3){
         diffrence = parseFloat(diffrence.toFixed(2)) + +row.balance || 0
-    }else if(+row.g ===4 || +row.g === 5){
+    }else if(+row.global_id ===4 || +row.global_id === 5){
         diffrence = parseFloat(diffrence.toFixed(2)) - +row.balance || 0
     }
 
     
             tableHTML +=
                      `<tr>
-                        <td style="${style_id}" class="td_id">${row.id}</td>
-                        <td style="${style_g}" class="td_g">${row.g}</td>
-                        <td style="${style_f}" class="td_f">${row.f}</td>
                         <td style="${style_account_name};${handle_account_name_style}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(true,false,false,row.balance,style_total_value,false,fn1,'balance')}
+                        ${tdNumber(true,false,false,row.balance,style_total_value,false,fn,'balance')}
                       </tr>`;
         });
 
         style_total_value = deafult_style_total_value
         tableHTML += `
                     <tr class="table_totals_row">
-                        <td id="footer_style_id" style="${style_id}"></td>
-                        <td id="footer_style_g" style="${style_g}"></td>                 
-                        <td id="footer_style_f" style="${style_f}"></td>                 
                         <td id="footer_style_account_name" style="${style_account_name}"></td>
                         <td id="footer_debit_first" style="${style_total_value}; opacity: 0.2;">${diffrence}</td>
                     </tr>
@@ -408,99 +507,6 @@ if ((+row.g === 3 || +row.g === 4 || +row.g === 5)){
         catch_error(error);
     }
 }
-
-async function statment_table_balance1_btn_fn(balanceBtn1) {
-    try {
-    // const permission = await btn_permission('customers_permission','view');
-
-    // if (!permission){ // if false
-    //     return;
-    // };
-
-    const row  = balanceBtn1.closest("tr")
-     
-
-    const x = row.querySelector(`.td_id`).textContent;
-    const g = row.querySelector(`.td_g`).textContent;
-    const f = row.querySelector(`.td_f`).textContent;
-
-    const obj = {
-    permissionName : 'accounts_permission',
-    start_date : firstDayOfYear,
-    end_date : end_date,
-    Qkey : x,
-    href_pageName : 'finance_statement_view_ar',
-    href_pageTitle : 'قائمه المركز المالى',
-    }
-
-
-    if (+g === 11){      
-        sessionStorage.removeItem('cash_accounts_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `cash_accounts_view_ar`;
-        return;
-    } else if (+g === 9){
-        sessionStorage.removeItem('fixed_assests_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `fixed_assests_view_ar`;
-        return;
-    } else if (+g === 10){
-        sessionStorage.removeItem('fixed_assests_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `fixed_assests_view_ar`;
-        return;
-    } else if (+g === 12){
-        sessionStorage.removeItem('items_table_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `items_table_view_ar`;
-        return;
-    } else if (+g === 13){
-        sessionStorage.removeItem('customers_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `customers_view_ar`;
-        return;
-    } else if (+g === 14){
-        sessionStorage.removeItem('vendors_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `vendors_view_ar`;
-        return;
-    } else if (+g === 20){
-        sessionStorage.removeItem('employees_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `employees_view_ar`;
-        return;
-    } else if (+g === 15){
-        sessionStorage.removeItem('capital_accounts_viewArray');
-        sessionStorage.removeItem('statement_obj');
-        sessionStorage.setItem('statement_obj', JSON.stringify(obj));                            
-        window.location.href = `capital_accounts_view_ar`;
-        return;
-    } else if (f === 'true'){
-
-        const date = new Date(end_date);
-        const first_day = `${date.getFullYear()}-01-01`;
-
-        table_balance1_btn_to_statetment_fn1(balanceBtn1, 'td_id', 'accounts_permission', first_day, end_date, 'finance_statement_view_ar', 'قائمة المركز المالى', false, 'account_statement_view_ar', 'obj_statement')
-        return;
-    } else {
-        showAlert('warning', '⚠️ لا يمكن عرض تفاصيل هذا الحساب')
-    }
-    
-    
-    //sessionStorage.setItem('obj_statement', JSON.stringify(obj_statement));
-    //window.location.href = `account_statement_view_ar`;
-} catch (error) {
-    catch_error(error)
-}
-};
-
 
 function performSearch() {
     try {
@@ -557,6 +563,68 @@ searchInput.addEventListener("keydown", (event) => {
 });
 
 
+/*
+async function table_update_btn_fn(updateBtn) {
+    try {
+    showLoadingIcon(updateBtn)
+    const permission = await btn_permission("sales_invoice_permission", "view");
+
+    if (!permission) {
+        // if false
+        return;
+    }
+
+
+    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
+    const row = updateBtn.closest("tr");
+    const sales_invoice_update_data = {
+        x: row.querySelector(`.td_id`).textContent,
+        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
+        order_id: row.querySelector(`.td_order_id`).textContent,
+    };
+
+    
+    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_invoice_update_data));                            
+    window.location.href = `sales_invoice_update_ar`;
+    hideLoadingIcon(updateBtn)
+} catch (error) {
+    hideLoadingIcon(updateBtn)
+    catch_error(error)
+}
+}
+*/
+
+/*
+function CheckUrlParams_salesInvoice_update_ar() {
+    try {
+        const urlData = getURLData(
+            "data",
+            "sales_invoice_view_ar",
+            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة القيود اليومية"
+        );
+
+        if (!urlData || urlData.pageName !== "sales_invoice_update_ar") {
+            return true;
+        }
+
+    
+        if (urlData !== "noParams") {
+
+            restore_filter_div_conditions(2)
+
+            return true;
+        } else if (urlData === "noParams") {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        catch_error(error);
+        return false;
+    }
+}
+*/
+
 //#region dialog
 const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
 const report_name_input = document.querySelector(`#report_name_input`);
@@ -570,29 +638,31 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
 view_report_btn.onclick = async function () {
     try {
-        showLoadingIcon(view_report_btn)
-        permissionName = 'accounts_permission'
-        start_date = false;
-        end_date = end_date_input.value;
-        Qkey = null
-        back_href_page = 'report_map_ar'
-        back_title_page = 'التقارير'
+
+        end_date = end_date_input.value ;
         is_hiding_zero_balances = checked_hide_zero_balabce.checked
         is_show_account_no = false
+                
+        showLoadingIcon(view_report_btn)
+        h2_text_div.textContent = report_name_input.value ? report_name_input.value : 'قائمة المركز المالى' 
+        sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value)}`;
+        await getData_fn();
+        const conditionsArray = sessionStorage.getItem(`financeStatement_view_Array`);
+    
+        if (!conditionsArray){
+         
+            backUp_filter_div_conditions();
+        }
 
-        backUp_page1(`finance_statement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no)
-        await restore_page1(getData_fn, `finance_statement_viewArray`)                        
-
-    } catch (error) {
-        catch_error(error);
-    } finally {
-        hideLoadingIcon(view_report_btn);
+        hideLoadingIcon(view_report_btn)
         close_dialogx()
+    } catch (error) {
+        catch_error(error)
     }
 }
 
 function show_dialogx(){
-    end_date_input.value = today
+    end_date_input.value = lastDayOfYear
     checked_hide_zero_balabce.checked = true
     // checked_show_account_no.checked = false
     dialogOverlay_input.style.display = 'flex' // show dialog
@@ -622,27 +692,21 @@ function close_dialogx(){
 
 
 
-
 document.addEventListener("DOMContentLoaded", async function () {
-    try {
-        showLoadingIcon(content_space)
-        let conditionsArray = JSON.parse(sessionStorage.getItem("finance_statement_viewArray")) || [];
-        if (conditionsArray.length === 0){
-            show_dialogx()
-        }else {
-            await restore_page1(getData_fn, `finance_statement_viewArray`)
-        }
-        showRedirectionReason();
-    } catch (error) {
-        catch_error(error)
-    } finally {
-        hideLoadingIcon(content_space)
+
+    show_dialogx()
+    
+    showRedirectionReason();
+/*    
+  
+    const result2 = CheckUrlParams_salesInvoice_update_ar();
+    if (!result2) {
+        return;
     }
-    
-    
 
+
+*/
 });
-
 
 window.addEventListener("beforeprint", function () {
     beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني

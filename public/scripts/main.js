@@ -214,12 +214,12 @@ function loadSidebarContents() {
       العيش
     </a>
     -->
-    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}" onclick="sessionStorage.removeItem('customers_viewArray')">
+    <a href="customers_view_ar" target="_self" class="" style="display: ${module_display("customers_permission")}" onclick="sessionStorage.removeItem('customers_viewArray'), sessionStorage.removeItem('statement_obj');">
       <i class="fa-solid fa-user-tie"></i>
       العملاء
     </a>
 
-    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}" onclick="sessionStorage.removeItem('vendors_viewArray')">
+    <a href="vendors_view_ar" target="_self" class="" style="display: ${module_display("vendors_permission")}" onclick="sessionStorage.removeItem('vendors_viewArray'), sessionStorage.removeItem('statement_obj');">
       <i class="fa-solid fa-user-tie"></i>
       الموردين
     </a>
@@ -258,7 +258,7 @@ function loadSidebarContents() {
       القيود المحاسبية
     </a>
 
-    <a href="capital_accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};" onclick="sessionStorage.removeItem('capital_accounts_viewArray')">
+    <a href="capital_accounts_view_ar" target="_self" class="" style="display: ${module_display("acounts_permission")};" onclick="sessionStorage.removeItem('capital_accounts_viewArray'), sessionStorage.removeItem('statement_obj');">
       <i class="fa-solid fa-sack-dollar"></i>
        حسابات رأس المال
     </a>
@@ -2629,7 +2629,6 @@ async function new_fetchData_postAndGet(FetchURL, posted_elements_AS_OBJECT, per
     if (response.ok) {
       hideLoadingIcon(Element_showLoadingIcon_as_avariable)
       if (is_close_dialog === true) { closeDialog(); }
-    
       const data = await response.json();
       if (data.xx && data.xx === true) {
         closeDialog();
@@ -4520,12 +4519,14 @@ function backUp_page1(str_storage_array_name, Qkey_p, permissionName_p, start_da
   sessionStorage.setItem(str_storage_array_name, JSON.stringify(conditionsArray));
 }
 
+
+
 async function restore_page1(getData_fn, str_storage_array_name) {
   let conditions;
-
+  
   // استرجاع المصفوفة المحفوظة من sessionStorage
   let conditionsArray = JSON.parse(sessionStorage.getItem(str_storage_array_name)) || [];
-  
+    
   // استرجاع اخر عنصر
       conditions = conditionsArray[conditionsArray.length - 1];
 
@@ -4578,6 +4579,7 @@ async function restore_page1(getData_fn, str_storage_array_name) {
       back_title_page = conditions.back_title_page;
       is_hiding_zero_balances = conditions.report_is_hiding_zero_balances;
       is_show_account_no = conditions.report_is_show_account_no;
+
 
         await getData_fn(permissionName, Qkey, start_date, end_date, is_hiding_zero_balances, is_show_account_no, item_location)
       

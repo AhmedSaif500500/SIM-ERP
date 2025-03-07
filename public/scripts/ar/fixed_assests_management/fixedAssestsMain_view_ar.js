@@ -14,6 +14,7 @@ function showData(){
 
 
   fixed_assests_btn.onclick = function(){
+    sessionStorage.removeItem('statement_obj');
     sessionStorage.removeItem('fixed_assests_viewArray');
     window.location.href = "/fixed_assests_view_ar";
   }
@@ -34,6 +35,7 @@ function showData(){
 }
 
 function remove_arrays(){
+  sessionStorage.removeItem('statement_obj');
   sessionStorage.removeItem('fixed_assests_viewArray');
   sessionStorage.removeItem('accumulated_depreciation_viewArray');
   sessionStorage.removeItem('disposed_fixed_asset_btn_Array');

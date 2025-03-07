@@ -657,6 +657,7 @@ if (collapse_tree){
 if (accounts_view_table_btn){
     accounts_view_table_btn.addEventListener('click', function () {
         try {
+            sessionStorage.removeItem('statement_obj');
             sessionStorage.removeItem('items_table_viewArray')
             window.location.href = "/items_table_view_ar";
         } catch (error) {

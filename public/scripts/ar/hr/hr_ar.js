@@ -18,6 +18,7 @@ function showData(){
   }
   
   employees_btn.onclick = function(){
+    sessionStorage.removeItem('statement_obj');
     sessionStorage.removeItem('employees_viewArray');
     window.location.href = "/employees_view_ar";
   }

@@ -263,7 +263,7 @@ async function getData_fn() {
 
         data = await new_fetchData_postAndGet(
             "/get_All_items_Data_for_table",
-            {},
+            {end_date},
             "items_permission","view",
             60,
             false,'',
@@ -275,10 +275,10 @@ async function getData_fn() {
             'حدث خطأ اثناء معالجة البيانات'
         )
 
-               // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
-            //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
-            //    back_href.title = back_href_page;
-            //    back_href.href = back_title_page;  
+        h2_text_div.textContent = `أصناف المخزون`
+        sub_h2_header.textContent = ` حتى تاريخ  ${reverseDateFormatting(end_date)}`;
+        back_href.title = back_href_page;
+        back_href.href = back_title_page; 
             
             
         showFirst50RowAtTheBegening();
@@ -297,7 +297,7 @@ async function Execution() {
 
         permissionName = 'items_permission'
         start_date = false
-        end_date = false
+        end_date = end_date
         Qkey = false
         back_href_page = 'items_table_view_ar'
         back_title_page = 'أصناف المخزون'
@@ -400,7 +400,6 @@ function fillTable() {
         // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
         // 4 : text-align: center / start / end / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
-        page_content.style.display = "none";
         showLoadingIcon(content_space);
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
@@ -415,8 +414,8 @@ function fillTable() {
         
         total_column1.value = 0;
 
-        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, lastDayOfYear, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'item_movement_view_ar', 'obj_item_movement')"`;
-        let fn2 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, lastDayOfYear, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'stock_cost_and_items_view_ar', 'obj_stock_cost_and_items')"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, end_date, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'item_movement_view_ar', 'obj_item_movement')"`;
+        let fn2 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'items_permission', firstDayOfYear, end_date, 'items_table_view_ar', 'أصناف المخزون', {item_location : false}, 'stock_cost_and_items_view_ar', 'obj_stock_cost_and_items')"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -492,8 +491,6 @@ function fillTable() {
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
         setupColumnSorting("review_table");
-        hideLoadingIcon(content_space);
-        page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 
@@ -647,11 +644,27 @@ document.addEventListener("DOMContentLoaded", async function () {
         showLoadingIcon(content_space)
         showRedirectionReason();
         let conditionsArray = JSON.parse(sessionStorage.getItem("items_table_viewArray")) || [];
-        if (conditionsArray.length === 0){
+        let statement_obj = JSON.parse(sessionStorage.getItem("statement_obj")) || [];
         
+        if (statement_obj.length !== 0){            
+            permissionName = statement_obj.permissionName
+            start_date = statement_obj.start_date
+            end_date = statement_obj.end_date
+            Qkey = statement_obj.Qkey
+            back_href_page = statement_obj.href_pageName
+            back_title_page = statement_obj.href_pageTitle
+
+            
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('items_table_viewArray');
+            backUp_page1(`items_table_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `items_table_viewArray`)
+            sessionStorage.removeItem('statement_obj');
+        } else if (conditionsArray.length === 0){
+
             permissionName = 'items_permission'
             start_date = false
-            end_date = false
+            end_date = today
             Qkey = null
             back_href_page = 'itemsMain_view_ar'
             back_title_page = 'إدارة المخزون'
@@ -663,6 +676,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         } else {
             await restore_page1(getData_fn, `items_table_viewArray`)
         }
+
+        
         handle_fn_options()
     } catch (error) {
         catch_error(error)

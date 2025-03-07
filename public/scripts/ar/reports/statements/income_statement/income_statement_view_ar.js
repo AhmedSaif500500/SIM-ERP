@@ -53,7 +53,7 @@ let f1_input = filter_div.querySelector(`#f1_input`);
 
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [1]; // ضع هنا الأرقام التي تريد تضمينها
 
 
 
@@ -469,37 +469,6 @@ searchInput.addEventListener("keydown", (event) => {
 });
 
 
-/*
-async function table_update_btn_fn(updateBtn) {
-    try {
-    showLoadingIcon(updateBtn)
-    const permission = await btn_permission("sales_invoice_permission", "view");
-
-    if (!permission) {
-        // if false
-        return;
-    }
-
-
-    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-    const row = updateBtn.closest("tr");
-    const sales_invoice_update_data = {
-        x: row.querySelector(`.td_id`).textContent,
-        qutation_id: row.querySelector(`.td_qutation_id`).textContent,
-        order_id: row.querySelector(`.td_order_id`).textContent,
-    };
-
-    
-    sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(sales_invoice_update_data));                            
-    window.location.href = `sales_invoice_update_ar`;
-    hideLoadingIcon(updateBtn)
-} catch (error) {
-    hideLoadingIcon(updateBtn)
-    catch_error(error)
-}
-}
-*/
-
 
 //#region dialog
 const dialogOverlay_input = document.querySelector(`#dialogOverlay_input`);
@@ -519,7 +488,7 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 view_report_btn.onclick = async function () {
     try {
         showLoadingIcon(view_report_btn)
-        permissionName = 'cash_transaction_permission'
+        permissionName = 'accounts_permission'
         start_date = start_date_input.value;
         end_date = end_date_input.value;
         Qkey = null
@@ -587,16 +556,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     
     
-    
-/*    
-  
-    const result2 = CheckUrlParams_salesInvoice_update_ar();
-    if (!result2) {
-        return;
-    }
-
-
-*/
 });
 
 window.addEventListener("beforeprint", function () {

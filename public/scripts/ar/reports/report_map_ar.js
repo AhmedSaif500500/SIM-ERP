@@ -1,4 +1,4 @@
-//setActiveSidebar('salesMain_view_ar');
+setActiveSidebar('report_map_ar');
 //pagePermission('view','salesman_permissions',"sales_qutation_permission","sales_order_permission","sales_invoice_permission","sales_returns_permission");
 
 
@@ -42,7 +42,7 @@ function showData(){
   }
   
   finance_statement.onclick = function(){
-    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    sessionStorage.removeItem('finance_statement_viewArray');
     window.location.href = "/finance_statement_view_ar";
   }
   

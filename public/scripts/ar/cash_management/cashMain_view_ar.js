@@ -18,6 +18,7 @@ function showData(){
 
 
   cash_accounts_btn.onclick = function(){
+    sessionStorage.removeItem('statement_obj');
     sessionStorage.removeItem('cash_accounts_viewArray');
     window.location.href = "/cash_accounts_view_ar";
   }

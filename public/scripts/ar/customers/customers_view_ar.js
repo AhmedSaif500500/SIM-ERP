@@ -208,7 +208,7 @@ async function getData_fn() {
 
         data = await new_fetchData_postAndGet(
             '/get_All_customers_Data',
-            {},
+            {end_date},
             'customers_permission','view',
             60,
             false,"",
@@ -219,10 +219,10 @@ async function getData_fn() {
             false,false,
             "حدث خطأ اثناء معالجه البيانات"
         )
-              // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
-            //    sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
-            //    back_href.title = back_href_page;
-            //    back_href.href = back_title_page;
+        h2_text_div.textContent = `العملاء`
+        sub_h2_header.textContent = ` حتى تاريخ  ${reverseDateFormatting(end_date)}`;
+        back_href.title = back_href_page;
+        back_href.href = back_title_page; 
 
         showFirst50RowAtTheBegening();
     } catch (error) {
@@ -242,7 +242,7 @@ async function Execution() {
 
         permissionName = 'customers_permission'
         start_date = false
-        end_date = false
+        end_date = end_date
         Qkey = false
         back_href_page = 'customers_view_ar'
         back_title_page = 'العملاء'
@@ -287,7 +287,6 @@ function fillTable() {
         // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
         // 4 : text-align: center / start / end / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
-        page_content.style.display = "none";
         showLoadingIcon(content_space);
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
@@ -307,7 +306,7 @@ function fillTable() {
 
         total_column1.value = 0;
        // let fn1 = `onclick = "table_balance1_btn_fn(this)"`;
-        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'customers_permission', firstDayOfYear, lastDayOfYear, 'customers_view_ar', 'العملاء', false, 'account_statement_view_ar', 'obj_statement')"`;
+        let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'customers_permission', firstDayOfYear, end_date, 'customers_view_ar', 'العملاء', false, 'account_statement_view_ar', 'obj_statement')"`;
 
 
         // إعداد رأس الجدول
@@ -386,8 +385,6 @@ function fillTable() {
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
         setupColumnSorting("review_table");
-        hideLoadingIcon(content_space);
-        page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 
@@ -595,11 +592,28 @@ document.addEventListener("DOMContentLoaded", async function () {
         showLoadingIcon(content_space)
         showRedirectionReason();
         let conditionsArray = JSON.parse(sessionStorage.getItem("customers_viewArray")) || [];
-        if (conditionsArray.length === 0){
+        let statement_obj = JSON.parse(sessionStorage.getItem("statement_obj")) || [];
+
         
+        if (statement_obj.length !== 0){            
+            permissionName = statement_obj.permissionName
+            start_date = statement_obj.start_date
+            end_date = statement_obj.end_date
+            Qkey = statement_obj.Qkey
+            back_href_page = statement_obj.href_pageName
+            back_title_page = statement_obj.href_pageTitle
+
+            
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('customers_viewArray');
+            backUp_page1(`customers_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `customers_viewArray`)
+            sessionStorage.removeItem('statement_obj');
+        } else if (conditionsArray.length === 0){
+
             permissionName = 'customers_permission'
-            start_date = firstDayOfYear
-            end_date = lastDayOfYear
+            start_date = false
+            end_date = today
             Qkey = null
             back_href_page = 'notes_ar'
             back_title_page = 'الملاحاظات'
@@ -611,6 +625,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         } else {
             await restore_page1(getData_fn, `customers_viewArray`)
         }
+
+      
         handle_fn_options()
     } catch (error) {
         catch_error(error)

@@ -4590,9 +4590,38 @@ app.post("/get_All_customers_Data", async (req, res) => {
       return;
     }
 
-    //* Start--------------------------------------------------------------
+    const posted_elements = req.body;
 
-    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
+
+
+  turn_EmptyValues_TO_null(posted_elements);
+//* Start--------------------------------------------------------------
+
+
+let date_where_statement = '';
+if (posted_elements.end_date){
+ date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+}     
+
 
     let query1 = `
 WITH main_query AS (
@@ -4611,11 +4640,13 @@ WITH main_query AS (
         A.is_allow_to_buy_and_sell
     FROM
         accounts_header A
-    LEFT JOIN 
-        transaction_body T ON A.id = T.account_id
+    LEFT JOIN transaction_body T ON A.id = T.account_id
+    LEFT JOIN transaction_header th on th.id = T.transaction_header_id    
     WHERE
         A.company_id = $1
         AND A.account_type_id = 2
+        AND th.is_deleted is null
+        ${date_where_statement}
     GROUP BY
         A.id
 )
@@ -6010,13 +6041,14 @@ app.post("/delete_employee", async (req, res) => {
 app.post("/get_All_Employees_Data", async (req, res) => {
   try {
  //500500
-    const posted_elements = req.body;
     
     //! Permission
     await permissions(req, "employees_permission", "view");
     if (!permissions) {
       return;
     }
+
+    const posted_elements = req.body;
 
     // سرد كل القيم مره واحده 
     const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
@@ -6028,10 +6060,25 @@ app.post("/get_All_Employees_Data", async (req, res) => {
           "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
       });
     }
-      
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
 
-    //* Start--------------------------------------------------------------
 
+  turn_EmptyValues_TO_null(posted_elements);
+//* Start--------------------------------------------------------------
+
+
+let date_where_statement = '';
+if (posted_elements.end_date){
+ date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+}  
    
     let query1 = `
 WITH main_account AS (
@@ -6066,18 +6113,17 @@ base_query AS (
         A.is_allow_to_buy_and_sell
     FROM 
         accounts_header A
-    LEFT JOIN 
-        transaction_body T ON A.id = T.account_id
-    LEFT JOIN 
-        accounts_body B ON A.id = B.account_id
-    LEFT JOIN 
-        accounts_header ParentAccount ON B.parent_id = ParentAccount.id
-    LEFT JOIN 
-        main_account ma ON true    
+    LEFT JOIN transaction_body T ON A.id = T.account_id
+    LEFT JOIN accounts_body B ON A.id = B.account_id
+    LEFT JOIN accounts_header ParentAccount ON B.parent_id = ParentAccount.id
+    LEFT JOIN transaction_header th on th.id = T.transaction_header_id
+    LEFT JOIN main_account ma ON true    
     WHERE
         A.company_id = $1
         AND A.account_type_id = 4
         AND A.is_final_account = true
+        AND th.is_deleted is null
+        ${date_where_statement}
     GROUP BY
         A.id, 
         A.account_name, 
@@ -6129,10 +6175,37 @@ app.post("/get_All_vendors_Data", async (req, res) => {
     if (!permissions) {
       return;
     }
+    const posted_elements = req.body;
 
-    //* Start--------------------------------------------------------------
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
 
-    // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
+
+
+  turn_EmptyValues_TO_null(posted_elements);
+//* Start--------------------------------------------------------------
+
+
+let date_where_statement = '';
+if (posted_elements.end_date){
+ date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+}     
 
     let query1 = `
 WITH main_query AS (
@@ -6151,11 +6224,13 @@ WITH main_query AS (
         A.is_allow_to_buy_and_sell
     FROM 
         accounts_header A
-    LEFT JOIN 
-        transaction_body T ON A.id = T.account_id
+    LEFT JOIN transaction_body T ON A.id = T.account_id
+    LEFT JOIN transaction_header th on th.id = t.transaction_header_id
     WHERE
         A.company_id = $1
         AND A.account_type_id = 3
+        AND th.is_deleted is null
+        ${date_where_statement}
     GROUP BY
         A.id
 )
@@ -10561,7 +10636,38 @@ app.post("/get_All_items_Data_for_table", async (req, res) => {
       return;
     }
 
-    //* Start--------------------------------------------------------------
+    const posted_elements = req.body;
+
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
+
+
+  turn_EmptyValues_TO_null(posted_elements);
+//* Start--------------------------------------------------------------
+
+
+let date_where_statement = '';
+if (posted_elements.end_date){
+ date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+}     
+
 
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
@@ -10593,6 +10699,7 @@ WHERE
     and ah.account_type_id = 5
     -- and th.is_including_items is TRUE متشغلوش عشان يجيب الاصناف كلها
     and th.is_deleted is NULL
+    ${date_where_statement}
 GROUP BY
     ah.id, ab.parent_id, parent_ah.account_name
 )
@@ -27028,13 +27135,13 @@ app.post("/fixed_assests_view", async (req, res) => {
           });
         }
       
-          // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
-          // if (InValidDateFormat){
-          //   return res.json({
-          //     success: false,
-          //     message_ar: InValidDateFormat_message_ar,
-          //   });
-          // }
+          const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
         
 
 
@@ -27042,6 +27149,11 @@ app.post("/fixed_assests_view", async (req, res) => {
     //* Start--------------------------------------------------------------
 
  
+    let date_where_statement = '';
+    if (posted_elements.end_date){
+     date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+    }     
+
 
 let quer1 = `
 WITH
@@ -27079,6 +27191,7 @@ WHERE
     AND ah.finance_statement = 1
     AND ah.account_type_id = 6
     AND (th.is_deleted IS NULL OR th.is_deleted = FALSE)
+    ${date_where_statement}
 GROUP BY
     ah.id)
 select
@@ -28943,33 +29056,37 @@ app.post("/capital_accounts_view", async (req, res) => {
       return;
     }
       
-
     const posted_elements = req.body;
 
-        // سرد كل القيم مره واحده 
-        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    // سرد كل القيم مره واحده 
+    const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
 
-        if (hasBadSymbols) {
-          return res.json({
-            success: false,
-            message_ar:
-              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
-          });
-        }
-      
-          // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
-          // if (InValidDateFormat){
-          //   return res.json({
-          //     success: false,
-          //     message_ar: InValidDateFormat_message_ar,
-          //   });
-          // }
-        
+    if (hasBadSymbols) {
+      return res.json({
+        success: false,
+        message_ar:
+          "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+      });
+    }
+  
+      const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+      if (InValidDateFormat){
+        return res.json({
+          success: false,
+          message_ar: InValidDateFormat_message_ar,
+        });
+      }
+    
 
 
-      turn_EmptyValues_TO_null(posted_elements);
-    //* Start--------------------------------------------------------------
+  turn_EmptyValues_TO_null(posted_elements);
+//* Start--------------------------------------------------------------
 
+
+let date_where_statement = '';
+if (posted_elements.end_date){
+ date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+}  
  
 
 let quer1 = `
@@ -28987,6 +29104,7 @@ where
 	and ah.is_final_account is true
 	and ah.account_type_id = 10 --  حسابات رأس المال
 	and th.is_deleted is null
+  ${date_where_statement}
 group by
 	ah.id
 ;
@@ -29395,20 +29513,24 @@ app.post("/cash_accounts_view", async (req, res) => {
           });
         }
       
-          // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
-          // if (InValidDateFormat){
-          //   return res.json({
-          //     success: false,
-          //     message_ar: InValidDateFormat_message_ar,
-          //   });
-          // }
+          const InValidDateFormat = isInValidDateFormat([posted_elements.end_date])
+          if (InValidDateFormat){
+            return res.json({
+              success: false,
+              message_ar: InValidDateFormat_message_ar,
+            });
+          }
         
 
 
       turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
 
- 
+     let date_where_statement = '';
+     if (posted_elements.end_date){
+      date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
+     }     
+
 
 let quer1 = `
 select
@@ -29426,6 +29548,7 @@ where
 	and ah.is_final_account is true
 	and ah.account_type_id = 9 -- الحسابات  النقدية
 	and th.is_deleted is null
+  ${date_where_statement}
 group by
 	ah.id
 ;
@@ -34715,13 +34838,13 @@ select
 	    when mt.global_id = 5 then mat.equity_value
 	    else balance
     end as balance,
-    mt.is_final_account,
+    mt.is_final_account as f,
     mt.account_no,
     mt.finance_statement,
     mt.cashflow_statement,
     mt.account_type_id,
     mt.account_name_en,
-    mt.global_id,
+    mt.global_id as g,
     mt.main_account_id,
     mt.is_inactive,
     mt.parent_id,
