@@ -399,8 +399,9 @@ function fillTable() {
 
 
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
 

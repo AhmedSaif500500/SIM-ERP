@@ -627,11 +627,11 @@ function fillTable() {
             document.querySelector("#table_footer_showRows_div").style.display ="none";
         }
 
-        startDate = f0_input_start_date1.value;
-        endDate = f0_input_end_date1.value;
+        
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
 

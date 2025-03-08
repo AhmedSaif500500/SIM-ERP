@@ -4617,14 +4617,31 @@ app.post("/get_All_customers_Data", async (req, res) => {
 //* Start--------------------------------------------------------------
 
 
-let date_where_statement = '';
-if (posted_elements.end_date){
- date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-}     
-
 
     let query1 = `
-WITH main_query AS (
+WITH 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+			 	COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ), 0
+        ) AS balance
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+        AND ah.account_type_id = 2
+        AND ah.is_final_account = true
+        AND th.is_deleted IS NULL
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
+),
+main_query as (
     SELECT 
         A.id, 
         A.account_name,  
@@ -4636,19 +4653,15 @@ WITH main_query AS (
         COALESCE(A.str_textarea_column2, '') as contact_info,  
         COALESCE(A.str_textarea_column3, '') as delivery_adress,  
         COALESCE(A.str_textarea_column4, '') as banking_info,
-        COALESCE(SUM(T.debit), 0) - COALESCE(SUM(T.credit), 0) AS balance,
+        COALESCE(bq.balance, 0) AS balance,
         A.is_allow_to_buy_and_sell
     FROM
         accounts_header A
-    LEFT JOIN transaction_body T ON A.id = T.account_id
-    LEFT JOIN transaction_header th on th.id = T.transaction_header_id    
+   	LEFT JOIN balance_query bq ON A.id = bq.id   
     WHERE
         A.company_id = $1
         AND A.account_type_id = 2
-        AND th.is_deleted is null
-        ${date_where_statement}
-    GROUP BY
-        A.id
+        AND A.is_final_account = true
 )
 SELECT *
 FROM 
@@ -4661,7 +4674,7 @@ ORDER BY
     mq.balance DESC  -- ترتيب الأرصدة غير الصفرية تنازليًا
     ;  
 `;
-    let data = await db.any(query1, [req.session.company_id]);
+    let data = await db.any(query1, [req.session.company_id, posted_elements.end_date]);
     last_activity(req)
     res.json(data);
   } catch (error) {
@@ -6075,68 +6088,64 @@ app.post("/get_All_Employees_Data", async (req, res) => {
 //* Start--------------------------------------------------------------
 
 
-let date_where_statement = '';
-if (posted_elements.end_date){
- date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-}  
+
    
     let query1 = `
-WITH main_account AS (
-    SELECT main_account_id 
-    FROM accounts_header ah 
-    WHERE ah.company_id = $1 
-      AND ah.global_id = 20
+WITH 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN ah.main_account_id = 1 THEN
+                        COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+                    ELSE
+                        COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+                END
+            ), 0
+        ) AS balance
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+        AND ah.account_type_id = 4
+        AND ah.is_final_account = true
+        AND th.is_deleted IS NULL
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
 ),
 base_query AS (
     SELECT 
-        A.id, 
-        COALESCE(A.account_name, '') AS account_name, 
-        COALESCE(A.account_no, '') AS account_no, 
-        COALESCE(A.str_textarea_column1, '') AS job,
-        COALESCE(A.str_textarea_column5, '') AS email,
-        COALESCE(A.str_textarea_column2, '') AS another_info,
-        COALESCE(A.str_textarea_column3, '') AS start_date,
-        COALESCE(A.str_textarea_column4, '') AS end_date,
-        COALESCE(A.is_salesman, false) AS is_salesman,
+        ah1.id,
+        COALESCE(ah1.account_name, '') AS account_name, 
+        COALESCE(ah1.account_no, '') AS account_no, 
+        COALESCE(ah1.str_textarea_column1, '') AS job,
+        COALESCE(ah1.str_textarea_column5, '') AS email,
+        COALESCE(ah1.str_textarea_column2, '') AS another_info,
+        COALESCE(ah1.str_textarea_column3, '') AS start_date,
+        COALESCE(ah1.str_textarea_column4, '') AS end_date,
+        COALESCE(ah1.is_salesman, false) AS is_salesman,
         CASE 
-            WHEN A.is_inactive = true THEN 'غير نشط'
+            WHEN ah1.is_inactive = true THEN 'غير نشط'
             ELSE 'نشط'
         END AS is_inactive,
-        CASE
-            WHEN ma.main_account_id = 1 THEN
-                SUM(COALESCE(T.debit, 0) - COALESCE(T.credit, 0))
-            ELSE
-                SUM(COALESCE(T.credit, 0) - COALESCE(T.debit, 0))  
-        END AS balance,
-        B.parent_id AS department_id,
-        COALESCE(ParentAccount.account_name, '') AS department_name,
-        A.is_allow_to_buy_and_sell
+        COALESCE(bq.balance, 0) as balance,
+        ab.parent_id AS department_id,
+        COALESCE(ah2.account_name, '') AS department_name,
+        ah1.is_allow_to_buy_and_sell
     FROM 
-        accounts_header A
-    LEFT JOIN transaction_body T ON A.id = T.account_id
-    LEFT JOIN accounts_body B ON A.id = B.account_id
-    LEFT JOIN accounts_header ParentAccount ON B.parent_id = ParentAccount.id
-    LEFT JOIN transaction_header th on th.id = T.transaction_header_id
-    LEFT JOIN main_account ma ON true    
+        accounts_body ab
+    LEFT JOIN accounts_header ah1 ON ah1.id = ab.account_id
+    LEFT JOIN accounts_header ah2 ON ah2.id = ab.parent_id
+    LEFT JOIN balance_query bq ON ah1.id = bq.id   
     WHERE
-        A.company_id = $1
-        AND A.account_type_id = 4
-        AND A.is_final_account = true
-        AND th.is_deleted is null
-        ${date_where_statement}
-    GROUP BY
-        A.id, 
-        A.account_name, 
-        A.account_no, 
-        A.str_textarea_column1,
-        A.str_textarea_column5,
-        A.str_textarea_column2,
-        A.str_textarea_column3, 
-        A.str_textarea_column4,
-        A.is_inactive,
-        B.parent_id,
-        ParentAccount.account_name,
-        ma.main_account_id
+        ah1.company_id = $1
+        AND ah1.account_type_id = 4
+        and ah.is_final_account is true
 )
 SELECT * 
 FROM base_query
@@ -6146,10 +6155,9 @@ ORDER BY
         ELSE 0                   -- الأرصدة غير الصفرية تبقى بالأعلى
     END,
     balance DESC;  -- ترتيب الأرصدة غير الصفرية تنازليًا
-
     `;
     
-    let data = await db.any(query1, [req.session.company_id]);
+    let data = await db.any(query1, [req.session.company_id, posted_elements.end_date]);
     res.json(data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -6202,13 +6210,31 @@ app.post("/get_All_vendors_Data", async (req, res) => {
 //* Start--------------------------------------------------------------
 
 
-let date_where_statement = '';
-if (posted_elements.end_date){
- date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-}     
 
     let query1 = `
-WITH main_query AS (
+WITH 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+				COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ), 0
+        ) AS balance
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+        AND ah.account_type_id = 3
+        AND ah.is_final_account = true
+        AND th.is_deleted IS NULL
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
+),
+main_query AS (
     SELECT 
         A.id, 
         COALESCE(A.account_name, '') as account_name,  
@@ -6220,19 +6246,15 @@ WITH main_query AS (
         COALESCE(A.str_textarea_column2, '') as contact_info,  
         COALESCE(A.str_textarea_column3, '') as delivery_adress,  
         COALESCE(A.str_textarea_column4, '') as banking_info,
-        COALESCE(SUM(T.credit), 0) - COALESCE(SUM(T.debit), 0) AS balance,
+        COALESCE(bq.balance, 0) AS balance,
         A.is_allow_to_buy_and_sell
     FROM 
         accounts_header A
-    LEFT JOIN transaction_body T ON A.id = T.account_id
-    LEFT JOIN transaction_header th on th.id = t.transaction_header_id
+	LEFT JOIN balance_query bq ON A.id = bq.id  
     WHERE
         A.company_id = $1
         AND A.account_type_id = 3
-        AND th.is_deleted is null
-        ${date_where_statement}
-    GROUP BY
-        A.id
+        AND A.is_final_account = true
 )
 SELECT *
 FROM 
@@ -6243,9 +6265,8 @@ ORDER BY
         ELSE 0                      -- الأرصدة غير الصفرية تبقى بالأعلى
     END, 
     mq.balance DESC;  -- ترتيب الأرصدة غير الصفرية تنازليًا
-    ;  
 `;
-    let data = await db.any(query1, [req.session.company_id]);
+    let data = await db.any(query1, [req.session.company_id, posted_elements.end_date]);
     last_activity(req)
     res.json(data);
   } catch (error) {
@@ -10663,16 +10684,39 @@ app.post("/get_All_items_Data_for_table", async (req, res) => {
 //* Start--------------------------------------------------------------
 
 
-let date_where_statement = '';
-if (posted_elements.end_date){
- date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-}     
-
-
     // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
 
     let query1 = `
-  WITH main_query as (    
+  WITH 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+				COALESCE(tb.item_amount, 0)
+            ), 0
+        ) AS balance,
+        COALESCE(SUM(
+    		CASE 
+        		WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
+        		ELSE tb.cogs -- زيادة في التكلفة
+    		END
+		), 0) AS value
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.item_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+        AND ah.account_type_id = 5
+        AND ah.is_final_account = true
+        AND th.is_deleted IS null
+        AND th.is_including_items is TRUE
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
+),
+ main_query as (    
 SELECT
     ah.id,
     ah.account_no,
@@ -10680,28 +10724,17 @@ SELECT
     ah.item_unite,
     ab.parent_id,
     parent_ah.account_name AS parent_account_name,
-    COALESCE(SUM(tb.item_amount), 0) AS current_amount,
-COALESCE(SUM(
-    CASE 
-        WHEN tb.item_amount < 0 THEN -tb.cogs-- تخفيض في التكلفة
-        ELSE tb.cogs -- زيادة في التكلفة
-    END
-), 0) AS value
+    COALESCE(bq.balance, 0) AS current_amount,
+	COALESCE(bq.value, 0) AS value
 FROM
     accounts_header ah
     LEFT JOIN accounts_body ab ON ab.account_id = ah.id
     LEFT JOIN accounts_header parent_ah ON ab.parent_id = parent_ah.id
-    LEFT JOIN transaction_body tb ON tb.item_id = ah.id
-    LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+	LEFT JOIN balance_query bq ON ah.id = bq.id 
 WHERE
     ah.company_id = $1
     and ah.is_final_account = true
     and ah.account_type_id = 5
-    -- and th.is_including_items is TRUE متشغلوش عشان يجيب الاصناف كلها
-    and th.is_deleted is NULL
-    ${date_where_statement}
-GROUP BY
-    ah.id, ab.parent_id, parent_ah.account_name
 )
   SELECT *
 FROM 
@@ -10714,7 +10747,7 @@ ORDER BY
     mq.current_amount DESC  -- ترتيب الأرصدة غير الصفرية تنازليًا
     ;
 `;
-    let data = await db.any(query1, [req.session.company_id, today]); // معلق -- هنا المفروض كان الكود لحد تاريخ اليوم خلى بالك كمان فى شرط معلق فى الاستعلام
+    let data = await db.any(query1, [req.session.company_id, posted_elements.end_date]); // معلق -- هنا المفروض كان الكود لحد تاريخ اليوم خلى بالك كمان فى شرط معلق فى الاستعلام
    
 
     res.json(data);
@@ -27149,14 +27182,42 @@ app.post("/fixed_assests_view", async (req, res) => {
     //* Start--------------------------------------------------------------
 
  
-    let date_where_statement = '';
-    if (posted_elements.end_date){
-     date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-    }     
 
 
 let quer1 = `
-WITH
+with 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+        		CASE 
+            		WHEN tb.is_accumulated_depreciation IS NULL THEN (COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0))
+            		ELSE 0
+        		END
+            ), 0
+        ) AS asset_cost,
+        COALESCE(
+            SUM(
+        		CASE 
+            		WHEN tb.is_accumulated_depreciation IS TRUE THEN (COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0))
+            		ELSE 0
+        		END
+            ), 0
+        ) AS depreciation_value        
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+    	AND ah.account_type_id = 6
+        AND ah.is_final_account = true
+        AND th.is_deleted IS NULL
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
+),
 main_query as(
 SELECT
     ah.id,
@@ -27169,31 +27230,18 @@ SELECT
     ah.numeric_column2 AS un_depericated_value,
     ah.str50_column1 AS fixed_ssests_group_name,
     ah.str_textarea_column1 AS asset_info,
-    SUM(
-        CASE 
-            WHEN tb.is_accumulated_depreciation IS NULL THEN (COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0))
-            ELSE 0
-        END
-    ) AS asset_cost,
-    SUM(
-        CASE 
-            WHEN tb.is_accumulated_depreciation IS TRUE THEN (COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0))
-            ELSE 0
-        END
-    ) AS depreciation_value,
+	coalesce(bq.asset_cost, 0) AS asset_cost,
+	COALESCE(bq.depreciation_value, 0) AS depreciation_value,
      'نشط' as assest_status
 FROM
     accounts_header ah
-LEFT JOIN transaction_body tb ON tb.account_id = ah.id
-LEFT JOIN transaction_header th ON th.id = tb.transaction_header_id
+left join balance_query bq on bq.id = ah.id
 WHERE
     ah.company_id = $1
-    AND ah.finance_statement = 1
     AND ah.account_type_id = 6
-    AND (th.is_deleted IS NULL OR th.is_deleted = FALSE)
-    ${date_where_statement}
-GROUP BY
-    ah.id)
+    and ah.is_final_account is true
+), 
+end_query as (
 select
     mq.id,
     mq.account_no,
@@ -27211,11 +27259,20 @@ select
 	mq.assest_status
     from
     	main_query mq
+)
+SELECT * 
+FROM end_query
+ORDER BY 
+    CASE 
+        WHEN book_value = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                   -- الأرصدة غير الصفرية تبقى بالأعلى
+    END,
+    book_value DESC;  -- ترتيب الأرصدة غير الصفرية تنازليًا   
 ;
 `;
 
 // تنفيذ الاستعلامات
-let data = await db.any(quer1, [req.session.company_id]);
+let data = await db.any(quer1, [req.session.company_id, posted_elements.end_date]);
 
     res.json(data);
   } catch (error) {
@@ -29083,35 +29140,58 @@ app.post("/capital_accounts_view", async (req, res) => {
 //* Start--------------------------------------------------------------
 
 
-let date_where_statement = '';
-if (posted_elements.end_date){
- date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-}  
- 
 
 let quer1 = `
+WITH 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+				COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)
+            ), 0
+        ) AS balance
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+        AND ah.account_type_id = 10
+        AND ah.is_final_account = true
+        AND th.is_deleted IS null
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
+),
+ main_query as (    
 select
 	ah.id,
 	ah.account_name,
 	ah.account_no,
-	sum(COALESCE(tb.credit, 0) - COALESCE(tb.debit, 0)) as balance
+	COALESCE(bq.balance, 0) as balance
 from
 	accounts_header ah
-left join transaction_body tb on tb.account_id = ah.id
-left join transaction_header th on th.id = tb.transaction_header_id
+LEFT JOIN balance_query bq ON ah.id = bq.id
 where
 	ah.company_id = $1
 	and ah.is_final_account is true
 	and ah.account_type_id = 10 --  حسابات رأس المال
-	and th.is_deleted is null
-  ${date_where_statement}
-group by
-	ah.id
-;
+)
+  SELECT *
+FROM 
+    main_query mq
+ORDER BY 
+    CASE 
+        WHEN mq.balance = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                      -- الأرصدة غير الصفرية تبقى بالأعلى
+    END, 
+    mq.balance DESC  -- ترتيب الأرصدة غير الصفرية تنازليًا
+    ;
 `;
 
 // تنفيذ الاستعلامات
-let data = await db.any(quer1, [req.session.company_id]);
+let data = await db.any(quer1, [req.session.company_id, posted_elements.end_date]);
 
     res.json(data);
   } catch (error) {
@@ -29526,36 +29606,58 @@ app.post("/cash_accounts_view", async (req, res) => {
       turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
 
-     let date_where_statement = '';
-     if (posted_elements.end_date){
-      date_where_statement = `AND th.datex <= '${posted_elements.end_date}'`
-     }     
 
 
 let quer1 = `
+WITH 
+balance_query AS (
+    SELECT 
+        ah.id,
+        COALESCE(
+            SUM(
+				COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)
+            ), 0
+        ) AS balance
+    FROM 
+        accounts_header ah
+    LEFT JOIN transaction_body tb ON ah.id = tb.account_id
+    INNER JOIN transaction_header th ON th.id = tb.transaction_header_id
+    WHERE
+        ah.company_id = $1
+		and ah.account_type_id = 9
+        AND ah.is_final_account = true
+        AND th.is_deleted IS NULL
+        AND th.datex <= $2
+    GROUP BY
+        ah.id
+),
+base_query as (
 select
 	ah.id,
 	ah.account_name,
 	ah.account_no,
 	ah.str50_column1 as group_name,
-	sum(COALESCE(tb.debit, 0) - COALESCE(tb.credit, 0)) as balance
+	coalesce(bq.balance ,0) as balance
 from
 	accounts_header ah
-left join transaction_body tb on tb.account_id = ah.id
-left join transaction_header th on th.id = tb.transaction_header_id
+left join balance_query bq on bq.id = ah.id
 where
 	ah.company_id = $1
 	and ah.is_final_account is true
-	and ah.account_type_id = 9 -- الحسابات  النقدية
-	and th.is_deleted is null
-  ${date_where_statement}
-group by
-	ah.id
-;
+	and ah.account_type_id = 9
+)
+SELECT * 
+FROM base_query
+ORDER BY 
+    CASE 
+        WHEN balance = 0 THEN 1  -- الأرصدة الصفرية تذهب للأسفل
+        ELSE 0                   -- الأرصدة غير الصفرية تبقى بالأعلى
+    END,
+    balance DESC;  -- ترتيب الأرصدة غير الصفرية تنازليًا
 `;
 
 // تنفيذ الاستعلامات
-let data = await db.any(quer1, [req.session.company_id]);
+let data = await db.any(quer1, [req.session.company_id, posted_elements.end_date]);
 
     res.json(data);
   } catch (error) {

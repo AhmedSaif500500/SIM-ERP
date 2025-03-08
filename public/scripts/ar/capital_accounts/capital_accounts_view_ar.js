@@ -241,7 +241,6 @@ btn_do.onclick = async () => {
 };
 
 
-
 function showFirst50RowAtTheBegening() {
     try {
         page_content.style.display = "none";
@@ -403,8 +402,9 @@ function fillTable() {
         }
 
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
 

@@ -621,8 +621,6 @@ function close_dialogx(){
 //#endregion end dialog
 
 
-
-
 document.addEventListener("DOMContentLoaded", async function () {
     try {
         showLoadingIcon(content_space)

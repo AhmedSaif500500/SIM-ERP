@@ -2125,6 +2125,8 @@ function hideLoadingIcon(element,is_table_btn, str_text_btn) {
     }
 
     if (element === content_space){
+      
+      
       if (page_content) {
         page_content.style.display = 'flex'
       }

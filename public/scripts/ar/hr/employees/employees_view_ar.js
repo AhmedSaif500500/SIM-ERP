@@ -242,6 +242,7 @@ async function getData_fn() {
     back_href.title = back_href_page;
     back_href.href = back_title_page;       
         
+console.log(data.length);
 
     showFirst50RowAtTheBegening()
    } catch (error) {
@@ -293,8 +294,6 @@ for (const input of inside_input_search_array) {
 btn_do.onclick = async () => {
     Execution()
 }
-
-
 
 async function showFirst50RowAtTheBegening() {
 try {
@@ -372,6 +371,8 @@ function fillTable() {
     total_column1.value = 0
     let fn1 = `onclick = "table_balance1_btn_to_statetment_fn1(this, 'td_id', 'employees_permission', firstDayOfYear, end_date, 'employees_view_ar', 'الموظفين', false, 'account_statement_view_ar', 'obj_statement')"`;
 
+    
+    
 
         // إعداد رأس الجدول
 // هنا بناء الجدول بدون صف الأزرار
@@ -471,8 +472,9 @@ if (array1.length > 0 && array1.length <= 50) {
 }
 
 } catch (error) {
-    hideLoadingIcon(content_space)
     catch_error(error)
+} finally {
+    hideLoadingIcon(content_space)
 }
 };
 
