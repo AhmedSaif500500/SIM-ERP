@@ -242,7 +242,6 @@ async function getData_fn() {
     back_href.title = back_href_page;
     back_href.href = back_title_page;       
         
-console.log(data.length);
 
     showFirst50RowAtTheBegening()
    } catch (error) {

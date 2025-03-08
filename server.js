@@ -6145,7 +6145,7 @@ base_query AS (
     WHERE
         ah1.company_id = $1
         AND ah1.account_type_id = 4
-        and ah.is_final_account is true
+        and ah1.is_final_account is true
 )
 SELECT * 
 FROM base_query
