@@ -376,44 +376,44 @@ function showFirst50RowAtTheBegening() {
 
                 const f5 =
                 filterData_string_column_with_showAndHiddenCheckbox(
-                    f5_checkbox,
-                    f5_select,
-                    f5_input,
+                    f4_checkbox,
+                    f4_select,
+                    f4_input,
                     "note",
                     row
                 );
 
             const f6 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    f6_checkbox,
-                    f6_select,
-                    f6_input,
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
                     "days",
                     row
                 );
 
                 const f7 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    f7_checkbox,
-                    f7_select,
-                    f7_input,
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
                     "hours",
                     row
                 );
 
                 const f8 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    f8_checkbox,
-                    f8_select,
-                    f8_input,
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
                     "values",
                     row
                 );
                 
                 const f9 =
                 filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
-                    f9_checkbox,
-                    f9_select,
+                    f5_checkbox,
+                    f5_select,
                     //f5_input,
                     "is_inactive",
                     row

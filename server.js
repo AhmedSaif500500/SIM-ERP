@@ -2375,8 +2375,8 @@ function turn_EmptyValues_TO_null(object_Var) {
 
 
 // sql injection
-let sql_injection_message_ar = "تم الكشف عن مدخلات غير صالحة بسبب وجود رموز ممنوعة. يرجى مراجعة المدخلات والمحاولة مرة أخرى."
-let sql_injection_message_en =  "Invalid input detected due to prohibited characters. Please review your input and try again."
+let sql_injection_message_ar = `تم الكشف عن مدخلات غير صالحة بسبب وجود رموز ممنوعة /['";$&<>]/ . يرجى مراجعة المدخلات والمحاولة مرة أخرى.`
+let sql_injection_message_en =  `Invalid input detected due to prohibited characters. Please review your input and try again.`
 function sql_anti_injection(values) {
   // تحقق من كل قيمة في المصفوفة
   
@@ -2384,7 +2384,7 @@ function sql_anti_injection(values) {
     return;
   }
 
-
+  
   for (let value of Object.values(values)) {
     // إذا كانت القيمة null أو undefined أو عدد رقمي، تجاهلها
     if (value === null || value === undefined || typeof value === "number") {      
@@ -4775,7 +4775,7 @@ app.post("/api/add_imported_customers", async (req, res) => {
     
       if (account_no === 'معرف العميل ( اختيارى )' || account_name === 'اسم العميل ( مطلوب )' || credit_limit === 'الحد الائتمانى ( اختياري )') {
         console.log(`skip header row`);
-        //index++;
+        index++;
         continue;
       }
 
@@ -6367,7 +6367,7 @@ app.post("/api/add_imported_vendors", async (req, res) => {
     
       if (account_no === 'معرف المورد ( اختيارى )' || account_name === 'اسم المورد ( مطلوب )' || credit_limit === 'الحد الائتمانى ( اختياري )') {
         console.log(`skip header row`);
-        //index++;
+        index++;
         continue;
       }
 
@@ -10167,7 +10167,6 @@ app.post("/api/add_imported_items", async (req, res) => {
     }
     
 
-
     turn_EmptyValues_TO_null(posted_elements);
 
     if (!posted_elements){
@@ -10214,7 +10213,7 @@ app.post("/api/add_imported_items", async (req, res) => {
     
       if (account_no === 'معرف الصنف ( اختيارى )' || item_name === 'اسم الصنف ( مطلوب )' || item_unite === 'وحدة القياس ( مطلوب )') {
         console.log(`skip header row`);
-        //index++;
+        index++;
         continue;
       }
     
@@ -27479,7 +27478,7 @@ app.post("/api/add_imported_fixed_assests", async (req, res) => {
     
       if (account_no === 'معرف الأصل الثابت ( اختيارى )' || account_name === 'اسم الأصل الثابت ( مطلوب )' || purshases_date === 'تاريخ شراء الأصل ( مطلوب )') {
         console.log(`skip header row`);
-        //index++;
+        index++;
         continue;
       }
 
@@ -37056,5 +37055,5 @@ server.listen(port, () => {
   //accept_request(request_id, int_company_numbers, int_users_numbers, '2025-02-13', '2025-12-31')
   //accept_request(9, 5, 5, '2025-02-13', '2025-12-31')
   //change_user_password(user_id, 'password')
-  //change_user_password(36, '12344321')
+  //change_user_password(35, 'Nokhba2025')
 });

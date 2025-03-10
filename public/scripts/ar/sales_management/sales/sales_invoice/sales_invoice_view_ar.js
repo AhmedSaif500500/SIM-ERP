@@ -277,7 +277,7 @@ async function getData_fn() {
 
 function is_datexChanged() {
     if (
-        f0_input_start_date1.value !== startDate ||
+        f0_input_start_date1.value !== start_date ||
         f0_input_end_date1.value !== today
     ) {
 
@@ -505,7 +505,7 @@ function fillTable() {
 
         total_column1.value = 0;
         total_column2.value = 0;
-        let fn = `onclick = "table_update_btn_fn(this)"`;
+        let fn = `onclick = "table_view_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -554,7 +554,7 @@ function fillTable() {
 
             tableHTML +=
                      `<tr>
-                        <td style="${style_button}"><button class="table_view_btn" onclick="table_update_btn_fn(this)">عرض</button></td>
+                        <td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>
                         <td style="${style_id}" class="td_id">${row.id}</td>
                         <td style="${style_datex}" class="td_datex">${row.datex}</td>
                         <td style="${style_due_date}" class="td_due_date">${row.due_date}</td>
@@ -708,7 +708,7 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_update_btn_fn(updateBtn) {
+async function table_view_btn_fn(updateBtn) {
     try {
     showLoadingIcon(updateBtn)
     const permission = await btn_permission("sales_invoice_permission", "view");

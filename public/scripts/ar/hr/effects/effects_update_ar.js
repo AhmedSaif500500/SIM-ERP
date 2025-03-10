@@ -4,8 +4,7 @@
 setActiveSidebar('hr_ar');
 pagePermission('view', 'effects_permission');
 
-page_content.style.display = 'none';
-showLoadingIcon(content_space) 
+
 
 const back_href = document.querySelector(`#back_href`)
 const h2_text_div = document.querySelector(`#h2_text_div`)
@@ -21,29 +20,23 @@ const btn_update = document.querySelector('#btn_update');
 const btn_delete = document.querySelector('#btn_delete');
 const dropdown_div = document.querySelector(`#dropdown_div`)
 
-let effects_update_data = {}
-let is_coming_from_effects_view = false
-let urlData = getURLData('data','effects_view_ar','رابط غير صالح : سيتم اعادة توجيهك الى صفحة المؤثرات')
-let effects_data = urlData.effects_update_data
-function CheckUrlParams (){
-  try {
-      if (effects_data && effects_data !== 'noParams'){
-        effects_update_data = {pageName : 'effects_update_ar',}
-            const encodedData = encodeURIComponent(JSON.stringify(effects_update_data));
-            back_href.href = `effects_view_ar?data=${encodedData}`
-            is_coming_from_effects_view = true
-            return true
-      }else if(effects_data && effects_data === 'noParams'){
-            return true
-      }else{
-          return false
-      }
-              
-  } catch (error) {
-      catch_error(error)
-      return false
-  }
+const effects_update_data = JSON.parse(sessionStorage.getItem('effects_update_data'));
+// sessionStorage.removeItem(`sales_invoice_update_data`)
+
+if (!effects_update_data){
+    redirection("sales_invoice_view_ar","fail","حدث خطأ اثناء معالجة البيانات سيتم تحويل الى صفحه فواتير المبيعات الرئيسية")
 }
+
+let href_pageName = 'hr_ar'
+let href_pageTitle = 'إدارة الموارد البشرية'
+
+if (effects_update_data && effects_update_data.href_pageName){
+  href_pageName = effects_update_data.href_pageName
+  href_pageTitle = effects_update_data.href_pageTitle
+}
+
+back_href.href = href_pageName
+back_href.title = href_pageTitle
 
 
 
@@ -74,16 +67,16 @@ colors()
 
 async function showData(){
   try {
-    sub_h2_header.textContent = `تعديل /  ${effects_data.acc_name}`
-    x_input.value = effects_data.x;
-    date_input.value = effects_data.datex;
-    reference_input.value = effects_data.referenceCONCAT;
-    dropdown_div.querySelector(`#dropdown_div_hidden_input`).value = effects_data.emp_x;
-    dropdown_div.querySelector(`#dropdown_div_select_input`).value = effects_data.acc_name;
-    days_input.value = !effects_data.days || effects_data.days === ''? 0 : effects_data.days; 
-    hours_input.value = !effects_data.hours || effects_data.hours === ''? 0 : effects_data.hours; 
-    values_input.value = !effects_data.values || effects_data.values === ''? 0 : effects_data.values; 
-    note_input.value = effects_data.note
+    sub_h2_header.textContent = `تعديل /  ${effects_update_data.acc_name}`
+    x_input.value = effects_update_data.x;
+    date_input.value = effects_update_data.datex;
+    reference_input.value = effects_update_data.referenceCONCAT;
+    dropdown_div.querySelector(`#dropdown_div_hidden_input`).value = effects_update_data.emp_x;
+    dropdown_div.querySelector(`#dropdown_div_select_input`).value = effects_update_data.acc_name;
+    days_input.value = !effects_update_data.days || effects_update_data.days === ''? 0 : effects_update_data.days; 
+    hours_input.value = !effects_update_data.hours || effects_update_data.hours === ''? 0 : effects_update_data.hours; 
+    values_input.value = !effects_update_data.values || effects_update_data.values === ''? 0 : effects_update_data.values; 
+    note_input.value = effects_update_data.note
 
   } catch (error) {
     catch_error(error)
@@ -97,7 +90,7 @@ async function update(){
 try {
   
 
-  const id = effects_data.x
+  const id = effects_update_data.x
   const date_val = date_input.value
   const emp_id = dropdown_div.querySelector(`#dropdown_div_hidden_input`).value
   const emp_name = dropdown_div.querySelector(`#dropdown_div_select_input`).value.trim()
@@ -105,7 +98,7 @@ try {
   const hours_val = !hours_input.value || hours_input.value == 0 || hours_input.value == '' || isNaN(hours_input.value) ? null : hours_input.value;
   const values_val = !values_input.value || values_input.value == 0 || values_input.value == '' || isNaN(values_input.value) ? null : values_input.value;
   const note_val = note_input.value.trim()
-  const reference = effects_data.reference;
+  const reference = effects_update_data.reference;
 
   if (!id || isNaN(id) || emp_name == ''){
     showAlert(`warining`,'اختر الموظف للتعديل')
@@ -129,9 +122,9 @@ try {
       true,'هل تريد تعديل  البيانات ؟',
       true,
       false,'',
-      true,effects_update_data,'effects_view_ar',
-      false,'',
-      false,'',
+      false,false,false,
+      true,href_pageName,
+      true,href_pageName,
       'حدث خطأ اثناء معالجة البيانات'
     )
 
@@ -147,9 +140,9 @@ btn_update.onclick = function() {
 btn_delete.onclick = async function(){
   try {
     
-  const id = effects_data.x;
-  const datex = effects_data.datex;
-  const reference = effects_data.reference;
+  const id = effects_update_data.x;
+  const datex = effects_update_data.datex;
+  const reference = effects_update_data.reference;
   
 
   const post = await new_fetchData_postAndGet(
@@ -160,9 +153,9 @@ btn_delete.onclick = async function(){
     true,'هل تريد حذف بيانات المؤثؤات ؟',
     false,
     false,'',
-    true,effects_update_data,'effects_view_ar',
-    false,'',
-    true,'effects_view_ar',
+    false,false,false,
+    true,href_pageName,
+    true,href_pageName,
     'حدث خطأ اثناء معالجة البيانات'
   )
 
@@ -176,8 +169,8 @@ btn_delete.onclick = async function(){
 document.addEventListener('DOMContentLoaded', async () =>{
   try {
     showLoadingIcon(content_space)
+
     await create_drop_down(`dropdown_div`,'/getEmployeesData1','effects_permission','view')
-    const result = CheckUrlParams(); if (!result) {return}
     await showData()
     colors()
     viewMode(true,'effects_permission','view')

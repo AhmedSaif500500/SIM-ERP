@@ -241,7 +241,7 @@ async function getData_fn() {
 
 function is_datexChanged() {
     if (
-        f0_input_start_date1.value !== startDate ||
+        f0_input_start_date1.value !== start_date ||
         f0_input_end_date1.value !== today
     ) {
 
