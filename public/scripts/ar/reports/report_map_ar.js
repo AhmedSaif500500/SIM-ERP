@@ -37,7 +37,7 @@ function showData(){
   }
 
   trial_balance.onclick = function(){
-    // sessionStorage.removeItem('sales_qutation_ViewArray');
+    sessionStorage.removeItem('trial_balance_viewArray');
     window.location.href = "/trial_balance_view_ar";
   }
   

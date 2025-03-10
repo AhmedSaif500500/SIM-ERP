@@ -1,13 +1,29 @@
 setActiveSidebar("hr_ar");
-pagePermission("view", "effects_permission");
+
+let data = [];
+let array1 = [];
+let slice_array1 = [];
+let filteredData_Array = [];
+
+let permissionName;
+let start_date;
+let end_date;
+let Qkey;
+let back_href_page;
+let back_title_page;
+
+const newBtn = document.querySelector('#newBtn');
+newBtn.onclick = function (){
+    sessionStorage.removeItem(updateArray)
+    window.location.href = "/effects_view_ar";
+  }
+
 
 const h2_text_div = document.querySelector(`#h2_text_div`);
 const sub_h2_header = document.querySelector(`#sub_h2_header`);
 let is_filter = false;
 const back_href = document.querySelector(`#back_href`);
 
-let startDate = firstDayOfYear;
-let endDate = lastDayOfYear;
 let is_recieved_params_from_effects_update = false;
 let is_recieved_params_from_department_view = false;
 
@@ -15,329 +31,89 @@ const tableContainer = document.querySelector("#tableContainer");
 const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
-let datex_div = filter_div.querySelector(`#datex_div`);
-let checkbox_datex_div = filter_div.querySelector(`#checkbox_datex_div`);
-let checkbox_datex = filter_div.querySelector(`#checkbox_datex`);
-let select_datex = filter_div.querySelector(`#select_datex`);
-let input_start_date1 = filter_div.querySelector(`#input_start_date1`); input_start_date1.value = firstDayOfYear;
-let input_end_date1 = filter_div.querySelector(`#input_end_date1`); input_end_date1.value = lastDayOfYear;
+//! datex
+let f0_div = filter_div.querySelector(`#f0_div`);
+let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
+let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
+let f0_select = filter_div.querySelector(`#f0_select`);
+let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = today;
 
-let referenceCONCAT_div = filter_div.querySelector(`#referenceCONCAT_div`);
-let checkbox_referenceCONCAT = filter_div.querySelector(`#checkbox_referenceCONCAT`);
-let referenceCONCAT_selectAndInput_div = filter_div.querySelector(`#referenceCONCAT_selectAndInput_div`);
-let select_referenceCONCAT = filter_div.querySelector(`#select_referenceCONCAT`);
-let input_referenceCONCAT = filter_div.querySelector(`#input_referenceCONCAT`);
+//! reference
+let f1_div = filter_div.querySelector(`#f1_div`);
+let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
+let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
+let f1_select = filter_div.querySelector(`#f1_select`);
+let f1_input = filter_div.querySelector(`#f1_input`);
 
-let depatment_name_div = filter_div.querySelector(`#depatment_name_div`);
-let checkbox_deparment_name = filter_div.querySelector(`#checkbox_deparment_name`);
-let department_Name_selectAndInput_div = filter_div.querySelector(`#department_Name_selectAndInput_div`);
-let select_department_name = filter_div.querySelector(`#select_department_name`);
-let input_department_name = filter_div.querySelector(`#input_department_name`);
+//! department
+let f2_div = filter_div.querySelector(`#f2_div`);
+let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_input = filter_div.querySelector(`#f2_input`);
 
+//! acc no
+let f3_div = filter_div.querySelector(`#f3_div`);
+let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
+let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
+let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_input = filter_div.querySelector(`#f3_input`);
 
+//! account_name
+let f4_div = filter_div.querySelector(`#f4_div`);
+let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
+let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
+let f4_select = filter_div.querySelector(`#f4_select`);
+let f4_input = filter_div.querySelector(`#f4_input`);
 
-let account_no_div = filter_div.querySelector(`#account_no_div`);
-let checkbox_account_no = filter_div.querySelector(`#checkbox_account_no`);
-let accNo_selectAndInput_div = filter_div.querySelector(`#accNo_selectAndInput_div`);
-let select_account_no = filter_div.querySelector(`#select_account_no`);
-let input_account_no = filter_div.querySelector(`#input_account_no`);
+//! note
+let f5_div = filter_div.querySelector(`#f5_div`);
+let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
+let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
+let f5_select = filter_div.querySelector(`#f5_select`);
+let f5_input = filter_div.querySelector(`#f5_input`);
 
-let account_name_div = filter_div.querySelector(`#account_name_div`);
-let checkbox_account_name = filter_div.querySelector(`#checkbox_account_name`);
-let accountName_selectAndInput_div = filter_div.querySelector(`#accountName_selectAndInput_div`);
-let select_account_name = filter_div.querySelector(`#select_account_name`);
-let input_account_name = filter_div.querySelector(`#input_account_name`);
+//! days
+let f6_div = filter_div.querySelector(`#f6_div`);
+let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
+let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
+let f6_select = filter_div.querySelector(`#f6_select`);
+let f6_input = filter_div.querySelector(`#f6_input`);
 
-let aggregation_div = filter_div.querySelector(`#aggregation_div`)
-let checkbox_aggregation = filter_div.querySelector(`#checkbox_aggregation`);
+//! hours
+let f7_div = filter_div.querySelector(`#f7_div`);
+let f7_checkbox = filter_div.querySelector(`#f7_checkbox`);
+let f7_selectAndInput_div = filter_div.querySelector(`#f7_selectAndInput_div`);
+let f7_select = filter_div.querySelector(`#f7_select`);
+let f7_input = filter_div.querySelector(`#f7_input`);
 
-let note_div = filter_div.querySelector(`#note_dive`);
-let checkbox_note = filter_div.querySelector(`#checkbox_note`);
-let note_selectAndInput_div = filter_div.querySelector(`#note_selectAndInput_div`);
-let select_note = filter_div.querySelector(`#select_note`);
-let input_note = filter_div.querySelector(`#input_note`);
-
-
-
-let balance1_div = filter_div.querySelector(`#balance1_div`);
-let checkbox_balance1 = filter_div.querySelector(`#checkbox_balance1`);
-let balance1_selectAndInput_div = filter_div.querySelector(`#balance1_selectAndInput_div`);
-let select_balance1 = filter_div.querySelector(`#select_balance1`);
-let input_balance1 = filter_div.querySelector(`#input_balance1`);
-
-
-let balance2_div = filter_div.querySelector(`#balance2_div`);
-let checkbox_balance2 = filter_div.querySelector(`#checkbox_balance2`);
-let balance2_selectAndInput_div = filter_div.querySelector(`#balance2_selectAndInput_div`);
-let select_balance2 = filter_div.querySelector(`#select_balance2`);
-let input_balance2 = filter_div.querySelector(`#input_balance2`);
-
-
-let balance3_div = filter_div.querySelector(`#balance3_div`);
-let checkbox_balance3 = filter_div.querySelector(`#checkbox_balance3`);
-let balance3_selectAndInput_div = filter_div.querySelector(`#balance3_selectAndInput_div`);
-let select_balance3 = filter_div.querySelector(`#select_balance3`);
-let input_balance3 = filter_div.querySelector(`#input_balance3`);
-
+//! values
+let f8_div = filter_div.querySelector(`#f8_div`);
+let f8_checkbox = filter_div.querySelector(`#f8_checkbox`);
+let f8_selectAndInput_div = filter_div.querySelector(`#f8_selectAndInput_div`);
+let f8_select = filter_div.querySelector(`#f8_select`);
+let f8_input = filter_div.querySelector(`#f8_input`);
 
 
-let active_div = filter_div.querySelector(`#active_div`);
-let checkbox_active = filter_div.querySelector(`#checkbox_active`);
-let active_selectAndInput_div = filter_div.querySelector(`#active_selectAndInput_div`);
-let select_active = filter_div.querySelector(`#select_active`);
+//! active
+let f9_div = filter_div.querySelector(`#f9_div`);
+let f9_checkbox = filter_div.querySelector(`#f9_checkbox`);
+let f9_selectAndInput_div = filter_div.querySelector(`#f9_selectAndInput_div`);
+let f9_select = filter_div.querySelector(`#f9_select`);
+let f9_input = filter_div.querySelector(`#f9_input`);
+
 
 const btn_do = filter_div.querySelector(`#btn_do`);
+const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; // ضع هنا الأرقام التي تريد تضمينها
 
-function backUp_filter_div_conditions() {
-
-
-
-    const conditions = {
-        
-        datex_div_display: window.getComputedStyle(datex_div).display,
-        checkbox_datex_div_display: window.getComputedStyle(checkbox_datex_div).display,
-        checkbox_datex: checkbox_datex.checked,
-        select_datex: select_datex.value,
-        input_start_date1: input_start_date1.value,
-        input_end_date1: input_end_date1.value,
-
-        referenceCONCAT_div_display: window.getComputedStyle(referenceCONCAT_div).display,
-        input_referenceCONCAT_display: window.getComputedStyle(input_referenceCONCAT).display,
-        referenceCONCAT_selectAndInput_div_isHidden : referenceCONCAT_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_referenceCONCAT: checkbox_referenceCONCAT.checked,
-        select_referenceCONCAT: select_referenceCONCAT.value,
-        input_referenceCONCAT: input_referenceCONCAT.value,
-
-        depatment_name_div_display: window.getComputedStyle(depatment_name_div).display,
-        input_department_display: window.getComputedStyle(input_department_name).display,
-        department_Name_selectAndInput_div_isHidden : department_Name_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_deparment_name: checkbox_deparment_name.checked,
-        select_department_name: select_department_name.value,
-        input_department_name: input_department_name.value,
-
-        account_no_div_display: window.getComputedStyle(account_no_div).display,
-        input_account_no_display: window.getComputedStyle(input_account_no).display,
-        accNo_selectAndInput_div_isHidden : accNo_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_account_no: checkbox_account_no.checked,
-        select_account_no: select_account_no.value,
-        input_account_no: input_account_no.value,
-
-        account_name_div_display: window.getComputedStyle(account_name_div).display,
-        input_account_name_display: window.getComputedStyle(input_account_name).display,
-        accountName_selectAndInput_div_isHidden : accountName_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_account_name: checkbox_account_name.checked,
-        select_account_name: select_account_name.value,
-        input_account_name: input_account_name.value,
-
-   
-        aggregation_div_display: window.getComputedStyle(aggregation_div).display,
-        checkbox_aggregation: checkbox_aggregation.checked,
-
-        note_div_display: window.getComputedStyle(note_div).display,
-        input_note_display: window.getComputedStyle(input_note).display,
-        note_selectAndInput_div_isHidden : note_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_note: checkbox_note.checked,
-        select_note: select_note.value,
-        input_note: input_note.value,
-
-        balance1_div_display: window.getComputedStyle(balance1_div).display,
-        input_balance1_display: window.getComputedStyle(input_balance1).display,
-        balance1_selectAndInput_div_isHidden : balance1_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_balance1: checkbox_balance1.checked,
-        select_balance1: select_balance1.value,
-        input_balance1: input_balance1.value,
-
-        balance2_div_display: window.getComputedStyle(balance2_div).display,
-        input_balance2_display: window.getComputedStyle(input_balance2).display,
-        balance2_selectAndInput_div_isHidden : balance2_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_balance2: checkbox_balance2.checked,
-        select_balance2: select_balance2.value,
-        input_balance2: input_balance2.value,
-
-        balance3_div_display: window.getComputedStyle(balance3_div).display,
-        input_balance3_display: window.getComputedStyle(input_balance3).display,
-        balance3_selectAndInput_div_isHidden : balance3_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_balance3: checkbox_balance3.checked,
-        select_balance3: select_balance3.value,
-        input_balance3: input_balance3.value,
-
-        active_div_display: window.getComputedStyle(active_div).display,
-        /* No input */
-        active_selectAndInput_div_isHidden : active_selectAndInput_div.classList.contains(`hidden_select_and_input_div`) ? true : false,
-        checkbox_active: checkbox_active.checked,
-        select_active: select_active.value,
-
-        is_filter: is_filter,
-        is_filter_div_hidden: filter_div.classList.contains(`hidden_height`) ? true : false,
-        sub_h2_header: sub_h2_header.textContent,
-        
-        QKey_val: QKey,
-
-        back_href: back_href.herf,
-        back_title: back_href.title,
-    };
-
-
-    
-
-    
-    // استرجاع المصفوفة المحفوظة في sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem(`effectsViewArray`)) || [];
-
-    
-    // إضافة العنصر الجديد إلى المصفوفة
-    conditionsArray.push(conditions);
-
-    // حفظ المصفوفة المحدثة في sessionStorage
-    sessionStorage.setItem(`effectsViewArray`,JSON.stringify(conditionsArray));
-   
-}
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   
-
-    const array = JSON.parse(sessionStorage.getItem(`effectsViewArray`)) || [];
-
-    if (!array || array.length <= 1) {
-    
-   
-            window.location.href = `hr_ar`;
-       
-    }else{
-
-        restore_filter_div_conditions(2)
-        await getData_fn();
-
-    }
+    await back_href_fn1(getData_fn, `effects_viewArray`, `effects_view_ar`, `hr_ar`)
 };
 
-function restore_filter_div_conditions(NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore) {
-    let conditions;
 
-    // استرجاع المصفوفة المحفوظة في sessionStorage
-    let conditionsArray = JSON.parse(sessionStorage.getItem("effectsViewArray")) || [];
-  
-    // التحقق إذا كانت المصفوفة تحتوي على عناصر
-    if (conditionsArray.length > 0) {
-        // استحضار آخر عنصر وحذفه من المصفوفة
-        conditions = conditionsArray[conditionsArray.length - NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore];
-
-        if (NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore > 1){
-
-         // حذف العنصر الاخير والقبل الاخير من المصفوفة
-        conditionsArray.splice(-`${NUM_ektp_rakm_el_restore_elyEnta3ayzTerg3oMnel2a5er_maslan_1_ya3nyLastRestore-1}`);
-
-        // حفظ المصفوفة المحدثة في sessionStorage بعد الحذف
-        sessionStorage.setItem("effectsViewArray",JSON.stringify(conditionsArray));
-        }
-
-       
-        
-    
-
-    } else {
- 
-        return
-    }
-
-    if (conditions) {
-
-        datex_div.style.display = conditions.datex_div_display;
-        checkbox_datex_div.style.display = conditions.checkbox_datex_div_display;
-        checkbox_datex.checked = conditions.checkbox_datex;
-        select_datex.value = conditions.select_datex;
-        input_start_date1.value = conditions.input_start_date1;
-        input_end_date1.value = conditions.input_end_date1;
-
-
-        referenceCONCAT_div.style.display = conditions.referenceCONCAT_div_display;
-        input_referenceCONCAT.style.display = conditions.input_referenceCONCAT_display;
-        checkbox_referenceCONCAT.checked = conditions.checkbox_referenceCONCAT;
-        if (conditions.referenceCONCAT_selectAndInput_div_isHidden){referenceCONCAT_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{referenceCONCAT_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_referenceCONCAT.value = conditions.select_referenceCONCAT;
-        input_referenceCONCAT.value = conditions.input_referenceCONCAT;
-
-        depatment_name_div.style.display = conditions.depatment_name_div_display;
-        input_department_name.style.display = conditions.input_department_display;
-        checkbox_deparment_name.checked = conditions.checkbox_deparment_name;
-        if (conditions.department_Name_selectAndInput_div_isHidden){department_Name_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{department_Name_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_department_name.value = conditions.select_department_name;
-        input_department_name.value = conditions.input_department_name;
-
-        account_no_div.style.display = conditions.account_no_div_display;
-        input_account_no.style.display = conditions.input_account_no_display;
-        checkbox_account_no.checked = conditions.checkbox_account_no;
-        if (conditions.accNo_selectAndInput_div_isHidden){accNo_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{accNo_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_account_no.value = conditions.select_account_no;
-        input_account_no.value = conditions.input_account_no;
-
-        account_name_div.style.display = conditions.account_name_div_display;
-        input_account_name.style.display = conditions.input_account_name_display;
-        checkbox_account_name.checked = conditions.checkbox_account_name;
-        if (conditions.accountName_selectAndInput_div_isHidden){accountName_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{accountName_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_account_name.value = conditions.select_account_name;
-        input_account_name.value = conditions.input_account_name;
-
-        aggregation_div.style.display = conditions.aggregation_div_display;
-        checkbox_aggregation.checked = conditions.checkbox_aggregation;
-
-        note_div.style.display = conditions.note_div_display;
-        input_note.style.display = conditions.input_note_display;
-        checkbox_note.checked = conditions.checkbox_note;
-        if (conditions.note_selectAndInput_div_isHidden){note_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{note_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        select_note.value = conditions.select_note;
-        input_note.value = conditions.input_note;
-
-
-
-        balance1_div.style.display = conditions.balance1_div_display;
-        input_balance1.style.display = conditions.input_balance1_display;
-        if (conditions.balance1_selectAndInput_div_isHidden){balance1_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance1_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        checkbox_balance1.checked = conditions.checkbox_balance1;
-        select_balance1.value = conditions.select_balance1;
-        input_balance1.value = conditions.input_balance1;
-
-        balance2_div.style.display = conditions.balance2_div_display;
-        input_balance2.style.display = conditions.input_balance2_display;
-        if (conditions.balance2_selectAndInput_div_isHidden){balance2_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance2_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        checkbox_balance2.checked = conditions.checkbox_balance2;
-        select_balance2.value = conditions.select_balance2;
-        input_balance2.value = conditions.input_balance2;
-
-        balance3_div.style.display = conditions.balance3_div_display;
-        input_balance3.style.display = conditions.input_balance3_display;
-        if (conditions.balance3_selectAndInput_div_isHidden){balance3_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{balance3_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        checkbox_balance3.checked = conditions.checkbox_balance3;
-        select_balance3.value = conditions.select_balance3;
-        input_balance3.value = conditions.input_balance3;
-
-
-
-        active_div.style.display = conditions.active_div_display;
-        /* NO input */
-        if (conditions.active_selectAndInput_div_isHidden){active_selectAndInput_div.classList.add(`hidden_select_and_input_div`)}else{active_selectAndInput_div.classList.remove(`hidden_select_and_input_div`)}
-        checkbox_active.checked = conditions.checkbox_active;
-        select_active.value = conditions.select_active;
-
-        sub_h2_header.textContent = conditions.sub_h2_header;
-        QKey = conditions.QKey_val;
-
-        is_filter = conditions.is_filter;
-        if (conditions.is_filter_div_hidden) {
-            hidden_filter_div();
-    
-        } else {
-            show_filter_div();
-
-        }
-
-        back_href.title = conditions.back_title;
-        back_href.href = conditions.back_href; // تأكد من صحة الاسم
-    }
-
-
-}
 
 filter_icon.onclick = () => {
     try {
@@ -347,20 +123,74 @@ filter_icon.onclick = () => {
     }
 };
 
-function deafult_checkbox() {
-    searchInput.value = "";
-    checkbox_datex.checked = true;
-    checkbox_deparment_name.checked = false;
-    checkbox_account_no.checked = false;
-    checkbox_account_name.checked = true;
-    note_div.style.display = `flex`
-    checkbox_note.checked = true;
-    checkbox_balance1.checked = true;
-    checkbox_balance2.checked = true;
-    checkbox_balance3.checked = true;
-    checkbox_balance3.reference = true;
-    select_active.value = 0;
+function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
+    // Check if the elements exist to avoid errors
+    const divElement = window[`${str_f}_div`];
+    const checkbox = window[`${str_f}_checkbox`];
+    const selectElement = window[`${str_f}_select`];
+    const inputElement = window[`${str_f}_input`];
+    const selectAndInputDiv = window[`${str_f}_selectAndInput_div`];
+
+    
+    if (divElement) {
+        divElement.style.display = is_showDiv ? 'flex' : 'none';
+    }
+    
+    if (selectElement) {
+        selectElement.value = 0;
+    }
+
+    if (inputElement) {
+        inputElement.value = '';
+        inputElement.style.display = 'none';
+    }
+
+    if (selectAndInputDiv) {
+        if (is_checkBox) {
+            selectAndInputDiv.classList.remove('hidden_select_and_input_div');
+            checkbox.checked = true
+        } else {
+            selectAndInputDiv.classList.add('hidden_select_and_input_div');
+            checkbox.checked = false
+        }
+    }
+
+    if (is_datex){
+        
+        const datex_checkbox_div = window[`${str_f}_checkbox_div`];
+        const datex_input_start_date1 = window[`${str_f}_input_start_date1`];
+        const datex_input_end_date1 = window[`${str_f}_input_end_date1`];
+    
+        if(datex_checkbox_div){
+            datex_checkbox_div.style.display = 'flex'
+        }
+    
+        if(datex_input_start_date1){
+            datex_input_start_date1.value = firstDayOfYear
+        }
+        if(datex_input_end_date1){
+            datex_input_end_date1.value = today
+    
+        }
+    
+        }
+    
 }
+
+
+function deafult_checkbox() {
+    call_default_checkbox('f0',true,true,true) // datex
+    call_default_checkbox('f1',true,true,false) // reference
+    call_default_checkbox('f2',true,false,false) // department
+    call_default_checkbox('f3',true,false,false) // acc no
+    call_default_checkbox('f4',true,true,false) // account name
+    call_default_checkbox('f5',true,false,false) // note
+    call_default_checkbox('f6',true,true,false) // day
+    call_default_checkbox('f7',true,true,false) // hours
+    call_default_checkbox('f8',true,true,false) // values
+    call_default_checkbox('f9',true,false,false) // active
+}
+
 
 async function filter_icon_cancel_fn() {
     try {
@@ -373,17 +203,11 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            // QKey = null;
-            input_start_date1.value = firstDayOfYear;
-            input_end_date1.value = lastDayOfYear;
-            checkbox_aggregation.checked = false;
-            note_div.style.display = "flex";
-            referenceCONCAT_div.style.display = "flex";
-            sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
+            sub_h2_header.textContent = `من ${reverseDateFormatting(f0_input_start_date1.value)}   الى   ${reverseDateFormatting(f0_input_end_date1.value)}`;
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('effectsViewArray');
+            sessionStorage.removeItem('effects_viewArray');
             conditionsArray = []
             
         }
@@ -400,41 +224,30 @@ filter_icon_cancel.onclick = async () => {
     await filter_icon_cancel_fn();
 };
 
-let QKey = null;
-let data = [];
-let array1 = [];
-let slice_array1 = [];
-let filteredData_Array = [];
+
 
 async function getData_fn() {
     try {
-        const checkbox_aggregation_val = checkbox_aggregation.checked;
 
-        let start_date;
-        let end_date;
-
-        start_date = input_start_date1.value;
-        end_date = input_end_date1.value;
        
-    
-
         data = await new_fetchData_postAndGet(
             "/effects_view",
-            { QKey, checkbox_aggregation_val, start_date, end_date},
+            {start_date, end_date},
             "employees_permission","view",
-            15,
+            60,
             false,'',
             false,
-            true,content_space,
+            false,false,
             false,false,'',
             false,'',
             false,'notes_ar',
             'حدث خطأ اثناء معالجة البيانات'
         )
 
-
-
-        // QKey = null;
+               // h2_text_div.textContent = `كشف حساب / ${d.account_name}`
+               sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+               back_href.title = back_href_page;
+               back_href.href = back_title_page;
 
         showFirst50RowAtTheBegening();
     } catch (error) {
@@ -443,20 +256,17 @@ async function getData_fn() {
 }
 
 
-// function is_datexChanged() {
-//     if (
-//         input_start_date1.value !== startDate ||
-//         input_end_date1.value !== endDate
-//     ) {
+function is_datexChanged() {
+    if (
+        f0_input_start_date1.value !== startDate ||
+        f0_input_end_date1.value !== today
+    ) {
 
-
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
-
-
+        return true;
+    } else {
+        return false;
+    }
+}
 
 
 async function Execution() {
@@ -464,52 +274,35 @@ async function Execution() {
         showLoadingIcon(content_space);
         is_filter = true
         searchInput.value = "";
-        if (QKey && +QKey > 0 ){
-            // console.log(`حالة ال Qkey`);
-            sub_h2_header.textContent = `الموظف : ${emp_name} من ${reverseDateFormatting(input_start_date1.value)}  الى ${reverseDateFormatting(input_end_date1.value)}`;
+
+        permissionName = 'effects_permission'
+        start_date = f0_input_start_date1.value
+        end_date = f0_input_end_date1.value
+        Qkey = null
+        back_href_page = 'effects_view_ar'
+        back_title_page = 'المؤثرات'
+
+        const datechange = is_datexChanged()
+        if (datechange){
+            await getData_fn();
+        }else{
             showFirst50RowAtTheBegening();
-            backUp_filter_div_conditions();
-            hideLoadingIcon(content_space);
-            return
-            
-        } else if (!checkbox_aggregation.checked) {
-            // console.log(`الحالة العادة`);
-            // note_div.style.display = "flex";
-            // datex_div.style.display = "flex";
-            // referenceCONCAT_div.style.display = "flex";
-            sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
-        
-        } else if (checkbox_aggregation.checked) {
-            // console.log(`حالة التجميع `);
-
-            checkbox_datex_div.style.display = `none`;
-            checkbox_datex.checked = false
-            referenceCONCAT_div.style.display = `none`;
-            checkbox_referenceCONCAT.checked = false
-            note_div.style.display = `none`;
-            checkbox_note.checked = false;
-            
-            
-        
-            sub_h2_header.textContent = `تقرير مجمع من   ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
-            back_href.title = "المؤثرات";
-            
-
-            showAlert(`info`,`تم تجميع البيانات على مستوى الموظف من ${reverseDateFormatting(input_start_date1.value)} الى ${reverseDateFormatting(input_end_date1.value)}`);
         }
 
-        await getData_fn();
-        backUp_filter_div_conditions();
-        hideLoadingIcon(content_space);
+        backUp_page1(`effects_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
+
 
 const inside_input_search_array = filter_div.querySelectorAll(
     `[name="inside_input_search"]`
 );
+
 
 for (const input of inside_input_search_array) {
     try {
@@ -527,107 +320,117 @@ btn_do.onclick = async () => {
     await Execution();
 };
 
+
 function showFirst50RowAtTheBegening() {
     try {
         page_content.style.display = "none";
 
         filteredData_Array = data.filter((row) => {
-            const isAccountNofoMatch =
+
+            const f0 = 
+            filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
+                f0_checkbox,
+                f0_select,
+                f0_input_start_date1,
+                f0_input_end_date1,
+                "datex",
+                row
+            );
+
+            const f1 =
+            filterData_number_column_with_showAndHiddenCheckbox(
+                f1_checkbox,
+                f1_select,
+                f1_input,
+                "referenceconcat",
+                row
+            );
+
+
+            const f2 =
                 filterData_string_column_with_showAndHiddenCheckbox(
-                    checkbox_account_no,
-                    select_account_no,
-                    input_account_no,
-                    "account_no",
-                    row
-                );
-            const isDepartmentNamefoMatch =
-                filterData_string_column_with_showAndHiddenCheckbox(
-                    checkbox_deparment_name,
-                    select_department_name,
-                    input_department_name,
+                    f2_checkbox,
+                    f2_select,
+                    f2_input,
                     "department_name",
                     row
                 );
-            const isNameMatch = filterData_string_column_with_showAndHiddenCheckbox(
-                checkbox_account_name,
-                select_account_name,
-                input_account_name,
-                "account_name",
-                row
-            );
-            const isAnotherInfoMatch =
+
+                const f3 =
                 filterData_string_column_with_showAndHiddenCheckbox(
-                    checkbox_note,
-                    select_note,
-                    input_note,
+                    f3_checkbox,
+                    f3_select,
+                    f3_input,
+                    "account_no",
+                    row
+                );                
+
+            const f4 =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f4_checkbox,
+                    f4_select,
+                    f4_input,
+                    "account_name",
+                    row
+                );
+
+                const f5 =
+                filterData_string_column_with_showAndHiddenCheckbox(
+                    f4_checkbox,
+                    f4_select,
+                    f4_input,
                     "note",
                     row
                 );
-            const isdatexMatch = checkbox_aggregation.checked
-                ? true
-                : filterData_date_column_with_two_inputs_and_showAndHiddenCheckbox(
-                    checkbox_datex,
-                    select_datex,
-                    input_start_date1,
-                    input_end_date1,
-                    "datex",
-                    row
-                );
-            const isBalanceMatch1 =
+
+            const f6 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    checkbox_balance1,
-                    select_balance1,
-                    input_balance1,
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
                     "days",
                     row
                 );
 
-            const isBalanceMatch2 =
+                const f7 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    checkbox_balance2,
-                    select_balance2,
-                    input_balance2,
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
                     "hours",
                     row
                 );
-            const isBalanceMatch3 =
+
+                const f8 =
                 filterData_number_column_with_showAndHiddenCheckbox(
-                    checkbox_balance3,
-                    select_balance3,
-                    input_balance3,
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
                     "values",
                     row
                 );
-            const isReferenceMatch =
-                filterData_number_column_with_showAndHiddenCheckbox(
-                    checkbox_referenceCONCAT,
-                    select_referenceCONCAT,
-                    input_referenceCONCAT,
-                    "reference",
-                    row
-                );
-            const isActiveceMatch =
+                
+                const f9 =
                 filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
-                    checkbox_active,
-                    select_active,
+                    f5_checkbox,
+                    f5_select,
+                    //f5_input,
                     "is_inactive",
                     row
-                );
+                );                
 
-            const QKey_val = filterData_Qkey(QKey, "employee_id", row);
 
             return (
-                isAccountNofoMatch &&
-                isDepartmentNamefoMatch &&
-                isNameMatch &&
-                isAnotherInfoMatch &&
-                isdatexMatch &&
-                isBalanceMatch1 &&
-                isBalanceMatch2 &&
-                isBalanceMatch3 &&
-                isReferenceMatch &&
-                isActiveceMatch &&
-                QKey_val
+                f0 &&
+                f1 &&
+                f2 &&
+                f3 &&
+                f4 &&
+                f5 &&
+                f6 &&
+                f7 &&
+                f8 &&
+                f9
             ); // && otherCondition;
         });
 
@@ -653,7 +456,6 @@ function fillTable() {
         // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
         // 4 : text-align: center / start / end / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
-        page_content.style.display = "none";
         showLoadingIcon(content_space);
 
         let style_button = `width: auto; white-space: nowrap; text-align: center;`;
@@ -677,19 +479,6 @@ function fillTable() {
         total_column2.value = 0;
         total_column3.value = 0;
 
-        let buttonRow;
-        let linkStyle = "false";
-        let fn = "";
-
-        if (checkbox_aggregation.checked) {
-            fn = `onclick = "aggregation_balance_details(this)"`;
-            buttonRow = `<td style="${style_button}"><button class="table_view_btn" onclick="aggregation_balance_details(this)">عرض</button></td>`;
-            linkStyle = true;
-        } else {
-            fn = ``;
-            buttonRow = `<td style="${style_button}"><button class="table_view_btn" onclick="table_view_btn_fn(this)">عرض</button></td>`;
-            linkStyle = false;
-        }
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
@@ -773,8 +562,6 @@ function fillTable() {
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
         setupColumnSorting("review_table");
-        hideLoadingIcon(content_space);
-        page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 
@@ -798,11 +585,12 @@ function fillTable() {
                 "none";
         }
 
-        startDate = input_start_date1.value;
-        endDate = input_end_date1.value;
+
     } catch (error) {
         hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
 
@@ -861,6 +649,7 @@ function showFirst50RowInTable() {
     fillTable();
 }
 
+
 // عند الضغط على زر البحث
 searchBtn.addEventListener("click", performSearch);
 
@@ -869,6 +658,7 @@ searchInput.addEventListener("search", function () {
     performSearch();
 });
 
+
 // عند الضغط على زرار انتر وانت واقف فى مربع البحث
 searchInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -876,181 +666,67 @@ searchInput.addEventListener("keydown", (event) => {
     }
 });
 
-async function table_view_btn_fn(updateBtn) {
-    const permission = await btn_permission("employees_permission", "update");
+
+async function table_update_btn_fn(updateBtn) {
+    try {
+    showLoadingIcon(updateBtn)
+    const permission = await btn_permission("effects_permission", "view");
 
     if (!permission) {
         // if false
         return;
     }
 
-
-    backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
     const row = updateBtn.closest("tr");
-
     const effects_update_data = {
-        x: row.cells[1].textContent,
-        datex: row.cells[2].textContent,
-        referenceCONCAT: row.cells[3].textContent,
-        account_no: row.cells[6].textContent,
-        emp_x: row.cells[7].textContent,
-        acc_name: row.cells[8].textContent,
-        days: row.cells[9].textContent,
-        hours: row.cells[10].textContent,
-        values: row.cells[11].textContent,
-        note: row.cells[12].textContent,
-        active: row.cells[13].textContent,
-        
+        x: row.querySelector(`.td_id`).textContent,
+        href_pageName : `effects_view_ar`,
+        href_pageTitle : 'المؤثرات',
     };
 
-    
 
-    const transferedData = { effects_update_data };
-    const encodedData = encodeURIComponent(JSON.stringify(transferedData));
-    window.location.href = `effects_update_ar?data=${encodedData}`;
+    sessionStorage.removeItem('effects_update_data')
+    sessionStorage.setItem('effects_update_data', JSON.stringify(effects_update_data));                            
+    window.location.href = `effects_update_ar`;
+} catch (error) {
+    catch_error(error)
+} finally{
+    hideLoadingIcon(updateBtn)
+}
 }
 
-function CheckUrlParams_effects_update_ar() {
-    try {
-        const urlData = getURLData(
-            "data",
-            "effect_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة المؤثرات"
-        );
-
-        if (!urlData || urlData.pageName !== "effects_update_ar") {
-            return true;
-        }
-
-    
-        if (urlData !== "noParams") {
-
-            restore_filter_div_conditions(2)
-
-            return true;
-        } else if (urlData === "noParams") {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        catch_error(error);
-        return false;
-    }
-}
-
-function CheckUrlParams_department_view_ar() {
-    try {
-        const departmentData = getURLData(
-            "data",
-            "departments_view_ar",
-            "رابط غير صالح : سيتم اعادة توجيهك الى صفحة الاقسام"
-        );
-        if (!departmentData || departmentData.pageName !== `department_view_ar`) {
-            return true;
-        }
-
-
-
-        if (departmentData !== "noParams") {
-            is_recieved_params_from_department_view = true;
-
-            sub_h2_header.textContent = departmentData.n ? departmentData.n : "";
-            back_href.href = "departments_view_ar";
-            back_href.title = "الاقسام";
-            QKey = departmentData.x;
-
-
-            active_div.style.display = "none";
-            return true;
-        } else if (departmentData === "noParams") {
-            back_href.href = "hr_ar";
-            back_href.title = "الموارد البشرية";
-            // QKey = null;
-   
-            active_div.style.display = "flex";
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        catch_error(error);
-        return false;
-    }
-}
-
-let emp_name
-async function aggregation_balance_details(details_btn) {
-    try {
-        showLoadingIcon(content_space);
-        const row = details_btn.closest("tr");
-        QKey = row.cells[8].textContent;
-        deafult_checkbox();
-        checkbox_aggregation.checked = false;
-        note_div.style.display = "flex";
-        referenceCONCAT_div.style.display = "flex";
-       
-        emp_name = row.cells[9].textContent;
-        checkbox_account_name.checked = false;
-        checkbox_note.checked = true;
-        checkbox_referenceCONCAT.checked = true;
-        account_name_div.style.display = `none`
-        active_div.style.display = `none`
-        checkbox_active.checked = false;
-        depatment_name_div.style.display = `none`
-        account_no_div.style.display = `none`
-        datex_div.style.display = `none`
-        aggregation_div.style.display = `none`
- 
- 
-
-        sub_h2_header.textContent = `الموظف : ${emp_name} من ${reverseDateFormatting(input_start_date1.value)}  الى ${reverseDateFormatting(input_end_date1.value)}`;
-        hidden_filter_div();
-
-        backUp_filter_div_conditions() // ضرورى لانه هيرجع مرتين لازم اخد باك اب هنا
-        const dat1 = input_start_date1.value;
-        const dat2 = input_end_date1.value;
-
-
-        await getData_fn();
-
-
-        // sub_h2_header.textContent = `الموظف : ${emp_name} من ${reverseDateFormatting(input_start_date1.value)}  الى ${reverseDateFormatting(input_end_date1.value)}`;
-        // QKey = null;
-
-
-
-        hideLoadingIcon(content_space);
-    } catch (error) {
-        hideLoadingIcon(content_space);
-        catch_error(error);
-    }
-    //
-}
 
 document.addEventListener("DOMContentLoaded", async function () {
+    try {
+        showLoadingIcon(content_space)
+        showRedirectionReason();
+        let conditionsArray = JSON.parse(sessionStorage.getItem("effects_viewArray")) || [];
 
-    sub_h2_header.textContent = `من ${reverseDateFormatting(input_start_date1.value)}   الى   ${reverseDateFormatting(input_end_date1.value)}`;
+
+        if (conditionsArray.length === 0){
+        
+            permissionName = 'effects_permission'
+            start_date = firstDayOfYear
+            end_date = today
+            Qkey = null
+            back_href_page = 'hr_ar'
+            back_title_page = 'إدارة الموارد البشرية'
     
-    const result1 = CheckUrlParams_department_view_ar();
-    if (!result1) {
-        return;
-    }
-    const result2 = CheckUrlParams_effects_update_ar();
-    if (!result2) {
-        return;
-    }
-
-    showRedirectionReason();
-    await getData_fn();
-    const conditionsArray = sessionStorage.getItem(`effectsViewArray`);
-
-    if (!conditionsArray){
-     
-        backUp_filter_div_conditions();
-    }
+            pagePermission("view", permissionName);  // معلق
+            sessionStorage.removeItem('effects_viewArray');
+            backUp_page1(`effects_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+            await restore_page1(getData_fn, `effects_viewArray`)
+        } else {
+            await restore_page1(getData_fn, `effects_viewArray`)
+        }
     
+    } catch (error) {
+        catch_error(error)
+       } finally{
+        hideLoadingIcon(content_space)
+       }
 });
+
 
 window.addEventListener("beforeprint", function () {
     beforeprint_reviewTable("review_table", 0, 1); // هذا سيخفي العمود الأول والثاني

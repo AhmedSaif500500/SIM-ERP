@@ -6953,7 +6953,6 @@ app.post("/effects_view", async (req, res) => {
           });
         }
       
-        if (posted_elements.checkbox_aggregation_val && posted_elements.select_aggregation_val == '1') {
           const InValidDateFormat = isInValidDateFormat([posted_elements.start_date,posted_elements.end_date])
           if (InValidDateFormat){
             return res.json({
@@ -6961,62 +6960,11 @@ app.post("/effects_view", async (req, res) => {
               message_ar: InValidDateFormat_message_ar,
             });
           }
-        }
-
+        
 
       turn_EmptyValues_TO_null(posted_elements);
     //* Start--------------------------------------------------------------
 
-        
-        
-
-        let query
-        let params;
-
-        if (posted_elements.checkbox_aggregation_val && posted_elements.checkbox_aggregation_val === true){
-          
-          query = `
-SELECT 
-    NULL as id, -- عامود id ببيانات فارغة
-    COALESCE(ah.account_no, '') as account_no, -- إضافة account_no من accounts_header
-    NULL as datex, -- عامود datex ببيانات فارغة
-    NULL as reference,
-    A.employee_id,
-    COALESCE(ah.account_name, '') as account_name,
-    SUM(COALESCE(A.days, 0)) as days, -- جمع أيام الحضور
-    SUM(COALESCE(A.hours, 0)) as hours, -- جمع الساعات
-    SUM(COALESCE(A.values, 0)) as values, -- جمع القيم
-    '' as note, -- حقل note ببيانات فارغة
-    CASE
-        WHEN ah.is_inactive = true THEN 'غير نشط'
-        ELSE 'نشط'
-    END as is_inactive,
-    COALESCE(parent_ah.id, 0) as department_id, -- ID الحساب الأب
-    COALESCE(parent_ah.account_name, '') as department_name -- اسم الحساب الأب
-FROM 
-    effects A
-LEFT JOIN
-    accounts_header ah ON A.employee_id = ah.id
-LEFT JOIN 
-    accounts_body ab ON ah.id = ab.account_id -- الانضمام إلى accounts_body للحصول على parent_id
-LEFT JOIN 
-    accounts_header parent_ah ON ab.parent_id = parent_ah.id -- الانضمام إلى accounts_header للحصول على account_name للحساب الأب
-WHERE
-    A.company_id = $1
-    AND ah.account_type_id = 4
-    AND ah.is_final_account = true
-    AND (A.datex BETWEEN $2 AND $3 )
-GROUP BY 
-    A.employee_id, ah.account_name, parent_ah.id, parent_ah.account_name, ah.account_no, ah.is_inactive
-ORDER BY 
-    A.employee_id;
-
-`
-
-  params = [req.session.company_id,posted_elements.start_date,posted_elements.end_date]
-
-
-        }else{
           query =  `
           SELECT 
               A.id,
@@ -7049,16 +6997,13 @@ ORDER BY
               AND ah.account_type_id = 4
               AND ah.is_final_account = true
               AND (A.datex BETWEEN $2 AND $3 )
-              AND (A.employee_id = $4 OR $4 IS NULL)
           ORDER BY
               A.datex DESC,
               A.reference DESC;
           `
-
-          params = [req.session.company_id,posted_elements.start_date,posted_elements.end_date,posted_elements.QKey] 
-        }
-    
-
+          params = [req.session.company_id,posted_elements.start_date,posted_elements.end_date] 
+        
+  
 
     let data = await db.any(query, params);
     res.json(data);
@@ -34563,13 +34508,13 @@ select
     mt.debit_current,
     mt.credit_first,
     mt.credit_current,
-    mt.is_final_account,
+    mt.is_final_account as f,
     mt.account_no,
     mt.finance_statement,
     mt.cashflow_statement,
     mt.account_type_id,
     mt.account_name_en,
-    mt.global_id,
+    mt.global_id as g,
     mt.main_account_id,
     mt.is_inactive,
     mt.parent_id,

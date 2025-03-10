@@ -208,7 +208,7 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
             datex_input_start_date1.value = firstDayOfYear
         }
         if(datex_input_end_date1){
-            datex_input_end_date1.value = lastDayOfYear
+            datex_input_end_date1.value = today
     
         }
     

@@ -105,17 +105,13 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
         if(datex_checkbox_div){
             datex_checkbox_div.style.display = 'flex'
         }
-    
         if(datex_input_start_date1){
             datex_input_start_date1.value = firstDayOfYear
         }
         if(datex_input_end_date1){
-            datex_input_end_date1.value = lastDayOfYear
-    
+            datex_input_end_date1.value = today
         }
-    
         }
-    
 }
 
 
@@ -135,7 +131,7 @@ async function filter_icon_cancel_fn() {
             }
     
             deafult_checkbox();
-            sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date_input.value)}}`;
+            sub_h2_header.textContent = `كما فى ${reverseDateFormatting(end_date)}}`;
             
             await getData_fn();
             closeDialog();
@@ -198,20 +194,14 @@ async function Execution() {
 
 
         permissionName = 'accounts_permission'
-        start_date = false
-        end_date = false
+        start_date = start_date
+        end_date = end_date
         Qkey = null
         back_href_page = 'finance_statement_view_ar'
         back_title_page = 'قائمة المركز المالى'
 
-        const datechange = is_datexChanged()
-        if (datechange){
-            await getData_fn();
-        }else{
-            showFirst50RowAtTheBegening();
-        }
-
-        backUp_page1(`income_statment_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no)
+        showFirst50RowAtTheBegening();
+        backUp_page1(`finance_statment_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, is_hiding_zero_balances, is_show_account_no)
     } catch (error) {
         catch_error(error);
     } finally {
@@ -284,7 +274,6 @@ function fillTable() {
         // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
         // 4 : text-align: center / start / end / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
-        page_content.style.display = "none";
         showLoadingIcon(content_space);
 
         let style_id = `display: none;`;
@@ -355,6 +344,11 @@ if ((+row.g === 3 || +row.g === 4 || +row.g === 5)){
         diffrence = parseFloat(diffrence.toFixed(2)) - +row.balance || 0
     }
 
+        const g = [11,9,10,12,13,14,20,15]
+        let x = false
+        if (g.includes(+row.g) || row.f === true){
+            x = true
+        }
     
             tableHTML +=
                      `<tr>
@@ -362,7 +356,7 @@ if ((+row.g === 3 || +row.g === 4 || +row.g === 5)){
                         <td style="${style_g}" class="td_g">${row.g}</td>
                         <td style="${style_f}" class="td_f">${row.f}</td>
                         <td style="${style_account_name};${handle_account_name_style}" class="td_account_name">${row.account_name}</td>
-                        ${tdNumber(true,false,false,row.balance,style_total_value,false,fn1,'balance')}
+                        ${tdNumber(x,false,false,row.balance,style_total_value,false,fn1,'balance')}
                       </tr>`;
         });
 
@@ -388,8 +382,6 @@ if ((+row.g === 3 || +row.g === 4 || +row.g === 5)){
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
         // setupColumnSorting("review_table");
-        hideLoadingIcon(content_space);
-        page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 
@@ -404,8 +396,9 @@ if ((+row.g === 3 || +row.g === 4 || +row.g === 5)){
         // }
 
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+        hideLoadingIcon(content_space);
     }
 }
 
@@ -426,7 +419,7 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
 
     const obj = {
     permissionName : 'accounts_permission',
-    start_date : firstDayOfYear,
+    start_date : false,
     end_date : end_date,
     Qkey : x,
     href_pageName : 'finance_statement_view_ar',
@@ -592,6 +585,7 @@ view_report_btn.onclick = async function () {
 }
 
 function show_dialogx(){
+    // start_date_input.value = false
     end_date_input.value = today
     checked_hide_zero_balabce.checked = true
     // checked_show_account_no.checked = false
@@ -636,9 +630,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     } finally {
         hideLoadingIcon(content_space)
     }
-    
-    
-
 });
 
 

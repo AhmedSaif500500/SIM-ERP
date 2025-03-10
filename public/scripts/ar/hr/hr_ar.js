@@ -24,7 +24,7 @@ function showData(){
   }
   
   effects_btn.onclick = function(){
-    sessionStorage.removeItem('effectsViewArray');
+    sessionStorage.removeItem('effects_viewArray');
     window.location.href = "/effects_view_ar";
   }
   

@@ -40,7 +40,7 @@ let f0_checkbox_div = filter_div.querySelector(`#f0_checkbox_div`);
 let f0_checkbox = filter_div.querySelector(`#f0_checkbox`);
 let f0_select = filter_div.querySelector(`#f0_select`);
 let f0_input_start_date1 = filter_div.querySelector(`#f0_input_start_date1`); f0_input_start_date1.value = firstDayOfYear;
-let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = lastDayOfYear;
+let f0_input_end_date1 = filter_div.querySelector(`#f0_input_end_date1`); f0_input_end_date1.value = today;
 
 
 
@@ -133,7 +133,7 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
             datex_input_start_date1.value = firstDayOfYear
         }
         if(datex_input_end_date1){
-            datex_input_end_date1.value = lastDayOfYear
+            datex_input_end_date1.value = today
     
         }
     
@@ -216,7 +216,7 @@ async function getData_fn() {
 function is_datexChanged() {
     if (
         f0_input_start_date1.value !== startDate ||
-        f0_input_end_date1.value !== endDate
+        f0_input_end_date1.value !== today
     ) {
 
         return true;
@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         
             permissionName = 'accumulated_depreciation_permission'
             start_date = firstDayOfYear
-            end_date = lastDayOfYear
+            end_date = today
             Qkey = null
             back_href_page = 'fixedAssestsMain_view_ar'
             back_title_page = 'إدارة الأصول الثابتة'
