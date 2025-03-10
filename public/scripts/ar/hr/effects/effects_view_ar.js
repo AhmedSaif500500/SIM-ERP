@@ -14,8 +14,8 @@ let back_title_page;
 
 const newBtn = document.querySelector('#newBtn');
 newBtn.onclick = function (){
-    sessionStorage.removeItem(updateArray)
-    window.location.href = "/effects_view_ar";
+    //sessionStorage.removeItem()
+    window.location.href = "/effects_add_ar";
   }
 
 
@@ -112,7 +112,6 @@ back_href.onclick = async function (event) {
     event.preventDefault();
     await back_href_fn1(getData_fn, `effects_viewArray`, `effects_view_ar`, `hr_ar`)
 };
-
 
 
 filter_icon.onclick = () => {
