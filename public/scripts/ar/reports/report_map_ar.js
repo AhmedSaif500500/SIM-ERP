@@ -16,6 +16,11 @@ const item_movement_report_btn = document.querySelector(`#item_movement_report_b
 const stock_cost_and_items_btn = document.querySelector(`#stock_cost_and_items_btn`)
 
 
+//! hr
+const hr_div = document.querySelector(`#hr_div`)
+const effects_report1_report_btn = document.querySelector(`#effects_report1_report_btn`)
+const effects_report2_report_btn = document.querySelector(`#effects_report2_report_btn`)
+
 //! sales_div
 
 
@@ -67,6 +72,20 @@ function showData(){
     sessionStorage.removeItem('stock_cost_and_items_viewArray');
     sessionStorage.removeItem('obj_stock_cost_and_items');
     window.location.href = "/stock_cost_and_items_view_ar";
+  }
+
+
+  effects_report1_report_btn.onclick = function(){
+    sessionStorage.removeItem('effects_statement_viewArray');
+    sessionStorage.removeItem('obj_effects_statement');
+    window.location.href = "/effects_statement_view_ar";
+  }
+
+
+  effects_report2_report_btn.onclick = function(){
+    sessionStorage.removeItem('aggregated_effects_viewArray');
+    sessionStorage.removeItem('obj_aggregated_effects');
+    window.location.href = "/aggregated_effects_view_ar";
   }
 
   page_content.style.display = 'flex'

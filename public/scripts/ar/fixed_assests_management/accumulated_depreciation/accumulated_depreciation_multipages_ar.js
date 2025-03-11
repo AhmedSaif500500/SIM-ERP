@@ -2,7 +2,7 @@
 const note_inpute = document.querySelector(`#note_inpute`);
 const date1 = document.querySelector('#date1');
 const start_date_input = document.querySelector(`#start_date_input`); start_date_input.value = firstDayOfYear;
-const end_date_input = document.querySelector(`#end_date_input`); end_date_input.value = lastDayOfYear;
+const end_date_input = document.querySelector(`#end_date_input`); end_date_input.value = today;
 const calculate_depreciation_btn = document.querySelector(`#calculate_depreciation_btn`)
 
 const style_name = `width: fit-content; min-width: 17rem`

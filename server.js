@@ -33568,7 +33568,7 @@ app.post("/api/production_orders_add", async (req, res) => {
       await tx.none(query2, insert_array2.flat());
     }
 
-
+    
       const allow_amounts =  await check_itemAmounts_for_all_location(posted_elements.datex, items_array, locations_array, req, tx)
       if (!allow_amounts){
         throw new Error('حدث خطأ اثناء معالجة البيانات : Sapod003');
@@ -35724,7 +35724,304 @@ let params1;
       }
     });
 
+    app.post("/get_effects_data_for_report_effects_statement", async (req, res) => {
+      try {
+        //! Permission معلق
+        // await permissions(req, "purshases_returns_permission", "add");
+        // if (!permissions) {
+        //   return;
+        // }
+    
+        
+        const posted_elements = req.body;
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
 
+        // const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        // if (InValidDateFormat) {
+        //   return res.status(400).json({
+        //     success: false,
+        //     message_ar: InValidDateFormat_message_ar,
+        //   });
+        // }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+    
+        // const transaction_type = 7
+
+        let query1 = `
+        SELECT
+          A.id,
+          A.account_name,
+          A.account_type_id,
+          COALESCE(A.item_unite, 'الكمية') AS item_unite,
+          NULL AS is_accumulated_depreciation
+        FROM
+          accounts_header A
+        WHERE
+          A.company_id = $1
+          AND is_final_account = true
+          AND (global_id != 8 OR global_id IS NULL)
+        
+        UNION ALL
+        
+        SELECT
+          A.id,
+          'مجمع اهلاك - ' || A.account_name AS account_name,
+          A.account_type_id,
+          COALESCE(A.item_unite, 'الكمية') AS item_unite,
+          true AS is_accumulated_depreciation
+        FROM
+          accounts_header A
+        WHERE
+          A.company_id = $1
+          AND is_final_account = true
+          AND (global_id != 8 OR global_id IS NULL)
+          AND A.account_type_id = 6;
+        `;
+        let params1 = [req.session.company_id];
+
+        let query2 = `select id, account_type_name
+          from account_type
+          where id IN (4)
+          order by order_asc ASC;`;  // in (1,2 ) ya3ny = 1 or 2 
+    await db.tx(async (tx) => {
+    
+      const accounts = await tx.any(query1, params1);
+      const accounts_types = await tx.any(query2)
+
+      const postedData = {accounts, accounts_types};
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_effects_data_for_report_effects_statement", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: "❌ Error while get_effects_data_for_report_effects_statement" });
+      }
+    });
+
+    app.post("/report_effects_statement_view_ar", async (req, res) => {
+      try {
+        //! Permission معلق
+        await permissions(req, "effects_permission", "view");
+        if (!permissions) {
+          return;
+        }
+    
+        
+        const posted_elements = req.body;
+        
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+
+        const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        if (InValidDateFormat) {
+          return res.status(400).json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+       // const transaction_type = 7
+        
+        //! check
+        let quer001 = ` select id, account_name, account_type_id, global_id, main_account_id from accounts_header where id = $1 and company_id = $2 AND account_type_id = 4;`;
+        let result = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id])
+
+        if (!result || !result.account_name || result.account_name === ''){
+          await block_user(req,'Sresva01')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });  
+        }
+    
+        let query1 = `
+    SELECT
+        e.id AS x,
+        e.employee_id as employee_x,
+        e.datex,
+        e.reference,
+       	CONCAT(
+        	tt.doc_prefix, '-',
+        	SUBSTRING(e.datex, 1, 4), '-',  -- استخراج السنة من datex
+        	LPAD(CAST(e.reference AS TEXT), 5, '0'), ' / ', -- تحويل reference إلى نص وإضافة الأصفار
+    		tt.transaction_type_name
+        ) AS referenceconcat,
+        COALESCE(e.note, '') as note,
+        COALESCE(e.days, 0) AS days,
+        COALESCE(e.hours, 0) AS hours,
+        COALESCE(e.values, 0) AS values
+    FROM 
+        effects e
+       LEFT JOIN transaction_type tt ON tt.id = 16
+    WHERE 
+        e.employee_id = $1
+        and e.company_id = $4
+        AND e.datex BETWEEN $2 AND $3
+    order by
+    	e.datex desc, e.reference DESC
+      ;
+    `;
+  
+    let params1 = [posted_elements.x, posted_elements.start_date, posted_elements.end_date, req.session.company_id]
+    
+
+  
+
+
+    await db.tx(async (tx) => {
+    
+      const account_statement = await tx.any(query1, params1);
+      const account_name = result.account_name
+
+      const postedData = {account_statement, account_name};      
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_data_for_purshasesInvoiceToreturns", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
+      }
+    });
+
+    app.post("/report_aggregated_effects_view_ar", async (req, res) => {
+      try {
+        //! Permission معلق
+        await permissions(req, "effects_permission", "view");
+        if (!permissions) {
+          return;
+        }
+    
+        
+        const posted_elements = req.body;
+        
+        const hasBadSymbols = sql_anti_injection(...Object.values(posted_elements));
+    
+        if (hasBadSymbols) {
+          return res.json({
+            success: false,
+            message_ar:
+              "❌ Invalid input detected due to prohibited characters. Please review your input and try again.",
+          });
+        }
+    
+
+        const InValidDateFormat = isInValidDateFormat([posted_elements.start_date, posted_elements.end_date]);
+        if (InValidDateFormat) {
+          return res.status(400).json({
+            success: false,
+            message_ar: InValidDateFormat_message_ar,
+          });
+        }
+
+        turn_EmptyValues_TO_null(posted_elements);
+        //* Start--------------------------------------------------------------
+        // const rows = await db.any("SELECT e.id, e.employee_name FROM employees e");
+
+       // const transaction_type = 7
+        
+        //! check
+        /*
+        let quer001 = ` select id, account_name, account_type_id, global_id, main_account_id from accounts_header where id = $1 and company_id = $2 AND account_type_id = 4;`;
+        let result = await db.oneOrNone(quer001, [posted_elements.x, req.session.company_id])
+
+        if (!result || !result.account_name || result.account_name === ''){
+          await block_user(req,'Sresva01')
+          return res.json({
+            success: false,
+            xx: true,
+            message_ar: '🔴 تم تجميد جميع الحسابات نظرا لمحاولة التلاعب بالاكواد البرمجيه الخاصه بالتطبيق',
+          });  
+        }
+    */
+
+        let query1 = `
+           SELECT 
+        ah2.account_name as department_name,
+        ah1.id as employee_x,
+        ah1.account_name as employee_name,        
+            COALESCE(SUM(ef.days), 0) AS days,
+            COALESCE(SUM(ef.hours), 0) AS hours,
+            COALESCE(SUM(ef.values), 0) AS values,
+            CASE 
+              WHEN ah1.is_inactive = true THEN 'غير نشط'
+            ELSE 'نشط'
+        END AS is_inactive
+        FROM 
+             accounts_body ab
+            left JOIN accounts_header ah1 ON ah1.id = ab.account_id
+            left join accounts_header ah2 on ah2.id = ab.parent_id
+            inner join effects ef on ef.employee_id = ah1.id
+        WHERE 
+            ef.company_id = $1
+          AND ef.datex between $2 and $3
+        GROUP BY 
+            ah1.id, ah2.account_name
+      ;
+    `;
+  
+    let params1 = [req.session.company_id, posted_elements.start_date, posted_elements.end_date]
+    
+
+  
+
+
+    await db.tx(async (tx) => {
+    
+      const account_statement = await tx.any(query1, params1);
+     // const account_name = result.account_name
+
+      const postedData = {account_statement/*, account_name*/};      
+      res.json(postedData);
+    })
+    
+    
+        await last_activity(req)
+      } catch (error) {
+        await last_activity(req)
+        console.error("Error while get_data_for_purshasesInvoiceToreturns", error);
+        res.join;
+        res
+          .status(500)
+          .json({ success: false, message_ar: error.message || deafultErrorMessage,});
+      }
+    });
 
     //#endregion end trial balace
   //#endregion end statements
@@ -36040,7 +36337,6 @@ await last_activity(req);
           .json({ success: false, message_ar: "❌ Error while get_data_for_purshasesInvoiceToreturns" });
       }
     });
-
 
     app.post("/report_item_movement_view_ar", async (req, res) => {
       try {
@@ -36525,7 +36821,7 @@ async function check_itemAmounts_for_all_location(datex, items_array, locations_
           AND tb.item_location_id_tb IN (${locations_array.join(',')}) -- AND tb.item_location_id_tb IN (23,104)
         UNION ALL
         SELECT 
-            0 AS id,
+            pb.id AS id,
             pb.item_name,
             0 as th_id,
             pb.item_location_id_tb as location_id,
@@ -36600,6 +36896,9 @@ async function check_itemAmounts_for_all_location(datex, items_array, locations_
 
   const cumulative_array = await tx.any(query, params) || [];
   
+console.table(cumulative_array);
+
+
   let result = true
 
   if (cumulative_array.length > 0){

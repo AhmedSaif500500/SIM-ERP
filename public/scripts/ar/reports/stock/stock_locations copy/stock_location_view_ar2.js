@@ -320,7 +320,7 @@ view_report_btn.onclick = async function () {
 }
 
 function show_dialogx(){
-    end_date_input.value = lastDayOfYear
+    end_date_input.value = today
     checked_hide_zero_balabce.checked = true
     dialogOverlay_input.style.display = 'flex'
 }

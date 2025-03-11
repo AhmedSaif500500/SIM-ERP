@@ -12,8 +12,7 @@ let Qkey;
 let back_href_page;
 let back_title_page;
 let other_obj = {};
-let item_location;
-let item_location_name;
+let account_name;
 
 
 
@@ -35,23 +34,60 @@ const searchBtn = document.querySelector("#searchBtn");
 const searchInput = document.querySelector("#searchInput");
 
 
-//! accountName
+//! department name
 let f1_div = filter_div.querySelector(`#f1_div`);
 let f1_checkbox = filter_div.querySelector(`#f1_checkbox`);
 let f1_selectAndInput_div = filter_div.querySelector(`#f1_selectAndInput_div`);
 let f1_select = filter_div.querySelector(`#f1_select`);
 let f1_input = filter_div.querySelector(`#f1_input`);
 
+//! account_name
+let f2_div = filter_div.querySelector(`#f2_div`);
+let f2_checkbox = filter_div.querySelector(`#f2_checkbox`);
+let f2_selectAndInput_div = filter_div.querySelector(`#f2_selectAndInput_div`);
+let f2_select = filter_div.querySelector(`#f2_select`);
+let f2_input = filter_div.querySelector(`#f2_input`);
+
+//! days
+let f3_div = filter_div.querySelector(`#f3_div`);
+let f3_checkbox = filter_div.querySelector(`#f3_checkbox`);
+let f3_selectAndInput_div = filter_div.querySelector(`#f3_selectAndInput_div`);
+let f3_select = filter_div.querySelector(`#f3_select`);
+let f3_input = filter_div.querySelector(`#f3_input`);
+
+//! hours
+let f4_div = filter_div.querySelector(`#f4_div`);
+let f4_checkbox = filter_div.querySelector(`#f4_checkbox`);
+let f4_selectAndInput_div = filter_div.querySelector(`#f4_selectAndInput_div`);
+let f4_select = filter_div.querySelector(`#f4_select`);
+let f4_input = filter_div.querySelector(`#f4_input`);
+
+//! values
+let f5_div = filter_div.querySelector(`#f5_div`);
+let f5_checkbox = filter_div.querySelector(`#f5_checkbox`);
+let f5_selectAndInput_div = filter_div.querySelector(`#f5_selectAndInput_div`);
+let f5_select = filter_div.querySelector(`#f5_select`);
+let f5_input = filter_div.querySelector(`#f5_input`);
+
+//! active
+let f6_div = filter_div.querySelector(`#f6_div`);
+let f6_checkbox = filter_div.querySelector(`#f6_checkbox`);
+let f6_selectAndInput_div = filter_div.querySelector(`#f6_selectAndInput_div`);
+let f6_select = filter_div.querySelector(`#f6_select`);
+let f6_input = filter_div.querySelector(`#f6_input`);
+
+
+
 
 const btn_do = filter_div.querySelector(`#btn_do`);
-const indices = [0, 1]; // ضع هنا الأرقام التي تريد تضمينها
+const indices = [1,2,3,4,5,6]; // ضع هنا الأرقام التي تريد تضمينها
 
 
 
 
 back_href.onclick = async function (event) {
     event.preventDefault();
-   await back_href_fn1(getData_fn, `item_movement_viewArray`, 'item_movement_view_ar', `report_map_ar`)
+   await back_href_fn1(getData_fn, `aggregated_effects_viewArray`, 'aggregated_effects_view_ar', `report_map_ar`)
 };
 
 
@@ -118,7 +154,12 @@ function call_default_checkbox(str_f, is_showDiv, is_checkBox, is_datex) {
 }
 
 function deafult_checkbox() {
-    call_default_checkbox('f1',true,true,false) // accountName
+    call_default_checkbox('f1',true,false,false) 
+    call_default_checkbox('f2',true,true,false) 
+    call_default_checkbox('f3',true,true,false) 
+    call_default_checkbox('f4',true,true,false) 
+    call_default_checkbox('f5',true,true,false) 
+    call_default_checkbox('f6',true,true,false) 
 }
 
 
@@ -137,7 +178,7 @@ async function filter_icon_cancel_fn() {
             
             await getData_fn();
             closeDialog();
-            sessionStorage.removeItem('item_movement_viewArray');
+            sessionStorage.removeItem('aggregated_effects_viewArray');
             conditionsArray = []
             
         }
@@ -160,8 +201,8 @@ async function getData_fn(permissionName, x, start_date, end_date) {
     try {       
 
         const d = await new_fetchData_postAndGet(
-            "/report_item_movement_view_ar",
-            {x, start_date, end_date, item_location, other_obj},
+            "/report_aggregated_effects_view_ar",
+            {x, start_date, end_date, other_obj},
             permissionName,"view",
             60,
             false,'',
@@ -169,15 +210,16 @@ async function getData_fn(permissionName, x, start_date, end_date) {
             false,false,
             false,false,'',
             false,'',
-            true,'report_map_ar',
+            true,back_href_page,
             'حدث خطأ اثناء معالجة البيانات'
         )        
         
+
         data = d.account_statement
-        const location_name_extintion = item_location_name? ` / ${item_location_name}` : '';
-        h2_text_div.textContent = `حركة صنف / ${d.account_name} ${location_name_extintion}`
-        sub_h2_header.textContent = `من 
-        ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
+       // account_name = d.account_name
+       // h2_text_div.textContent = `المؤثرات / ${account_name}`
+       h2_text_div.textContent = `تقرير مؤثرات مُجمع `
+        sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
         
         showFirst50RowAtTheBegening();
         back_href.title = back_href_page;
@@ -197,12 +239,12 @@ async function Execution() {
         is_filter = true
         searchInput.value = "";
 
-        back_href_page = 'item_movement_view_ar'
-        back_title_page = 'حركة صنف'
+        back_href_page = 'aggregated_effects_view_ar'
+        back_title_page = 'تقرير مؤثرات مُجمع'
 
         sub_h2_header.textContent = `من ${reverseDateFormatting(start_date)}   الى   ${reverseDateFormatting(end_date)}`;
             showFirst50RowAtTheBegening(); 
-            backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
+            backUp_page1(`aggregated_effects_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
 
     } catch (error) {
         catch_error(error);
@@ -241,18 +283,68 @@ function showFirst50RowAtTheBegening() {
 
         filteredData_Array = data.filter((row) => {
 
-            const isAccountNameMatch =
+            const f1 =
             filterData_string_column_with_showAndHiddenCheckbox(
                 f1_checkbox,
                 f1_select,
                 f1_input,
-                "row_note",
+                "department_name",
                 row
             );
+
+            const f2 =
+            filterData_string_column_with_showAndHiddenCheckbox(
+                f2_checkbox,
+                f2_select,
+                f2_input,
+                "employee_name",
+                row
+            );            
                
-            return (
-                isAccountNameMatch
-            ); // && otherCondition;
+            const f3 =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f3_checkbox,
+                    f3_select,
+                    f3_input,
+                    "days",
+                    row
+                );
+
+                const f4 =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f4_checkbox,
+                    f4_select,
+                    f4_input,
+                    "hours",
+                    row
+                );
+                
+                const f5 =
+                filterData_number_column_with_showAndHiddenCheckbox(
+                    f5_checkbox,
+                    f5_select,
+                    f5_input,
+                    "values",
+                    row
+                );
+
+                const f6 =
+                filterData_string_column_with_showAndHiddenCheckbox_with_only_select(
+                    f6_checkbox,
+                    f6_select,
+                    //f5_input,
+                    "is_inactive",
+                    row
+                );                   
+
+                return (
+                  f1 &&
+                  f2 &&
+                  f3 &&
+                  f4 &&
+                  f5 &&
+                  f6
+              ); // && otherCondition;
         });
 
         // QKey = null;
@@ -278,35 +370,33 @@ function fillTable() {
         // 3 : width: auto;  fe 7alt enak ardt en ykon 3ard el 3amod 3ala ad el mo7tawa -- width: 100%; fe 7alt enak ardt en el 3amod ya5od ba2y el mesa7a el fadla
         // 4 : text-align: center / start / end / justify   da 3ashan tet7km fe el text ymen wala shemal wala fe ele nos
 
-        page_content.style.display = "none";
         showLoadingIcon(content_space);
 
         let style_id = `display: none;`;
-        let style_datex = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_referenceconcat = `display: table-cell; width: ${f1_checkbox.checked ? 'auto' : '100%'}; white-space: nowrap; text-align: start`;
-        let style_row_note = `display: table-cell; width: 100%; white-space: nowrap; text-align: start`;
-        let style_debit = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_credit = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
-        let style_balance = `display: table-cell; width: auto; white-space: nowrap; text-align: start`;
+        let style_department_name = `display:${f1_checkbox.checked ? "table-cell" : "none"}; auto; white-space: nowrap; text-align: start;`;
+        let style_account_name = `display: table-cell; min-width: 25rem; width: 100%; white-space: wrap; text-align: start;`;
+        let style_balance1 = `display:${f3_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_balance2 = `display:${f4_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_balance3 = `display:${f5_checkbox.checked ? "table-cell" : "none"}; width: auto; white-space: nowrap; text-align: start`;
+        let style_active = `display:${f6_checkbox.checked ? "table-cell" : "none"};  width: auto; white-space: nowrap; text-align: start;`;
 
         total_column1.value = 0;
         total_column2.value = 0;
         total_column3.value = 0;
-        let fn = `onclick = "statment_table_balance1_btn_fn(this)"`;
+        let fn1 = `onclick = "statment_table_balance1_btn_fn(this)"`;
 
         // إعداد رأس الجدول
         // هنا بناء الجدول بدون صف الأزرار
         let tableHTML = `<table id="review_table" class="review_table">
                         <thead>
                             <tr>
-                                <th style="${style_id}">id</th>
-                                <th style="${style_id}">type</th>
-                                <th style="${style_datex}">التاريخ</th>
-                                <th style="${style_referenceconcat}">المرجع</th>
-                                <th style="${style_row_note}">البيان</th>
-                                <th style="${style_debit}">وارد</th>
-                                <th style="${style_credit}">منصرف</th>
-                                <th style="${style_balance}">الرصيد</th>
+                                <th style="${style_department_name}">القسم</th>        
+                                <th style="${style_id}">#</th>
+                                <th style="${style_account_name}">الموظف</th>
+                                <th style="${style_balance1}">يوم</th>
+                                <th style="${style_balance2}">ساعة</th>
+                                <th style="${style_balance3}">قيمة</th>
+                                <th style="${style_active}">الحالة</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -329,29 +419,31 @@ function fillTable() {
             }
 */
 
+        let activeClass =
+        row.is_inactive == "غير نشط"? "table_red_condition": "table_green_condition";
+
+
             tableHTML +=
                      `<tr>
-                        <td style="${style_id};" class="td_id">${row.x}</td>
-                        <td style="${style_id};" class="td_type">${row.type}</td>
-                        <td style="${style_datex};" class="td_datex">${row.datex}</td>
-                        <td style="${style_referenceconcat};" class="td_referenceconcat">${row.referenceconcat}</td>
-                        <td style="${style_row_note};" class="td_row_note">${row.row_note ? row.row_note : ''}</td>
-                        ${tdNumber(true,false,false,+row.debit === 0? '' : +row.debit, style_debit,total_column1,fn,'debit')}
-                        ${tdNumber(true,false,false,+row.credit === 0? '' : +row.credit, style_credit,total_column2,fn,'credit')}
-                        ${tdNumber(false,true,false,+row.balance === 0? '' : +row.balance, style_balance,false,false,'balance')}
+                        <td style="${style_department_name}" class="td_department_name">${row.department_name}</td>
+                        <td style="${style_id}" class="td_employee_x">${row.employee_x}</td>
+                        <td style="${style_account_name}" class="td_employee_name">${row.employee_name}</td>
+                        ${tdNumber(true,false,false,row.days,style_balance1,total_column1,fn1,'td_days')}
+                        ${tdNumber(true,false,false,row.hours,style_balance2,total_column2,fn1,'td_hours')}
+                        ${tdNumber(true,false,false,row.values,style_balance3,total_column3,fn1,'td_values')}
+                        <td style="${style_active}"><span class="${activeClass}">${row.is_inactive}</span></td>
                       </tr>`;
         });
 
         tableHTML += `
                     <tr class="table_totals_row">
-                                <td id="footer_style_id" style="${style_id}"></td>
-                                <td id="footer_style_type" style="${style_id}"></td>
-                                <td id="footer_style_datex" style="${style_datex}"></td>
-                                <td id="footer_style_referenceconcat" style="${style_referenceconcat}"></td>
-                                <td id="footer_style_row_note" style="${style_row_note}"></td>
-                                <td id="footer_style_debit" style="${style_debit}"></td>
-                                <td id="footer_style_credit" style="${style_credit}"></td>
-                                <td id="footer_style_balance" style="${style_balance}"></td>
+                        <td id="footer_style_department_name" style="${style_department_name}"></td>
+                        <td id="footer_style_id1" style="${style_id}"></td>
+                        <td id="footer_style_account_name" style="${style_account_name}"></td>
+                        <td id="footer_style_balance1" style="${style_balance1}"></td>
+                        <td id="footer_style_balance2" style="${style_balance2}"></td>
+                        <td id="footer_style_balance3" style="${style_balance3}"></td>
+                        <td id="footer_style_active" style="${style_active}"></td>
                     </tr>
                 </tbody>
             </table>`;
@@ -366,15 +458,13 @@ function fillTable() {
         // تحديث محتوى الصفحة بناءً على البيانات
         tableContainer.innerHTML = tableHTML;
         // setupColumnSorting("review_table");
-        hideLoadingIcon(content_space);
-        page_content.style.display = "flex";
         //  عمليات صف الاجمالى
         // جمع القيم في العمود رقم 6
 //500500
-      tableContainer.querySelector(`#footer_style_datex`).textContent = slice_array1.length; //  عدد الصفوف
-
-        tableContainer.querySelector(`#footer_style_debit`).textContent = floatToString(true,total_column1.value);  aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_debit`), total_column1.value);
-        tableContainer.querySelector(`#footer_style_credit`).textContent = floatToString(true,total_column2.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_credit`), total_column2.value);
+tableContainer.querySelector(`#footer_style_account_name`).textContent = slice_array1.length; //  عدد الصفوف
+tableContainer.querySelector(`#footer_style_balance1`).textContent = floatToString(true,total_column1.value);  aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_debit`), total_column1.value);
+tableContainer.querySelector(`#footer_style_balance2`).textContent = floatToString(true,total_column2.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_credit`), total_column2.value);
+tableContainer.querySelector(`#footer_style_balance3`).textContent = floatToString(true,total_column3.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_credit`), total_column3.value);
         // tableContainer.querySelector(`#footer_style_balance`).textContent = floatToString(true,total_column3.value); aloow_to_add_negative_color(tableContainer.querySelector(`#footer_style_balance`), total_column3.value)
 
         // if (array1.length > 0 && array1.length <= 50) {
@@ -382,8 +472,9 @@ function fillTable() {
         // }
 
     } catch (error) {
-        hideLoadingIcon(content_space);
         catch_error(error);
+    } finally {
+      hideLoadingIcon(content_space);
     }
 }
 
@@ -395,13 +486,22 @@ function performSearch() {
         // فلترة البيانات بناءً على قيمة البحث
 
         array1 = filteredData_Array.filter((row) => {
-            const accountName_Match = performSearch_Row(f1_checkbox,"row_note",searchValue,row);
+            const s1 = performSearch_Row(f1_checkbox,"department_name",searchValue,row);
+            const s2 = performSearch_Row(f2_checkbox,"employee_name",searchValue,row);
+            const s3 = performSearch_Row(f3_checkbox,"days",searchValue,row);
+            const s4 = performSearch_Row(f4_checkbox,"hours",searchValue,row);
+            const s5 = performSearch_Row(f5_checkbox,"values",searchValue,row);
+            const s6 = performSearch_Row(f6_checkbox,"is_inactive",searchValue,row);
 
 
-            // استخدام || بدلاً من && لضمان أن البحث يتم في كلا الحقلين
             return (
-                accountName_Match
-            );
+              s1 ||
+              s2 ||
+              s3 ||
+              s4 ||
+              s5 ||
+              s6
+          );
         });
 
      //   slice_array1 = array1.slice(0, 50); // انشاء مصفوفه جديده تحتوى على اول 50 سطر من البيانات فقط
@@ -453,49 +553,27 @@ async function statment_table_balance1_btn_fn(balanceBtn1) {
 
     const row  = balanceBtn1.closest("tr")
      
-    const type = row.querySelector(`.td_type`).textContent
-    const obj = {
-    x: row.querySelector(`.td_id`).textContent,
-    href_pageName : 'item_movement_view_ar',
-    href_pageTitle : 'حركة صنف'
-    }
+    const effects_update_data = {
+      x: row.querySelector(`.td_id`).textContent,
+      href_pageName : `aggregated_effects_view_ar`,
+      href_pageTitle : 'تقرير المؤثرات الفردى لكل مزظف',
+      acc_name: account_name,
+      datex: row.querySelector(`.td_datex`).textContent,
+      referenceCONCAT: row.querySelector(`.td_referenceconcat`).textContent,
+      emp_x: row.querySelector(`.td_employee_x`).textContent,
+      days: row.querySelector(`.td_days`).textContent,
+      hours: row.querySelector(`.td_hours`).textContent,
+      values: row.querySelector(`.td_values`).textContent,
+      note: row.querySelector(`.td_note`).textContent,
 
-    if (!type || !obj.x){
-        return;
-    }
+  };
 
-    if (+type === 2){
-        sessionStorage.setItem('transaction_update_data', JSON.stringify(obj));                            
-        window.location.href = `transaction_update_ar`;
-        return;
-    } else if (+type === 3){
-        sessionStorage.setItem('sales_invoice_update_data', JSON.stringify(obj));
-        window.location.href = `sales_invoice_update_ar`;
-        return;
-    } else if (+type === 4){
-        sessionStorage.setItem('sales_returns_update_data', JSON.stringify(obj));                            
-        window.location.href = `sales_returns_update_ar`;
-        return;
-    } else if (+type === 6){
-        sessionStorage.setItem('purshases_invoice_update_data', JSON.stringify(obj));                            
-        window.location.href = `purshases_invoice_update_ar`;
-        return;
-    } else if (+type === 7){
-        sessionStorage.setItem('purshases_returns_update_data', JSON.stringify(obj));                            
-        window.location.href = `purshases_returns_update_ar`;
-        return;
-    } else if (+type === 12){
-        sessionStorage.setItem('items_transfer_update_data', JSON.stringify(obj));                            
-        window.location.href = `items_transfer_update_ar`;
-        return;
-    } else if (+type === 31){
-        sessionStorage.setItem('production_orders_update_data', JSON.stringify(obj));                            
-        window.location.href = `production_orders_update_ar`;
-        return;
-    }
 
-    //sessionStorage.setItem('obj_item_movement', JSON.stringify(obj_item_movement));
-    //window.location.href = `item_movement_view_ar`;
+  sessionStorage.removeItem('effects_update_data')
+  sessionStorage.setItem('effects_update_data', JSON.stringify(effects_update_data));                            
+  window.location.href = `effects_update_ar`;
+
+
 } catch (error) {
     catch_error(error)
 }
@@ -514,29 +592,44 @@ const report_setting_icon = document.querySelector(`#report_setting_icon`);
 
 
 
+
+
+
 view_report_btn.onclick = async function () {
     try {
         showLoadingIcon(view_report_btn)
-
+        Qkey = false
+/*
         Qkey = document.querySelector(`#dropdown_div1_hidden_input`).value
         if(!Qkey){
-            showAlert('warning', 'برجاء تحديد الصنف بشكل صحيح')
+            showAlert('warning', 'برجاء تحديد الموظف بشكل صحيح')
             return;
         }
+*/
         start_date = start_date_input.value;
         end_date = end_date_input.value;
-        permissionName = `items_permissions`
+        permissionName = `effects_permissions`
         back_href_page = 'report_map_ar'
         back_title_page = 'التقارير'
-        item_location = document.querySelector(`#dropdown_div2_hidden_input`).value || false
 
         // is_hiding_zero_balances = checked_hide_zero_balabce.checked
         // is_show_account_no = false
 
+        const obj_aggregated_effects = {
+            x: false,
+            permissionName : permissionName,
+            start_date : start_date,
+            end_date : end_date,
+            back_href_page : back_href_page,
+            back_title_page : back_title_page
+        }
+        sessionStorage.setItem('obj_aggregated_effects', JSON.stringify(obj_aggregated_effects)); 
 
-        backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
-        await restore_page1(getData_fn, `item_movement_viewArray`)
+        
+        backUp_page1(`aggregated_effects_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+        await restore_page1(getData_fn, `aggregated_effects_viewArray`)
 
+      
         close_dialogx()
     } catch (error) {
         catch_error(error)
@@ -582,24 +675,26 @@ function close_dialogx(){
 let orignal_accounts_array = [];
 let filtered_accounts_array = [];
 let get_accounts_type_array = [];
-let account_name = ''
 
+/*
 function select_change(){
     const type = account_type_select.value
     filtered_accounts_array = orignal_accounts_array.filter(item => +item.account_type_id === +type)
     create_drop_down_with_External_DataArray(`dropdown_div1`,filtered_accounts_array); //selectedRow_dropdownDiv(`dropdown_div3`,vendorsDataArray,headerDataArray.account_id);
 }
-
+*/
+/*
 account_type_select.onchange = async function () {
     select_change()
 }
-
+*/
+/*
 async function load_accounts_data() {
   try {
 
     
     data = await new_fetchData_postAndGet(
-        '/get_items_movement_data_for_report',
+        '/get_effects_data_for_report_effects_statement',
         {},
         '', '',
         60,
@@ -619,52 +714,43 @@ async function load_accounts_data() {
         orignal_accounts_array = data.accounts
         select_change()
 
-        create_drop_down_with_External_DataArray(`dropdown_div2`,data.locations);// selectedRow_dropdownDiv(`dropdown_div3`,customersDataArray,headerDataArray.account_id);
-        
-        
+        show_dialogx()
   } catch (error) {
     catch_error(error)
   }
 }
-
+*/
 
 document.addEventListener("DOMContentLoaded", async function () {
 try {  
     showLoadingIcon(content_space)
-    pagePermission("view", 'items_permission');  // معلق
-    
-const obj_item_movement = JSON.parse(sessionStorage.getItem('obj_item_movement'));
-const item_movement_viewArray = JSON.parse(sessionStorage.getItem('item_movement_viewArray'));
+
+const obj_aggregated_effects = JSON.parse(sessionStorage.getItem('obj_aggregated_effects'));
 
 
-if (obj_item_movement && obj_item_movement.x && obj_item_movement.permissionName && obj_item_movement.start_date && obj_item_movement.end_date && obj_item_movement.back_href_page && obj_item_movement.back_title_page){
+
+if (obj_aggregated_effects){
     report_setting_icon.style.display = 'none'
 
-    permissionName = obj_item_movement.permissionName
-    start_date = obj_item_movement.start_date;
-    end_date = obj_item_movement.end_date;
-    Qkey = obj_item_movement.x
-    back_href_page = obj_item_movement.back_href_page;
-    back_title_page = obj_item_movement.back_title_page;
-    other_obj = obj_item_movement.other_obj;
-    item_location = obj_item_movement.item_location;
-    if (other_obj && other_obj.item_location_name){
-        item_location_name = other_obj.item_location_name
-    } 
+    permissionName = obj_aggregated_effects.permissionName
+    start_date = obj_aggregated_effects.start_date;
+    end_date = obj_aggregated_effects.end_date;
+    Qkey = obj_aggregated_effects.x
+    back_href_page = obj_aggregated_effects.back_href_page;
+    back_title_page = obj_aggregated_effects.back_title_page;
+    other_obj = obj_aggregated_effects.other_obj;
 
     
 
-    pagePermission("view", obj_item_movement.permissionName);  // معلق
-    sessionStorage.removeItem('obj_item_movement');
-    sessionStorage.removeItem('item_movement_viewArray');
-    backUp_page1(`item_movement_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page, false, false, item_location)
-    await restore_page1(getData_fn, `item_movement_viewArray`)
+    pagePermission("view", obj_aggregated_effects.permissionName);  // معلق
+    sessionStorage.removeItem('aggregated_effects_viewArray');
+    backUp_page1(`aggregated_effects_viewArray`, Qkey, permissionName, start_date, end_date, back_href_page, back_title_page)
+    await restore_page1(getData_fn, `aggregated_effects_viewArray`)
     
-}else if (item_movement_viewArray){
-    
-    await restore_page1(getData_fn, `item_movement_viewArray`)
-} else{
-    await load_accounts_data()
+}else{
+    pagePermission("view", 'effects_permission');  // معلق
+
+    //await load_accounts_data()
     show_dialogx()
 }
     showRedirectionReason();

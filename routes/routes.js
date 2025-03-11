@@ -1841,17 +1841,35 @@ router.get('/capital_accounts_update_ar', (req, res) => {
         //#endregion end trial balance
     //#endregion end statements reports
 
-router.get('/effects_report_ar', (req, res) => {
-    if (req.session.isLoggedIn) {
-        if (req.session.is_owner_permission || req.session.general_permission > 1 ||  req.session.effects_permission > 0) {
-            res.sendFile(path.join(__dirname, '..', 'views', 'ar' , 'reports', 'effects' ,'effects_report_ar.html'));
-        }else{
-            res.redirect('/notes_ar?reason=0');
-        };
-    } else {        
-        res.redirect('/login?reason=0');
-    }
-});
+//#region hr reports
+
+        //#region effects reports
+        router.get('/effects_statement_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.effects_permission > 0) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'hr' , 'effects', 'effects_statement_view_ar.html'));
+                }else{
+                    res.redirect('/report_map_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
+
+        router.get('/aggregated_effects_view_ar', (req, res) => {
+            if (req.session.isLoggedIn) {
+                if (req.session.is_owner_permission || req.session.general_permission > 1 || req.session.effects_permission > 0) { // معلق  محتاجين نحط الصلاحيه 
+                    res.sendFile(path.join(__dirname, '..', 'views', 'ar' ,'reports', 'hr' , 'effects', 'aggregated_effects_view_ar.html'));
+                }else{
+                    res.redirect('/report_map_ar?reason=0');
+                };
+            } else {        
+                res.redirect('/login?reason=0');
+            }
+        });
+        //#endregion end effects
+
+//#endregion end hr
 
 //#endregion reports
 

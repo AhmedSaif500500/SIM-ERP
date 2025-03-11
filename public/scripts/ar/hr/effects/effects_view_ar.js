@@ -567,18 +567,9 @@ function fillTable() {
 
         // document.getElementById("tFooter6").textContent = totalColumn_Valuu;
         tableContainer.querySelector(`#footer_style_button`).textContent = slice_array1.length; //  عدد الصفوف
-        tableContainer.querySelector(`#footer_style_balance1`).textContent = floatToString(
-            true,
-            total_column1.value
-        );
-        tableContainer.querySelector(`#footer_style_balance2`).textContent = floatToString(
-            true,
-            total_column2.value
-        );
-        tableContainer.querySelector(`#footer_style_balance3`).textContent = floatToString(
-            true,
-            total_column3.value
-        );
+        tableContainer.querySelector(`#footer_style_balance1`).textContent = floatToString(true,total_column1.value);
+        tableContainer.querySelector(`#footer_style_balance2`).textContent = floatToString(true,total_column2.value);
+        tableContainer.querySelector(`#footer_style_balance3`).textContent = floatToString(true,total_column3.value);
 
         if (array1.length > 0 && array1.length <= 50) {
             document.querySelector("#table_footer_showRows_div").style.display =

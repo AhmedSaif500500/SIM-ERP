@@ -533,7 +533,7 @@ view_report_btn.onclick = async function () {
 
 function show_dialogx(){
     // start_date_input.value = firstDayOfYear
-    // end_date_input.value = lastDayOfYear
+    // end_date_input.value = today
     // checked_hide_zero_balabce.checked = true
     // checked_show_account_no.checked = false
     dialogOverlay_input.style.display = 'flex' // show dialog
